@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+:root {
+  /* HackITBA Brand Colors */
+  --color-brand-yellow: #fad399;
+  --color-brand-cyan: #afeff3;
+  --color-brand-orange: #ef802f;
+  --color-brand-dark-orange: #cf5d0a;
+  --color-brand-navy: #14192d;
+
+  /* Semantic colors */
+  --background: var(--color-brand-navy);
+  --foreground: var(--color-brand-cyan);
+  --primary: var(--color-brand-orange);
+  --primary-foreground: var(--color-brand-navy);
+  --secondary: var(--color-brand-yellow);
+  --secondary-foreground: var(--color-brand-navy);
+  --accent: var(--color-brand-cyan);
+  --accent-foreground: var(--color-brand-navy);
+  --muted: #1e2642;
+  --muted-foreground: #8a91a8;
+  --border: rgba(175, 239, 243, 0.2);
+  --card: rgba(30, 38, 66, 0.6);
+  --card-foreground: var(--color-brand-cyan);
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Neon glow colors */
+  --neon-cyan: var(--color-brand-cyan);
+  --neon-orange: var(--color-brand-orange);
+  --neon-yellow: var(--color-brand-yellow);
+
+  /* Spacing scale */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --spacing-2xl: 4rem;
+  --spacing-3xl: 6rem;
+
+  /* Use system monospace font instead of custom pixel font */
+  --font-pixel: ui-monospace, "Courier New", monospace;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+  --transition-slow: 250ms ease-in-out;
+}
+
+@theme inline {
+  /* Use system monospace font instead of custom pixel font */
+  --font-pixel: ui-monospace, "Courier New", monospace;
+  --font-body: "Inter", "Inter Fallback", system-ui, sans-serif;
+
+  --color-brand-yellow: #fad399;
+  --color-brand-cyan: #afeff3;
+  --color-brand-orange: #ef802f;
+  --color-brand-dark-orange: #cf5d0a;
+  --color-brand-navy: #14192d;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-pixel;
+  }
+}
+
+/* Neon glow effect utilities */
+@layer utilities {
+  .neon-glow-cyan {
+    text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+  }
+
+  .neon-glow-orange {
+    text-shadow: 0 0 10px var(--neon-orange), 0 0 20px var(--neon-orange), 0 0 30px var(--neon-orange);
+  }
+
+  .neon-glow-yellow {
+    text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow);
+  }
+
+  .neon-border-cyan {
+    box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), inset 0 0 5px var(--neon-cyan);
+  }
+
+  .neon-border-orange {
+    box-shadow: 0 0 5px var(--neon-orange), 0 0 10px var(--neon-orange), inset 0 0 5px var(--neon-orange);
+  }
+
+  .glass-effect {
+    background: rgba(30, 38, 66, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(175, 239, 243, 0.2);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}

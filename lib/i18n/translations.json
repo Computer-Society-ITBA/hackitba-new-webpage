@@ -1,0 +1,242 @@
+{
+  "en": {
+    "nav": {
+      "home": "Home",
+      "pastEditions": "Past Editions",
+      "faqs": "FAQs",
+      "collaborate": "Collaborate",
+      "signUp": "Sign Up",
+      "about": "About",
+      "sponsors": "Sponsors",
+      "mentors": "Mentors",
+      "categories": "Categories",
+      "beAMentor": "Be a mentor",
+      "beASponsor": "Be a sponsor"
+    },
+    "hero": {
+      "title": "HACKITBA",
+      "subtitle": "By Computer Society ITBA",
+      "description": "36 hours of non-stop intense development. Networking and mentoring from minute one. Get to know your team."
+    },
+    "stats": {
+      "categories": "Categories",
+      "hoursOfCoding": "Hours\nOf coding",
+      "participants": "Participants"
+    },
+    "event": {
+      "location": "Parque Patricios, CABA",
+      "dates": "27, 28 and 29 of March",
+      "free": "Free"
+    },
+    "timeline": {
+      "title": "Event Timeline",
+      "beginning": {
+        "title": "The beginning",
+        "description": "Networking and mentoring from minute one. Get to know your team."
+      },
+      "challenge": {
+        "title": "The challenge",
+        "description": "Intense development. 36 hours of non-stop programming."
+      },
+      "closing": {
+        "title": "The closing",
+        "description": "Deployed solution, final pitch and access to prizes."
+      },
+      "future": {
+        "title": "The future",
+        "description": "Project continuity and job offers from sponsors."
+      }
+    },
+    "about": {
+      "title": "About Us",
+      "history": "Our History",
+      "historyText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "vision": "Our Vision",
+      "visionText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "objective": "Our Objective",
+      "objectiveText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    "location": {
+      "title": "Location",
+      "description": "ITBA Sede Distrito Tecnológico",
+      "address": "Lavardén 235, CABA, Argentina",
+      "coordinates": "Coordinates: -34.633250, -58.451300"
+    },
+    "sponsors": {
+      "title": "Sponsors",
+      "endpoint": "GET v2026/sponsors"
+    },
+    "mentors": {
+      "title": "Mentors",
+      "endpoint": "GET v2026/mentors",
+      "modalTitle": "Mentor Details"
+    },
+    "categories": {
+      "title": "Categories",
+      "endpoint": "GET v2026/categories",
+      "web3": "Web3",
+      "ia": "IA",
+      "gameDev": "GameDev"
+    },
+    "weProvide": {
+      "title": "What We Provide",
+      "swag": "Swag",
+      "space": "Space for each team",
+      "mentors": "Professional mentors in the area",
+      "results": "Access to recruiters and companies",
+      "prizes": "Impressive prizes"
+    },
+    "youBring": {
+      "title": "What You Bring",
+      "talent": "Your talent",
+      "sleepingBag": "Your sleeping bag",
+      "computer": "Your computer"
+    },
+    "signup": {
+      "title": "Sign Up",
+      "subtitle": "POST v2026/sign-up",
+      "participant": "Sign Up",
+      "sponsor": "Sponsor",
+      "mentor": "Mentor"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "endpoint": "GET v2026/faqs",
+      "question": "Question",
+      "answer": "Resume of the answer"
+    },
+    "footer": {
+      "menu": "Nav Menu",
+      "madeWith": "Made with love by Computer Society ITBA",
+      "socials": "Our socials"
+    },
+    "countdown": {
+      "title": "Time Left",
+      "endpoint": "GET v2026/time-left",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    }
+  },
+  "es": {
+    "nav": {
+      "home": "Inicio",
+      "pastEditions": "Ediciones Pasadas",
+      "faqs": "FAQs",
+      "collaborate": "Colaborar",
+      "signUp": "Inscribirse",
+      "about": "Sobre Nosotros",
+      "sponsors": "Sponsors",
+      "mentors": "Mentores",
+      "categories": "Categorías",
+      "beAMentor": "Ser mentor",
+      "beASponsor": "Ser sponsor"
+    },
+    "hero": {
+      "title": "HACKITBA",
+      "subtitle": "By Computer Society ITBA",
+      "description": "36 horas de desarrollo intenso sin parar. Networking y mentoría desde el minuto uno. Conoce a tu equipo."
+    },
+    "stats": {
+      "categories": "Categorías",
+      "hoursOfCoding": "Horas\nDe código",
+      "participants": "Participantes"
+    },
+    "event": {
+      "location": "Parque Patricios, CABA",
+      "dates": "27, 28 y 29 de Marzo",
+      "free": "Sin costo"
+    },
+    "timeline": {
+      "title": "Cronograma del Evento",
+      "beginning": {
+        "title": "El inicio",
+        "description": "Networking y mentoría desde el minuto uno. Conoce a tu equipo."
+      },
+      "challenge": {
+        "title": "El desafío",
+        "description": "Desarrollo intenso. 36 horas de programación non-stop."
+      },
+      "closing": {
+        "title": "El cierre",
+        "description": "Solución desplegada, Pitch final y acceso a premios."
+      },
+      "future": {
+        "title": "El futuro",
+        "description": "Continuidad del proyecto y ofertas laborales de sponsors."
+      }
+    },
+    "about": {
+      "title": "Sobre Nosotros",
+      "history": "Nuestra Historia",
+      "historyText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "vision": "Nuestra Visión",
+      "visionText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "objective": "Nuestro Objetivo",
+      "objectiveText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    "location": {
+      "title": "Ubicación",
+      "description": "ITBA Sede Distrito Tecnológico",
+      "address": "Lavardén 235, CABA, Argentina",
+      "coordinates": "Coordenadas: -34.633250, -58.451300"
+    },
+    "sponsors": {
+      "title": "Sponsors",
+      "endpoint": "GET v2026/sponsors"
+    },
+    "mentors": {
+      "title": "Mentores",
+      "endpoint": "GET v2026/mentors",
+      "modalTitle": "Detalles del Mentor"
+    },
+    "categories": {
+      "title": "Categorías",
+      "endpoint": "GET v2026/categories",
+      "web3": "Web3",
+      "ia": "IA",
+      "gameDev": "GameDev"
+    },
+    "weProvide": {
+      "title": "Nosotros te damos",
+      "swag": "Comida",
+      "space": "Espacio para cada equipo",
+      "mentors": "Mentores profesionales en el área",
+      "results": "Acceso a reclutadores y empresas",
+      "prizes": "Premios impresionantes"
+    },
+    "youBring": {
+      "title": "Vos traes",
+      "talent": "Tu talento",
+      "sleepingBag": "Tu bolsa de dormir",
+      "computer": "Tu computadora"
+    },
+    "signup": {
+      "title": "Inscribirse",
+      "subtitle": "POST v2026/sign-up",
+      "participant": "Inscribirse",
+      "sponsor": "Sponsor",
+      "mentor": "Mentor"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "endpoint": "GET v2026/faqs",
+      "question": "Pregunta",
+      "answer": "Resumen de la respuesta"
+    },
+    "footer": {
+      "menu": "Nav Menu",
+      "madeWith": "Hecho con amor por Computer Society ITBA",
+      "socials": "Nuestras redes"
+    },
+    "countdown": {
+      "title": "Tiempo Restante",
+      "endpoint": "GET v2026/time-left",
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos"
+    }
+  }
+}
