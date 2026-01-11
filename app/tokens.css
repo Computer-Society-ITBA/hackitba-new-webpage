@@ -101,20 +101,56 @@
     text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
   }
 
+  .hover\:neon-glow-cyan:hover {
+    text-shadow:
+      0 0 10px var(--neon-cyan);
+  }
+
   .neon-glow-orange {
-    text-shadow: 0 0 10px var(--neon-orange), 0 0 20px var(--neon-orange), 0 0 30px var(--neon-orange);
+    text-shadow:
+      0 0 10px var(--neon-orange),
+      0 0 20px var(--neon-orange),
+      0 0 30px var(--neon-orange);
+  }
+
+  .hover\:neon-glow-orange:hover {
+    text-shadow:
+      0 0 10px var(--neon-orange),
+      0 0 20px var(--neon-orange),
+      0 0 30px var(--neon-orange);
   }
 
   .neon-glow-yellow {
     text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow);
   }
 
+  .hover\:neon-glow-yellow:hover {
+    text-shadow:
+      0 0 10px var(--neon-yellow),
+      0 0 20px var(--neon-yellow),
+      0 0 30px var(--neon-yellow);
+  }
+
   .neon-border-cyan {
     box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), inset 0 0 5px var(--neon-cyan);
   }
 
+  .hover\:neon-border-cyan:hover {
+    box-shadow:
+      0 0 5px var(--neon-cyan),
+      0 0 10px var(--neon-cyan),
+      inset 0 0 5px var(--neon-cyan);
+  }
+
   .neon-border-orange {
     box-shadow: 0 0 5px var(--neon-orange), 0 0 10px var(--neon-orange), inset 0 0 5px var(--neon-orange);
+  }
+
+  .hover\:neon-border-orange:hover {
+    box-shadow:
+      0 0 5px var(--neon-orange),
+      0 0 10px var(--neon-orange),
+      inset 0 0 5px var(--neon-orange);
   }
 
   /* =========================================================
@@ -143,7 +179,7 @@
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1px;
+      padding: 2px;
 
       /* STROKE (dynamic angle) */
       background:

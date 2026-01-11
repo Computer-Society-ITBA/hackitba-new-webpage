@@ -76,6 +76,7 @@
 @layer utilities {
   .font-pixel {
     font-family: var(--font-pixel);
+    letter-spacing: -2px;
   }
 
   .font-inter {

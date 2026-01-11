@@ -44,7 +44,7 @@ export function TypingEffect({
   if (direction === "vertical") {
     return (
       <div className={cn(
-        "overflow-hidden",
+        "overflow-hidden leading-[1.2rem]",
         className
       )}
       >

@@ -42,7 +42,7 @@ export function Header({ translations, locale }: HeaderProps) {
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href={`/${locale}`} className="flex items-center gap-2">
             <span className="font-pixel text-2xl md:text-3xl text-brand-orange neon-glow-orange">
-              <img src="/images/hackitba-icon.png" alt="" />
+              <img className="hover:neon-glow-orange" src="/images/hackitba-icon.png" alt="" />
             </span>
           </Link>
 
@@ -51,7 +51,7 @@ export function Header({ translations, locale }: HeaderProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-pixel text-sm text-brand-yellow hover:neon-glow-yellow transition-all duration-200"
+                className="font-pixel text-sm text-brand-yellow hover:neon-glow-orange transition-all duration-200"
               >
                 {link.label}
               </Link>
