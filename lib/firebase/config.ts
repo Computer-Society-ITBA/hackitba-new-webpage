@@ -6,7 +6,7 @@ import { mockAuth, mockDb, mockStorage } from "./admin-mock"
 
 const USE_MOCK = !process.env.FIREBASE_PROJECT_ID || process.env.USE_FIREBASE_MOCK === "true"
 
-const firebaseAdminConfig = USE_MOCK ? null : {
+const firebaseAdminConfig = USE_MOCK ? null : {// Firebase Admin SDK initialization options
   credential: cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
