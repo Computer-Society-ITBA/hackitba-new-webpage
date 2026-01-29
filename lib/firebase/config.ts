@@ -6,7 +6,7 @@ import { mockAuth, mockDb, mockStorage } from "./admin-mock"
 
 const USE_MOCK = !process.env.FIREBASE_PROJECT_ID || process.env.USE_FIREBASE_MOCK === "true"
 
-const firebaseAdminConfig = {
+const firebaseAdminConfig = USE_MOCK ? null : {
   credential: cert({
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -22,7 +22,9 @@ export function initAdmin() {
   }
 
   if (getApps().length === 0) {
-    initializeApp(firebaseAdminConfig)
+    if (firebaseAdminConfig) {
+      initializeApp(firebaseAdminConfig)
+    }
   }
 }
 
