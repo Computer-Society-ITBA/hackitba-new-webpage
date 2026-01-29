@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase/client-config"
+import { getAuthClient } from "@/lib/firebase/client-config"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
@@ -26,7 +26,13 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const authClient = getAuthClient()
+      if (!authClient) {
+        setError("Firebase Auth is not configured")
+        return
+      }
+
+      await signInWithEmailAndPassword(authClient, email, password)
       router.push("/dashboard")
     } catch (error: any) {
       setError(error.message || "Failed to login")

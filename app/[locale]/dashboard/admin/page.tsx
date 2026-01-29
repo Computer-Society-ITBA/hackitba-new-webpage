@@ -10,10 +10,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/client-config"
+import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
 
 export default function AdminDashboard() {
+  const db = getDbClient()
+  const storage = getStorageClient()
   const [events, setEvents] = useState<any[]>([])
   const [sponsors, setSponsors] = useState<any[]>([])
   const [speakers, setSpeakers] = useState<any[]>([])
@@ -75,6 +77,10 @@ export default function AdminDashboard() {
   }, [])
 
   const loadData = async () => {
+    if (!db) {
+      return
+    }
+
     const eventsSnapshot = await getDocs(collection(db, "events"))
     setEvents(eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
 
@@ -92,6 +98,10 @@ export default function AdminDashboard() {
   }
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
+    if (!storage) {
+      throw new Error("Firebase Storage is not configured")
+    }
+
     setUploading(true)
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`)
@@ -104,6 +114,10 @@ export default function AdminDashboard() {
   }
 
   const createEvent = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "events"), {
       ...eventForm,
       startDate: new Date(eventForm.startDate),
@@ -126,6 +140,10 @@ export default function AdminDashboard() {
   }
 
   const createSponsor = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "sponsors"), {
       ...sponsorForm,
       createdAt: new Date(),
@@ -136,6 +154,10 @@ export default function AdminDashboard() {
   }
 
   const createSpeaker = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "speakers"), {
       ...speakerForm,
       createdAt: new Date(),
@@ -146,6 +168,10 @@ export default function AdminDashboard() {
   }
 
   const createCategory = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "categories"), {
       ...categoryForm,
       createdAt: new Date(),
@@ -156,6 +182,10 @@ export default function AdminDashboard() {
   }
 
   const createScoring = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "scoringCriteria"), {
       ...scoringForm,
       createdAt: new Date(),
@@ -166,26 +196,46 @@ export default function AdminDashboard() {
   }
 
   const deleteEvent = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "events", id))
     loadData()
   }
 
   const deleteSponsor = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "sponsors", id))
     loadData()
   }
 
   const deleteSpeaker = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "speakers", id))
     loadData()
   }
 
   const deleteCategory = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "categories", id))
     loadData()
   }
 
   const deleteScoring = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "scoringCriteria", id))
     loadData()
   }

@@ -8,11 +8,12 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { collection, getDocs, addDoc, query, where, deleteDoc, doc } from "firebase/firestore"
-import { db } from "@/lib/firebase/client-config"
+import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Slider } from "@/components/ui/slider"
 
 export default function JuradoDashboard() {
+  const db = getDbClient()
   const { user } = useAuth()
   const [projects, setProjects] = useState<any[]>([])
   const [selectedProject, setSelectedProject] = useState<any>(null)
@@ -28,6 +29,10 @@ export default function JuradoDashboard() {
   }, [user])
 
   const loadScoringCriteria = async () => {
+    if (!db) {
+      return
+    }
+
     const criteriaSnapshot = await getDocs(collection(db, "scoringCriteria"))
     const criteria = criteriaSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
     criteria.sort((a, b) => a.order - b.order)
@@ -41,19 +46,23 @@ export default function JuradoDashboard() {
   }
 
   const loadProjects = async () => {
+    if (!db) {
+      return
+    }
+
     const projectsSnapshot = await getDocs(collection(db, "projects"))
     setProjects(projectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
   }
 
   const loadScores = async () => {
-    if (!user) return
+    if (!db || !user) return
     const scoresQuery = query(collection(db, "scores"), where("juradoId", "==", user.id))
     const scoresSnapshot = await getDocs(scoresQuery)
     setScores(scoresSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
   }
 
   const submitScore = async () => {
-    if (!selectedProject || !user || scoringCriteria.length === 0) return
+    if (!db || !selectedProject || !user || scoringCriteria.length === 0) return
 
     const criteriaScores = Object.entries(scoreForm).reduce(
       (acc, [criteriaId, score]) => {
@@ -89,6 +98,10 @@ export default function JuradoDashboard() {
   }
 
   const deleteScore = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "scores", id))
     loadScores()
   }

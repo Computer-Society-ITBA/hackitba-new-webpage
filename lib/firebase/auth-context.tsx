@@ -5,7 +5,7 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { onAuthStateChanged, type User as FirebaseUser } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
-import { auth, db } from "./client-config"
+import { getAuthClient, getDbClient } from "./client-config"
 import type { User } from "./types"
 
 interface AuthContextType {
@@ -23,12 +23,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const authClient = getAuthClient()
+    const dbClient = getDbClient()
+
+    if (!authClient || !dbClient) {
+      setLoading(false)
+      return
+    }
+
+    const unsubscribe = onAuthStateChanged(authClient, async (firebaseUser) => {
       setFirebaseUser(firebaseUser)
 
       if (firebaseUser) {
         try {
-          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid))
+          const userDoc = await getDoc(doc(dbClient, "users", firebaseUser.uid))
           if (userDoc.exists()) {
             setUser({
               id: userDoc.id,
@@ -49,7 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await auth.signOut()
+    const authClient = getAuthClient()
+    if (!authClient) {
+      return
+    }
+
+    await authClient.signOut()
     setUser(null)
     setFirebaseUser(null)
   }

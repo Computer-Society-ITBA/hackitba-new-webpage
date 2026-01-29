@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
-import { auth, db } from "@/lib/firebase/client-config"
+import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
@@ -51,9 +51,17 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const authClient = getAuthClient()
+      const dbClient = getDbClient()
 
-      await setDoc(doc(db, "users", userCredential.user.uid), {
+      if (!authClient || !dbClient) {
+        setError("Firebase is not configured")
+        return
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(authClient, email, password)
+
+      await setDoc(doc(dbClient, "users", userCredential.user.uid), {
         email,
         role,
         onboardingStep: 0,

@@ -11,12 +11,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/client-config"
+import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Progress } from "@/components/ui/progress"
 import { Upload, X } from "lucide-react"
 
 export default function ParticipanteDashboard() {
+  const db = getDbClient()
+  const storage = getStorageClient()
   const { user } = useAuth()
   const [onboardingStep, setOnboardingStep] = useState(0)
   const [project, setProject] = useState<any>(null)
@@ -60,6 +62,10 @@ export default function ParticipanteDashboard() {
   }, [user])
 
   const loadCategories = async () => {
+    if (!db) {
+      return
+    }
+
     const categoriesSnapshot = await getDocs(collection(db, "categories"))
     const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
     cats.sort((a, b) => a.order - b.order)
@@ -67,7 +73,7 @@ export default function ParticipanteDashboard() {
   }
 
   const loadTeam = async () => {
-    if (!user) return
+    if (!db || !user) return
     const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
     const teamsSnapshot = await getDocs(teamsQuery)
     if (teamsSnapshot.docs.length > 0) {
@@ -76,7 +82,7 @@ export default function ParticipanteDashboard() {
   }
 
   const loadProject = async () => {
-    if (!user) return
+    if (!db || !user) return
     let projectsQuery
     if (team) {
       projectsQuery = query(collection(db, "projects"), where("teamId", "==", team.id))
@@ -101,6 +107,10 @@ export default function ParticipanteDashboard() {
   }
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
+    if (!storage) {
+      throw new Error("Firebase Storage is not configured")
+    }
+
     setUploading(true)
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`)
@@ -113,7 +123,7 @@ export default function ParticipanteDashboard() {
   }
 
   const completeOnboarding = async () => {
-    if (!user) return
+    if (!db || !user) return
 
     await updateDoc(doc(db, "users", user.id), {
       onboardingStep: 3,
@@ -128,7 +138,7 @@ export default function ParticipanteDashboard() {
   }
 
   const submitProject = async () => {
-    if (!user) return
+    if (!db || !user) return
     const teamId = team?.id || user.id
 
     if (project) {
@@ -154,7 +164,7 @@ export default function ParticipanteDashboard() {
   }
 
   const deleteProject = async () => {
-    if (!project) return
+    if (!db || !project) return
     await deleteDoc(doc(db, "projects", project.id))
     setProject(null)
     setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "", categoryId: "" })

@@ -3,6 +3,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  pageExtensions: ["tsx"],
+  output: 'export',
   images: {
     unoptimized: true,
   },

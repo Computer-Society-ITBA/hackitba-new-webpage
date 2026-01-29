@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { GlassCard } from "@/components/ui/glass-card"
 import { collection, getDocs } from "firebase/firestore"
-import { db } from "@/lib/firebase/client-config"
+import { getDbClient } from "@/lib/firebase/client-config"
 import * as LucideIcons from "lucide-react"
 import { LoremIpsum } from "lorem-ipsum"
 
@@ -23,6 +23,10 @@ export function Categories({ translations }: CategoriesProps) {
   // }, [])
 
   // const loadCategories = async () => {
+  //   const db = getDbClient()
+  //   if (!db) {
+  //     return
+  //   }
   //   const categoriesSnapshot = await getDocs(collection(db, "categories"))
   //   const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
   //   cats.sort((a, b) => a.order - b.order)

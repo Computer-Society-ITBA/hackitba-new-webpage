@@ -1,7 +1,7 @@
-import { initializeApp, getApps } from "firebase/app"
-import { getAuth, connectAuthEmulator } from "firebase/auth"
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
-import { getStorage, connectStorageEmulator } from "firebase/storage"
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
+import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth"
+import { getFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore"
+import { getStorage, connectStorageEmulator, type FirebaseStorage } from "firebase/storage"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,27 +12,51 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-let firebaseApp
-if (getApps().length === 0) {
-  firebaseApp = initializeApp(firebaseConfig)
-} else {
-  firebaseApp = getApps()[0]
+const isBrowser = typeof window !== "undefined"
+const hasFirebaseConfig = Boolean(firebaseConfig.apiKey)
+
+let firebaseApp: FirebaseApp | null = null
+
+function getFirebaseApp(): FirebaseApp | null {
+  if (!isBrowser || !hasFirebaseConfig) {
+    return null
+  }
+
+  if (firebaseApp) {
+    return firebaseApp
+  }
+
+  firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+  return firebaseApp
 }
 
-export const auth = getAuth(firebaseApp)
-export const db = getFirestore(firebaseApp)
-export const storage = getStorage(firebaseApp)
+export function getAuthClient(): Auth | null {
+  const app = getFirebaseApp()
+  return app ? getAuth(app) : null
+}
 
-if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
-  const emulatorAuth = auth
-  const emulatorDb = db
-  const emulatorStorage = storage
+export function getDbClient(): Firestore | null {
+  const app = getFirebaseApp()
+  return app ? getFirestore(app) : null
+}
 
-  try {
-    connectAuthEmulator(emulatorAuth, "http://localhost:9099", { disableWarnings: true })
-    connectFirestoreEmulator(emulatorDb, "localhost", 8080)
-    connectStorageEmulator(emulatorStorage, "localhost", 9199)
-  } catch (error) {
-    console.log("Emulators already connected or not available")
+export function getStorageClient(): FirebaseStorage | null {
+  const app = getFirebaseApp()
+  return app ? getStorage(app) : null
+}
+
+if (process.env.NODE_ENV === "development" && isBrowser && hasFirebaseConfig) {
+  const emulatorAuth = getAuthClient()
+  const emulatorDb = getDbClient()
+  const emulatorStorage = getStorageClient()
+
+  if (emulatorAuth && emulatorDb && emulatorStorage) {
+    try {
+      connectAuthEmulator(emulatorAuth, "http://localhost:9099", { disableWarnings: true })
+      connectFirestoreEmulator(emulatorDb, "localhost", 8080)
+      connectStorageEmulator(emulatorStorage, "localhost", 9199)
+    } catch (error) {
+      console.log("Emulators already connected or not available")
+    }
   }
 }
