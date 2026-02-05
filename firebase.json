@@ -16,7 +16,7 @@
     "cleanUrls": true
   },
   "firestore": {
-    "database": "(default)",
+    "database": "hackitba",
     "location": "southamerica-east1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -39,7 +39,10 @@
       ]
     }
   ],
-  "storage": {
-    "rules": "storage.rules"
-  }
+  "storage": [
+    {
+      "bucket": "gs://hackitba",
+      "rules": "storage.rules"
+    }
+  ]
 }
