@@ -6,8 +6,8 @@ import { getUserById } from "../helpers/getuserById";
 interface UserData {
   email: string;
   password: string;
-  nombre: string;
-  apellido: string;
+  name: string;
+  surname: string;
 }
 
 interface UserRecord {
@@ -17,13 +17,13 @@ interface UserRecord {
 }
 
 export const registerUser = async (userData: UserData): Promise<UserRecord> => {
-  const { email, password, nombre, apellido } = userData;
+  const { email, password, name, surname } = userData;
 
   // Create user in Firebase Auth
   const userRecord = await admin.auth().createUser({
     email: email,
     password: password,
-    displayName: `${nombre} ${apellido}`,
+    displayName: `${name} ${surname}`,
   });
 
   const customToken = await admin.auth().createCustomToken(userRecord.uid);
@@ -34,8 +34,8 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
   const userRef = db.collection("users").doc(userRecord.uid);
   await userRef.set({
     email: userRecord.email,
-    nombre: nombre,
-    apellido: apellido,
+    name: name,
+    surname: surname,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     role: role || "participant",
   });

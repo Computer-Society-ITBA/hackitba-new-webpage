@@ -4,8 +4,8 @@ import { registerUser, eventRegistration, loginUser } from "../services/userServ
 interface RegisterRequestBody {
   email: string;
   password: string;
-  nombre: string;
-  apellido?: string;
+  name: string;
+  surname?: string;
 }
 
 export const register = async (
@@ -13,9 +13,9 @@ export const register = async (
   res: Response
 ) => {
   try {
-    const { email, password, nombre, apellido } = req.body;
+    const { email, password, name, surname } = req.body;
 
-    if (!email || !password || !nombre) {
+    if (!email || !password || !name) {
       return res
         .status(400)
         .json({ error: "Faltan campos obligatorios" });
@@ -24,8 +24,8 @@ export const register = async (
     const result = await registerUser({
       email,
       password,
-      nombre,
-      apellido: apellido || "",
+      name,
+      surname: surname || "",
     });
 
     return res.status(201).json({
