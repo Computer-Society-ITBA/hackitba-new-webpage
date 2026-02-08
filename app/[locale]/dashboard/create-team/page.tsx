@@ -18,7 +18,7 @@ interface CreateTeamPageProps {
 }
 
 
-export default function CreateTeamPage() {
+export default function CreateTeamPage({ translations, locale }: CreateTeamPageProps) {
     const router = useRouter()
     const params = useParams()
     const locale = params.locale as Locale

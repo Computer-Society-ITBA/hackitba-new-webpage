@@ -20,8 +20,12 @@ interface EventSignupPageProps {
     translations: any
     locale: Locale
 }
+interface EventSignupPageProps {
+    translations: any
+    locale: Locale
+}
 
-export default function EventSignupPage() {
+export default function EventSignupPage({ translations, locale }: EventSignupPageProps) {
     const router = useRouter()
     const params = useParams()
     const locale = params.locale as Locale
