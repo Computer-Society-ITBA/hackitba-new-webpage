@@ -1,4 +1,7 @@
 import admin from "firebase-admin";
+import { logger } from "firebase-functions";
+import { getColabRole } from "../helpers/getColabRole";
+import { getUserById } from "../helpers/getuserById";
 
 interface UserData {
   email: string;
@@ -25,6 +28,8 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
 
   const customToken = await admin.auth().createCustomToken(userRecord.uid);
 
+  const role= await getColabRole(email);
+  logger.info(`Colab role for ${email}: ${role}`);
   const db = admin.firestore();
   const userRef = db.collection("users").doc(userRecord.uid);
   await userRef.set({
@@ -32,6 +37,7 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
     nombre: nombre,
     apellido: apellido,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    role: role || "participant",
   });
 
   return { uid: userRecord.uid, email: userRecord.email, token: customToken };
@@ -51,27 +57,60 @@ export const eventRegistration = async (
     twitter: string|null, 
     github: string|null, 
     team: string|null,
+    food_preference: string,
     category_1: number, 
     category_2: number, 
-    category_3: number): Promise<void> => {
+    category_3: number,
+    company: string|null = null,
+    position: string|null = null,
+    photo: string|null = null): Promise<void> => {
   const db = admin.firestore();
   const userRef = db.collection("users").doc(userId);
+        
+  const email = await getUserById(userId);
+  const role = await getColabRole(email || "");
+  
 
+
+  if (role === "mentor" || role === "judge") {
+
+    if (!userId || !dni || !company || !position || !food_preference) {
+        throw new Error("Faltan campos obligatorios");
+    }
+    
     await userRef.update({
-        dni: dni,
-        university: university,
-        career: career,
-        age: age,
-        link_cv: link_cv,
-        linkedin: linkedin,
-        instagram: instagram,
-        twitter: twitter,
-        github: github,
-        team: team,
-        category_1: category_1 !== null ? category_1 : category_1,
-        category_2: category_2 !== null ? category_2 : category_2,
-        category_3: category_3 !== null ? category_3 : category_3,
+      dni: dni,
+      company: company,
+      position: position,
+      photo: photo,
+      linkedin: linkedin,
+      instagram: instagram,
+      twitter: twitter,
+      github: github,
+      food_preference: food_preference,
     });
+  } else {
+
+    if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
+        throw new Error("Faltan campos obligatorios");
+    }
+    await userRef.update({
+      dni: dni,
+      university: university,
+      career: career,
+      age: age,
+      link_cv: link_cv,
+      linkedin: linkedin,
+      instagram: instagram,
+      twitter: twitter,
+      github: github,
+      team: team,
+      food_preference: food_preference,
+      category_1: category_1 !== null ? category_1 : category_1,
+      category_2: category_2 !== null ? category_2 : category_2,
+      category_3: category_3 !== null ? category_3 : category_3,
+    });
+  }
 }
 
 export const loginUser = async (email: string, password: string): Promise<UserRecord> => {

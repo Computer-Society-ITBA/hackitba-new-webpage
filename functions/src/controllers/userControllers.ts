@@ -45,13 +45,9 @@ export const register = async (
 
 export const registerEvent = async (req: Request, res: Response) => {
     try {
-        const { userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, category_1, category_2, category_3 } = req.body;
+        const { userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo } = req.body;
 
-        if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
-            return res.status(400).json({ error: "Faltan campos obligatorios" });
-        }
-
-        await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, category_1, category_2, category_3);
+        await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
 
         return res.status(200).json({ message: "Registro al evento exitoso" });
     } catch (error) {
