@@ -13,8 +13,8 @@
   --orange: #ff8a3d;
 
   /* Cyan */
-  --cyan-light: #c9f3f5;
-  --cyan: #2ecbd3;
+  --cyan-light: #6eb6f9;
+  --cyan: #013cde;
 
   /* Semantic */
   --error: #ef4444;
@@ -70,16 +70,17 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font-montserrat), sans-serif;
   }
 }
 
 @layer utilities {
   .font-pixel {
     font-family: var(--font-pixel);
-    letter-spacing: -2px;
+    letter-spacing: 2px;
   }
 
-  .font-inter {
-    font-family: var(--font-inter);
+  .font-montserrat {
+    font-family: var(--font-montserrat);
   }
 }
