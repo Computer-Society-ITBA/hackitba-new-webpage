@@ -16,11 +16,6 @@ import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 
 
-interface EventSignupPageProps {
-    translations: any
-    locale: Locale
-}
-
 export default function EventSignupPage() {
     const router = useRouter()
     const params = useParams()
