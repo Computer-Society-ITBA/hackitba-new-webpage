@@ -5,7 +5,7 @@
 
 :root {
   /* Base */
-  --color-dark: #14192d;
+  --color-dark: #020617;
   --color-white: #ffffff;
 
   /* Orange */
@@ -78,6 +78,7 @@
   .font-pixel {
     font-family: var(--font-pixel);
     letter-spacing: 2px;
+    font-size-adjust: 0.3;
   }
 
   .font-montserrat {
