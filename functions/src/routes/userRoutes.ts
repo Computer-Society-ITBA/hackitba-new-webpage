@@ -1,9 +1,14 @@
 import express from "express";
-import { register, registerEvent } from "../controllers/userControllers";
+import { register, registerEvent, login, getUsers, getUserById } from "../controllers/userControllers";
 import { validateToken } from "../middleware/authMiddleware";
-import { login } from "../controllers/userControllers";
 
 const router = express.Router();
+
+// GET /api/users
+router.get("/", validateToken, getUsers);
+
+// GET /api/users/:id
+router.get("/:id", validateToken, getUserById);
 
 // POST /api/users/register
 router.post("/register", register);

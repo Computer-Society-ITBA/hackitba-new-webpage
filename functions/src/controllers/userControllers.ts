@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser, eventRegistration, loginUser } from "../services/userService";
+import { registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete } from "../services/userService";
 
 interface RegisterRequestBody {
   email: string;
@@ -81,5 +81,34 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ error: "Error interno al iniciar sesión" });
+  }
+};
+
+export const getUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await getAllUsers();
+    return res.status(200).json({ users });
+  } catch (error) {
+    return res.status(500).json({ error: "Error al obtener usuarios" });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "ID de usuario no proporcionado" });
+    }
+
+    const user = await getUserByIdComplete(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(500).json({ error: "Error al obtener usuario" });
   }
 };

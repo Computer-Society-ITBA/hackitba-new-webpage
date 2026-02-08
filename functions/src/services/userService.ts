@@ -133,3 +133,29 @@ export const loginUser = async (email: string, password: string): Promise<UserRe
     throw new Error("Error al iniciar sesión");
   }
 };
+
+export const getAllUsers = async () => {
+  const db = admin.firestore();
+  const usersSnapshot = await db.collection("users").get();
+  
+  const users = usersSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return users;
+};
+
+export const getUserByIdComplete = async (userId: string) => {
+  const db = admin.firestore();
+  const userDoc = await db.collection("users").doc(userId).get();
+
+  if (!userDoc.exists) {
+    return null;
+  }
+
+  return {
+    id: userDoc.id,
+    ...userDoc.data(),
+  };
+};
