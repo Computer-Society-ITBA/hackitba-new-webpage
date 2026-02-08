@@ -1,0 +1,789 @@
+[debug] [2026-02-08T03:14:24.794Z] ----------------------------------------------------------------------
+[debug] [2026-02-08T03:14:24.796Z] Command:       /home/naprado/.nvm/versions/node/v24.13.0/bin/node /home/naprado/.nvm/versions/node/v24.13.0/bin/firebase emulators:start
+[debug] [2026-02-08T03:14:24.797Z] CLI Version:   15.5.1
+[debug] [2026-02-08T03:14:24.797Z] Platform:      linux
+[debug] [2026-02-08T03:14:24.797Z] Node Version:  v24.13.0
+[debug] [2026-02-08T03:14:24.797Z] Time:          Sun Feb 08 2026 00:14:24 GMT-0300 (hora estándar de Argentina)
+[debug] [2026-02-08T03:14:24.797Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-08T03:14:25.866Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] Failed to authenticate, have you run firebase login?
+[warn] ⚠  emulators: You are not currently authenticated so some features may not work correctly. Please run firebase login to authenticate the CLI. 
+[debug] [2026-02-08T03:14:26.133Z] openjdk version "21.0.10" 2026-01-20
+OpenJDK Runtime Environment (build 21.0.10+7-Ubuntu-124.04)
+
+[debug] [2026-02-08T03:14:26.133Z] OpenJDK 64-Bit Server VM (build 21.0.10+7-Ubuntu-124.04, mixed mode, sharing)
+
+[debug] [2026-02-08T03:14:26.139Z] Parsed Java major version: 21
+[info] i  emulators: Starting emulators: auth, functions, firestore, hosting, storage, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, functions, firestore, hosting, storage, extensions"}}
+[debug] [2026-02-08T03:14:26.141Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.141Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.141Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-08T03:14:26.141Z] Unable to check that https://cloudresourcemanager.googleapis.com is enabled on webpage-36e40. Calls to it will fail if it is not enabled
+[debug] [2026-02-08T03:14:26.141Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.141Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.141Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[error] ⬢  extensions: Unable to look up project number for webpage-36e40.
+ If this is a real project, ensure that you are logged in and have access to it.
+ If this is a fake project, please use a project ID starting with 'demo-' to skip production calls.
+ Continuing with a fake project number - secrets and other features that require production access may behave unexpectedly. {"metadata":{"emulator":{"name":"extensions"},"message":"Unable to look up project number for webpage-36e40.\n If this is a real project, ensure that you are logged in and have access to it.\n If this is a fake project, please use a project ID starting with 'demo-' to skip production calls.\n Continuing with a fake project number - secrets and other features that require production access may behave unexpectedly."}}
+[debug] [2026-02-08T03:14:26.146Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] [auth] Authentication Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] [storage] Storage Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.146Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-02-08T03:14:26.149Z] Write emulator hub locator at /tmp/hub-webpage-36e40.json
+[debug] [2026-02-08T03:14:26.153Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2026-02-08T03:14:26.154Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.154Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.154Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-02-08T03:14:26.154Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, database, pubsub, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, database, pubsub, dataconnect\u001b[22m"}}
+[debug] [2026-02-08T03:14:26.155Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.156Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:26.156Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-08T03:14:26.156Z] Failed to get Admin SDK config for webpage-36e40, falling back to cache Failed to get Admin SDK for Firebase project webpage-36e40. Please make sure the project exists and your account has permission to access it. {"name":"FirebaseError","children":[],"exit":2,"message":"Failed to get Admin SDK for Firebase project webpage-36e40. Please make sure the project exists and your account has permission to access it.","original":{"name":"FirebaseError","children":[],"exit":1,"message":"Failed to authenticate, have you run \u001b[1mfirebase login\u001b[22m?","original":{},"status":500},"status":500}
+[warn] ⚠  functions: Unable to fetch project Admin SDK configuration, Admin SDK behavior in Cloud Functions emulator may be incorrect. {"metadata":{"emulator":{"name":"functions"},"message":"Unable to fetch project Admin SDK configuration, Admin SDK behavior in Cloud Functions emulator may be incorrect."}}
+[debug] [2026-02-08T03:14:26.165Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2026-02-08T03:14:26.165Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2026-02-08T03:14:26.166Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/home/naprado/.cache/firebase/emulators/cloud-firestore-emulator-v1.20.2.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--project_id","webpage-36e40","--rules","/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/home/naprado/.cache/firebase/emulators/cloud-firestore-emulator-v1.20.2.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--project_id\",\"webpage-36e40\",\"--rules\",\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2026-02-08T03:14:27.300Z] Feb 08, 2026 12:14:27 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 12:14:27 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2026-02-08T03:14:27.340Z] API endpoint: http://127.0.0.1:8080
+ {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://127.0.0.1:8080\n"}}
+[debug] [2026-02-08T03:14:27.340Z] If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2026-02-08T03:14:32.580Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2026-02-08T03:14:33.183Z] Temp file directory for storage emulator: /tmp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: /tmp/firebase/storage/blobs"}}
+[debug] [2026-02-08T03:14:33.186Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.186Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.186Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-08T03:14:33.186Z] Failed to list hosting sites
+[debug] Failed to authenticate, have you run firebase login?
+[debug] [2026-02-08T03:14:33.187Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.187Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.187Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-08T03:14:33.187Z] fetchWebSetup error: FirebaseError: Failed to authenticate, have you run firebase login?
+[warn] ⚠  hosting: Could not fetch web app configuration and there is no cached configuration on this machine. Check your internet connection and make sure you are authenticated. To continue, you must call firebase.initializeApp({...}) in your code before using Firebase. 
+[debug] [2026-02-08T03:14:33.190Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.190Z] No OAuth tokens found
+[debug] [2026-02-08T03:14:33.191Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-08T03:14:33.191Z] Failed to authenticate, have you run firebase login? (original: Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.)
+[info] i  hosting[hackitba]: Serving hosting files from: out {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mout\u001b[22m"}}
+[info] ✔  hosting[hackitba]: Local server: http://127.0.0.1:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5000\u001b[22m\u001b[24m"}}
+[debug] [2026-02-08T03:14:33.204Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions\" for Cloud Functions..."}}
+[debug] [2026-02-08T03:14:33.210Z] Validating nodejs source
+[debug] [2026-02-08T03:14:34.120Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:14:34.121Z] Building nodejs source
+[debug] [2026-02-08T03:14:34.121Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:14:34.123Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:14:34.126Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8255
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T03:14:34.883Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T03:14:36.365Z] Feb 08, 2026 12:14:36 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel
+INFO: Connected to new websocket client
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 12:14:36 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketChannelHandler initChannel\nINFO: Connected to new websocket client\n"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[info] ✔  functions[us-central1-api]: http function initialized (http://127.0.0.1:5001/webpage-36e40/us-central1/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/webpage-36e40/us-central1/api)."}}
+[debug] [2026-02-08T03:14:38.920Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED 127.0.0.1:40001. If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI              │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth       │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Functions      │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore  │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Hosting        │ 127.0.0.1:5000 │ n/a                              │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Storage        │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage    │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions     │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2026-02-08T03:14:59.303Z] Functions emulator received unknown request at path /
+[debug] [2026-02-08T03:14:59.406Z] Functions emulator received unknown request at path /favicon.ico
+[debug] [2026-02-08T03:19:12.184Z] Functions emulator received unknown request at path /datos
+[debug] [2026-02-08T03:19:34.631Z] Functions emulator received unknown request at path /hola
+[debug] [2026-02-08T03:22:48.825Z] [work-queue] {"queuedWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:22:48.825Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:22:48.825Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:22:48.825Z"],"workRunningCount":1}
+[debug] [2026-02-08T03:22:48.826Z] Accepted request GET /webpage-36e40/us-central1/api/hola --> us-central1-api
+[debug] [2026-02-08T03:22:48.826Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-02-08T03:22:48.827Z] [functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola"}}
+[debug] [2026-02-08T03:22:48.835Z] [worker-pool] addWorker(us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] addWorker(us-central1-api)"}}
+[debug] [2026-02-08T03:22:48.836Z] [worker-pool] Adding worker with key us-central1-api, total=1 {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Adding worker with key us-central1-api, total=1"}}
+[debug] [2026-02-08T03:22:49.553Z] [runtime-status] [78573] Resolved module firebase-admin {"declared":true,"installed":true,"version":"13.6.1","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Resolved module firebase-admin {\"declared\":true,\"installed\":true,\"version\":\"13.6.1\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js\"}"}}
+[debug] [2026-02-08T03:22:49.554Z] [runtime-status] [78573] Resolved module firebase-functions {"declared":true,"installed":true,"version":"7.0.5","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"7.0.5\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js\"}"}}
+[debug] [2026-02-08T03:22:49.554Z] [runtime-status] [78573] Outgoing network have been stubbed. [{"name":"http","status":"mocked"},{"name":"http","status":"mocked"},{"name":"https","status":"mocked"},{"name":"https","status":"mocked"},{"name":"net","status":"mocked"}] {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Outgoing network have been stubbed. [{\"name\":\"http\",\"status\":\"mocked\"},{\"name\":\"http\",\"status\":\"mocked\"},{\"name\":\"https\",\"status\":\"mocked\"},{\"name\":\"https\",\"status\":\"mocked\"},{\"name\":\"net\",\"status\":\"mocked\"}]"}}
+[debug] [2026-02-08T03:22:49.554Z] [runtime-status] [78573] Resolved module firebase-functions {"declared":true,"installed":true,"version":"7.0.5","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"7.0.5\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js\"}"}}
+[debug] [2026-02-08T03:22:49.554Z] [runtime-status] [78573] Detected firebase-functions v7+, skipping legacy stubs. {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Detected firebase-functions v7+, skipping legacy stubs."}}
+[debug] [2026-02-08T03:22:49.556Z] [runtime-status] [78573] Resolved module firebase-admin {"declared":true,"installed":true,"version":"13.6.1","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Resolved module firebase-admin {\"declared\":true,\"installed\":true,\"version\":\"13.6.1\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js\"}"}}
+[debug] [2026-02-08T03:22:49.637Z] [runtime-status] [78573] Resolved module firebase-functions {"declared":true,"installed":true,"version":"7.0.5","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"7.0.5\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-functions/lib/v2/index.js\"}"}}
+[debug] [2026-02-08T03:22:49.921Z] [runtime-status] [78573] firebase-admin has been stubbed. {"adminResolution":{"declared":true,"installed":true,"version":"13.6.1","resolution":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js"}} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] firebase-admin has been stubbed. {\"adminResolution\":{\"declared\":true,\"installed\":true,\"version\":\"13.6.1\",\"resolution\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/firebase-admin/lib/index.js\"}}"}}
+[info] >  [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true } {"user":"[dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }"}}
+[debug] [2026-02-08T03:22:50.069Z] [runtime-status] [78573] Functions runtime initialized. {"cwd":"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions","node_version":"24.13.0"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Functions runtime initialized. {\"cwd\":\"/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions\",\"node_version\":\"24.13.0\"}"}}
+[debug] [2026-02-08T03:22:50.069Z] [runtime-status] [78573] Listening to port: /tmp/fire_emu_64b0be50a01d62a4.sock {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [78573] Listening to port: /tmp/fire_emu_64b0be50a01d62a4.sock"}}
+[debug] [2026-02-08T03:22:50.156Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:22:50.156Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
+[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
+[debug] [2026-02-08T03:22:50.157Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY"}}
+[info] >  {"estructurado":true,"severity":"INFO","message":"El usuario saludó"} {"user":{"estructurado":true,"severity":"INFO","message":"El usuario saludó"},"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m {\"estructurado\":true,\"severity\":\"INFO\",\"message\":\"El usuario saludó\"}"}}
+[debug] [2026-02-08T03:22:50.165Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-api" in 8.674068ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 8.674068ms"}}
+[debug] [2026-02-08T03:22:50.167Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:22:50.167Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-02-08T03:22:50.168Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-02-08T03:22:50.168Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:00.572Z] [work-queue] {"queuedWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:23:00.572Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:00.572Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:23:00.572Z"],"workRunningCount":1}
+[debug] [2026-02-08T03:23:00.572Z] Accepted request GET /webpage-36e40/us-central1/api/hola --> us-central1-api
+[debug] [2026-02-08T03:23:00.572Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-02-08T03:23:00.573Z] [functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola"}}
+[debug] [2026-02-08T03:23:00.573Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
+[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
+[debug] [2026-02-08T03:23:00.573Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY"}}
+[info] >  {"estructurado":true,"severity":"INFO","message":"El usuario saludó"} {"user":{"estructurado":true,"severity":"INFO","message":"El usuario saludó"},"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m {\"estructurado\":true,\"severity\":\"INFO\",\"message\":\"El usuario saludó\"}"}}
+[debug] [2026-02-08T03:23:00.578Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-api" in 5.255369ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 5.255369ms"}}
+[debug] [2026-02-08T03:23:00.579Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:23:00.580Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-02-08T03:23:00.580Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-02-08T03:23:00.580Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:14.996Z] [work-queue] {"queuedWork":["/webpage-36e40/us-central1/api/datos-2026-02-08T03:23:14.996Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:14.997Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/webpage-36e40/us-central1/api/datos-2026-02-08T03:23:14.996Z"],"workRunningCount":1}
+[debug] [2026-02-08T03:23:14.997Z] Accepted request GET /webpage-36e40/us-central1/api/datos --> us-central1-api
+[debug] [2026-02-08T03:23:14.997Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-02-08T03:23:14.997Z] [functions] Got req.url=/webpage-36e40/us-central1/api/datos, mapping to path=/datos {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/webpage-36e40/us-central1/api/datos, mapping to path=/datos"}}
+[debug] [2026-02-08T03:23:14.997Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
+[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
+[debug] [2026-02-08T03:23:14.998Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY"}}
+[debug] [2026-02-08T03:23:15.002Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-api" in 3.969997ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 3.969997ms"}}
+[debug] [2026-02-08T03:23:15.002Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:23:15.002Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-02-08T03:23:15.002Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-02-08T03:23:15.002Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:36.362Z] [work-queue] {"queuedWork":["/webpage-36e40/us-central1/api/datos-2026-02-08T03:23:36.361Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:36.362Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/webpage-36e40/us-central1/api/datos-2026-02-08T03:23:36.361Z"],"workRunningCount":1}
+[debug] [2026-02-08T03:23:36.362Z] Accepted request GET /webpage-36e40/us-central1/api/datos --> us-central1-api
+[debug] [2026-02-08T03:23:36.362Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-02-08T03:23:36.362Z] [functions] Got req.url=/webpage-36e40/us-central1/api/datos, mapping to path=/datos {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/webpage-36e40/us-central1/api/datos, mapping to path=/datos"}}
+[debug] [2026-02-08T03:23:36.362Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
+[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
+[debug] [2026-02-08T03:23:36.363Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY"}}
+[debug] [2026-02-08T03:23:36.366Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-api" in 3.202611ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 3.202611ms"}}
+[debug] [2026-02-08T03:23:36.367Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:23:36.367Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-02-08T03:23:36.367Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-02-08T03:23:36.367Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:38.563Z] [work-queue] {"queuedWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:23:38.563Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-02-08T03:23:38.564Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/webpage-36e40/us-central1/api/hola-2026-02-08T03:23:38.563Z"],"workRunningCount":1}
+[debug] [2026-02-08T03:23:38.564Z] Accepted request GET /webpage-36e40/us-central1/api/hola --> us-central1-api
+[debug] [2026-02-08T03:23:38.564Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-02-08T03:23:38.564Z] [functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/webpage-36e40/us-central1/api/hola, mapping to path=/hola"}}
+[debug] [2026-02-08T03:23:38.564Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
+[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
+[debug] [2026-02-08T03:23:38.565Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: BUSY"}}
+[info] >  {"estructurado":true,"severity":"INFO","message":"El usuario saludó"} {"user":{"estructurado":true,"severity":"INFO","message":"El usuario saludó"},"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m {\"estructurado\":true,\"severity\":\"INFO\",\"message\":\"El usuario saludó\"}"}}
+[debug] [2026-02-08T03:23:38.569Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-api" in 4.565116ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 4.565116ms"}}
+[debug] [2026-02-08T03:23:38.570Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: IDLE"}}
+[debug] [2026-02-08T03:23:38.570Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-02-08T03:23:38.570Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-02-08T03:23:38.571Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:52 +0000] "GET / HTTP/1.1" 200 - "http://127.0.0.1:4000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:52 +0000] \"GET / HTTP/1.1\" 200 - \"http://127.0.0.1:4000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/14990b0c8a558ec7.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/14990b0c8a558ec7.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/a9a7639882fc8be6.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/a9a7639882fc8be6.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/36500896a3e681f7.js HTTP/1.1" 200 282 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/36500896a3e681f7.js HTTP/1.1\" 200 282 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/turbopack-bee84dba0ac07a97.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/turbopack-bee84dba0ac07a97.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/cce07420ead412d0.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/cce07420ead412d0.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/6cfd0948e5c5a6f7.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/6cfd0948e5c5a6f7.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/e9f40c5255e4c57a.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/e9f40c5255e4c57a.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/dac1c7aa2813d808.css HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/dac1c7aa2813d808.css HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/73b2315684e3f83a.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/73b2315684e3f83a.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2 HTTP/1.1" 200 48432 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2 HTTP/1.1\" 200 48432 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/media/dogica-s.p.ae7c501d.ttf HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/media/dogica-s.p.ae7c501d.ttf HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/4075935514dd4b91.css HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/4075935514dd4b91.css HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/455ece576dce326c.css HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/455ece576dce326c.css HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/media/dogicabold-s.p.bdc1185b.ttf HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/media/dogicabold-s.p.bdc1185b.ttf HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en.txt?_rsc=vusbg HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en.txt?_rsc=vusbg HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_vercel/insights/script.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_vercel/insights/script.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /favicon.ico HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /favicon.ico HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/95d7b059704023a0.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/95d7b059704023a0.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/2b6f50f5a820068f.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/2b6f50f5a820068f.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/80d0d29b1a50a321.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/80d0d29b1a50a321.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/ede44ff4e7d8ec1b.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/ede44ff4e7d8ec1b.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/474c5949f3879988.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/474c5949f3879988.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/7b777ad06b18759b.js HTTP/1.1" 200 - "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/7b777ad06b18759b.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/hackitba-icon.png HTTP/1.1" 200 4953 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/hackitba-icon.png HTTP/1.1\" 200 4953 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/flecha-abajo.png HTTP/1.1" 200 5727 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/flecha-abajo.png HTTP/1.1\" 200 5727 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/hackitba-alt-logo.png HTTP/1.1" 200 136941 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/hackitba-alt-logo.png HTTP/1.1\" 200 136941 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/0.png HTTP/1.1" 200 228 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/0.png HTTP/1.1\" 200 228 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/1.png HTTP/1.1" 200 366 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/1.png HTTP/1.1\" 200 366 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/4.png HTTP/1.1" 200 405 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/4.png HTTP/1.1\" 200 405 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/2.png HTTP/1.1" 200 399 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/2.png HTTP/1.1\" 200 399 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/3.png HTTP/1.1" 200 406 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/3.png HTTP/1.1\" 200 406 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /images/folder-animation/5.png HTTP/1.1" 200 1666 "http://127.0.0.1:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /images/folder-animation/5.png HTTP/1.1\" 200 1666 \"http://127.0.0.1:5000/\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "HEAD /en/auth/signup HTTP/1.1" 200 12504 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"HEAD /en/auth/signup HTTP/1.1\" 200 12504 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "HEAD /en HTTP/1.1" 200 77634 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"HEAD /en HTTP/1.1\" 200 77634 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/__next._tree.txt?_rsc=eqsiq HTTP/1.1" 200 885 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/__next._tree.txt?_rsc=eqsiq HTTP/1.1\" 200 885 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/auth/signup/__next._tree.txt?_rsc=eqsiq HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/auth/signup/__next._tree.txt?_rsc=eqsiq HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/__next._head.txt?_rsc=7uv4z HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/__next._head.txt?_rsc=7uv4z HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/__next._index.txt?_rsc=tqoh7 HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/__next._index.txt?_rsc=tqoh7 HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/__next.$d$locale.txt?_rsc=mubjw HTTP/1.1" 200 796 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/__next.$d$locale.txt?_rsc=mubjw HTTP/1.1\" 200 796 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/auth/signup/__next._head.txt?_rsc=7uv4z HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/auth/signup/__next._head.txt?_rsc=7uv4z HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/auth/signup/__next.$d$locale.auth.txt?_rsc=kh32w HTTP/1.1" 200 432 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/auth/signup/__next.$d$locale.auth.txt?_rsc=kh32w HTTP/1.1\" 200 432 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/auth/signup/__next.$d$locale.auth.signup.txt?_rsc=1fycq HTTP/1.1" 200 440 "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/auth/signup/__next.$d$locale.auth.signup.txt?_rsc=1fycq HTTP/1.1\" 200 440 \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/auth/signup/__next.$d$locale.auth.signup.__PAGE__.txt?_rsc=1fve7 HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/auth/signup/__next.$d$locale.auth.signup.__PAGE__.txt?_rsc=1fve7 HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /en/__next.$d$locale.__PAGE__.txt?_rsc=2mwi9 HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /en/__next.$d$locale.__PAGE__.txt?_rsc=2mwi9 HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/46222e8c49e160f1.js HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/46222e8c49e160f1.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/ec68df23ac9263f2.js HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/ec68df23ac9263f2.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/872cc1a51c295c9b.js HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/872cc1a51c295c9b.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[info] i  hosting: 127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] "GET /_next/static/chunks/aadd2d73ebf38ca0.js HTTP/1.1" 200 - "http://127.0.0.1:5000/en" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"127.0.0.1 - - [08/Feb/2026:03:26:53 +0000] \"GET /_next/static/chunks/aadd2d73ebf38ca0.js HTTP/1.1\" 200 - \"http://127.0.0.1:5000/en\" \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\""}}
+[debug] [2026-02-08T03:27:21.655Z] Feb 08, 2026 12:27:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 12:27:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T03:27:21.832Z] Feb 08, 2026 12:27:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 12:27:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-02-08T03:31:58.265Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:31:59.266Z] Validating nodejs source
+[debug] [2026-02-08T03:32:00.071Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:32:00.071Z] Building nodejs source
+[debug] [2026-02-08T03:32:00.072Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:32:00.072Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:32:00.074Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8640
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+
+[debug] [2026-02-08T03:32:00.508Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:32:04.532Z] [worker-pool] Shutting down IDLE worker (us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Shutting down IDLE worker (us-central1-api)"}}
+[debug] [2026-02-08T03:32:04.532Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: FINISHING {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: FINISHING"}}
+[debug] [2026-02-08T03:32:04.548Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: exited {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: exited"}}
+[debug] [2026-02-08T03:32:04.549Z] [worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: FINISHED {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-abf1d3d6-ecc0-498d-abaa-c11e2cdd8af4]: FINISHED"}}
+[debug] [2026-02-08T03:32:09.452Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:32:10.454Z] Validating nodejs source
+[debug] [2026-02-08T03:32:10.895Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:32:10.895Z] Building nodejs source
+[debug] [2026-02-08T03:32:10.896Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:32:10.896Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:32:10.898Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8643
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[debug] [2026-02-08T03:32:11.335Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:32:20.592Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:32:21.593Z] Validating nodejs source
+[debug] [2026-02-08T03:32:22.014Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:32:22.014Z] Building nodejs source
+[debug] [2026-02-08T03:32:22.015Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:32:22.016Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:32:22.017Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8472
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[debug] [2026-02-08T03:32:22.508Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:32:54.059Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:32:55.059Z] Validating nodejs source
+[debug] [2026-02-08T03:32:55.665Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:32:55.665Z] Building nodejs source
+[debug] [2026-02-08T03:32:55.665Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:32:55.666Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:32:55.667Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8452
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[debug] [2026-02-08T03:32:56.118Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:33:47.308Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:33:48.309Z] Validating nodejs source
+[debug] [2026-02-08T03:33:48.927Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:33:48.928Z] Building nodejs source
+[debug] [2026-02-08T03:33:48.928Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:33:48.928Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:33:48.930Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8958
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[debug] [2026-02-08T03:33:49.341Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:34:04.193Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:34:05.193Z] Validating nodejs source
+[debug] [2026-02-08T03:34:05.654Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:34:05.654Z] Building nodejs source
+[debug] [2026-02-08T03:34:05.654Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:34:05.656Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:34:05.657Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8951
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[debug] [2026-02-08T03:34:06.093Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:34:33.617Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:34:34.619Z] Validating nodejs source
+[debug] [2026-02-08T03:34:35.052Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:34:35.053Z] Building nodejs source
+[debug] [2026-02-08T03:34:35.053Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:34:35.054Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:34:35.055Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8327
+
+[debug] [2026-02-08T03:34:35.366Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T03:34:35.531Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T03:34:36.367Z] Validating nodejs source
+[debug] [2026-02-08T03:34:36.773Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:34:36.773Z] Building nodejs source
+[debug] [2026-02-08T03:34:36.773Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:34:36.774Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:34:36.775Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8194
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[debug] [2026-02-08T03:34:37.181Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:35:19.205Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/test.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/test.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:35:20.205Z] Validating nodejs source
+[debug] [2026-02-08T03:35:20.626Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:35:20.626Z] Building nodejs source
+[debug] [2026-02-08T03:35:20.626Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:35:20.627Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:35:20.628Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8281
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[debug] [2026-02-08T03:35:21.083Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T03:35:27.986Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/test.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/test.ts changed, reloading triggers"}}
+[debug] [2026-02-08T03:35:28.987Z] Validating nodejs source
+[debug] [2026-02-08T03:35:29.681Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T03:35:29.681Z] Building nodejs source
+[debug] [2026-02-08T03:35:29.681Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T03:35:29.681Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T03:35:29.682Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8009
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[debug] [2026-02-08T03:35:30.116Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
