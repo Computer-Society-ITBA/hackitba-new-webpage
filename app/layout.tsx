@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import localFont from "next/font/local"
-import { Inter } from "next/font/google"
+import { Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./tokens.css"
 import "./globals.css"
@@ -9,13 +9,8 @@ import "./globals.css"
 const pixelFont = localFont({
   src: [
     {
-      path: "./fonts/dogica.ttf",
+      path: "./fonts/PixelarRegular.ttf",
       weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/dogicabold.ttf",
-      weight: "700",
       style: "normal",
     },
   ],
@@ -23,9 +18,9 @@ const pixelFont = localFont({
   display: "swap",
 })
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-montserrat",
   display: "swap",
 })
 
@@ -48,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${pixelFont.variable} ${inter.variable}`}>
+    <html lang="es" className={`${pixelFont.variable} ${montserrat.variable}`}>
       <body className="antialiased">
         {children}
         <Analytics />

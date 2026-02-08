@@ -21,7 +21,7 @@ export function Hero({ translations }: HeroProps) {
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
       <div className="[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-s text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
         <TypingEffect
-          text={lorem.generateParagraphs(35)}
+          text={lorem.generateParagraphs(55)}
           speed="fast"
           direction="vertical"
         />

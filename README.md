@@ -142,8 +142,8 @@ npm start
 - **Yellow**: #FAD399 (Accents)
 
 ### Typography
-- **Headings**: Cofo Sans Pixel (Monospace)
-- **Body**: Inter (Sans-serif)
+- **Headings**: Pixelar (Pixel font)
+- **Body**: Montserrat (Sans-serif)
 
 ### Effects
 - Neon glow effects (cyan, orange, yellow)
