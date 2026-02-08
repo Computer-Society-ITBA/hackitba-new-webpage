@@ -1,207 +1,168 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { createUserWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc } from "firebase/firestore"
-import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
-import { NeonGlow } from "@/components/effects/neon-glow"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { UserRole } from "@/lib/firebase/types"
+import { ChevronRight } from "lucide-react"
 
 export default function SignupPage() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [role, setRole] = useState<UserRole>("participante")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  useEffect(() => {
-    const roleParam = searchParams.get("role") as UserRole
-    if (roleParam && ["admin", "jurado", "participante"].includes(roleParam)) {
-      setRole(roleParam)
-    }
-  }, [searchParams])
+  // Form Data
+  const [formData, setFormData] = useState({
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubmit = async () => {
     setError("")
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match")
+    // Validation
+    if (!formData.name || !formData.surname || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("Please fill all fields")
       return
     }
 
-    if (password.length < 6) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address")
+      return
+    }
+
+    if (formData.password.length < 6) {
       setError("Password must be at least 6 characters")
       return
     }
 
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
     setLoading(true)
-
     try {
-      const authClient = getAuthClient()
-      const dbClient = getDbClient()
-
-      if (!authClient || !dbClient) {
-        setError("Firebase is not configured")
-        return
+      // Prepare data for the backend endpoint
+      const payload = {
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        password: formData.password,
       }
+      console.log("Creating account...", payload)
 
-      const userCredential = await createUserWithEmailAndPassword(authClient, email, password)
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/auth/signup', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload)
+      // })
 
-      await setDoc(doc(dbClient, "users", userCredential.user.uid), {
-        email,
-        role,
-        onboardingStep: 0,
-        profile: {
-          name,
-          bio: "",
-          avatar: "",
-          company: "",
-          linkedin: "",
-          github: "",
-          twitter: "",
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
-      router.push("/dashboard")
-    } catch (error: any) {
-      setError(error.message || "Failed to create account")
+      // Success - redirect to event signup
+      router.push(`/${searchParams.get("locale") || 'es'}/auth/event-signup`)
+    } catch (err: any) {
+      setError(err.message || "Failed to create account")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }, (_, i) => (
-          <div key={i}>
-            {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
-          </div>
-        ))}
-      </div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden relative">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          <h1 className="font-pixel text-4xl md:text-5xl mb-2">
-            <NeonGlow color="orange">Sign Up</NeonGlow>
-          </h1>
-          <p className="text-brand-cyan text-sm">POST /auth/signup</p>
+      <div className="w-full max-w-lg relative z-10 flex flex-col gap-8">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="font-pixel text-4xl">POST /api/auth/signup</h1>
+          </div>
+          <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">Create Your Account</p>
         </div>
 
-        <GlassCard neonOnHover neonColor="cyan">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-brand-cyan font-pixel">
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan"
-                placeholder="John Doe"
-              />
-            </div>
+        {/* Main Card */}
+        <GlassCard neonOnHover neonColor="cyan" className="p-8">
+          <div className="min-h-[400px] flex flex-col">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="mb-6">
+                <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">Account Setup</h2>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-brand-cyan font-pixel">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan"
-                placeholder="your@email.com"
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-brand-cyan font-pixel text-xs">Nombre <span className="text-red-500">*</span></Label>
+                  <Input id="name" value={formData.name} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="surname" className="text-brand-cyan font-pixel text-xs">Apellido <span className="text-red-500">*</span></Label>
+                  <Input id="surname" value={formData.surname} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-brand-cyan font-pixel">
-                Role
-              </Label>
-              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                <SelectTrigger className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-brand-navy border-brand-cyan/30">
-                  <SelectItem value="participante">Participante</SelectItem>
-                  <SelectItem value="jurado">Jurado</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-brand-cyan font-pixel text-xs">Email <span className="text-red-500">*</span></Label>
+                <Input id="email" type="email" value={formData.email} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder="tuemail@gmail.com" />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-brand-cyan font-pixel">
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan"
-                placeholder="••••••••"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-brand-cyan font-pixel text-xs">Password <span className="text-red-500">*</span></Label>
+                <Input id="password" type="password" value={formData.password} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder="••••••••" />
+                <p className="text-[12px] text-brand-cyan/40 uppercase">Min 6 characters</p>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-brand-cyan font-pixel">
-                Confirm Password
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan"
-                placeholder="••••••••"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-brand-cyan font-pixel text-xs">Confirm Password <span className="text-red-500">*</span></Label>
+                <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder="••••••••" />
+              </div>
             </div>
 
             {error && (
-              <div className="p-3 rounded bg-red-500/10 border border-red-500/30">
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="mt-4 px-8 p-2 rounded bg-red-500/10 border border-red-500/30 animate-in zoom-in-95 duration-200">
+                <p className="text-[10px] text-red-400 font-pixel">{error}</p>
               </div>
             )}
 
-            <PixelButton type="submit" disabled={loading} className="w-full" size="lg">
-              {loading ? "Creating account..." : "Sign Up"}
-            </PixelButton>
-
-            <div className="text-center pt-4 border-t border-brand-cyan/20">
-              <p className="text-brand-cyan text-sm">
-                Already have an account?{" "}
-                <Link href="/auth/login" className="text-brand-orange hover:neon-glow-orange">
-                  Login
-                </Link>
-              </p>
+            <div className="mt-auto pt-8">
+              <PixelButton
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full flex flex-row justify-between items-center"
+              >
+                {loading ? (
+                  "CREATING ACCOUNT..."
+                ) : (
+                  <>CREATE ACCOUNT <ChevronRight className="w-6 h-6 ml-2" /></>
+                )}
+              </PixelButton>
             </div>
-          </form>
+          </div>
         </GlassCard>
+
+        {/* Footer */}
+        <p className="text-center text-[10px] font-pixel text-brand-cyan/40 uppercase">
+          Already registered? <Link href={`/${searchParams.get("locale") || 'es'}/auth/login`} className="text-brand-orange hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Login</Link>
+        </p>
       </div>
     </div>
   )
