@@ -8,15 +8,18 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChevronRight, Users, User } from "lucide-react"
+import type { Locale } from "@/lib/i18n/config"
 
-export const dynamic = 'force-dynamic'
+interface CreateTeamPageProps {
+    translations: any
+    locale: Locale
+}
 
-export default function CreateTeamPage() {
+
+export default function CreateTeamPage({ translations, locale }: CreateTeamPageProps) {
     const router = useRouter()
     const params = useParams()
     const searchParams = useSearchParams()
-
-    const [locale, setLocale] = useState<string>("es")
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -35,10 +38,6 @@ export default function CreateTeamPage() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        // Extract locale from params
-        if (params.locale) {
-            setLocale(params.locale as string)
-        }
 
         // TODO: Fetch user data from backend using userId from query params or session
         const fetchUserData = async () => {
