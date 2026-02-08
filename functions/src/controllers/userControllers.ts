@@ -50,7 +50,13 @@ export const registerEvent = async (req: Request, res: Response) => {
         await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
 
         return res.status(200).json({ message: "Registro al evento exitoso" });
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message === "El equipo especificado no existe") {
+            return res.status(404).json({ error: error.message });
+        }
+        if (error.message === "Faltan campos obligatorios") {
+            return res.status(400).json({ error: error.message });
+        }
         return res.status(500).json({ error: "Error interno al registrar al evento" });
     }
 };
