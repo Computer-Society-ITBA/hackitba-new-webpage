@@ -70,7 +70,13 @@
       "endpoint": "v2026/mentors",
       "modalTitle": "Mentor Details",
       "role": "Role",
-      "company": "Company"
+      "company": "Company",
+      "categories": {
+        "entrepreneurship": "Entrepreneurship",
+        "tech": "Tech",
+        "oratory": "Oratory"
+      },
+      "noMentors": "No mentors available in this category"
     },
     "categories": {
       "title": "Categories",
@@ -365,7 +371,13 @@
       "endpoint": "v2026/mentors",
       "modalTitle": "Detalles del Mentor",
       "role": "Rol",
-      "company": "Empresa"
+      "company": "Empresa",
+      "categories": {
+        "entrepreneurship": "Emprendimiento",
+        "tech": "Tecnología",
+        "oratory": "Oratoria"
+      },
+      "noMentors": "No hay mentores disponibles en esta categoría"
     },
     "categories": {
       "title": "Categorías",
