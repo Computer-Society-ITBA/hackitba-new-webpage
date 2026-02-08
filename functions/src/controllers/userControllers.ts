@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser } from "../services/userService";
+import { registerUser, eventRegistration } from "../services/userService";
 
 interface RegisterRequestBody {
   email: string;
@@ -41,4 +41,20 @@ export const register = async (
 
     return res.status(500).json({ error: "Error interno al registrar usuario" });
   }
+};
+
+export const registerEvent = async (req: Request, res: Response) => {
+    try {
+        const { userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, category_1, category_2, category_3 } = req.body;
+
+        if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
+            return res.status(400).json({ error: "Faltan campos obligatorios" });
+        }
+
+        await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, category_1, category_2, category_3);
+
+        return res.status(200).json({ message: "Registro al evento exitoso" });
+    } catch (error) {
+        return res.status(500).json({ error: "Error interno al registrar al evento" });
+    }
 };

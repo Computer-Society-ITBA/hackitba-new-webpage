@@ -25,7 +25,8 @@ export const validateToken = async (
   const idToken = authHeader.split("Bearer ")[1];
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Use checkRevoked=false for emulator compatibility
+    const decodedToken = await admin.auth().verifyIdToken(idToken, false);
     req.user = decodedToken;
     next();
   } catch (error) {
