@@ -101,13 +101,12 @@ function SignupContent() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2">
-            <h1 className="font-pixel text-4xl">{translations.auth.signup.endpoint}</h1>
+            <h1 className="font-pixel text-xl">{translations.auth.signup.endpoint}</h1>
           </div>
-          <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">{translations.auth.signup.title}</p>
         </div>
 
         {/* Main Card */}
-        <GlassCard neonOnHover neonColor="cyan" className="p-8">
+        <GlassCard className="p-8">
           <div className="min-h-[400px] flex flex-col">
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="mb-6">

@@ -443,7 +443,7 @@ function EventSignupContent() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-pixel text-4xl">{translations.auth.eventSignup.endpoint}</h1>
+                        <h1 className="font-pixel text-xl">{translations.auth.eventSignup.endpoint}</h1>
                     </div>
                     <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
                         {role && role in translations.auth.eventSignup.roleTitle
@@ -462,7 +462,7 @@ function EventSignupContent() {
                 </div>
 
                 {/* Main Card */}
-                <GlassCard neonOnHover neonColor={currentStep === totalSteps ? "orange" : "cyan"} className="p-8">
+                <GlassCard className="p-8">
                     <div className="min-h-[320px] flex flex-col">
                         {renderStep()}
 
@@ -500,11 +500,6 @@ function EventSignupContent() {
                         </div>
                     </div>
                 </GlassCard>
-
-                {/* Footer */}
-                <p className="text-center text-[10px] font-pixel text-brand-cyan/40 uppercase">
-                    {translations.auth.eventSignup.footer.needHelp} <Link href={`/${locale}/support`} className="text-brand-orange hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">{translations.auth.eventSignup.footer.contactSupport}</Link>
-                </p>
             </div>
         </div>
     )
