@@ -2685,3 +2685,598 @@ INFO: Detected non-HTTP/2 connection.
 [debug] [2026-02-08T08:16:09.525Z] Feb 08, 2026 5:16:09 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected non-HTTP/2 connection.
  {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:16:09 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:16:55.522Z] Feb 08, 2026 5:16:55 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:16:55 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:17:41.526Z] Feb 08, 2026 5:17:41 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:17:41 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:18:27.526Z] Feb 08, 2026 5:18:27 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:18:27 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:19:13.654Z] Feb 08, 2026 5:19:13 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:19:13 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:19:55.999Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/services/userService.js.map changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/services/userService.js.map changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:55.999Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/services/userService.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/services/userService.js changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.005Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/controllers/userControllers.js.map changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/controllers/userControllers.js.map changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.006Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/controllers/userControllers.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/controllers/userControllers.js changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.009Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/middleware/authMiddleware.js.map changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/middleware/authMiddleware.js.map changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.010Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/middleware/authMiddleware.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/middleware/authMiddleware.js changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.012Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/routes/userRoutes.js.map changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/routes/userRoutes.js.map changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.013Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/routes/userRoutes.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/routes/userRoutes.js changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.016Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/index.js.map changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/index.js.map changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:56.017Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/index.js changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/lib/index.js changed, reloading triggers"}}
+[debug] [2026-02-08T08:19:57.018Z] Validating nodejs source
+[debug] [2026-02-08T08:19:57.757Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:19:57.757Z] Building nodejs source
+[debug] [2026-02-08T08:19:57.757Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:19:57.758Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:19:57.759Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8405
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T08:19:58.119Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:19:59.527Z] Feb 08, 2026 5:19:59 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:19:59 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:20:02.139Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:20:02.139Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:20:22.323Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:20:23.325Z] Validating nodejs source
+[debug] [2026-02-08T08:20:23.768Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:20:23.768Z] Building nodejs source
+[debug] [2026-02-08T08:20:23.768Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:20:23.769Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:20:23.769Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8248
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T08:20:24.125Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:20:28.145Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:20:28.146Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:20:45.522Z] Feb 08, 2026 5:20:45 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:20:45 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:21:31.522Z] Feb 08, 2026 5:21:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:21:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:22:07.404Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:22:08.405Z] Validating nodejs source
+[debug] [2026-02-08T08:22:09.035Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:22:09.035Z] Building nodejs source
+[debug] [2026-02-08T08:22:09.035Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:22:09.036Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:22:09.036Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8854
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T08:22:09.415Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:22:13.432Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:22:13.433Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:22:17.522Z] Feb 08, 2026 5:22:17 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:22:17 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:22:41.128Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:22:42.129Z] Validating nodejs source
+[debug] [2026-02-08T08:22:42.665Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:22:42.665Z] Building nodejs source
+[debug] [2026-02-08T08:22:42.665Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:22:42.665Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:22:42.666Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8021
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[debug] [2026-02-08T08:22:43.060Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:22:47.079Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:22:47.080Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:22:47.556Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:22:48.556Z] Validating nodejs source
+[debug] [2026-02-08T08:22:48.950Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:22:48.950Z] Building nodejs source
+[debug] [2026-02-08T08:22:48.950Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:22:48.951Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:22:48.952Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8937
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[debug] [2026-02-08T08:22:49.335Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:22:50.882Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:22:51.883Z] Validating nodejs source
+[debug] [2026-02-08T08:22:52.446Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:22:52.446Z] Building nodejs source
+[debug] [2026-02-08T08:22:52.446Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:22:52.447Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:22:52.448Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8387
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+[debug] [2026-02-08T08:22:52.861Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:22:53.352Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:22:53.353Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:22:56.885Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:22:56.886Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:23:03.522Z] Feb 08, 2026 5:23:03 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:23:03 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:23:09.081Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:23:10.082Z] Validating nodejs source
+[debug] [2026-02-08T08:23:11.056Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:23:11.056Z] Building nodejs source
+[debug] [2026-02-08T08:23:11.056Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:23:11.057Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:23:11.057Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8407
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[debug] [2026-02-08T08:23:11.438Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:23:15.455Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:23:15.456Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:23:19.756Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/helpers/fileUploder.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:23:20.757Z] Validating nodejs source
+[debug] [2026-02-08T08:23:21.148Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:23:21.148Z] Building nodejs source
+[debug] [2026-02-08T08:23:21.148Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:23:21.149Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:23:21.150Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8380
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[debug] [2026-02-08T08:23:21.566Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:23:25.581Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:23:25.582Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:23:49.522Z] Feb 08, 2026 5:23:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:23:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:24:35.522Z] Feb 08, 2026 5:24:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:24:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:25:21.522Z] Feb 08, 2026 5:25:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:25:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:26:07.521Z] Feb 08, 2026 5:26:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:26:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:26:53.523Z] Feb 08, 2026 5:26:53 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:26:53 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:27:02.175Z] File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/src/index.ts changed, reloading triggers"}}
+[debug] [2026-02-08T08:27:03.176Z] Validating nodejs source
+[debug] [2026-02-08T08:27:03.781Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "firebase": "^12.9.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-02-08T08:27:03.781Z] Building nodejs source
+[debug] [2026-02-08T08:27:03.781Z] Failed to find version of module node: reached end of search path /home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules
+[info] ✔  functions: Using node@24 from host. 
+[debug] [2026-02-08T08:27:03.782Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-08T08:27:03.783Z] Found firebase-functions binary at '/home/naprado/Escritorio/ITBA/CS/hackitba-new-webpage/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8893
+
+[info] [dotenv@17.2.4] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[debug] [2026-02-08T08:27:04.142Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2026-02-08T08:27:08.160Z] defaultcredentials: writing to file /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json
+[debug] [2026-02-08T08:27:08.161Z] Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/naprado/.config/firebase/naprado_itba_edu.ar_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[debug] [2026-02-08T08:27:39.523Z] Feb 08, 2026 5:27:39 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:27:39 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:28:25.523Z] Feb 08, 2026 5:28:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:28:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:29:11.527Z] Feb 08, 2026 5:29:11 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:29:11 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:29:57.526Z] Feb 08, 2026 5:29:57 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:29:57 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:30:43.527Z] Feb 08, 2026 5:30:43 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:30:43 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:31:29.526Z] Feb 08, 2026 5:31:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:31:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:32:45.523Z] Feb 08, 2026 5:32:45 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:32:45 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:33:31.527Z] Feb 08, 2026 5:33:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:33:31 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:34:17.530Z] Feb 08, 2026 5:34:17 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:34:17 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:35:03.531Z] Feb 08, 2026 5:35:03 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:35:03 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:35:49.529Z] Feb 08, 2026 5:35:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:35:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:36:35.523Z] Feb 08, 2026 5:36:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:36:35 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:37:21.523Z] Feb 08, 2026 5:37:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:37:21 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:38:07.528Z] Feb 08, 2026 5:38:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:38:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:38:53.527Z] Feb 08, 2026 5:38:53 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:38:53 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:39:39.524Z] Feb 08, 2026 5:39:39 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:39:39 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:40:25.524Z] Feb 08, 2026 5:40:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:40:25 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:41:11.525Z] Feb 08, 2026 5:41:11 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:41:11 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:41:57.533Z] Feb 08, 2026 5:41:57 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:41:57 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:42:43.529Z] Feb 08, 2026 5:42:43 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:42:43 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:43:29.523Z] Feb 08, 2026 5:43:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:43:29 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:44:15.522Z] Feb 08, 2026 5:44:15 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:44:15 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:01.522Z] Feb 08, 2026 5:45:01 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:01 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:07.026Z] Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:07.029Z] Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:07.040Z] Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:07.042Z] Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:08.691Z] Feb 08, 2026 5:45:08 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:08 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2026-02-08T08:45:08.702Z] Feb 08, 2026 5:45:08 AM com.google.cloud.datastore.emulator.firestore.webchannel.FirestoreV1WebChannelAdapter$FirestoreListenHandler onClose
+INFO: channel closed
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Feb 08, 2026 5:45:08 AM com.google.cloud.datastore.emulator.firestore.webchannel.FirestoreV1WebChannelAdapter$FirestoreListenHandler onClose\nINFO: channel closed\n"}}
+[debug] [2026-02-08T08:53:44.895Z] >>> [apiv2][query] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast [none]
+[debug] [2026-02-08T08:53:44.895Z] >>> [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"eventId":"1770540824894","timestamp":"2026-02-08T08:53:44.894Z","eventType":"google.storage.object.finalize","resource":{"service":"storage.googleapis.com","name":"projects/_/buckets/webpage-36e40.appspot.com/objects/event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","type":"storage#object"},"data":{"kind":"storage#object","name":"event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","bucket":"webpage-36e40.appspot.com","generation":"1770540824736","metageneration":"1","contentType":"image/jpeg","timeCreated":"2026-02-08T08:53:44.736Z","updated":"2026-02-08T08:53:44.736Z","storageClass":"STANDARD","size":"89341","md5Hash":"ZdCq6vYgIEM4x7NxEiPfdA==","etag":"prBQCBoaVkuECgNnBML0TxomMiA","metadata":{"firebaseStorageDownloadTokens":"33dc706e-f2c9-452f-ae8d-f7acc6cbfc45"},"crc32c":"svx6Eg==","timeStorageClassUpdated":"2026-02-08T08:53:44.736Z","id":"webpage-36e40.appspot.com/event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg/1770540824736","selfLink":"http://127.0.0.1:9199/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","mediaLink":"http://127.0.0.1:9199/download/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg?generation=1770540824736&alt=media"}}
+[debug] [2026-02-08T08:53:44.898Z] <<< [apiv2][status] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast 200
+[debug] [2026-02-08T08:53:44.898Z] <<< [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"status":"multicast_acknowledged"}
+[debug] [2026-02-08T08:53:44.898Z] >>> [apiv2][query] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast [none]
+[debug] [2026-02-08T08:53:44.898Z] >>> [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"specversion":"1.0","id":"0800f3d0-bf7a-4bdf-bf74-789473be105b","type":"google.cloud.storage.object.v1.finalized","source":"//storage.googleapis.com/projects/_/buckets/webpage-36e40.appspot.com/objects/event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","time":"2026-02-08T08:53:44.736Z","data":{"kind":"storage#object","name":"event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","bucket":"webpage-36e40.appspot.com","generation":"1770540824736","metageneration":"1","contentType":"image/jpeg","timeCreated":"2026-02-08T08:53:44.736Z","updated":"2026-02-08T08:53:44.736Z","storageClass":"STANDARD","size":"89341","md5Hash":"ZdCq6vYgIEM4x7NxEiPfdA==","etag":"prBQCBoaVkuECgNnBML0TxomMiA","metadata":{"firebaseStorageDownloadTokens":"33dc706e-f2c9-452f-ae8d-f7acc6cbfc45"},"crc32c":"svx6Eg==","timeStorageClassUpdated":"2026-02-08T08:53:44.736Z","id":"webpage-36e40.appspot.com/event-photos/1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg/1770540824736","selfLink":"http://127.0.0.1:9199/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg","mediaLink":"http://127.0.0.1:9199/download/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540824715-53804a0233f113bd0d644d1067ec13bf.jpg?generation=1770540824736&alt=media"}}
+[debug] [2026-02-08T08:53:44.901Z] <<< [apiv2][status] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast 200
+[debug] [2026-02-08T08:53:44.901Z] <<< [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"status":"multicast_acknowledged"}
+[debug] [2026-02-08T08:54:14.870Z] >>> [apiv2][query] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast [none]
+[debug] [2026-02-08T08:54:14.870Z] >>> [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"eventId":"1770540854870","timestamp":"2026-02-08T08:54:14.870Z","eventType":"google.storage.object.finalize","resource":{"service":"storage.googleapis.com","name":"projects/_/buckets/webpage-36e40.appspot.com/objects/event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","type":"storage#object"},"data":{"kind":"storage#object","name":"event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","bucket":"webpage-36e40.appspot.com","generation":"1770540854865","metageneration":"1","contentType":"image/jpeg","timeCreated":"2026-02-08T08:54:14.865Z","updated":"2026-02-08T08:54:14.865Z","storageClass":"STANDARD","size":"89341","md5Hash":"ZdCq6vYgIEM4x7NxEiPfdA==","etag":"9GNmi5OqjRrhdd/3jz0BAiKb2x0","metadata":{"firebaseStorageDownloadTokens":"aee3ef64-6cd8-4fc2-906a-9add0d8df41c"},"crc32c":"svx6Eg==","timeStorageClassUpdated":"2026-02-08T08:54:14.865Z","id":"webpage-36e40.appspot.com/event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg/1770540854865","selfLink":"http://127.0.0.1:9199/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","mediaLink":"http://127.0.0.1:9199/download/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg?generation=1770540854865&alt=media"}}
+[debug] [2026-02-08T08:54:14.874Z] <<< [apiv2][status] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast 200
+[debug] [2026-02-08T08:54:14.874Z] <<< [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"status":"multicast_acknowledged"}
+[debug] [2026-02-08T08:54:14.874Z] >>> [apiv2][query] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast [none]
+[debug] [2026-02-08T08:54:14.874Z] >>> [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"specversion":"1.0","id":"10046d82-23f6-4995-b1ed-e4cdb7f415f7","type":"google.cloud.storage.object.v1.finalized","source":"//storage.googleapis.com/projects/_/buckets/webpage-36e40.appspot.com/objects/event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","time":"2026-02-08T08:54:14.865Z","data":{"kind":"storage#object","name":"event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","bucket":"webpage-36e40.appspot.com","generation":"1770540854865","metageneration":"1","contentType":"image/jpeg","timeCreated":"2026-02-08T08:54:14.865Z","updated":"2026-02-08T08:54:14.865Z","storageClass":"STANDARD","size":"89341","md5Hash":"ZdCq6vYgIEM4x7NxEiPfdA==","etag":"9GNmi5OqjRrhdd/3jz0BAiKb2x0","metadata":{"firebaseStorageDownloadTokens":"aee3ef64-6cd8-4fc2-906a-9add0d8df41c"},"crc32c":"svx6Eg==","timeStorageClassUpdated":"2026-02-08T08:54:14.865Z","id":"webpage-36e40.appspot.com/event-photos/1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg/1770540854865","selfLink":"http://127.0.0.1:9199/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg","mediaLink":"http://127.0.0.1:9199/download/storage/v1/b/webpage-36e40.appspot.com/o/event-photos%2F1770540854850-53804a0233f113bd0d644d1067ec13bf.jpg?generation=1770540854865&alt=media"}}
+[debug] [2026-02-08T08:54:14.876Z] <<< [apiv2][status] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast 200
+[debug] [2026-02-08T08:54:14.876Z] <<< [apiv2][body] POST http://127.0.0.1:5001/functions/projects/webpage-36e40/trigger_multicast {"status":"multicast_acknowledged"}

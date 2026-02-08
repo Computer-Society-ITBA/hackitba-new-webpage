@@ -14,6 +14,9 @@ import type { UserRole } from "@/lib/firebase/types"
 import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter, ExternalLink, Users, UserPlus } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { getStorageClient } from "@/lib/firebase/client-config"
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
+import { set } from "date-fns"
 
 
 function EventSignupContent() {
@@ -29,6 +32,7 @@ function EventSignupContent() {
     const [currentStep, setCurrentStep] = useState(1)
     const [role, setRole] = useState<UserRole | null>(null)
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+    const [photoFile, setPhotoFile] = useState<File | null>(null)
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -93,6 +97,7 @@ function EventSignupContent() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
+            setPhotoFile(file)
             setFormData((prev) => ({ ...prev, photo: file.name }))
 
             const reader = new FileReader()
@@ -101,6 +106,23 @@ function EventSignupContent() {
             }
             reader.readAsDataURL(file)
         }
+    }
+
+    const uploadPhotoToStorage = async (file: File) => {
+        const storage = getStorageClient()
+        if (!storage) {
+            throw new Error("Firebase Storage no está configurado")
+        }
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+        const path = `event-photos/${Date.now()}-${safeName}`
+        const fileRef = storageRef(storage, path)
+
+        await uploadBytes(fileRef, file, {
+            contentType: file.type,
+        })
+
+        return getDownloadURL(fileRef)
     }
 
     const handleNext = () => {
@@ -172,9 +194,12 @@ function EventSignupContent() {
     const handleSubmit = async () => {
         setLoading(true)
         try {
+            const photoUrl = photoFile ? await uploadPhotoToStorage(photoFile) : ""
+
             const payload = {
                 role,
-                ...formData
+                ...formData,
+                photo: photoUrl || formData.photo,
             }
             console.log("Sending event registration data...", payload)
 
