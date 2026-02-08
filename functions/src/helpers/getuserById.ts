@@ -1,8 +1,8 @@
-import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import {getHackitbaDb} from "./getDb";
 
 export const getUserById = async (userId: string): Promise<string | null> => {
-  const db = admin.firestore();
+  const db = getHackitbaDb();
   const users = db.collection("users").doc(userId);
   try {
     const doc = await users.get();

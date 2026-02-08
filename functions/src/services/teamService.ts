@@ -1,4 +1,5 @@
 import admin from "firebase-admin";
+import {getHackitbaDb} from "../helpers/getDb";
 import * as logger from "firebase-functions/logger";
 
 export interface TeamData {
@@ -97,7 +98,8 @@ export const getTeamByLabel = async (label: string) => {
 };
 
 export const getAllTeams = async () => {
-  const teamsSnapshot = await admin.firestore().collection("teams").get();
+  const db = getHackitbaDb();
+  const teamsSnapshot = await db.collection("teams").get();
 
   return teamsSnapshot.docs.map((doc) => ({
     id: doc.id,

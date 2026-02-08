@@ -1,4 +1,5 @@
 import {Request, Response} from "express";
+import {logger} from "firebase-functions";
 import {registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete} from "../services/userService";
 
 interface RegisterRequestBody {
@@ -35,11 +36,12 @@ export const register = async (
       token: result.token,
     });
   } catch (error: any) {
+    logger.error("Register error:", error);
     if (error.code === "auth/email-already-exists") {
       return res.status(400).json({error: "El email ya está registrado"});
     }
 
-    return res.status(500).json({error: "Error interno al registrar usuario"});
+    return res.status(500).json({error: error.message || "Error interno al registrar usuario"});
   }
 };
 
@@ -47,17 +49,22 @@ export const registerEvent = async (req: Request, res: Response) => {
   try {
     const {userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo} = req.body;
 
+    logger.info(`RegisterEvent called with userId: ${userId}`);
+    logger.info("Request body:", req.body);
+
     await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
 
+    logger.info(`Event registration successful for userId: ${userId}`);
     return res.status(200).json({message: "Registro al evento exitoso"});
   } catch (error: any) {
+    logger.error("RegisterEvent error:", error.message || error);
     if (error.message === "El equipo especificado no existe") {
       return res.status(404).json({error: error.message});
     }
     if (error.message === "Faltan campos obligatorios") {
       return res.status(400).json({error: error.message});
     }
-    return res.status(500).json({error: "Error interno al registrar al evento"});
+    return res.status(500).json({error: "Error interno al registrar al evento", details: error.message});
   }
 };
 

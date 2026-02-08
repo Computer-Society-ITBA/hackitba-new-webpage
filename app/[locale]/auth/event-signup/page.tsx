@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
+import { getAuth } from "firebase/auth"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
@@ -63,20 +64,48 @@ function EventSignupContent() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        // TODO: Fetch user's assigned role from backend
-        // For now, simulating with query param or default
+        // Fetch user's assigned role from backend
         const fetchUserRole = async () => {
             try {
-                // const response = await fetch('/api/auth/me')
-                // const data = await response.json()
-                // setRole(data.role)
+                const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
+                
+                if (!uid) {
+                    console.error("No user ID found. Please register first.")
+                    setRole("participante")
+                    return
+                }
 
-                // Temporary: Use query param for testing
-                const roleParam = searchParams.get("role") as UserRole
-                if (roleParam && ["jurado", "participante", "mentor"].includes(roleParam)) {
-                    setRole(roleParam)
+                // Get current user token from Firebase
+                const auth = getAuth()
+                const currentUser = auth.currentUser
+                
+                if (!currentUser) {
+                    console.error("No Firebase user authenticated")
+                    setRole("participante")
+                    return
+                }
+
+                const idToken = await currentUser.getIdToken()
+
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                const response = await fetch(`${apiUrl}/users/${uid}`, {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                })
+                
+                if (response.ok) {
+                    const data = await response.json()
+                    setRole(data.role || "participante")
                 } else {
-                    setRole("jurado") // Default for testing
+                    console.error(`Failed to fetch user role: ${response.status} ${response.statusText}`)
+                    // Fallback: Use query param for testing
+                    const roleParam = searchParams.get("role") as UserRole
+                    if (roleParam && ["jurado", "participante", "mentor"].includes(roleParam)) {
+                        setRole(roleParam)
+                    } else {
+                        setRole("participante") // Default
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch user role", err)
@@ -194,33 +223,58 @@ function EventSignupContent() {
     const handleSubmit = async () => {
         setLoading(true)
         try {
+            const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
+
+            if (!uid) {
+                throw new Error("User not authenticated. Please register first.")
+            }
+
+            // Get current user token from Firebase
+            const auth = getAuth()
+            const idToken = await auth.currentUser?.getIdToken()
+
             const photoUrl = photoFile ? await uploadPhotoToStorage(photoFile) : ""
 
             const payload = {
-                role,
-                ...formData,
+                userId: uid,
+                dni: formData.dni,
+                university: formData.university,
+                career: formData.career,
+                age: parseInt(formData.age),
+                link_cv: formData.cvLink || null,
+                linkedin: formData.linkedin || null,
+                instagram: formData.instagram || null,
+                twitter: formData.twitter || null,
+                github: formData.github || null,
+                team: formData.hasTeam === "yes" ? formData.teamCode : null,
+                food_preference: formData.dietaryPreference,
+                category_1: 0,
+                category_2: 1,
+                category_3: 2,
+                company: formData.company || null,
+                position: formData.professionalRole || null,
                 photo: photoUrl || formData.photo,
             }
             console.log("Sending event registration data...", payload)
 
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/event/register', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(payload)
-            // })
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/users/register-event`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify(payload)
+            })
 
-            // Simulating API call
-            await new Promise(resolve => setTimeout(resolve, 1500))
-
-            // TODO: Get userId from backend response
-            // const userId = response.data.userId
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || translations.auth.eventSignup.errors.createFailed)
+            }
 
             // Success - redirect based on team choice
             if (role === "participante" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
-                // TODO: Replace mock userId with actual userId from backend
-                const userId = "user-123" // Mock userId
-                router.push(`/${locale}/dashboard/create-team?userId=${userId}`)
+                router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
             } else {
                 router.push(`/${locale}/dashboard`)
             }

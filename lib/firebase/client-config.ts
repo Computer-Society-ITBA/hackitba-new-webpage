@@ -45,7 +45,9 @@ export function getStorageClient(): FirebaseStorage | null {
   return app ? getStorage(app) : null
 }
 
-if (process.env.NODE_ENV === "development" && isBrowser && hasFirebaseConfig) {
+// Only connect to emulators if explicitly enabled and in development
+const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === "true"
+if (useEmulators && process.env.NODE_ENV === "development" && isBrowser && hasFirebaseConfig) {
   const emulatorAuth = getAuthClient()
   const emulatorDb = getDbClient()
   const emulatorStorage = getStorageClient()

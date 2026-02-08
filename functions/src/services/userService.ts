@@ -2,6 +2,7 @@ import admin from "firebase-admin";
 import {logger} from "firebase-functions";
 import {getColabRole} from "../helpers/getColabRole";
 import {getUserById} from "../helpers/getuserById";
+import {getHackitbaDb} from "../helpers/getDb";
 
 interface UserData {
   email: string;
@@ -19,28 +20,38 @@ interface UserRecord {
 export const registerUser = async (userData: UserData): Promise<UserRecord> => {
   const {email, password, name, surname} = userData;
 
-  // Create user in Firebase Auth
-  const userRecord = await admin.auth().createUser({
-    email: email,
-    password: password,
-    displayName: `${name} ${surname}`,
-  });
+  try {
+    // Create user in Firebase Auth
+    logger.info(`Creating auth user for email: ${email}`);
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: `${name} ${surname}`,
+    });
 
-  const customToken = await admin.auth().createCustomToken(userRecord.uid);
+    logger.info(`Auth user created with UID: ${userRecord.uid}`);
 
-  const role= await getColabRole(email);
-  logger.info(`Colab role for ${email}: ${role}`);
-  const db = admin.firestore();
-  const userRef = db.collection("users").doc(userRecord.uid);
-  await userRef.set({
-    email: userRecord.email,
-    name: name,
-    surname: surname,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    role: role || "participant",
-  });
+    const role = await getColabRole(email);
+    logger.info(`Colab role for ${email}: ${role}`);
 
-  return {uid: userRecord.uid, email: userRecord.email, token: customToken};
+    const db = getHackitbaDb();
+    const userRef = db.collection("users").doc(userRecord.uid);
+    logger.info(`Saving user to Firestore: ${userRecord.uid}`);
+
+    await userRef.set({
+      email: userRecord.email,
+      name: name,
+      surname: surname,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      role: role || "participant",
+    });
+
+    logger.info(`User successfully registered: ${userRecord.uid}`);
+    return {uid: userRecord.uid, email: userRecord.email};
+  } catch (error) {
+    logger.error(`Error in registerUser: ${error}`);
+    throw error;
+  }
 };
 
 
@@ -63,60 +74,70 @@ export const eventRegistration = async (
   company: string|null = null,
   position: string|null = null,
   photo: string|null = null): Promise<void> => {
-  const db = admin.firestore();
-  const userRef = db.collection("users").doc(userId);
+  try {
+    const db = getHackitbaDb();
+    const userRef = db.collection("users").doc(userId);
 
-  const email = await getUserById(userId);
-  const role = await getColabRole(email || "");
+    logger.info(`EventRegistration for userId: ${userId}, role determination...`);
+    const email = await getUserById(userId);
+    const role = await getColabRole(email || "");
+    logger.info(`User ${userId} role: ${role}`);
 
-
-  if (role === "mentor" || role === "judge") {
-    if (!userId || !dni || !company || !position || !food_preference) {
-      throw new Error("Faltan campos obligatorios");
-    }
-
-    await userRef.update({
-      dni: dni,
-      company: company,
-      position: position,
-      photo: photo,
-      linkedin: linkedin,
-      instagram: instagram,
-      twitter: twitter,
-      github: github,
-      food_preference: food_preference,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-  } else {
-    if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
-      throw new Error("Faltan campos obligatorios");
-    }
-
-    // Si se especifica un equipo, verificar que exista
-    if (team) {
-      const teamDoc = await db.collection("teams").doc(team).get();
-      if (!teamDoc.exists) {
-        throw new Error("El equipo especificado no existe");
+    if (role === "mentor" || role === "judge") {
+      logger.info(`Updating mentor/judge record for ${userId}`);
+      if (!userId || !dni || !company || !position || !food_preference) {
+        throw new Error("Faltan campos obligatorios");
       }
-    }
 
-    await userRef.update({
-      dni: dni,
-      university: university,
-      career: career,
-      age: age,
-      link_cv: link_cv,
-      linkedin: linkedin,
-      instagram: instagram,
-      twitter: twitter,
-      github: github,
-      team: team,
-      food_preference: food_preference,
-      category_1: category_1 !== null ? category_1 : category_1,
-      category_2: category_2 !== null ? category_2 : category_2,
-      category_3: category_3 !== null ? category_3 : category_3,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      await userRef.update({
+        dni: dni,
+        company: company,
+        position: position,
+        photo: photo,
+        linkedin: linkedin,
+        instagram: instagram,
+        twitter: twitter,
+        github: github,
+        food_preference: food_preference,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      logger.info(`Mentor/judge record updated successfully for ${userId}`);
+    } else {
+      logger.info(`Updating participant record for ${userId}`);
+      if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
+        throw new Error("Faltan campos obligatorios");
+      }
+
+      // Si se especifica un equipo, verificar que exista
+      if (team) {
+        const teamDoc = await db.collection("teams").doc(team).get();
+        if (!teamDoc.exists) {
+          throw new Error("El equipo especificado no existe");
+        }
+      }
+
+      await userRef.update({
+        dni: dni,
+        university: university,
+        career: career,
+        age: age,
+        link_cv: link_cv,
+        linkedin: linkedin,
+        instagram: instagram,
+        twitter: twitter,
+        github: github,
+        team: team,
+        food_preference: food_preference,
+        category_1: category_1 !== null ? category_1 : category_1,
+        category_2: category_2 !== null ? category_2 : category_2,
+        category_3: category_3 !== null ? category_3 : category_3,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      logger.info(`Participant record updated successfully for ${userId}`);
+    }
+  } catch (error: any) {
+    logger.error(`EventRegistration error for userId ${userId}:`, error.message || error);
+    throw error;
   }
 };
 
@@ -131,7 +152,7 @@ export const loginUser = async (email: string, password: string): Promise<UserRe
 };
 
 export const getAllUsers = async () => {
-  const db = admin.firestore();
+  const db = getHackitbaDb();
   const usersSnapshot = await db.collection("users").get();
 
   const users = usersSnapshot.docs.map((doc) => ({
@@ -143,7 +164,7 @@ export const getAllUsers = async () => {
 };
 
 export const getUserByIdComplete = async (userId: string) => {
-  const db = admin.firestore();
+  const db = getHackitbaDb();
   const userDoc = await db.collection("users").doc(userId).get();
 
   if (!userDoc.exists) {

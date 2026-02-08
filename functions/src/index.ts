@@ -1,6 +1,7 @@
 import {setGlobalOptions} from "firebase-functions";
 import * as logger from "firebase-functions/logger";
 import express, {Request, Response} from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import {onRequest} from "firebase-functions/v2/https";
 import admin from "firebase-admin";
@@ -16,6 +17,7 @@ admin.initializeApp();
 const app = express();
 
 // Middleware
+app.use(cors({origin: true})); // Enable CORS for all origins
 app.use(express.json());
 
 // Routes

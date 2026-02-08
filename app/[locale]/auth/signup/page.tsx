@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, Suspense } from "react"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
@@ -71,16 +72,35 @@ function SignupContent() {
         password: formData.password,
       }
       console.log("Creating account...", payload)
-
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
       // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/signup', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(payload)
-      // })
+      const response = await fetch(`${apiUrl}/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || translations.auth.signup.errors.createFailed)
+      }
 
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const data = await response.json()
+      // Save uid to localStorage for event signup
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userUid', data.uid)
+      }
+
+      // Authenticate with Firebase to get an ID token
+      const auth = getAuth()
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
+        const idToken = await userCredential.user.getIdToken()
+        localStorage.setItem('userToken', idToken)
+        console.log("User authenticated with Firebase")
+      } catch (authError) {
+        console.warn("Firebase auth error (non-critical):", authError)
+        // Continue anyway - we have the uid
+      }
 
       // Success - redirect to event signup
       router.push(`/${locale}/auth/event-signup`)
