@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -16,7 +16,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 
 
-export default function EventSignupPage() {
+function EventSignupContent() {
     const router = useRouter()
     const params = useParams()
     const locale = params.locale as Locale
@@ -505,5 +505,17 @@ export default function EventSignupPage() {
                 </p>
             </div>
         </div>
+    )
+}
+
+export default function EventSignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">Initializing Terminal...</p>
+            </div>
+        }>
+            <EventSignupContent />
+        </Suspense>
     )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -18,7 +18,7 @@ interface CreateTeamPageProps {
 }
 
 
-export default function CreateTeamPage() {
+function CreateTeamContent() {
     const router = useRouter()
     const params = useParams()
     const locale = params.locale as Locale
@@ -274,5 +274,17 @@ export default function CreateTeamPage() {
                 </p>
             </div>
         </div>
+    )
+}
+
+export default function CreateTeamPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">Establishing Team Protocol...</p>
+            </div>
+        }>
+            <CreateTeamContent />
+        </Suspense>
     )
 }
