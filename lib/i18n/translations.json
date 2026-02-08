@@ -68,14 +68,18 @@
     "mentors": {
       "title": "Mentors",
       "endpoint": "v2026/mentors",
-      "modalTitle": "Mentor Details"
+      "modalTitle": "Mentor Details",
+      "role": "Role",
+      "company": "Company"
     },
     "categories": {
       "title": "Categories",
       "endpoint": "v2026/categories",
       "web3": "Web3",
       "ia": "IA",
-      "gameDev": "GameDev"
+      "gameDev": "GameDev",
+      "ai": "AI",
+      "healthTech": "HealthTech"
     },
     "weProvide": {
       "title": "What We Provide",
@@ -118,6 +122,176 @@
       "minutes": "Minutes",
       "seconds": "Seconds",
       "ended": "Competition Ended"
+    },
+    "auth": {
+      "signup": {
+        "endpoint": "POST /api/auth/signup",
+        "title": "Create Your Account",
+        "sectionTitle": "Account Setup",
+        "fields": {
+          "name": "Name",
+          "surname": "Surname",
+          "email": "Email",
+          "password": "Password",
+          "confirmPassword": "Confirm Password",
+          "emailPlaceholder": "youremail@gmail.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "validation": {
+          "minCharacters": "Min 6 characters",
+          "required": "*"
+        },
+        "buttons": {
+          "creating": "CREATING ACCOUNT...",
+          "create": "CREATE ACCOUNT"
+        },
+        "footer": {
+          "alreadyRegistered": "Already registered?",
+          "login": "Login"
+        },
+        "loading": "Establishing Team Protocol...",
+        "errors": {
+          "fillAllFields": "Please fill all fields",
+          "invalidEmail": "Please enter a valid email address",
+          "passwordTooShort": "Password must be at least 6 characters",
+          "passwordMismatch": "Passwords do not match",
+          "createFailed": "Failed to create account"
+        }
+      },
+      "login": {
+        "title": "Login",
+        "endpoint": "POST /auth/login",
+        "fields": {
+          "email": "Email",
+          "password": "Password",
+          "emailPlaceholder": "your@email.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "buttons": {
+          "loggingIn": "Logging in...",
+          "login": "Login"
+        },
+        "footer": {
+          "noAccount": "Don't have an account?",
+          "signUp": "Sign up"
+        },
+        "errors": {
+          "firebaseNotConfigured": "Firebase Auth is not configured",
+          "loginFailed": "Failed to login"
+        }
+      },
+      "eventSignup": {
+        "endpoint": "POST /api/event/register",
+        "title": "Event Registration",
+        "roleTitle": {
+          "jurado": "Judge",
+          "participante": "Participant",
+          "mentor": "Mentor"
+        },
+        "loading": "Loading...",
+        "initializing": "Initializing Terminal...",
+        "progress": {
+          "init": "Init",
+          "complete": "Complete"
+        },
+        "steps": {
+          "personalData": "Personal Data",
+          "professionalData": "Professional Data",
+          "contactSocial": "Contact & Social Media",
+          "teamStatus": "Team Status"
+        },
+        "fields": {
+          "dni": "DNI",
+          "university": "University",
+          "career": "Career",
+          "age": "Age",
+          "company": "Company",
+          "professionalRole": "Role at company",
+          "photo": "Photo",
+          "dietaryPreference": "Dietary Preference (Optional)",
+          "dietaryPlaceholder": "Vegetarian, Celiac, etc.",
+          "github": "Github",
+          "linkedin": "LinkedIn",
+          "instagram": "Instagram",
+          "twitter": "Twitter",
+          "cvLink": "CV Link",
+          "cvPlaceholder": "https://...",
+          "teamCode": "Enter team code or name",
+          "teamCodePlaceholder": "TEAM-XXXX"
+        },
+        "photo": {
+          "choose": "Choose file",
+          "change": "Change Photo",
+          "ready": "Ready"
+        },
+        "warnings": {
+          "agePreference": "Warning: Priorities given to ages 27 and below."
+        },
+        "team": {
+          "question": "Do you have a team?",
+          "yesHave": "Yes, I have one",
+          "noTeam": "I don't have a team",
+          "howToContinue": "How do you want to continue?",
+          "goSolo": "Go solo",
+          "createTeam": "Create team",
+          "dragToReorder": "Drag to reorder categories",
+          "redirectNotice": "* You will be redirected to team creation upon completion."
+        },
+        "buttons": {
+          "back": "BACK",
+          "nextStep": "NEXT STEP",
+          "finishRegistration": "FINISH REGISTRATION",
+          "uploading": "UPLOADING..."
+        },
+        "footer": {
+          "needHelp": "Need help?",
+          "contactSupport": "Contact Support"
+        },
+        "validation": {
+          "required": "*"
+        },
+        "errors": {
+          "dniRequired": "DNI is required",
+          "dniNumeric": "DNI must be numeric",
+          "allFieldsRequired": "All personal data fields are required",
+          "minAge": "You must be at least 18 years old",
+          "companyRequired": "Company, Role and Photo are required",
+          "createFailed": "Failed to submit registration"
+        }
+      },
+      "createTeam": {
+        "endpoint": "POST /api/teams/create",
+        "title": "Create Your Team",
+        "sectionTitle": "Team Configuration",
+        "teamAdmin": "Team Admin",
+        "fields": {
+          "teamName": "Team Name",
+          "teamNamePlaceholder": "Los Hackers",
+          "motivation": "Tell us why you want to participate",
+          "motivationPlaceholder": "We want to participate because..."
+        },
+        "validation": {
+          "required": "*",
+          "minCharacters": "Min 20 characters"
+        },
+        "categoryPreference": "Category Preference (Drag to reorder)",
+        "buttons": {
+          "creating": "CREATING TEAM...",
+          "create": "CREATE TEAM"
+        },
+        "footer": {
+          "changedMind": "Changed your mind?",
+          "skipForNow": "Skip for now"
+        },
+        "loading": "Establishing Team Protocol...",
+        "errors": {
+          "teamNameRequired": "Team name is required",
+          "motivationRequired": "Please tell us why you want to participate",
+          "motivationTooShort": "Motivation must be at least 20 characters",
+          "teamNameExists": "Team name already exists. Please choose a different name.",
+          "createFailed": "Failed to create team"
+        }
+      }
     }
   },
   "es": {
@@ -189,14 +363,18 @@
     "mentors": {
       "title": "Mentores",
       "endpoint": "v2026/mentors",
-      "modalTitle": "Detalles del Mentor"
+      "modalTitle": "Detalles del Mentor",
+      "role": "Rol",
+      "company": "Empresa"
     },
     "categories": {
       "title": "Categorías",
       "endpoint": "v2026/categories",
       "web3": "Web3",
       "ia": "IA",
-      "gameDev": "GameDev"
+      "gameDev": "GameDev",
+      "ai": "IA",
+      "healthTech": "HealthTech"
     },
     "weProvide": {
       "title": "Nosotros te damos",
@@ -239,6 +417,176 @@
       "minutes": "Minutos",
       "seconds": "Segundos",
       "ended": "Competencia Finalizada"
+    },
+    "auth": {
+      "signup": {
+        "endpoint": "POST /api/auth/signup",
+        "title": "Crea tu Cuenta",
+        "sectionTitle": "Configuración de Cuenta",
+        "fields": {
+          "name": "Nombre",
+          "surname": "Apellido",
+          "email": "Email",
+          "password": "Contraseña",
+          "confirmPassword": "Confirmar Contraseña",
+          "emailPlaceholder": "tuemail@gmail.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "validation": {
+          "minCharacters": "Mín 6 caracteres",
+          "required": "*"
+        },
+        "buttons": {
+          "creating": "CREANDO CUENTA...",
+          "create": "CREAR CUENTA"
+        },
+        "footer": {
+          "alreadyRegistered": "¿Ya estás registrado?",
+          "login": "Iniciar Sesión"
+        },
+        "loading": "Estableciendo Protocolo de Equipo...",
+        "errors": {
+          "fillAllFields": "Por favor completa todos los campos",
+          "invalidEmail": "Por favor ingresa un email válido",
+          "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+          "passwordMismatch": "Las contraseñas no coinciden",
+          "createFailed": "Fallo al crear la cuenta"
+        }
+      },
+      "login": {
+        "title": "Iniciar Sesión",
+        "endpoint": "POST /auth/login",
+        "fields": {
+          "email": "Email",
+          "password": "Contraseña",
+          "emailPlaceholder": "tuemail@gmail.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "buttons": {
+          "loggingIn": "Iniciando sesión...",
+          "login": "Iniciar Sesión"
+        },
+        "footer": {
+          "noAccount": "¿No tienes cuenta?",
+          "signUp": "Registrarse"
+        },
+        "errors": {
+          "firebaseNotConfigured": "Firebase Auth no está configurado",
+          "loginFailed": "Fallo al iniciar sesión"
+        }
+      },
+      "eventSignup": {
+        "endpoint": "POST /api/event/register",
+        "title": "Registro al Evento",
+        "roleTitle": {
+          "jurado": "Jurado",
+          "participante": "Participante",
+          "mentor": "Mentor"
+        },
+        "loading": "Cargando...",
+        "initializing": "Inicializando Terminal...",
+        "progress": {
+          "init": "Inicio",
+          "complete": "Completar"
+        },
+        "steps": {
+          "personalData": "Datos Personales",
+          "professionalData": "Datos Profesionales",
+          "contactSocial": "Contacto y Redes Sociales",
+          "teamStatus": "Estado del Equipo"
+        },
+        "fields": {
+          "dni": "DNI",
+          "university": "Universidad",
+          "career": "Carrera",
+          "age": "Edad",
+          "company": "Empresa",
+          "professionalRole": "Rol en la empresa",
+          "photo": "Foto",
+          "dietaryPreference": "Preferencia Alimenticia (Opcional)",
+          "dietaryPlaceholder": "Vegetariano, Celíaco, etc.",
+          "github": "Github",
+          "linkedin": "LinkedIn",
+          "instagram": "Instagram",
+          "twitter": "Twitter",
+          "cvLink": "Link a CV",
+          "cvPlaceholder": "https://...",
+          "teamCode": "Ingresar código o nombre de equipo",
+          "teamCodePlaceholder": "TEAM-XXXX"
+        },
+        "photo": {
+          "choose": "Elegir archivo",
+          "change": "Cambiar Foto",
+          "ready": "Listo"
+        },
+        "warnings": {
+          "agePreference": "Aviso: Prioridad dada a edades de 27 años o menos."
+        },
+        "team": {
+          "question": "¿Vas con equipo?",
+          "yesHave": "Sí, ya tengo",
+          "noTeam": "No tengo equipo",
+          "howToContinue": "¿Cómo quieres seguir?",
+          "goSolo": "Ir solo",
+          "createTeam": "Crear equipo",
+          "dragToReorder": "Arrastra para reordenar categorías",
+          "redirectNotice": "* Serás redirigido a la creación de equipo al finalizar."
+        },
+        "buttons": {
+          "back": "ATRÁS",
+          "nextStep": "SIGUIENTE PASO",
+          "finishRegistration": "FINALIZAR REGISTRO",
+          "uploading": "SUBIENDO..."
+        },
+        "footer": {
+          "needHelp": "¿Necesitas ayuda?",
+          "contactSupport": "Contactar Soporte"
+        },
+        "validation": {
+          "required": "*"
+        },
+        "errors": {
+          "dniRequired": "El DNI es requerido",
+          "dniNumeric": "El DNI debe ser numérico",
+          "allFieldsRequired": "Todos los campos de datos personales son requeridos",
+          "minAge": "Debes tener al menos 18 años",
+          "companyRequired": "Empresa, Rol y Foto son requeridos",
+          "createFailed": "Fallo al enviar el registro"
+        }
+      },
+      "createTeam": {
+        "endpoint": "POST /api/teams/create",
+        "title": "Crea tu Equipo",
+        "sectionTitle": "Configuración del Equipo",
+        "teamAdmin": "Administrador del Equipo",
+        "fields": {
+          "teamName": "Nombre del Equipo",
+          "teamNamePlaceholder": "Los Hackers",
+          "motivation": "Cuéntanos por qué quieres participar",
+          "motivationPlaceholder": "Queremos participar porque..."
+        },
+        "validation": {
+          "required": "*",
+          "minCharacters": "Mín 20 caracteres"
+        },
+        "categoryPreference": "Preferencia de Categoría (Arrastra para reordenar)",
+        "buttons": {
+          "creating": "CREANDO EQUIPO...",
+          "create": "CREAR EQUIPO"
+        },
+        "footer": {
+          "changedMind": "¿Cambiaste de opinión?",
+          "skipForNow": "Omitir por ahora"
+        },
+        "loading": "Estableciendo Protocolo de Equipo...",
+        "errors": {
+          "teamNameRequired": "El nombre del equipo es requerido",
+          "motivationRequired": "Por favor cuéntanos por qué quieres participar",
+          "motivationTooShort": "La motivación debe tener al menos 20 caracteres",
+          "teamNameExists": "El nombre del equipo ya existe. Por favor elige un nombre diferente.",
+          "createFailed": "Fallo al crear el equipo"
+        }
+      }
     }
   }
 }

@@ -72,7 +72,7 @@ function EventSignupContent() {
                 if (roleParam && ["jurado", "participante", "mentor"].includes(roleParam)) {
                     setRole(roleParam)
                 } else {
-                    setRole("participante") // Default for testing
+                    setRole("jurado") // Default for testing
                 }
             } catch (err) {
                 console.error("Failed to fetch user role", err)
@@ -109,27 +109,27 @@ function EventSignupContent() {
         // Validation for Step 1
         if (currentStep === 1) {
             if (!formData.dni) {
-                setError("DNI is required")
+                setError(translations.auth.eventSignup.errors.dniRequired)
                 return
             }
             if (!/^\d+$/.test(formData.dni)) {
-                setError("DNI must be numeric")
+                setError(translations.auth.eventSignup.errors.dniNumeric)
                 return
             }
 
             if (role === "participante") {
                 if (!formData.age || !formData.university || !formData.career) {
-                    setError("All personal data fields are required")
+                    setError(translations.auth.eventSignup.errors.allFieldsRequired)
                     return
                 }
                 const age = parseInt(formData.age)
                 if (isNaN(age) || age < 18) {
-                    setError("You must be at least 18 years old")
+                    setError(translations.auth.eventSignup.errors.minAge)
                     return
                 }
             } else {
                 if (!formData.company || !formData.professionalRole || !formData.photo) {
-                    setError("Company, Role and Photo are required")
+                    setError(translations.auth.eventSignup.errors.companyRequired)
                     return
                 }
             }
@@ -200,7 +200,7 @@ function EventSignupContent() {
                 router.push(`/${locale}/dashboard`)
             }
         } catch (err: any) {
-            setError(err.message || "Failed to submit registration")
+            setError(err.message || translations.auth.eventSignup.errors.createFailed)
         } finally {
             setLoading(false)
         }
@@ -210,7 +210,7 @@ function EventSignupContent() {
         if (!role) {
             return (
                 <div className="flex items-center justify-center min-h-[400px]">
-                    <p className="text-brand-cyan font-pixel text-xs uppercase">Loading...</p>
+                    <p className="text-brand-cyan font-pixel text-xs uppercase">{translations.auth.eventSignup.loading}</p>
                 </div>
             )
         }
@@ -220,30 +220,30 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{role === "participante" ? "Personal Data" : "Professional Data"}</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{role === "participante" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">DNI <span className="text-red-500">*</span></Label>
+                            <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                             <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                         </div>
 
                         {role === "participante" ? (
                             <>
                                 <div className="space-y-2">
-                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">Universidad <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <Input id="university" value={formData.university} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">Carrera <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                         <Input id="career" value={formData.career} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="age" className="text-brand-cyan font-pixel text-xs">Edad <span className="text-red-500">*</span></Label>
+                                        <Label htmlFor="age" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.age} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                         <Input id="age" type="number" value={formData.age} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                         {formData.age && parseInt(formData.age) > 27 && (
-                                            <p className="text-xs text-yellow-500 leading-tight font-pixel">Warning: Priorities given to ages 27 and below.</p>
+                                            <p className="text-xs text-yellow-500 leading-tight font-pixel">{translations.auth.eventSignup.warnings.agePreference}</p>
                                         )}
                                     </div>
                                 </div>
@@ -251,15 +251,15 @@ function EventSignupContent() {
                         ) : (
                             <>
                                 <div className="space-y-2">
-                                    <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">Empresa <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.company} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <Input id="company" value={formData.company} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">Rol en la empresa <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.professionalRole} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-brand-cyan font-pixel text-xs">Foto <span className="text-red-500">*</span></Label>
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.photo} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -279,21 +279,21 @@ function EventSignupContent() {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute inset-0 bg-brand-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                    <p className="font-pixel text-[8px] text-brand-cyan uppercase line-height-none">Change Photo</p>
+                                                    <p className="font-pixel text-[8px] text-brand-cyan uppercase line-height-none">{translations.auth.eventSignup.photo.change}</p>
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="p-8 flex flex-col items-center justify-center">
                                                 <Upload className="w-6 h-6 text-brand-cyan/40 mb-2" />
                                                 <p className="text-[10px] text-brand-cyan/60 uppercase text-center">
-                                                    Elegir archivo
+                                                    {translations.auth.eventSignup.photo.choose}
                                                 </p>
                                             </div>
                                         )}
                                     </div>
                                     {formData.photo && !photoPreview && (
                                         <p className="text-[6px] text-brand-orange mt-1 uppercase font-pixel tracking-tighter w-full text-center">
-                                            Ready: {formData.photo}
+                                            {translations.auth.eventSignup.photo.ready}: {formData.photo}
                                         </p>
                                     )}
                                 </div>
@@ -301,8 +301,8 @@ function EventSignupContent() {
                         )}
 
                         <div className="space-y-2 pt-2 border-t border-brand-cyan/10">
-                            <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">Preferencia Alimenticia (Opcional)</Label>
-                            <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs" placeholder="Vegetariano, Celíaco, etc." />
+                            <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
+                            <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
                         </div>
                     </div>
                 )
@@ -310,31 +310,31 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider text-balance">Contact & Social Media</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider text-balance">{translations.auth.eventSignup.steps.contactSocial}</h2>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> Github</Label>
+                                <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> {translations.auth.eventSignup.fields.github}</Label>
                                 <Input id="github" value={formData.github} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> LinkedIn</Label>
+                                <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> {translations.auth.eventSignup.fields.linkedin}</Label>
                                 <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> Instagram</Label>
+                                <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> {translations.auth.eventSignup.fields.instagram}</Label>
                                 <Input id="instagram" value={formData.instagram} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> Twitter</Label>
+                                <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> {translations.auth.eventSignup.fields.twitter}</Label>
                                 <Input id="twitter" value={formData.twitter} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="cvLink" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><ExternalLink className="w-3 h-3" /> Link a CV</Label>
-                            <Input id="cvLink" value={formData.cvLink} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" placeholder="https://..." />
+                            <Label htmlFor="cvLink" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><ExternalLink className="w-3 h-3" /> {translations.auth.eventSignup.fields.cvLink}</Label>
+                            <Input id="cvLink" value={formData.cvLink} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" placeholder={translations.auth.eventSignup.fields.cvPlaceholder} />
                         </div>
                     </div>
                 )
@@ -342,24 +342,24 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">Team Status</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{translations.auth.eventSignup.steps.teamStatus}</h2>
                         </div>
                         <div className="space-y-3">
-                            <Label className="text-brand-cyan font-pixel text-xs">¿Vas con equipo? <span className="text-red-500">*</span></Label>
+                            <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "yes" }))}
                                     className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
                                     <Users className="w-6 h-6 text-brand-orange" />
-                                    <span className="font-pixel text-[10px] uppercase">Sí, ya tengo</span>
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.yesHave}</span>
                                 </button>
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
                                     className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
                                     <UserPlus className="w-6 h-6 text-brand-cyan" />
-                                    <span className="font-pixel text-[10px] uppercase">No tengo equipo</span>
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
                                 </button>
                             </div>
                         </div>
@@ -367,35 +367,35 @@ function EventSignupContent() {
                         {formData.hasTeam === "yes" ? (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-2">
-                                    <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">Ingresar código o nombre de equipo <span className="text-red-500">*</span></Label>
-                                    <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder="TEAM-XXXX" />
+                                    <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.teamCode} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
                                 </div>
                             </div>
                         ) : (
                             <div className="space-y-6 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-3">
-                                    <Label className="text-brand-cyan font-pixel text-xs">¿Cómo quieres seguir? <span className="text-red-500">*</span></Label>
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.howToContinue} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <button
                                             onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "solo" }))}
                                             className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                         >
                                             <UserPlus className="w-6 h-6 text-brand-orange" />
-                                            <span className="font-pixel text-[10px] uppercase">Ir solo</span>
+                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
                                         </button>
                                         <button
                                             onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "create" }))}
                                             className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                         >
                                             <Users className="w-6 h-6 text-brand-cyan" />
-                                            <span className="font-pixel text-[10px] uppercase">Crear equipo</span>
+                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
                                         </button>
                                     </div>
                                 </div>
 
                                 {formData.noTeamOption === "solo" ? (
                                     <div className="space-y-4 animate-in fade-in duration-300">
-                                        <Label className="text-brand-cyan font-pixel text-xs uppercase tracking-tighter italic">Drag to reorder categories</Label>
+                                        <Label className="text-brand-cyan font-pixel text-xs uppercase tracking-tighter italic">{translations.auth.eventSignup.team.dragToReorder}</Label>
                                         <div className="space-y-2">
                                             {formData.priorities.map((cat, i) => (
                                                 <div
@@ -420,7 +420,7 @@ function EventSignupContent() {
                                 ) : (
                                     <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
                                         <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
-                                            * Serás redirigido a la creación de equipo al finalizar.
+                                            {translations.auth.eventSignup.team.redirectNotice}
                                         </p>
                                     </div>
                                 )}
@@ -443,18 +443,20 @@ function EventSignupContent() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-pixel text-4xl">POST /api/event/register</h1>
+                        <h1 className="font-pixel text-4xl">{translations.auth.eventSignup.endpoint}</h1>
                     </div>
                     <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
-                        {role ? `Event Registration - ${role.charAt(0).toUpperCase() + role.slice(1)}` : "Loading..."}
+                        {role && role in translations.auth.eventSignup.roleTitle
+                            ? `${translations.auth.eventSignup.title} - ${translations.auth.eventSignup.roleTitle[role as keyof typeof translations.auth.eventSignup.roleTitle]}`
+                            : translations.auth.eventSignup.loading}
                     </p>
                 </div>
 
                 {/* Progress */}
                 <div className="space-y-2 px-2">
                     <div className="flex justify-between text-[8px] font-pixel uppercase text-brand-cyan/40 px-1">
-                        <span>Init</span>
-                        <span>Complete</span>
+                        <span>{translations.auth.eventSignup.progress.init}</span>
+                        <span>{translations.auth.eventSignup.progress.complete}</span>
                     </div>
                     <Progress value={(currentStep / totalSteps) * 100} className="h-1 bg-brand-black border border-brand-cyan/10" />
                 </div>
@@ -479,7 +481,7 @@ function EventSignupContent() {
                                     disabled={loading}
                                 >
                                     <ChevronLeft className="w-6 h-6" />
-                                    BACK
+                                    {translations.auth.eventSignup.buttons.back}
                                 </PixelButton>
                             )}
                             <PixelButton
@@ -488,11 +490,11 @@ function EventSignupContent() {
                                 className="w-full flex flex-row justify-between items-center"
                             >
                                 {loading ? (
-                                    "UPLOADING..."
+                                    translations.auth.eventSignup.buttons.uploading
                                 ) : currentStep === totalSteps ? (
-                                    <>FINISH REGISTRATION <ChevronRight className="w-6 h-6 ml-2" /></>
+                                    <>{translations.auth.eventSignup.buttons.finishRegistration} <ChevronRight className="w-6 h-6 ml-2" /></>
                                 ) : (
-                                    <>NEXT STEP <ChevronRight className="w-6 h-6 ml-2" /></>
+                                    <>{translations.auth.eventSignup.buttons.nextStep} <ChevronRight className="w-6 h-6 ml-2" /></>
                                 )}
                             </PixelButton>
                         </div>
@@ -501,7 +503,7 @@ function EventSignupContent() {
 
                 {/* Footer */}
                 <p className="text-center text-[10px] font-pixel text-brand-cyan/40 uppercase">
-                    Need help? <Link href={`/${searchParams.get("locale") || 'es'}/support`} className="text-brand-orange hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Contact Support</Link>
+                    {translations.auth.eventSignup.footer.needHelp} <Link href={`/${locale}/support`} className="text-brand-orange hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">{translations.auth.eventSignup.footer.contactSupport}</Link>
                 </p>
             </div>
         </div>
@@ -509,10 +511,14 @@ function EventSignupContent() {
 }
 
 export default function EventSignupPage() {
+    const params = useParams()
+    const locale = params.locale as Locale
+    const translations = getTranslations(locale)
+
     return (
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center p-4">
-                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">Initializing Terminal...</p>
+                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">{translations.auth.eventSignup.initializing}</p>
             </div>
         }>
             <EventSignupContent />

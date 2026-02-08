@@ -82,8 +82,8 @@ export function Mentors({ translations }: MentorsProps) {
                 </div>
                 <div className="flex-1">
                   <p className="font-pixel font-bold text-xs text-brand-yellow mb-2">{selectedMentor.name}</p>
-                  <p className="text-brand-yellow">"Rol": <span className="text-white">"{selectedMentor.title}"</span></p>
-                  <p className="text-brand-yellow">"Empresa": <span className="text-white">"{selectedMentor.company}"</span></p>
+                  <p className="text-brand-yellow">"{translations.mentors.role}": <span className="text-white">"{selectedMentor.title}"</span></p>
+                  <p className="text-brand-yellow">"{translations.mentors.company}": <span className="text-white">"{selectedMentor.company}"</span></p>
                 </div>
               </div>
 
