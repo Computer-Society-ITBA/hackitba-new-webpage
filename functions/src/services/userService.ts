@@ -88,12 +88,22 @@ export const eventRegistration = async (
       twitter: twitter,
       github: github,
       food_preference: food_preference,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   } else {
 
     if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
         throw new Error("Faltan campos obligatorios");
     }
+
+    // Si se especifica un equipo, verificar que exista
+    if (team) {
+      const teamDoc = await db.collection("teams").doc(team).get();
+      if (!teamDoc.exists) {
+        throw new Error("El equipo especificado no existe");
+      }
+    }
+
     await userRef.update({
       dni: dni,
       university: university,
@@ -109,6 +119,7 @@ export const eventRegistration = async (
       category_1: category_1 !== null ? category_1 : category_1,
       category_2: category_2 !== null ? category_2 : category_2,
       category_3: category_3 !== null ? category_3 : category_3,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   }
 }
