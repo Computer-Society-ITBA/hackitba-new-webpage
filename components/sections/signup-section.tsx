@@ -18,15 +18,14 @@ export function SignupSection({ translations, locale }: SignupSectionProps) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
           <PixelButton asChild size="lg" variant="outline">
             <Link href={`/${locale}/auth/signup?role=participante`}>{translations.signup.participant}</Link>
           </PixelButton>
 
-          <Link className="px-8 font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200" href={`/${locale}/auth/signup?role=sponsor`}>{translations.signup.sponsor}</Link>
+          <Link className="font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200 uppercase" href={`/${locale}/auth/signup?role=mentor`}>{translations.signup.mentor}</Link>
 
-          <Link className="font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200" href={`/${locale}/auth/signup?role=mentor`}>{translations.signup.mentor}</Link>
-
+          <Link className="font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200 uppercase" href={`/${locale}/auth/signup?role=jurado`}>Jurado</Link>
         </div>
       </div>
     </section>
