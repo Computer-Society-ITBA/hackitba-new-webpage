@@ -5,15 +5,21 @@
    ========================================================= */
 :root {
   /* Brand colors */
-  --color-brand-yellow: #fad399;
-  --color-brand-cyan: #afeff3;
-  --color-brand-orange: #ef802f;
-  --color-brand-dark-orange: #cf5d0a;
-  --color-brand-navy: #14192d;
+  --color-brand-yellow: #FAD399;
+  /* Warm glow, highlights, accents */
+  --color-brand-cyan: #6EB6F9;
+  /* Primary neon blue, titles, links */
+  --color-brand-orange: #EF802F;
+  /* Call-to-action, logo energy */
+  --color-brand-dark-orange: #CF5D0A;
+  /* Depth for orange states */
+  --color-brand-navy: #14192D;
+  /* Main background */
   --color-brand-black: #080C1B;
+  /* Deep background / contrast */
 
   /* Semantic colors */
-  --background: var(--color-brand-navy);
+  --background: var(--color-brand-black);
   --foreground: var(--color-brand-cyan);
   --primary: var(--color-brand-orange);
   --primary-foreground: var(--color-brand-navy);
@@ -55,12 +61,12 @@
    ========================================================= */
 @theme inline {
 
-  --color-brand-yellow: #fad399;
-  --color-brand-cyan: #afeff3;
-  --color-brand-orange: #ef802f;
-  --color-brand-dark-orange: #cf5d0a;
-  --color-brand-navy: #14192d;
-  --color-brand-black: #080C1B;
+  --color-brand-yellow: var(--color-brand-yellow);
+  --color-brand-cyan: var(--color-brand-cyan);
+  --color-brand-orange: var(--color-brand-orange);
+  --color-brand-dark-orange: var(--color-brand-dark-orange);
+  --color-brand-navy: var(--color-brand-navy);
+  --color-brand-black: var(--color-brand-black);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -199,9 +205,9 @@
       /* STROKE (dynamic angle) */
       background:
         linear-gradient(var(--glare-angle, 135deg),
-          #afeff3 0%,
+          var(--color-brand-cyan) 0%,
           #5a7986 45%,
-          #14192d 100%);
+          var(--color-brand-navy) 100%);
 
       /* Mask so it's only a border */
       -webkit-mask:

@@ -4,9 +4,9 @@ export const ONBOARDING_REMINDER_TEMPLATE = (name: string, role: string, onboard
 <head>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #14192d;
-      color: #afeff3;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #14192D;
+      color: #6EB6F9;
       padding: 20px;
     }
     .container {
@@ -19,7 +19,7 @@ export const ONBOARDING_REMINDER_TEMPLATE = (name: string, role: string, onboard
     }
     .title {
       font-family: 'Courier New', monospace;
-      color: #ef802f;
+      color: #EF802F;
       font-size: 24px;
       margin-bottom: 20px;
     }
@@ -30,8 +30,8 @@ export const ONBOARDING_REMINDER_TEMPLATE = (name: string, role: string, onboard
     .button {
       display: inline-block;
       padding: 12px 24px;
-      background-color: #ef802f;
-      color: #14192d;
+      background-color: #EF802F;
+      color: #14192D;
       text-decoration: none;
       border-radius: 4px;
       font-weight: bold;
@@ -58,9 +58,9 @@ export const SUBMISSION_DEADLINE_TEMPLATE = (name: string, eventTitle: string) =
 <head>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #14192d;
-      color: #afeff3;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #14192D;
+      color: #6EB6F9;
       padding: 20px;
     }
     .container {
@@ -73,7 +73,7 @@ export const SUBMISSION_DEADLINE_TEMPLATE = (name: string, eventTitle: string) =
     }
     .title {
       font-family: 'Courier New', monospace;
-      color: #ef802f;
+      color: #EF802F;
       font-size: 24px;
       margin-bottom: 20px;
     }
