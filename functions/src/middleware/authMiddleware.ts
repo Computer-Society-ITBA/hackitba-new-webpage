@@ -25,10 +25,30 @@ export const validateToken = async (
   const idToken = authHeader.split("Bearer ")[1];
 
   try {
-    // Use checkRevoked=false for emulator compatibility
-    const decodedToken = await admin.auth().verifyIdToken(idToken, false);
-    req.user = decodedToken;
-    next();
+    // Detectar si estamos en el emulador
+    const isEmulator = process.env.FUNCTIONS_EMULATOR === "true" || 
+                       process.env.FIREBASE_AUTH_EMULATOR_HOST !== undefined;
+    
+    if (isEmulator) {
+      // En el emulador, decodificar el token sin verificar la firma
+      const decodedPayload = JSON.parse(
+        Buffer.from(idToken.split('.')[1], 'base64').toString()
+      );
+      
+      // Verificar que tenga el uid
+      if (!decodedPayload.uid) {
+        res.status(403).json({ error: "Token sin uid válido" });
+        return;
+      }
+      
+      req.user = decodedPayload;
+      next();
+    } else {
+      // En producción, verificar normalmente
+      const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+      req.user = decodedToken;
+      next();
+    }
   } catch (error) {
     logger.error("Error al verificar token:", error);
     res.status(403).json({ error: "Token inválido o expirado" });
