@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete } from "../services/userService";
+import {Request, Response} from "express";
+import {registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete} from "../services/userService";
 
 interface RegisterRequestBody {
   email: string;
@@ -13,12 +13,12 @@ export const register = async (
   res: Response
 ) => {
   try {
-    const { email, password, name, surname } = req.body;
+    const {email, password, name, surname} = req.body;
 
     if (!email || !password || !name) {
       return res
         .status(400)
-        .json({ error: "Faltan campos obligatorios" });
+        .json({error: "Faltan campos obligatorios"});
     }
 
     const result = await registerUser({
@@ -36,39 +36,39 @@ export const register = async (
     });
   } catch (error: any) {
     if (error.code === "auth/email-already-exists") {
-      return res.status(400).json({ error: "El email ya está registrado" });
+      return res.status(400).json({error: "El email ya está registrado"});
     }
 
-    return res.status(500).json({ error: "Error interno al registrar usuario" });
+    return res.status(500).json({error: "Error interno al registrar usuario"});
   }
 };
 
 export const registerEvent = async (req: Request, res: Response) => {
-    try {
-        const { userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo } = req.body;
+  try {
+    const {userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo} = req.body;
 
-        await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
+    await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
 
-        return res.status(200).json({ message: "Registro al evento exitoso" });
-    } catch (error: any) {
-        if (error.message === "El equipo especificado no existe") {
-            return res.status(404).json({ error: error.message });
-        }
-        if (error.message === "Faltan campos obligatorios") {
-            return res.status(400).json({ error: error.message });
-        }
-        return res.status(500).json({ error: "Error interno al registrar al evento" });
+    return res.status(200).json({message: "Registro al evento exitoso"});
+  } catch (error: any) {
+    if (error.message === "El equipo especificado no existe") {
+      return res.status(404).json({error: error.message});
     }
+    if (error.message === "Faltan campos obligatorios") {
+      return res.status(400).json({error: error.message});
+    }
+    return res.status(500).json({error: "Error interno al registrar al evento"});
+  }
 };
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     if (!email || !password) {
       return res
         .status(400)
-        .json({ error: "Faltan campos obligatorios" });
+        .json({error: "Faltan campos obligatorios"});
     }
 
     const result = await loginUser(email, password);
@@ -80,35 +80,35 @@ export const login = async (req: Request, res: Response) => {
       token: result.token,
     });
   } catch (error) {
-    return res.status(500).json({ error: "Error interno al iniciar sesión" });
+    return res.status(500).json({error: "Error interno al iniciar sesión"});
   }
 };
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await getAllUsers();
-    return res.status(200).json({ users });
+    return res.status(200).json({users});
   } catch (error) {
-    return res.status(500).json({ error: "Error al obtener usuarios" });
+    return res.status(500).json({error: "Error al obtener usuarios"});
   }
 };
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const {id} = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "ID de usuario no proporcionado" });
+      return res.status(400).json({error: "ID de usuario no proporcionado"});
     }
 
     const user = await getUserByIdComplete(id);
 
     if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return res.status(404).json({error: "Usuario no encontrado"});
     }
 
-    return res.status(200).json({ user });
+    return res.status(200).json({user});
   } catch (error) {
-    return res.status(500).json({ error: "Error al obtener usuario" });
+    return res.status(500).json({error: "Error al obtener usuario"});
   }
 };

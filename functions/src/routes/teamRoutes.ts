@@ -1,6 +1,6 @@
-import { Router } from "express";
+import {Router} from "express";
 import * as teamController from "../controllers/teamController";
-import { validateToken } from "../middleware/authMiddleware";
+import {validateToken} from "../middleware/authMiddleware";
 
 const router = Router();
 

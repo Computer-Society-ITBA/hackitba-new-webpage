@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import {Request, Response, NextFunction} from "express";
 import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 
@@ -18,7 +18,7 @@ export const validateToken = async (
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(403).json({ error: "No autorizado. Falta el token." });
+    res.status(403).json({error: "No autorizado. Falta el token."});
     return;
   }
 
@@ -26,21 +26,21 @@ export const validateToken = async (
 
   try {
     // Detectar si estamos en el emulador
-    const isEmulator = process.env.FUNCTIONS_EMULATOR === "true" || 
+    const isEmulator = process.env.FUNCTIONS_EMULATOR === "true" ||
                        process.env.FIREBASE_AUTH_EMULATOR_HOST !== undefined;
-    
+
     if (isEmulator) {
       // En el emulador, decodificar el token sin verificar la firma
       const decodedPayload = JSON.parse(
-        Buffer.from(idToken.split('.')[1], 'base64').toString()
+        Buffer.from(idToken.split(".")[1], "base64").toString()
       );
-      
+
       // Verificar que tenga el uid
       if (!decodedPayload.uid) {
-        res.status(403).json({ error: "Token sin uid válido" });
+        res.status(403).json({error: "Token sin uid válido"});
         return;
       }
-      
+
       req.user = decodedPayload;
       next();
     } else {
@@ -51,7 +51,7 @@ export const validateToken = async (
     }
   } catch (error) {
     logger.error("Error al verificar token:", error);
-    res.status(403).json({ error: "Token inválido o expirado" });
+    res.status(403).json({error: "Token inválido o expirado"});
     return;
   }
 };
