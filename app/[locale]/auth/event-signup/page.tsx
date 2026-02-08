@@ -12,16 +12,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import type { UserRole } from "@/lib/firebase/types"
 import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter, ExternalLink, Users, UserPlus } from "lucide-react"
+import type { Locale } from "@/lib/i18n/config"
+import { getTranslations } from "@/lib/i18n/get-translations"
 
-export const dynamic = 'force-dynamic'
+
+interface EventSignupPageProps {
+    translations: any
+    locale: Locale
+}
 
 export default function EventSignupPage() {
     const router = useRouter()
     const params = useParams()
+    const locale = params.locale as Locale
+    const translations = getTranslations(locale)
     const searchParams = useSearchParams()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const locale = params.locale as string || "es"
 
     // Step management
     const [currentStep, setCurrentStep] = useState(1)

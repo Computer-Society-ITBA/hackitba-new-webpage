@@ -1,5 +1,9 @@
 import { getTranslations } from "@/lib/i18n/get-translations"
-import type { Locale } from "@/lib/i18n/config"
+import { type Locale, locales } from "@/lib/i18n/config"
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }))
+}
 import { Header } from "@/components/sections/header"
 import { Hero } from "@/components/sections/hero"
 import { Stats } from "@/components/sections/stats"
