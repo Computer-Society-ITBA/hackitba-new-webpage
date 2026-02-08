@@ -8,9 +8,26 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
+const express = require("express");
+import dotenv from 'dotenv';
+import { Request, Response } from "express";
+import {onRequest} from "firebase-functions/v2/https";
 
+dotenv.config();
+
+export const app = express();
+
+interface HealthResponse {
+    message: string;
+}
+
+app.get("/health", (req: Request, res: Response<HealthResponse>) => {
+        logger.info("Request received at /health endpoint");
+        res.status(200).send({ message: "OK" });
+});
+
+exports.api = onRequest(app);
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
