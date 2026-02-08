@@ -73,3 +73,13 @@ export const eventRegistration = async (
         category_3: category_3 !== null ? category_3 : category_3,
     });
 }
+
+export const loginUser = async (email: string, password: string): Promise<UserRecord> => {
+  try {
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+    return { uid: userRecord.uid, email: userRecord.email, token: customToken };
+  } catch (error) {
+    throw new Error("Error al iniciar sesión");
+  }
+};

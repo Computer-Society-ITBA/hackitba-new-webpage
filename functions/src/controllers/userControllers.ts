@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser, eventRegistration } from "../services/userService";
+import { registerUser, eventRegistration, loginUser } from "../services/userService";
 
 interface RegisterRequestBody {
   email: string;
@@ -57,4 +57,27 @@ export const registerEvent = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({ error: "Error interno al registrar al evento" });
     }
+};
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Faltan campos obligatorios" });
+    }
+
+    const result = await loginUser(email, password);
+
+    return res.status(200).json({
+      message: "Login successful",
+      uid: result.uid,
+      email: result.email,
+      token: result.token,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno al iniciar sesión" });
+  }
 };
