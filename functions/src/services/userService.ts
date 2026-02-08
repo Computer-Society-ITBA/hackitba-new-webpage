@@ -6,8 +6,8 @@ import { getUserById } from "../helpers/getuserById";
 interface UserData {
   email: string;
   password: string;
-  nombre: string;
-  apellido: string;
+  name: string;
+  surname: string;
 }
 
 interface UserRecord {
@@ -17,13 +17,13 @@ interface UserRecord {
 }
 
 export const registerUser = async (userData: UserData): Promise<UserRecord> => {
-  const { email, password, nombre, apellido } = userData;
+  const { email, password, name, surname } = userData;
 
   // Create user in Firebase Auth
   const userRecord = await admin.auth().createUser({
     email: email,
     password: password,
-    displayName: `${nombre} ${apellido}`,
+    displayName: `${name} ${surname}`,
   });
 
   const customToken = await admin.auth().createCustomToken(userRecord.uid);
@@ -34,8 +34,8 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
   const userRef = db.collection("users").doc(userRecord.uid);
   await userRef.set({
     email: userRecord.email,
-    nombre: nombre,
-    apellido: apellido,
+    name: name,
+    surname: surname,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     role: role || "participant",
   });
@@ -88,12 +88,22 @@ export const eventRegistration = async (
       twitter: twitter,
       github: github,
       food_preference: food_preference,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   } else {
 
     if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
         throw new Error("Faltan campos obligatorios");
     }
+
+    // Si se especifica un equipo, verificar que exista
+    if (team) {
+      const teamDoc = await db.collection("teams").doc(team).get();
+      if (!teamDoc.exists) {
+        throw new Error("El equipo especificado no existe");
+      }
+    }
+
     await userRef.update({
       dni: dni,
       university: university,
@@ -109,6 +119,7 @@ export const eventRegistration = async (
       category_1: category_1 !== null ? category_1 : category_1,
       category_2: category_2 !== null ? category_2 : category_2,
       category_3: category_3 !== null ? category_3 : category_3,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   }
 }
@@ -121,4 +132,30 @@ export const loginUser = async (email: string, password: string): Promise<UserRe
   } catch (error) {
     throw new Error("Error al iniciar sesión");
   }
+};
+
+export const getAllUsers = async () => {
+  const db = admin.firestore();
+  const usersSnapshot = await db.collection("users").get();
+  
+  const users = usersSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return users;
+};
+
+export const getUserByIdComplete = async (userId: string) => {
+  const db = admin.firestore();
+  const userDoc = await db.collection("users").doc(userId).get();
+
+  if (!userDoc.exists) {
+    return null;
+  }
+
+  return {
+    id: userDoc.id,
+    ...userDoc.data(),
+  };
 };

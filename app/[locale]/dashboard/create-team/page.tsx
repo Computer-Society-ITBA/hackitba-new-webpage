@@ -164,13 +164,12 @@ function CreateTeamContent() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-pixel text-4xl">POST /api/teams/create</h1>
+                        <h1 className="font-pixel text-xl">POST /api/teams/create</h1>
                     </div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">Create Your Team</p>
                 </div>
 
                 {/* Main Card */}
-                <GlassCard neonOnHover neonColor="orange" className="p-8">
+                <GlassCard className="p-8">
                     <div className="min-h-[500px] flex flex-col">
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="mb-6">

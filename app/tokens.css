@@ -13,7 +13,7 @@
   /* Call-to-action, logo energy */
   --color-brand-dark-orange: #CF5D0A;
   /* Depth for orange states */
-  --color-brand-navy: #14192D;
+  --color-brand-navy: #020617;
   /* Main background */
   --color-brand-black: #080C1B;
   /* Deep background / contrast */
@@ -185,8 +185,8 @@
       /* FILL */
       background:
         linear-gradient(-32deg,
-          rgba(20, 25, 45, 0.9),
-          rgba(20, 25, 45, 0.6));
+          rgba(6, 15, 48, 0.8),
+          rgba(1, 8, 34, 0.5));
 
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
@@ -206,7 +206,7 @@
       background:
         linear-gradient(var(--glare-angle, 135deg),
           var(--color-brand-cyan) 0%,
-          #5a7986 45%,
+          #345b7f 45%,
           var(--color-brand-navy) 100%);
 
       /* Mask so it's only a border */

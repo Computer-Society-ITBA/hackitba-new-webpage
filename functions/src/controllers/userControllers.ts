@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { registerUser, eventRegistration, loginUser } from "../services/userService";
+import { registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete } from "../services/userService";
 
 interface RegisterRequestBody {
   email: string;
   password: string;
-  nombre: string;
-  apellido?: string;
+  name: string;
+  surname?: string;
 }
 
 export const register = async (
@@ -13,9 +13,9 @@ export const register = async (
   res: Response
 ) => {
   try {
-    const { email, password, nombre, apellido } = req.body;
+    const { email, password, name, surname } = req.body;
 
-    if (!email || !password || !nombre) {
+    if (!email || !password || !name) {
       return res
         .status(400)
         .json({ error: "Faltan campos obligatorios" });
@@ -24,8 +24,8 @@ export const register = async (
     const result = await registerUser({
       email,
       password,
-      nombre,
-      apellido: apellido || "",
+      name,
+      surname: surname || "",
     });
 
     return res.status(201).json({
@@ -50,7 +50,13 @@ export const registerEvent = async (req: Request, res: Response) => {
         await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
 
         return res.status(200).json({ message: "Registro al evento exitoso" });
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message === "El equipo especificado no existe") {
+            return res.status(404).json({ error: error.message });
+        }
+        if (error.message === "Faltan campos obligatorios") {
+            return res.status(400).json({ error: error.message });
+        }
         return res.status(500).json({ error: "Error interno al registrar al evento" });
     }
 };
@@ -75,5 +81,34 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ error: "Error interno al iniciar sesión" });
+  }
+};
+
+export const getUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await getAllUsers();
+    return res.status(200).json({ users });
+  } catch (error) {
+    return res.status(500).json({ error: "Error al obtener usuarios" });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "ID de usuario no proporcionado" });
+    }
+
+    const user = await getUserByIdComplete(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(500).json({ error: "Error al obtener usuario" });
   }
 };

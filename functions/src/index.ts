@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { onRequest } from "firebase-functions/v2/https";
 import admin from "firebase-admin";
 import userRoutes from "./routes/userRoutes";
+import teamRoutes from "./routes/teamRoutes";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 
 // Routes
 app.use("/users", userRoutes);
+app.use("/teams", teamRoutes);
 
 // Health check endpoint
 interface HealthResponse {
