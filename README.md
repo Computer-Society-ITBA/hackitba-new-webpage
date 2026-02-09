@@ -58,35 +58,42 @@ A production-ready event management platform built with Next.js 16, TypeScript, 
 
 ## Environment Variables
 
-Create a `.env.local` file:
+### Local Development
 
+1. Copy the example file:
 ```bash
-# Firebase Admin SDK
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=your-client-email
-FIREBASE_PRIVATE_KEY=your-private-key
-FIREBASE_STORAGE_BUCKET=your-bucket
-
-# Firebase Client SDK
-NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
-
-# Cron Jobs
-CRON_SECRET=your-secret-key
-
-# App URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+cp .env.local.example .env.local
 ```
+
+2. Fill in your Firebase configuration values in `.env.local`
+
+3. Verify your configuration:
+```bash
+npm run check-env
+```
+
+### Production Deployment (Vercel)
+
+For detailed instructions on configuring environment variables for production deployment, see [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
+
+Quick steps:
+1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
+2. Navigate to **Settings** → **Environment Variables**
+3. Add all variables from `.env.example`
+4. Redeploy your application
 
 ## Installation
 
 ```bash
 # Install dependencies
 npm install
+
+# Setup environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your configuration
+
+# Verify environment variables
+npm run check-env
 
 # Run development server
 npm run dev
