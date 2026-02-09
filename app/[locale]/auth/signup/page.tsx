@@ -124,7 +124,7 @@ function SignupContent() {
             <h1 className="font-pixel text-xl">{translations.auth.signup.endpoint}</h1>
           </div>
         </div>
-
+ 
         {/* Main Card */}
         <GlassCard className="p-8">
           <div className="min-h-[400px] flex flex-col">
