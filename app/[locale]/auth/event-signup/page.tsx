@@ -84,7 +84,7 @@ function EventSignupContent() {
                     setRole("participante")
                     return
                 }
-
+ 
                 const idToken = await currentUser.getIdToken()
 
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
