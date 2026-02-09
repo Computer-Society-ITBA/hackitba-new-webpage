@@ -104,7 +104,7 @@ export const eventRegistration = async (
       logger.info(`Mentor/judge record updated successfully for ${userId}`);
     } else {
       logger.info(`Updating participant record for ${userId}`);
-      if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
+      if (!userId || !dni || !university || !career || !age || category_1 === null || category_1 === undefined || category_2 === null || category_2 === undefined || category_3 === null || category_3 === undefined) {
         throw new Error("Faltan campos obligatorios");
       }
 

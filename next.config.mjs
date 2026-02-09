@@ -4,7 +4,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   pageExtensions: ["tsx"],
-  output: 'export',
+  // output: 'export', // Temporalmente deshabilitado por conflicto con generateStaticParams
   images: {
     unoptimized: true,
   },
