@@ -1,32 +1,83 @@
 import {logger} from "firebase-functions";
-import admin from "firebase-admin";
+import {getFirestore} from "firebase-admin/firestore";
 
 const MAIL_COLLECTION = "mail";
-const APP_URL = process.env.APP_URL || "https://hackitba.com";
+const EMAIL_TEMPLATES_COLLECTION = "emailTemplates";
+const APP_URL = process.env.APP_URL || "https://hackitba.com.ar";
 
-const getDb = () => admin.firestore();
+const getDb = () => getFirestore("hackitba");
+
+/**
+ * Obtiene un template de email desde Firestore
+ * @param templateId - ID del template a obtener
+ * @returns Template con subject y html
+ */
+const getEmailTemplate = async (templateId: string): Promise<{
+  subject: string;
+  html: string;
+} | null> => {
+  try {
+    const templateDoc = await getDb()
+      .collection(EMAIL_TEMPLATES_COLLECTION)
+      .doc(templateId)
+      .get();
+
+    if (!templateDoc.exists) {
+      logger.warn(`Email template ${templateId} not found in database`);
+      return null;
+    }
+
+    const data = templateDoc.data();
+    return {
+      subject: data?.subject || "",
+      html: data?.html || "",
+    };
+  } catch (error) {
+    logger.error(`Error fetching email template ${templateId}:`, error);
+    return null;
+  }
+};
+
+/**
+ * Reemplaza variables en un template con valores reales
+ * @param template - String del template con placeholders {{variable}}
+ * @param variables - Objeto con los valores a reemplazar
+ * @returns Template con variables reemplazadas
+ */
+const replaceTemplateVariables = (
+  template: string,
+  variables: Record<string, string>
+): string => {
+  let result = template;
+  Object.entries(variables).forEach(([key, value]) => {
+    const regex = new RegExp(`{{${key}}}`, "g");
+    result = result.replace(regex, value);
+  });
+  return result;
+};
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
   try {
     logger.info(`Queuing welcome email to ${email}`);
 
+    const template = await getEmailTemplate("welcome");
+    if (!template) {
+      throw new Error("Welcome email template not found");
+    }
+
+    const variables = {
+      name,
+      dashboardUrl: `${APP_URL}/es/dashboard`,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
+
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "¡Bienvenido a HackItBA! 🚀",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>¡Hola ${name}!</h2>
-            <p>Gracias por registrarte en HackItBA. Estamos emocionados de tenerte con nosotros.</p>
-            <p>Ya puedes acceder a tu cuenta e historia en el evento.</p>
-            <a href="${APP_URL}/es/dashboard" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-              Ir a mi Dashboard
-            </a>
-            <p style="margin-top: 40px; color: #666; font-size: 12px;">
-              HackItBA 2025 - Buenos Aires
-            </p>
-          </div>
-        `,
+        subject,
+        html,
       },
     });
 
@@ -46,6 +97,11 @@ export const sendEventConfirmationEmail = async (
   try {
     logger.info(`Queuing event confirmation email to ${email}`);
 
+    const template = await getEmailTemplate("eventConfirmation");
+    if (!template) {
+      throw new Error("Event confirmation email template not found");
+    }
+
     const roleText =
       role === "participant" ?
         "Participante" :
@@ -60,30 +116,24 @@ export const sendEventConfirmationEmail = async (
         `${APP_URL}/es/dashboard/participante` :
         `${APP_URL}/es/dashboard`;
 
+    const participantFeatures =
+      role === "participant" ? "<li>Crear o unirte a un equipo</li>" : "";
+
+    const variables = {
+      name,
+      roleText,
+      dashboardUrl,
+      participantFeatures,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
+
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "¡Registro al evento confirmado! ✅",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>¡Tu registro ha sido confirmado!</h2>
-            <p>Hola ${name},</p>
-            <p>Tu registro como <strong>${roleText}</strong> en HackItBA ha sido confirmado.</p>
-            <p>Ahora puedes:</p>
-            <ul>
-              ${role === "participant" ? "<li>Crear o unirte a un equipo</li>" : ""}
-              <li>Acceder a tu perfil</li>
-              <li>Ver detalles del evento</li>
-              <li>Conectar con otros participantes</li>
-            </ul>
-            <a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-              Ver mi perfil
-            </a>
-            <p style="margin-top: 40px; color: #666; font-size: 12px;">
-              HackItBA 2025 - Buenos Aires
-            </p>
-          </div>
-        `,
+        subject,
+        html,
       },
     });
 
@@ -102,26 +152,23 @@ export const sendEmailVerificationEmail = async (
   try {
     logger.info(`Queuing email verification email to ${email}`);
 
+    const template = await getEmailTemplate("emailVerification");
+    if (!template) {
+      throw new Error("Email verification template not found");
+    }
+
+    const variables = {
+      verificationLink,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
+
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "Confirma tu email para HackItBA",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Confirma tu email</h2>
-            <p>Para completar tu registro, necesitamos que confirmes tu dirección de email.</p>
-            <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-              Confirmar Email
-            </a>
-            <p style="margin-top: 20px; color: #666; font-size: 12px;">
-              O copia este enlace en tu navegador:<br/>
-              ${verificationLink}
-            </p>
-            <p style="margin-top: 40px; color: #666; font-size: 12px;">
-              HackItBA 2025 - Buenos Aires
-            </p>
-          </div>
-        `,
+        subject,
+        html,
       },
     });
 
@@ -140,25 +187,23 @@ export const sendPasswordResetEmail = async (
   try {
     logger.info(`Queuing password reset email to ${email}`);
 
+    const template = await getEmailTemplate("passwordReset");
+    if (!template) {
+      throw new Error("Password reset email template not found");
+    }
+
+    const variables = {
+      resetLink,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
+
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "Restablecer tu contraseña de HackItBA",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Restablecer contraseña</h2>
-            <p>Recibimos una solicitud para restablecer tu contraseña. Si no la solicitaste, ignora este email.</p>
-            <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-              Restablecer Contraseña
-            </a>
-            <p style="margin-top: 20px; color: #666; font-size: 12px;">
-              Este enlace expira en 1 hora.
-            </p>
-            <p style="margin-top: 40px; color: #666; font-size: 12px;">
-              HackItBA 2025 - Buenos Aires
-            </p>
-          </div>
-        `,
+        subject,
+        html,
       },
     });
 
@@ -180,40 +225,26 @@ export const sendTeamNotificationEmail = async (
   try {
     logger.info(`Queuing team notification email to ${email}`);
 
-    let subject = "";
-    let message = "";
-
-    switch (action) {
-    case "joined":
-      subject = `¡Nuevo miembro en ${teamName}!`;
-      message = `<p>${name} se ha unido a tu equipo.</p>`;
-      break;
-    case "removed":
-      subject = `Cambio en tu equipo ${teamName}`;
-      message = `<p>${name} ha sido removido del equipo.</p>`;
-      break;
-    case "updated":
-      subject = `Tu equipo ${teamName} ha sido actualizado`;
-      message = `<p>Tu equipo ha sido actualizado:</p><p>${details || ""}</p>`;
-      break;
+    const template = await getEmailTemplate(`teamNotification_${action}`);
+    if (!template) {
+      throw new Error(`Team notification (${action}) email template not found`);
     }
+
+    const variables = {
+      name,
+      teamName,
+      details: details || "",
+      dashboardUrl: `${APP_URL}/es/dashboard/participante`,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
 
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: subject,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Notificación de equipo</h2>
-            ${message}
-            <a href="${APP_URL}/es/dashboard/participante" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-              Ver mi equipo
-            </a>
-            <p style="margin-top: 40px; color: #666; font-size: 12px;">
-              HackItBA 2025 - Buenos Aires
-            </p>
-          </div>
-        `,
+        subject,
+        html,
       },
     });
 

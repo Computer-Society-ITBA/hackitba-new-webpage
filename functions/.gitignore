@@ -8,3 +8,8 @@ typings/
 # Node.js dependency directory
 node_modules/
 *.local
+
+# Firebase credentials (NEVER commit these!)
+service-account-key.json
+*-firebase-adminsdk-*.json
+.env
