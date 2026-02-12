@@ -7,6 +7,9 @@ const router = Router();
 // Crear equipo
 router.post("/", validateToken, teamController.createTeam);
 
+// Unirse a un equipo con código
+router.post("/:label/join", validateToken, teamController.joinTeam);
+
 // Obtener equipo por label
 router.get("/:label", validateToken, teamController.getTeamByLabel);
 

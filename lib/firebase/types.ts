@@ -1,13 +1,33 @@
-export type UserRole = "admin" | "jurado" | "participante" | "mentor"
+export type UserRole = "admin" | "judge" | "participant" | "mentor"
 
 export interface User {
   id: string
   email: string
+  name: string
+  surname?: string
   role: UserRole
-  onboardingStep: number
+  onboardingStep?: number
   teamId?: string
-  profile: {
-    name: string
+  dni?: string
+  university?: string
+  career?: string
+  age?: number
+  github?: string
+  linkedin?: string
+  instagram?: string
+  twitter?: string
+  link_cv?: string
+  food_preference?: string
+  category_1?: number
+  category_2?: number
+  category_3?: number
+  team?: string
+  hasTeam?: boolean
+  company?: string
+  position?: string
+  photo?: string
+  profile?: {
+    name?: string
     bio?: string
     avatar?: string
     company?: string
@@ -15,8 +35,8 @@ export interface User {
     github?: string
     twitter?: string
   }
-  createdAt: Date
-  updatedAt: Date
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface Event {

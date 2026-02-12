@@ -111,7 +111,7 @@ export default function JuradoDashboard() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["jurado"]}>
+    <ProtectedRoute allowedRoles={["judge"]}>
       <DashboardLayout title="Jurado Dashboard">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>

@@ -4,10 +4,11 @@ import type React from "react"
 
 import { useAuth } from "@/lib/firebase/auth-context"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
 import { Home, User, Settings, LogOut } from "lucide-react"
+import type { Locale } from "@/lib/i18n/config"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -17,10 +18,12 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { user, signOut } = useAuth()
   const router = useRouter()
+  const params = useParams()
+  const locale = (params.locale as Locale) || "es"
 
   const handleSignOut = async () => {
     await signOut()
-    router.push("/auth/login")
+    router.push(`/${locale}/auth/login`)
   }
 
   return (
@@ -28,13 +31,13 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <aside className="w-64 glass-effect border-r border-brand-cyan/20 p-6 flex flex-col">
         <div className="mb-8">
           <h1 className="font-pixel text-2xl text-brand-orange neon-glow-orange">
-            <Link href="/">{"<HackITBA>"}</Link>
+            <Link href={`/${locale}`}>{"<HackITBA>"}</Link>
           </h1>
         </div>
 
         <nav className="flex-1 space-y-2">
           <Link
-            href="/dashboard"
+            href={`/${locale}/dashboard`}
             className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
           >
             <Home size={20} />
@@ -42,7 +45,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </Link>
 
           <Link
-            href="/dashboard/profile"
+            href={`/${locale}/dashboard/profile`}
             className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
           >
             <User size={20} />
@@ -50,7 +53,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </Link>
 
           <Link
-            href="/dashboard/settings"
+            href={`/${locale}/dashboard/settings`}
             className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
           >
             <Settings size={20} />
@@ -60,7 +63,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
         <div className="border-t border-brand-cyan/20 pt-6">
           <div className="mb-4">
-            <p className="text-brand-cyan text-sm">{user?.profile.name}</p>
+            <p className="text-brand-cyan text-sm">{user?.name} {user?.surname}</p>
             <p className="text-brand-cyan/60 text-xs">{user?.email}</p>
             <p className="text-brand-yellow text-xs font-pixel mt-1">{user?.role.toUpperCase()}</p>
           </div>

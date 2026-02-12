@@ -37,7 +37,10 @@ export function getAuthClient(): Auth | null {
 
 export function getDbClient(): Firestore | null {
   const app = getFirebaseApp()
-  return app ? getFirestore(app) : null
+  if (!app) return null
+  
+  // Use the "hackitba" database to match backend
+  return getFirestore(app, "hackitba")
 }
 
 export function getStorageClient(): FirebaseStorage | null {

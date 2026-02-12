@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import * as logger from "firebase-functions/logger";
 import admin from "firebase-admin";
 import * as teamService from "../services/teamService";
+import {sendTeamNotificationEmail} from "../services/emailService";
 
 interface TeamRequestData {
     name: string;
@@ -239,7 +240,26 @@ export const removeMember = async (req: Request, res: Response) => {
       });
     }
 
+    // Get user data to send notification
+    const user = await teamService.getUserById(userId);
+
     await teamService.removeMemberFromTeam(userId);
+
+    // Send team notification email
+    if (user?.email && user?.name) {
+      try {
+        await sendTeamNotificationEmail(
+          user.email,
+          user.name,
+          "removed",
+          team.data?.name || label,
+          "You have been removed from the team"
+        );
+      } catch (emailError) {
+        logger.error("Error sending removal notification email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return res.status(200).json({
       message: "Miembro eliminado del equipo",
@@ -248,6 +268,67 @@ export const removeMember = async (req: Request, res: Response) => {
     logger.error("Error eliminando miembro del equipo:", error);
     return res.status(500).json({
       error: "Error al eliminar miembro del equipo",
+    });
+  }
+};
+
+export const joinTeam = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const {userId} = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
+    const team = await teamService.getTeamByLabel(label);
+
+    if (!team) {
+      return res.status(404).json({
+        error: "Team not found",
+      });
+    }
+
+    // Check if user already has a team
+    const user = await teamService.getUserById(userId);
+    if (user?.team) {
+      return res.status(400).json({
+        error: "You are already in a team",
+      });
+    }
+
+    // Add user to team
+    await teamService.updateUserTeam(userId, label);
+
+    // Send team notification email
+    if (user?.email && user?.name) {
+      try {
+        await sendTeamNotificationEmail(
+          user.email,
+          user.name,
+          "joined",
+          team.data?.name || label,
+          "You have successfully rejoined the team!"
+        );
+      } catch (emailError) {
+        logger.error("Error sending join notification email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
+    return res.status(200).json({
+      message: "Successfully joined team",
+      team: {
+        id: team.id,
+        ...team.data,
+      },
+    });
+  } catch (error: any) {
+    logger.error("Error joining team:", error);
+    return res.status(500).json({
+      error: "Error joining team",
     });
   }
 };

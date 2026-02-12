@@ -4,7 +4,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   pageExtensions: ["tsx"],
-  output: 'export',
   images: {
     unoptimized: true,
   },

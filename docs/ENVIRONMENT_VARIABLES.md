@@ -120,8 +120,45 @@ Después de configurar:
 
 3. Verifica que las variables estén disponibles revisando los logs de build o runtime
 
+## Servicio de Email (Resend)
+
+### Configuración para Cloud Functions
+
+Las siguientes variables deben configurarse en `functions/.env.local` para desarrollo y en Firebase Console para producción.
+
+#### Variables Requeridas:
+```
+RESEND_API_KEY=your_resend_api_key_here
+APP_URL=https://hackitba.com (o tu dominio personalizado)
+```
+
+#### Obtener API Key de Resend:
+
+1. Ve a [https://resend.com](https://resend.com)
+2. Crea una cuenta o inicia sesión
+3. Navega a **API Keys** en el dashboard
+4. Crea una nueva API Key
+5. Copia el valor completo
+6. Pega en `functions/.env.local` o en Firebase Console (Environment Variables)
+
+#### Configurar en Firebase Console:
+
+1. Ve a [Firebase Console](https://console.firebase.google.com)
+2. Selecciona tu proyecto
+3. Navega a **Functions** → **Runtime environment variables**
+4. Agrega:
+   - `RESEND_API_KEY`: Tu API key de Resend
+   - `APP_URL`: URL de tu aplicación (ej: https://hackitba.com)
+
+5. Redeploy las Cloud Functions:
+   ```bash
+   firebase deploy --only functions:api
+   ```
+
 ## Troubleshooting
 
 - Si las variables `NEXT_PUBLIC_*` no aparecen en el cliente, asegúrate de hacer un nuevo build
 - Las variables privadas solo están disponibles en funciones de servidor (API routes, Server Components)
 - Después de cambiar variables de entorno, siempre necesitas un redeploy
+- Para emails: verifica que `RESEND_API_KEY` esté correctamente configurada en Cloud Functions
+- Si los emails no se envían, revisa los logs de Cloud Functions en Firebase Console
