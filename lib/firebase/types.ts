@@ -21,8 +21,8 @@ export interface User {
   category_1?: number
   category_2?: number
   category_3?: number
-  team?: string
-  hasTeam?: boolean
+  team?: string | null
+  hasTeam?: boolean // true if participant has a team, false if without team, undefined if not applicable
   company?: string
   position?: string
   photo?: string

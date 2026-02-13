@@ -1,4 +1,6 @@
+/* eslint-disable linebreak-style */
 import admin from "firebase-admin";
+import readline from "readline";
 import {sendWelcomeEmail} from "../services/emailService";
 
 /**
@@ -8,21 +10,24 @@ import {sendWelcomeEmail} from "../services/emailService";
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "webpage-36e40";
 
-async function sendTestEmail() {
+/**
+ * Envía un email de prueba usando el servicio de emails.
+ * @return {Promise<void>}
+ */
+async function sendTestEmail(): Promise<void> {
   try {
     console.log("📧 Enviando email de prueba...\n");
 
     // Inicializar Firebase Admin si no está inicializado
     if (!admin.apps.length) {
       console.log(`🔧 Inicializando Firebase Admin con proyecto: ${PROJECT_ID}`);
-      console.log(`📦 Usando base de datos: hackitba\n`);
+      console.log("📦 Usando base de datos: hackitba\n");
       admin.initializeApp({
         projectId: PROJECT_ID,
       });
     }
 
     // Solicitar email de destino
-    const readline = require("readline");
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -60,10 +65,10 @@ async function sendTestEmail() {
     if (result.success) {
       console.log("✅ Email enviado exitosamente!");
       console.log("\n📋 Detalles:");
-      console.log(`   - Template usado: welcome`);
+      console.log("   - Template usado: welcome");
       console.log(`   - Destinatario: ${email}`);
-      console.log(`   - El email ha sido agregado a la cola de envío`);
-      console.log(`   - Revisa la colección 'mail' en Firestore (base de datos: hackitba)`);
+      console.log("   - El email ha sido agregado a la cola de envío");
+      console.log("   - Revisa la colección 'mail' en Firestore (base de datos: hackitba)");
       console.log("\n💡 Nota: El envío real depende de la extensión Resend Email configurada");
     }
 
@@ -81,9 +86,10 @@ async function sendTestEmail() {
   }
 }
 
-// Ejecutar solo si se llama directamente
-if (require.main === module) {
-  sendTestEmail();
-}
+// Run function if executed directly
+sendTestEmail().catch((error) => {
+  console.error("Fatal error:", error);
+  process.exit(1);
+});
 
 export {sendTestEmail};

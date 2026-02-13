@@ -6,16 +6,14 @@ const EMAIL_TEMPLATES_COLLECTION = "emailTemplates";
 const APP_URL = process.env.APP_URL || "https://hackitba.com.ar";
 
 const getDb = () => getFirestore("hackitba");
-
 /**
  * Obtiene un template de email desde Firestore
- * @param templateId - ID del template a obtener
- * @returns Template con subject y html
+ * @param {string} templateId - ID del template a obtener
+ * @return {Promise<any>} Template con subject y html, o null si no existe
  */
-const getEmailTemplate = async (templateId: string): Promise<{
-  subject: string;
-  html: string;
-} | null> => {
+const getEmailTemplate = async (
+  templateId: string
+): Promise<{subject: string; html: string} | null> => {
   try {
     const templateDoc = await getDb()
       .collection(EMAIL_TEMPLATES_COLLECTION)
@@ -40,9 +38,9 @@ const getEmailTemplate = async (templateId: string): Promise<{
 
 /**
  * Reemplaza variables en un template con valores reales
- * @param template - String del template con placeholders {{variable}}
- * @param variables - Objeto con los valores a reemplazar
- * @returns Template con variables reemplazadas
+ * @param {string} template - String del template con placeholders {{variable}}
+ * @param {Record<string, string>} variables - Objeto con los valores a reemplazar
+ * @return {string} Template con variables reemplazadas
  */
 const replaceTemplateVariables = (
   template: string,
@@ -56,7 +54,13 @@ const replaceTemplateVariables = (
   return result;
 };
 
-export const sendWelcomeEmail = async (email: string, name: string) => {
+/**
+ * Envía un email de bienvenida
+ * @param {string} email - Email del destinatario
+ * @param {string} name - Nombre del destinatario
+ * @return {Promise<{success: boolean}>} Resultado del envío
+ */
+export const sendWelcomeEmail = async (email: string, name: string): Promise<{success: boolean}> => {
   try {
     logger.info(`Queuing welcome email to ${email}`);
 
@@ -89,11 +93,18 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
   }
 };
 
+/**
+ * Envía un email de confirmación de evento
+ * @param {string} email - Email del destinatario
+ * @param {string} name - Nombre del destinatario
+ * @param {string} role - Rol del usuario (participant, judge, mentor, collaborator)
+ * @return {Promise<void>}
+ */
 export const sendEventConfirmationEmail = async (
   email: string,
   name: string,
   role: string
-) => {
+): Promise<void> => {
   try {
     logger.info(`Queuing event confirmation email to ${email}`);
 
@@ -138,17 +149,22 @@ export const sendEventConfirmationEmail = async (
     });
 
     logger.info(`Event confirmation email queued successfully for ${email}`);
-    return {success: true};
   } catch (error) {
     logger.error(`Error queuing event confirmation email to ${email}:`, error);
     throw error;
   }
 };
 
+/**
+ * Envía un email de verificación de correo
+ * @param {string} email - Email del destinatario
+ * @param {string} verificationLink - Link de verificación
+ * @return {Promise<{success: boolean}>}
+ */
 export const sendEmailVerificationEmail = async (
   email: string,
   verificationLink: string
-) => {
+): Promise<{success: boolean}> => {
   try {
     logger.info(`Queuing email verification email to ${email}`);
 
@@ -180,10 +196,16 @@ export const sendEmailVerificationEmail = async (
   }
 };
 
+/**
+ * Envía un email para restablecer la contraseña
+ * @param {string} email - Email del destinatario
+ * @param {string} resetLink - Link para restablecer contraseña
+ * @return {Promise<{success: boolean}>}
+ */
 export const sendPasswordResetEmail = async (
   email: string,
   resetLink: string
-) => {
+): Promise<{success: boolean}> => {
   try {
     logger.info(`Queuing password reset email to ${email}`);
 

@@ -56,6 +56,8 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
 };
 
 
+// eslint-disable-next-line camelcase
+// eslint-disable-next-line camelcase
 export const eventRegistration = async (
   userId: string,
   dni: string,
@@ -68,6 +70,7 @@ export const eventRegistration = async (
   twitter: string|null,
   github: string|null,
   team: string|null,
+  hasTeam: boolean,
   food_preference: string,
   category_1: number,
   category_2: number,
@@ -90,6 +93,7 @@ export const eventRegistration = async (
         throw new Error("Faltan campos obligatorios");
       }
 
+      // eslint-disable-next-line camelcase
       await userRef.update({
         dni: dni,
         company: company,
@@ -106,7 +110,9 @@ export const eventRegistration = async (
       logger.info(`Mentor/judge record updated successfully for ${userId}`);
     } else {
       logger.info(`Updating participant record for ${userId}`);
-      if (!userId || !dni || !university || !career || !age || category_1 === null || category_1 === undefined || category_2 === null || category_2 === undefined || category_3 === null || category_3 === undefined) {
+      if (!userId || !dni || !university || !career || !age || category_1 === null ||
+          category_1 === undefined || category_2 === null || category_2 === undefined ||
+          category_3 === null || category_3 === undefined) {
         throw new Error("Faltan campos obligatorios");
       }
 
@@ -118,6 +124,7 @@ export const eventRegistration = async (
         }
       }
 
+      // eslint-disable-next-line camelcase
       await userRef.update({
         dni: dni,
         university: university,
@@ -129,6 +136,7 @@ export const eventRegistration = async (
         twitter: twitter,
         github: github,
         team: team,
+        hasTeam: hasTeam,
         food_preference: food_preference,
         category_1: category_1 !== null ? category_1 : category_1,
         category_2: category_2 !== null ? category_2 : category_2,
@@ -138,9 +146,11 @@ export const eventRegistration = async (
       });
       logger.info(`Participant record updated successfully for ${userId}`);
     }
-  } catch (error: any) {
-    logger.error(`EventRegistration error for userId ${userId}:`, error.message || error);
-    throw error;
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    logger.error(`EventRegistration error for userId ${userId}:`, err.message || err);
+    throw err;
   }
 };
 
@@ -154,19 +164,21 @@ export const loginUser = async (email: string, password: string): Promise<UserRe
   }
 };
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (): Promise<Array<Record<string, unknown>>> => {
   const db = getHackitbaDb();
   const usersSnapshot = await db.collection("users").get();
 
   const users = usersSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  }));
+  })) as Array<Record<string, unknown>>;
 
   return users;
 };
 
-export const getUserByIdComplete = async (userId: string) => {
+export const getUserByIdComplete = async (
+  userId: string
+): Promise<Record<string, unknown> | null> => {
   const db = getHackitbaDb();
   const userDoc = await db.collection("users").doc(userId).get();
 
@@ -177,7 +189,7 @@ export const getUserByIdComplete = async (userId: string) => {
   return {
     id: userDoc.id,
     ...userDoc.data(),
-  };
+  } as Record<string, unknown>;
 };
 
 export const updateUserData = async (
@@ -189,7 +201,7 @@ export const updateUserData = async (
   }
 ): Promise<void> => {
   const db = getHackitbaDb();
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 

@@ -1,20 +1,25 @@
+/* eslint-disable linebreak-style */
 import admin from "firebase-admin";
 import {getFirestore} from "firebase-admin/firestore";
 
 /**
  * Script para inicializar los templates de email en Firestore
  * Ejecutar: npx ts-node src/scripts/initEmailTemplates.ts
- * 
+ *
  * Configuración:
  * - Usa el projectId: webpage-36e40 por defecto
  * - Usa la base de datos: hackitba
- * - Para usar otro proyecto: FIREBASE_PROJECT_ID=tu-proyecto npx ts-node src/scripts/initEmailTemplates.ts
+ * - Para usar otro proyecto: FIREBASE_PROJECT_ID=tu-proyecto
+ *   npx ts-node src/scripts/initEmailTemplates.ts
  */
 
 const EMAIL_TEMPLATES_COLLECTION = "emailTemplates";
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "webpage-36e40";
 const DATABASE_ID = "hackitba";
 
+/**
+ * Email templates configuration.
+ */
 const templates = {
   welcome: {
     subject: "¡Bienvenido a HackItBA! 🚀",
@@ -23,7 +28,9 @@ const templates = {
         <h2>¡Hola {{name}}!</h2>
         <p>Gracias por registrarte en HackItBA. Estamos emocionados de tenerte con nosotros.</p>
         <p>Ya puedes acceder a tu cuenta e historia en el evento.</p>
-        <a href="{{dashboardUrl}}" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{dashboardUrl}}" 
+          style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Ir a mi Dashboard
         </a>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
@@ -48,7 +55,9 @@ const templates = {
           <li>Ver detalles del evento</li>
           <li>Conectar con otros participantes</li>
         </ul>
-        <a href="{{dashboardUrl}}" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{dashboardUrl}}" 
+          style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Ver mi perfil
         </a>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
@@ -65,7 +74,9 @@ const templates = {
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Confirma tu email</h2>
         <p>Para completar tu registro, necesitamos que confirmes tu dirección de email.</p>
-        <a href="{{verificationLink}}" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{verificationLink}}" 
+          style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Confirmar Email
         </a>
         <p style="margin-top: 20px; color: #666; font-size: 12px;">
@@ -85,8 +96,11 @@ const templates = {
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Restablecer contraseña</h2>
-        <p>Recibimos una solicitud para restablecer tu contraseña. Si no la solicitaste, ignora este email.</p>
-        <a href="{{resetLink}}" style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <p>Recibimos una solicitud para restablecer tu contraseña. Si no la solicitaste, 
+           ignora este email.</p>
+        <a href="{{resetLink}}" 
+          style="display: inline-block; padding: 10px 20px; background: #FF8C00; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Restablecer Contraseña
         </a>
         <p style="margin-top: 20px; color: #666; font-size: 12px;">
@@ -106,7 +120,9 @@ const templates = {
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Notificación de equipo</h2>
         <p>{{name}} se ha unido a tu equipo.</p>
-        <a href="{{dashboardUrl}}" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{dashboardUrl}}" 
+          style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Ver mi equipo
         </a>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
@@ -123,7 +139,9 @@ const templates = {
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Notificación de equipo</h2>
         <p>{{name}} ha sido removido del equipo.</p>
-        <a href="{{dashboardUrl}}" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{dashboardUrl}}" 
+          style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Ver mi equipo
         </a>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
@@ -141,7 +159,9 @@ const templates = {
         <h2>Notificación de equipo</h2>
         <p>Tu equipo ha sido actualizado:</p>
         <p>{{details}}</p>
-        <a href="{{dashboardUrl}}" style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+        <a href="{{dashboardUrl}}" 
+          style="display: inline-block; padding: 10px 20px; background: #00CED1; color: white; 
+          text-decoration: none; border-radius: 4px; margin-top: 20px;">
           Ver mi equipo
         </a>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
@@ -154,7 +174,11 @@ const templates = {
   },
 };
 
-async function initializeTemplates() {
+/**
+ * Initializes email templates in Firestore.
+ * @return {Promise<void>}
+ */
+async function initializeTemplates(): Promise<void> {
   try {
     // Inicializar Firebase Admin si no está inicializado
     if (!admin.apps.length) {

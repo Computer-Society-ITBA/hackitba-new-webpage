@@ -1,8 +1,19 @@
 import {Request, Response} from "express";
 import {logger} from "firebase-functions";
-import {registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete, updateUserData} from "../services/userService";
+import {
+  registerUser,
+  eventRegistration,
+  loginUser,
+  getAllUsers,
+  getUserByIdComplete,
+  updateUserData,
+} from "../services/userService";
 import {getTeamByLabel} from "../services/teamService";
-import {sendWelcomeEmail, sendEventConfirmationEmail, sendPasswordResetEmail} from "../services/emailService";
+import {
+  sendWelcomeEmail,
+  sendEventConfirmationEmail,
+  sendPasswordResetEmail,
+} from "../services/emailService";
 
 interface RegisterRequestBody {
   email: string;
@@ -11,8 +22,9 @@ interface RegisterRequestBody {
   surname?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const register = async (
-  req: Request<{}, {}, RegisterRequestBody>,
+  req: Request<Record<string, never>, Record<string, never>, RegisterRequestBody>,
   res: Response
 ) => {
   try {
@@ -45,30 +57,74 @@ export const register = async (
       email: result.email,
       token: result.token,
     });
-  } catch (error: any) {
-    logger.error("Register error:", error);
-    if (error.code === "auth/email-already-exists") {
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    logger.error("Register error:", err);
+    if (err.code === "auth/email-already-exists") {
       return res.status(400).json({error: "El email ya está registrado"});
     }
 
-    return res.status(500).json({error: error.message || "Error interno al registrar usuario"});
+    return res.status(500).json({error: err.message || "Error interno al registrar usuario"});
   }
 };
 
 export const registerEvent = async (req: Request, res: Response) => {
   try {
-    const {userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo} = req.body;
+    // eslint-disable-next-line camelcase
+    const {
+      userId,
+      dni,
+      university,
+      career,
+      age,
+      link_cv,
+      linkedin,
+      instagram,
+      twitter,
+      github,
+      team,
+      hasTeam,
+      food_preference,
+      category_1,
+      category_2,
+      category_3,
+      company,
+      position,
+      photo,
+    } = req.body;
 
     logger.info(`RegisterEvent called with userId: ${userId}`);
     logger.info("Request body:", req.body);
 
-    await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
+    await eventRegistration(
+      userId,
+      dni,
+      university,
+      career,
+      age,
+      link_cv,
+      linkedin,
+      instagram,
+      twitter,
+      github,
+      team,
+      hasTeam,
+      food_preference,
+      category_1,
+      category_2,
+      category_3,
+      company,
+      position,
+      photo
+    );
 
     // Get user to send confirmation email
     const user = await getUserByIdComplete(userId);
     if (user) {
       try {
-        await sendEventConfirmationEmail((user as any).email, (user as any).name, (user as any).role);
+        const userData = user as {email: string; name: string; role: string};
+        await sendEventConfirmationEmail(userData.email, userData.name, userData.role);
       } catch (emailError) {
         logger.error("Error sending event confirmation email:", emailError);
         // Don't fail the request if email fails
@@ -77,15 +133,17 @@ export const registerEvent = async (req: Request, res: Response) => {
 
     logger.info(`Event registration successful for userId: ${userId}`);
     return res.status(200).json({message: "Registro al evento exitoso"});
-  } catch (error: any) {
-    logger.error("RegisterEvent error:", error.message || error);
-    if (error.message === "El equipo especificado no existe") {
-      return res.status(404).json({error: error.message});
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    logger.error("RegisterEvent error:", err.message || err);
+    if (err.message === "El equipo especificado no existe") {
+      return res.status(404).json({error: err.message});
     }
-    if (error.message === "Faltan campos obligatorios") {
-      return res.status(400).json({error: error.message});
+    if (err.message === "Faltan campos obligatorios") {
+      return res.status(400).json({error: err.message});
     }
-    return res.status(500).json({error: "Error interno al registrar al evento", details: error.message});
+    return res.status(500).json({error: "Error interno al registrar al evento", details: err.message});
   }
 };
 
@@ -185,8 +243,10 @@ export const updateUser = async (req: Request, res: Response) => {
         ...updates,
       },
     });
-  } catch (error: any) {
-    logger.error("Update user error:", error);
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    logger.error("Update user error:", err);
     return res.status(500).json({error: "Error al actualizar usuario"});
   }
 };
@@ -201,6 +261,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
     // Get user by email
     const users = await getAllUsers();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const user = users.find((u: any) => u.email === email);
 
     if (!user) {

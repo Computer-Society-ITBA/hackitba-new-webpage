@@ -113,7 +113,7 @@ export const updateTeam = async (
   teamRef: admin.firestore.DocumentReference,
   updates: UpdateTeamData
 ): Promise<void> => {
-  const updatedData: any = {
+  const updatedData: Record<string, unknown> = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 

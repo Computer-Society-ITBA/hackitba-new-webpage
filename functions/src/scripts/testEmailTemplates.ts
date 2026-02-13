@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import admin from "firebase-admin";
 import {getFirestore} from "firebase-admin/firestore";
 
@@ -23,8 +24,11 @@ const EXPECTED_TEMPLATES = [
 
 /**
  * Verifica que un template tenga todos los campos requeridos
+ * @param {string} templateId - ID del template a validar
+ * @param {Record<string, unknown>} data - Datos del template
+ * @return {string[]} Array de errores encontrados, vacío si es válido
  */
-function validateTemplate(templateId: string, data: any): string[] {
+function validateTemplate(templateId: string, data: Record<string, unknown>): string[] {
   const errors: string[] = [];
 
   if (!data.subject || typeof data.subject !== "string") {
@@ -44,13 +48,13 @@ function validateTemplate(templateId: string, data: any): string[] {
   }
 
   // Verificar que las variables declaradas existan en el HTML
-  if (data.variables && data.html) {
-    const declaredVars = new Set(data.variables);
+  if (data.variables && data.html && Array.isArray(data.variables) && typeof data.html === "string") {
+    const declaredVars = new Set(data.variables as string[]);
     const htmlVars = new Set(
-      [...data.html.matchAll(/{{(\w+)}}/g)].map((match) => match[1])
+      [...(data.html as string).matchAll(/{{(\w+)}}/g)].map((match) => match[1])
     );
     const subjectVars = new Set(
-      [...(data.subject.matchAll(/{{(\w+)}}/g) || [])].map((match) => match[1])
+      [...(typeof data.subject === "string" ? (data.subject.matchAll(/{{(\w+)}}/g) || []) : [])].map((match) => match[1])
     );
 
     // Variables en HTML/subject que no están declaradas
@@ -79,6 +83,11 @@ function validateTemplate(templateId: string, data: any): string[] {
 
 /**
  * Genera un preview del template con valores de ejemplo
+ * @param {string} templateId - ID del template
+ * @param {string} subject - Asunto del template
+ * @param {string} html - Contenido HTML del template
+ * @param {string[]} variables - Variables a reemplazar
+ * @return {object} objeto con subject y html reemplazados
  */
 function generatePreview(
   templateId: string,
@@ -112,7 +121,11 @@ function generatePreview(
   return {subject: previewSubject, html: previewHtml};
 }
 
-async function testEmailTemplates() {
+/**
+ * Tests email templates configuration by verifying all templates exist and are valid.
+ * @return {Promise<void>}
+ */
+async function testEmailTemplates(): Promise<void> {
   try {
     console.log("🧪 Verificando templates de email...\n");
 
@@ -144,7 +157,7 @@ async function testEmailTemplates() {
 
       foundTemplates.push(templateId);
       const data = doc.data();
-      const errors = validateTemplate(templateId, data);
+      const errors = validateTemplate(templateId, data || {});
 
       if (errors.length > 0) {
         console.log(`⚠️  Template '${templateId}' tiene errores:`);

@@ -4,6 +4,9 @@ import admin from "firebase-admin";
 import * as teamService from "../services/teamService";
 import {sendTeamNotificationEmail} from "../services/emailService";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+// eslint-disable-next-line camelcase
 interface TeamRequestData {
     name: string;
     tell_why: string;
@@ -13,6 +16,7 @@ interface TeamRequestData {
     uid: string;
 }
 
+// eslint-disable-next-line camelcase
 interface TeamResponseData {
     id: string;
     name: string;
@@ -24,10 +28,13 @@ interface TeamResponseData {
     uid: string;
 }
 
+/* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
+    // eslint-disable-next-line camelcase
     const {name, tell_why, category_1, category_2, category_3, uid}: TeamRequestData = req.body;
 
+    // eslint-disable-next-line camelcase
     logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid});
 
     // Validaciones
@@ -37,6 +44,7 @@ export const createTeam = async (req: Request, res: Response) => {
       });
     }
 
+    // eslint-disable-next-line camelcase
     if (!tell_why || tell_why.trim().length < 20) {
       return res.status(400).json({
         error: "La motivación debe tener al menos 20 caracteres",
@@ -69,6 +77,7 @@ export const createTeam = async (req: Request, res: Response) => {
     }
 
     // Crear equipo
+    // eslint-disable-next-line camelcase
     const teamData: teamService.TeamData = {
       label,
       name: name.trim(),
@@ -90,6 +99,7 @@ export const createTeam = async (req: Request, res: Response) => {
     await teamService.updateUserTeam(uid, teamId);
 
     // Respuesta
+    // eslint-disable-next-line camelcase
     const response: TeamResponseData = {
       id: teamId,
       name: teamData.name,
@@ -149,7 +159,17 @@ export const getAllTeams = async (req: Request, res: Response) => {
 export const updateTeam = async (req: Request, res: Response) => {
   try {
     const {label} = req.params;
-    const {name, tell_why, category_1, category_2, category_3, status}: Partial<TeamRequestData & { status: string }> = req.body;
+    // eslint-disable-next-line camelcase
+    const {
+      name,
+      tell_why,
+      category_1,
+      category_2,
+      category_3,
+      status,
+    }: Partial<
+      TeamRequestData & { status: string }
+    > = req.body;
 
     const team = await teamService.getTeamByLabel(label);
 
@@ -168,6 +188,7 @@ export const updateTeam = async (req: Request, res: Response) => {
     }
 
     // Actualizar equipo
+    // eslint-disable-next-line camelcase
     const updates: teamService.UpdateTeamData = {};
     if (name) updates.name = name;
     if (tell_why) updates.tell_why = tell_why;

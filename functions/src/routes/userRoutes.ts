@@ -1,7 +1,16 @@
 import express from "express";
-import {register, registerEvent, login, getUsers, getUserById, updateUser, requestPasswordReset} from "../controllers/userControllers";
+import {
+  register,
+  registerEvent,
+  login,
+  getUsers,
+  getUserById,
+  updateUser,
+  requestPasswordReset,
+} from "../controllers/userControllers";
 import {validateToken} from "../middleware/authMiddleware";
 
+// eslint-disable-next-line new-cap
 const router = express.Router();
 
 // GET /api/users

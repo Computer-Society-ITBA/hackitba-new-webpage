@@ -2,6 +2,7 @@ import {Router} from "express";
 import * as teamController from "../controllers/teamController";
 import {validateToken} from "../middleware/authMiddleware";
 
+// eslint-disable-next-line new-cap
 const router = Router();
 
 // Crear equipo

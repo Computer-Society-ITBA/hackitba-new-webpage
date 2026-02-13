@@ -267,6 +267,7 @@ function EventSignupContent() {
                 twitter: formData.twitter || null,
                 github: formData.github || null,
                 team: formData.hasTeam === "yes" ? formData.teamCode : null,
+                hasTeam: formData.hasTeam === "yes",
                 food_preference: formData.dietaryPreference,
                 category_1: 0,
                 category_2: 1,

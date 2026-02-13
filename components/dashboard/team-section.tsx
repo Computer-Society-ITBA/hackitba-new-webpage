@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { getAuth } from "firebase/auth"
+import { useRouter, useParams } from "next/navigation"
+import type { Locale } from "@/lib/i18n/config"
 
 interface TeamMember {
   id: string
@@ -46,6 +48,9 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
   const db = getDbClient()
+  const router = useRouter()
+  const params = useParams()
+  const locale = (params.locale as Locale) || "es"
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -283,35 +288,51 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   if (!userTeamLabel || !team) {
     return (
       <GlassCard>
-        <div className="flex flex-col items-center justify-center py-8 space-y-4">
-          <Users className="w-12 h-12 text-brand-cyan/50" />
-          <p className="text-brand-cyan/70 text-center">
-            You haven't joined a team yet
-          </p>
-          <div className="w-full max-w-sm space-y-3 pt-4">
-            <p className="text-brand-cyan text-xs text-center">Do you have a team code?</p>
-            <div className="flex gap-2">
-              <Input
-                value={rejoinCode}
-                onChange={(e) => {
-                  setRejoinCode(e.target.value)
-                  setRejoinError("")
-                }}
-                placeholder="Enter team code..."
-                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
-              />
-              <PixelButton 
-                onClick={handleRejoinTeam}
-                disabled={saving || !rejoinCode.trim()}
-                size="sm"
-              >
-                {saving ? "..." : "Join"}
-              </PixelButton>
+        <div className="flex flex-col items-center justify-center py-12 space-y-6">
+          <Users className="w-16 h-16 text-brand-orange/60" />
+          <div className="text-center space-y-2 max-w-md">
+            <p className="text-brand-yellow font-pixel text-lg">Without Team</p>
+            <p className="text-brand-cyan/90 text-sm">
+              You are currently a solo participant. You can join an existing team using a team code or create a new team.
+            </p>
+          </div>
+          <div className="w-full max-w-sm space-y-4 pt-4">
+            <div className="space-y-2">
+              <p className="text-brand-cyan text-xs font-pixel uppercase">Join Existing Team</p>
+              <div className="flex gap-2">
+                <Input
+                  value={rejoinCode}
+                  onChange={(e) => {
+                    setRejoinCode(e.target.value)
+                    setRejoinError("")
+                  }}
+                  placeholder="Enter team code..."
+                  className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
+                  onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
+                />
+                <PixelButton 
+                  onClick={handleRejoinTeam}
+                  disabled={saving || !rejoinCode.trim()}
+                  size="sm"
+                >
+                  {saving ? "..." : "Join"}
+                </PixelButton>
+              </div>
+              {rejoinError && (
+                <p className="text-red-400 text-xs">{rejoinError}</p>
+              )}
             </div>
-            {rejoinError && (
-              <p className="text-red-400 text-xs text-center">{rejoinError}</p>
-            )}
+            <div className="flex items-center gap-2 text-brand-cyan/50 text-xs">
+              <div className="flex-1 h-px bg-brand-cyan/20"></div>
+              <span>OR</span>
+              <div className="flex-1 h-px bg-brand-cyan/20"></div>
+            </div>
+            <PixelButton 
+              onClick={() => router.push(`/${locale}/dashboard/create-team`)}
+              className="w-full"
+            >
+              Create New Team
+            </PixelButton>
           </div>
         </div>
       </GlassCard>
