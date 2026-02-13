@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import type { User } from "@/lib/firebase/types"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -29,6 +30,8 @@ interface Team {
   admin_id: string
   tell_why?: string
   status?: string
+  category?: number | null
+  category_1?: number | null
 }
 
 interface TeamSectionProps {
@@ -40,6 +43,7 @@ interface TeamSectionProps {
 export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: TeamSectionProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
+  const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
   const [editForm, setEditForm] = useState({ name: "", surname: "", email: "" })
@@ -71,6 +75,8 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             admin_id: teamData.admin_id,
             tell_why: teamData.tell_why,
             status: teamData.status,
+            category: teamData.category,
+            category_1: teamData.category_1,
           })
 
           // Get all team members
@@ -108,6 +114,18 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
     loadTeam()
   }, [db, userTeamLabel])
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!db) return
+      const categoriesSnapshot = await getDocs(collection(db, "categories"))
+      const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as any[]
+      cats.sort((a, b) => (a.order || 0) - (b.order || 0))
+      setCategories(cats)
+    }
+
+    loadCategories()
+  }, [db])
 
   const handleRemoveMember = async (memberId: string) => {
     if (!team || !userTeamLabel) return
@@ -235,6 +253,34 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   }
 
   const isAdmin = team?.admin_id === userId
+
+  const teamCategoryId = useMemo(() => {
+    if (!team) return ""
+    if (typeof team.category === "number" && team.category >= 0) {
+      return categories[team.category]?.id || ""
+    }
+    if (typeof team.category_1 === "number" && team.category_1 >= 0) {
+      return categories[team.category_1]?.id || ""
+    }
+    return ""
+  }, [team, categories])
+
+  const teamCategoryLabel = useMemo(() => {
+    const fallbackLabel = locale === "es" ? "Categoria no asignada" : "Category not assigned"
+    if (!teamCategoryId) return fallbackLabel
+    const category = categories.find((item) => item.id === teamCategoryId)
+    if (!category) return fallbackLabel
+    if (locale === "es") {
+      return category.spanishName || category.englishName || category.name || fallbackLabel
+    }
+    return category.englishName || category.spanishName || category.name || fallbackLabel
+  }, [categories, teamCategoryId, locale])
+
+  const teamCategoryIconName = useMemo(() => {
+    if (!teamCategoryId) return ""
+    const category = categories.find((item) => item.id === teamCategoryId)
+    return category?.iconName || ""
+  }, [categories, teamCategoryId])
 
   const handleRejoinTeam = async () => {
     if (!rejoinCode.trim()) {
@@ -403,11 +449,21 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               </button>
             )}
           </div>
-          {team.status && (
-            <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
-              {capitalizeStatus(team.status)}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-brand-cyan/90 font-pixel text-sm tracking-wider">
+              {(() => {
+                const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
+                return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
+              })()}
+              <span className="text-brand-cyan/70">Category</span>
+              <span>{teamCategoryLabel}</span>
             </div>
-          )}
+            {team.status && (
+              <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
+                {capitalizeStatus(team.status)}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-3">

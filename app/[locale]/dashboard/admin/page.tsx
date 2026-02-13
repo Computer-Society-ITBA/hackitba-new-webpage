@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -15,8 +16,11 @@ import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload, Users as UsersIcon } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 
 export default function AdminDashboard() {
+  const params = useParams()
+  const locale = (params?.locale as string) || "en"
   const db = getDbClient()
   const storage = getStorageClient()
   const auth = getAuthClient()
@@ -42,42 +46,6 @@ export default function AdminDashboard() {
   const [newTeamForm, setNewTeamForm] = useState({
     name: "",
     category: "",
-  })
-
-  const [eventForm, setEventForm] = useState({
-    title: "",
-    description: "",
-    startDate: "",
-    endDate: "",
-    submissionDeadline: "",
-    location: "",
-    status: "draft",
-  })
-
-  const [sponsorForm, setSponsorForm] = useState({
-    name: "",
-    logo: "",
-    website: "",
-    tier: "bronze",
-    order: 0,
-  })
-
-  const [speakerForm, setSpeakerForm] = useState({
-    name: "",
-    title: "",
-    company: "",
-    bio: "",
-    avatar: "",
-    linkedin: "",
-    order: 0,
-  })
-
-  const [categoryForm, setCategoryForm] = useState({
-    name: "",
-    description: "",
-    icon: "",
-    details: "",
-    order: 0,
   })
 
   const [scoringForm, setScoringForm] = useState({
@@ -226,7 +194,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const openCreateTeamModal = (participantId: string) => {
+  const openCreateTeamModal = (participantId: string | null) => {
     setPendingParticipantId(participantId)
     setNewTeamForm({ name: "", category: "" })
     setShowCreateTeamModal(true)
@@ -243,12 +211,19 @@ export default function AdminDashboard() {
       return
     }
 
-    if (!pendingParticipantId) return
+    const categoryIndex = categories.findIndex((category) => category.id === newTeamForm.category)
+    if (categoryIndex === -1) {
+      alert("Categoría inválida")
+      return
+    }
 
-    setProcessing(pendingParticipantId)
+    setProcessing(pendingParticipantId || "team-creation")
     try {
       const idToken = await auth?.currentUser?.getIdToken()
-      if (!idToken) return
+      if (!idToken) {
+        alert("No se pudo validar la sesión")
+        return
+      }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
       
@@ -262,10 +237,9 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: newTeamForm.name.trim(),
           tell_why: "Equipo creado por administrador",
-          category_1: newTeamForm.category,
+          category_1: categoryIndex,
           category_2: null,
           category_3: null,
-          uid: "admin-created", // Temporal, será reemplazado por el primer participante
         }),
       })
 
@@ -277,16 +251,27 @@ export default function AdminDashboard() {
         // Recargar equipos
         await loadTeams()
         
-        // Preseleccionar el equipo en el selector
-        setTimeout(() => {
-          const select = document.getElementById(`team-select-${pendingParticipantId}`) as HTMLSelectElement
-          if (select) {
-            select.value = newTeam.id
-          }
-        }, 500)
+        // Preseleccionar el equipo en el selector si hay participante específico
+        if (pendingParticipantId) {
+          setTimeout(() => {
+            const select = document.getElementById(`team-select-${pendingParticipantId}`) as HTMLSelectElement
+            if (select) {
+              select.value = newTeam.id
+            }
+          }, 500)
+        }
       } else {
-        const error = await response.json()
-        alert(`Error: ${error.error}`)
+        let errorMessage = "Error al crear equipo"
+        try {
+          const error = await response.json()
+          errorMessage = error.error || errorMessage
+        } catch {
+          const errorText = await response.text()
+          if (errorText) {
+            errorMessage = errorText
+          }
+        }
+        alert(`Error: ${errorMessage}`)
       }
     } catch (error) {
       console.error("Error creating team:", error)
@@ -333,74 +318,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const createEvent = async () => {
-    if (!db) {
-      return
-    }
-
-    await addDoc(collection(db, "events"), {
-      ...eventForm,
-      startDate: new Date(eventForm.startDate),
-      endDate: new Date(eventForm.endDate),
-      submissionDeadline: new Date(eventForm.submissionDeadline),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    setShowEventForm(false)
-    setEventForm({
-      title: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      submissionDeadline: "",
-      location: "",
-      status: "draft",
-    })
-    loadData()
-  }
-
-  const createSponsor = async () => {
-    if (!db) {
-      return
-    }
-
-    await addDoc(collection(db, "sponsors"), {
-      ...sponsorForm,
-      createdAt: new Date(),
-    })
-    setShowSponsorForm(false)
-    setSponsorForm({ name: "", logo: "", website: "", tier: "bronze", order: 0 })
-    loadData()
-  }
-
-  const createSpeaker = async () => {
-    if (!db) {
-      return
-    }
-
-    await addDoc(collection(db, "speakers"), {
-      ...speakerForm,
-      createdAt: new Date(),
-    })
-    setShowSpeakerForm(false)
-    setSpeakerForm({ name: "", title: "", company: "", bio: "", avatar: "", linkedin: "", order: 0 })
-    loadData()
-  }
-
-  const createCategory = async () => {
-    if (!db) {
-      return
-    }
-
-    await addDoc(collection(db, "categories"), {
-      ...categoryForm,
-      createdAt: new Date(),
-    })
-    setShowCategoryForm(false)
-    setCategoryForm({ name: "", description: "", icon: "", details: "", order: 0 })
-    loadData()
-  }
-
   const createScoring = async () => {
     if (!db) {
       return
@@ -412,42 +329,6 @@ export default function AdminDashboard() {
     })
     setShowScoringForm(false)
     setScoringForm({ name: "", description: "", maxScore: 10, order: 0 })
-    loadData()
-  }
-
-  const deleteEvent = async (id: string) => {
-    if (!db) {
-      return
-    }
-
-    await deleteDoc(doc(db, "events", id))
-    loadData()
-  }
-
-  const deleteSponsor = async (id: string) => {
-    if (!db) {
-      return
-    }
-
-    await deleteDoc(doc(db, "sponsors", id))
-    loadData()
-  }
-
-  const deleteSpeaker = async (id: string) => {
-    if (!db) {
-      return
-    }
-
-    await deleteDoc(doc(db, "speakers", id))
-    loadData()
-  }
-
-  const deleteCategory = async (id: string) => {
-    if (!db) {
-      return
-    }
-
-    await deleteDoc(doc(db, "categories", id))
     loadData()
   }
 
@@ -464,7 +345,6 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
-          {/* Pending Participants Section */}
           <section>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -474,6 +354,10 @@ export default function AdminDashboard() {
                   {pendingParticipants.length}
                 </span>
               </div>
+              <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
+                <Plus size={16} className="mr-2" />
+                Crear Equipo
+              </PixelButton>
             </div>
 
             {pendingParticipants.length === 0 ? (
@@ -492,9 +376,6 @@ export default function AdminDashboard() {
                           <p className="font-pixel text-brand-yellow">
                             {participant.name} {participant.surname}
                           </p>
-                          <span className="text-xs bg-brand-orange/20 text-brand-orange px-2 py-1 rounded">
-                            En Proceso
-                          </span>
                         </div>
                         <div className="text-sm text-brand-cyan/80 space-y-1">
                           <p>📧 {participant.email}</p>
@@ -502,10 +383,10 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <select
                           id={`team-select-${participant.id}`}
-                          className="bg-brand-navy/80 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2 text-sm"
+                          className="pixel-select bg-brand-navy/80 border border-brand-cyan/80 text-brand-cyan/80 rounded px-3 py-2"
                           disabled={processing === participant.id}
                         >
                           <option value="">Seleccionar equipo...</option>
@@ -516,16 +397,7 @@ export default function AdminDashboard() {
                           ))}
                         </select>
 
-                        <button
-                          onClick={() => openCreateTeamModal(participant.id)}
-                          disabled={processing === participant.id}
-                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded disabled:opacity-50"
-                          title="Crear nuevo equipo"
-                        >
-                          +
-                        </button>
-
-                        <button
+                        <PixelButton
                           onClick={() => {
                             const select = document.getElementById(`team-select-${participant.id}`) as HTMLSelectElement
                             const teamId = select?.value
@@ -534,213 +406,26 @@ export default function AdminDashboard() {
                             }
                           }}
                           disabled={processing === participant.id}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded disabled:opacity-50"
+                          size="sm"
+                          variant="primary"
                         >
-                          {processing === participant.id ? "..." : "✓"}
-                        </button>
+                          ✓
+                        </PixelButton>
 
-                        <button
+                        <PixelButton
                           onClick={() => rejectParticipant(participant.id)}
                           disabled={processing === participant.id}
-                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded disabled:opacity-50"
+                          size="sm"
+                          variant="primary"
                         >
-                          {processing === participant.id ? "..." : "✗"}
-                        </button>
+                          ✗
+                        </PixelButton>
                       </div>
                     </div>
                   </GlassCard>
                 ))}
               </div>
             )}
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Events</h3>
-              <PixelButton onClick={() => setShowEventForm(!showEventForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Event
-              </PixelButton>
-            </div>
-
-            {showEventForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Title</Label>
-                    <Input
-                      value={eventForm.title}
-                      onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
-                    <Textarea
-                      value={eventForm.description}
-                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-brand-cyan">Start Date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={eventForm.startDate}
-                        onChange={(e) => setEventForm({ ...eventForm, startDate: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-brand-cyan">End Date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={eventForm.endDate}
-                        onChange={(e) => setEventForm({ ...eventForm, endDate: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Submission Deadline</Label>
-                    <Input
-                      type="datetime-local"
-                      value={eventForm.submissionDeadline}
-                      onChange={(e) => setEventForm({ ...eventForm, submissionDeadline: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Location</Label>
-                    <Input
-                      value={eventForm.location}
-                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createEvent} disabled={uploading}>
-                    Create Event
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid gap-4">
-              {events.map((event) => (
-                <GlassCard key={event.id} neonOnHover>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-pixel text-lg text-brand-yellow mb-2">{event.title}</h4>
-                      <p className="text-brand-cyan text-sm mb-2">{event.description}</p>
-                      <p className="text-brand-cyan/60 text-xs">
-                        {event.location} • {event.status}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="text-brand-cyan hover:text-brand-orange transition-colors">
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => deleteEvent(event.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Categories</h3>
-              <PixelButton onClick={() => setShowCategoryForm(!showCategoryForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Category
-              </PixelButton>
-            </div>
-
-            {showCategoryForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={categoryForm.name}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
-                    <Input
-                      value={categoryForm.description}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Details</Label>
-                    <Textarea
-                      value={categoryForm.details}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, details: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Icon (lucide icon name, e.g. "Globe")</Label>
-                    <Input
-                      value={categoryForm.icon}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Order</Label>
-                    <Input
-                      type="number"
-                      value={categoryForm.order}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, order: Number(e.target.value) })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createCategory}>Create Category</PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <GlassCard key={category.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{category.name}</p>
-                    <p className="text-brand-cyan/60 text-xs">{category.description}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteCategory(category.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
           </section>
 
           <section>
@@ -818,214 +503,22 @@ export default function AdminDashboard() {
               ))}
             </div>
           </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Sponsors</h3>
-              <PixelButton onClick={() => setShowSponsorForm(!showSponsorForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Sponsor
-              </PixelButton>
-            </div>
-
-            {showSponsorForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={sponsorForm.name}
-                      onChange={(e) => setSponsorForm({ ...sponsorForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Logo URL or Upload</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={sponsorForm.logo}
-                        onChange={(e) => setSponsorForm({ ...sponsorForm, logo: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                        placeholder="https://... or upload file"
-                      />
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = await handleFileUpload(file, "sponsors")
-                              setSponsorForm({ ...sponsorForm, logo: url })
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} />
-                          </span>
-                        </PixelButton>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Website</Label>
-                    <Input
-                      value={sponsorForm.website}
-                      onChange={(e) => setSponsorForm({ ...sponsorForm, website: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createSponsor} disabled={uploading}>
-                    {uploading ? "Uploading..." : "Create Sponsor"}
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {sponsors.map((sponsor) => (
-                <GlassCard key={sponsor.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{sponsor.name}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteSponsor(sponsor.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Speakers / Mentors</h3>
-              <PixelButton onClick={() => setShowSpeakerForm(!showSpeakerForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Speaker
-              </PixelButton>
-            </div>
-
-            {showSpeakerForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={speakerForm.name}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Title</Label>
-                    <Input
-                      value={speakerForm.title}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Company</Label>
-                    <Input
-                      value={speakerForm.company}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, company: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Bio</Label>
-                    <Textarea
-                      value={speakerForm.bio}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, bio: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Avatar URL or Upload</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={speakerForm.avatar}
-                        onChange={(e) => setSpeakerForm({ ...speakerForm, avatar: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                      />
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = await handleFileUpload(file, "speakers")
-                              setSpeakerForm({ ...speakerForm, avatar: url })
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} />
-                          </span>
-                        </PixelButton>
-                      </label>
-                    </div>
-                  </div>
-
-                  <PixelButton onClick={createSpeaker} disabled={uploading}>
-                    {uploading ? "Uploading..." : "Create Speaker"}
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {speakers.map((speaker) => (
-                <GlassCard key={speaker.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{speaker.name}</p>
-                    <p className="text-brand-cyan/60 text-xs">{speaker.company}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteSpeaker(speaker.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
         </div>
 
         {/* Create Team Modal */}
         <Dialog open={showCreateTeamModal} onOpenChange={setShowCreateTeamModal}>
-          <DialogContent className="bg-brand-navy border-brand-cyan/30">
-            <DialogHeader>
+          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
+            <DialogHeader className="pb-2">
               <DialogTitle className="font-pixel text-brand-yellow">Crear Nuevo Equipo</DialogTitle>
             </DialogHeader>
-            
-            <div className="space-y-4 py-4">
+
+            <div className="space-y-5 pt-2 pb-4">
               <div>
                 <Label className="text-brand-cyan">Nombre del Equipo</Label>
                 <Input
                   value={newTeamForm.name}
                   onChange={(e) => setNewTeamForm({ ...newTeamForm, name: e.target.value })}
-                  className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                  className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                   placeholder="Nombre del equipo..."
                 />
               </div>
@@ -1035,32 +528,36 @@ export default function AdminDashboard() {
                 <select
                   value={newTeamForm.category}
                   onChange={(e) => setNewTeamForm({ ...newTeamForm, category: e.target.value })}
-                  className="w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2"
+                  className="pixel-select mt-2 w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2"
                 >
                   <option value="">Seleccionar categoría...</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.name}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {categories.map((category) => {
+                    const displayName = locale === "es" ? category.spanishName : category.englishName
+                    return (
+                      <option key={category.id} value={category.id}>
+                        {displayName}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>
 
-            <DialogFooter>
-              <button
+            <DialogFooter className="gap-3">
+              <PixelButton
                 onClick={() => setShowCreateTeamModal(false)}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+                variant="outline"
+                size="sm"
               >
                 Cancelar
-              </button>
-              <button
+              </PixelButton>
+              <PixelButton
                 onClick={createNewTeam}
                 disabled={!newTeamForm.name || !newTeamForm.category}
-                className="px-4 py-2 bg-brand-green hover:bg-brand-green/80 text-white rounded disabled:opacity-50"
+                size="sm"
               >
                 Crear Equipo
-              </button>
+              </PixelButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

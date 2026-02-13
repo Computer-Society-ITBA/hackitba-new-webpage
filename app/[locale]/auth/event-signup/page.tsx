@@ -19,6 +19,7 @@ import { getStorageClient } from "@/lib/firebase/client-config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import { set } from "date-fns"
 import { useAuth } from "@/lib/firebase/auth-context"
+import { useCategories } from "@/hooks/use-categories"
 
 
 function EventSignupContent() {
@@ -29,6 +30,7 @@ function EventSignupContent() {
     const searchParams = useSearchParams()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const { user: authUser, loading: authLoading, refreshUser } = useAuth()
+    const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(locale)
 
 
     // Step management
@@ -70,11 +72,19 @@ function EventSignupContent() {
         noTeamOption: "solo" as "solo" | "create",
         teamName: "",
         teamCode: "",
-        priorities: ["AI", "Web3", "HealthTech"],
+        priorities: [] as string[],
     })
 
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+
+    // Initialize priorities when categories load
+    useEffect(() => {
+        if (categories.length > 0 && formData.priorities.length === 0) {
+            const initialPriorities = categories.slice(0, 3).map(cat => cat.id)
+            setFormData(prev => ({ ...prev, priorities: initialPriorities }))
+        }
+    }, [categories])
 
     useEffect(() => {
         // Fetch user's assigned role from authUser if available
@@ -255,6 +265,14 @@ function EventSignupContent() {
 
             const photoUrl = photoFile ? await uploadPhotoToStorage(photoFile) : ""
 
+            // Map category IDs to indices
+            let category_1 = 0, category_2 = 1, category_3 = 2
+            if (formData.priorities.length >= 3) {
+                category_1 = categories.findIndex(cat => cat.id === formData.priorities[0])
+                category_2 = categories.findIndex(cat => cat.id === formData.priorities[1])
+                category_3 = categories.findIndex(cat => cat.id === formData.priorities[2])
+            }
+
             const payload = {
                 userId: uid,
                 dni: formData.dni,
@@ -269,9 +287,9 @@ function EventSignupContent() {
                 team: formData.hasTeam === "yes" ? formData.teamCode : null,
                 hasTeam: formData.hasTeam === "yes",
                 food_preference: formData.dietaryPreference,
-                category_1: 0,
-                category_2: 1,
-                category_3: 2,
+                category_1: category_1,
+                category_2: category_2,
+                category_3: category_3,
                 company: formData.company || null,
                 position: formData.professionalRole || null,
                 photo: photoUrl || formData.photo,
@@ -503,26 +521,35 @@ function EventSignupContent() {
                                 {formData.noTeamOption === "solo" ? (
                                     <div className="space-y-4 animate-in fade-in duration-300">
                                         <Label className="text-brand-cyan font-pixel text-xs uppercase tracking-tighter italic">{translations.auth.eventSignup.team.dragToReorder}</Label>
-                                        <div className="space-y-2">
-                                            {formData.priorities.map((cat, i) => (
-                                                <div
-                                                    key={cat}
-                                                    draggable
-                                                    onDragStart={(e) => handleDragStart(e, i)}
-                                                    onDragOver={handleDragOver}
-                                                    onDrop={(e) => handleDrop(e, i)}
-                                                    className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
-                                                >
-                                                    <div className="flex items-center gap-3 pointer-events-none">
-                                                        <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                        <span className="text-[10px] text-brand-cyan/80 uppercase">{cat}</span>
-                                                    </div>
-                                                    <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
-                                                        <Users className="w-4 h-4" />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {categoriesLoading ? (
+                                            <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                        ) : formData.priorities.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {formData.priorities.map((catId, i) => {
+                                                    const category = categories.find(c => c.id === catId)
+                                                    return (
+                                                        <div
+                                                            key={catId}
+                                                            draggable
+                                                            onDragStart={(e) => handleDragStart(e, i)}
+                                                            onDragOver={handleDragOver}
+                                                            onDrop={(e) => handleDrop(e, i)}
+                                                            className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
+                                                        >
+                                                            <div className="flex items-center gap-3 pointer-events-none">
+                                                                <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
+                                                                <span className="text-[10px] text-brand-cyan/80 uppercase">{category?.name || "Unknown"}</span>
+                                                            </div>
+                                                            <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
+                                                                <Users className="w-4 h-4" />
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <p className="text-red-400/60 text-xs">{"No categories available"}</p>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">

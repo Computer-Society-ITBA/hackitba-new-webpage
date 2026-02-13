@@ -84,4 +84,15 @@
   .font-montserrat {
     font-family: var(--font-montserrat);
   }
+
+  .pixel-select {
+    font-family: var(--font-pixel);
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+
+  .pixel-select option {
+    background-color: #0b1230;
+    color: var(--color-brand-cyan);
+  }
 }

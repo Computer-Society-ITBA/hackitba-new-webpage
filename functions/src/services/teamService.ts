@@ -9,8 +9,8 @@ export interface TeamData {
     category_1: number;
     category_2: number;
     category_3: number;
-    category: null;
-    admin_id: string;
+    category: number | null;
+  admin_id: string | null;
     is_finalista: boolean;
     link_deploy: string | null;
     link_github: string | null;

@@ -13,7 +13,7 @@ interface TeamRequestData {
     category_1: number;
     category_2: number;
     category_3: number;
-    uid: string;
+  uid?: string;
 }
 
 // eslint-disable-next-line camelcase
@@ -25,7 +25,7 @@ interface TeamResponseData {
     category_2: number;
     category_3: number;
     status: string;
-    uid: string;
+  uid: string | null;
 }
 
 /* eslint-disable-next-line camelcase */
@@ -61,19 +61,24 @@ export const createTeam = async (req: Request, res: Response) => {
       });
     }
 
-    // Verificar usuario
-    const userData = await teamService.getUserById(uid);
+    let adminId: string | null = null;
+    if (uid) {
+      // Verificar usuario
+      const userData = await teamService.getUserById(uid);
 
-    if (!userData) {
-      return res.status(404).json({
-        error: "Usuario no encontrado",
-      });
-    }
+      if (!userData) {
+        return res.status(404).json({
+          error: "Usuario no encontrado",
+        });
+      }
 
-    if (userData?.team) {
-      return res.status(400).json({
-        error: "Ya perteneces a un equipo",
-      });
+      if (userData?.team) {
+        return res.status(400).json({
+          error: "Ya perteneces a un equipo",
+        });
+      }
+
+      adminId = uid;
     }
 
     // Crear equipo
@@ -85,8 +90,8 @@ export const createTeam = async (req: Request, res: Response) => {
       category_1,
       category_2,
       category_3,
-      category: null,
-      admin_id: uid,
+      category: typeof category_1 === "number" ? category_1 : null,
+      admin_id: adminId,
       is_finalista: false,
       link_deploy: null,
       link_github: null,
@@ -96,7 +101,9 @@ export const createTeam = async (req: Request, res: Response) => {
     };
 
     const teamId = await teamService.createTeam(teamData);
-    await teamService.updateUserTeam(uid, teamId);
+    if (adminId) {
+      await teamService.updateUserTeam(adminId, teamId);
+    }
 
     // Respuesta
     // eslint-disable-next-line camelcase

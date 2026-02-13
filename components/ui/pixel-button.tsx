@@ -24,9 +24,7 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
               {
                 "bg-brand-orange border-brand-orange text-brand-navy neon-glow-orange hover:neon-border-orange":
                   variant === "primary",
-                "bg-brand-cyan border-brand-cyan text-brand-navy neon-glow-cyan hover:neon-border-cyan":
-                  variant === "secondary",
-                "bg-transparent neon-border-cyan text-brand-cyan":
+                "bg-transparent border-brand-cyan/80 text-brand-cyan neon-glow-cyan neon-border-cyan hover:neon-border-cyan hover:neon-glow-cyan":
                   variant === "outline",
               },
               {
@@ -52,10 +50,8 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
           "border-3 relative overflow-hidden",
           "hover:scale-105 active:scale-95",
           {
-            "bg-brand-orange border-brand-orange text-brand-navy neon-glow-orange hover:neon-border-orange":
+            "bg-transparent border-brand-cyan/80 text-brand-cyan neon-glow-cyan neon-border-cyan hover:neon-border-cyan hover:neon-glow-cyan":
               variant === "primary",
-            "bg-brand-cyan border-brand-cyan text-brand-navy neon-glow-cyan hover:neon-border-cyan":
-              variant === "secondary",
             "bg-transparent border-brand-cyan text-brand-cyan neon-glow-cyan neon-border-cyan hover:neon-border-cyan hover:neon-glow-cyan":
               variant === "outline",
           },

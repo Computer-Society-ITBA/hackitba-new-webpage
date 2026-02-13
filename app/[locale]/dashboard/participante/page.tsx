@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -8,16 +9,18 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc } from "firebase/firestore"
+import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Progress } from "@/components/ui/progress"
 import { Upload, X } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
 
 export default function ParticipanteDashboard() {
+  const params = useParams()
+  const locale = (params?.locale as string) || "en"
   const db = getDbClient()
   const storage = getStorageClient()
   const { user } = useAuth()
@@ -59,6 +62,14 @@ export default function ParticipanteDashboard() {
 
   const loadTeam = useCallback(async () => {
     if (!db || !user) return
+    if (user.team) {
+      const teamDoc = await getDoc(doc(db, "teams", user.team))
+      if (teamDoc.exists()) {
+        setTeam({ id: teamDoc.id, ...teamDoc.data() })
+      }
+      return
+    }
+
     const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
     const teamsSnapshot = await getDocs(teamsQuery)
     if (teamsSnapshot.docs.length > 0) {
@@ -91,6 +102,34 @@ export default function ParticipanteDashboard() {
     }
   }, [db, user, team])
 
+  const teamCategoryId = useMemo(() => {
+    console.log("Calculating team category ID with team data:", team)
+    if (!team) return ""
+    if (typeof team.category === "number" && team.category >= 0) {
+      console.log("Team category from team document:", team.category)
+      const category = categories[team.category]
+      return category?.id || ""
+    }
+    return team.categoryId || ""
+  }, [team, categories])
+
+  const teamCategoryLabel = useMemo(() => {
+    const fallbackLabel = locale === "es" ? "Categoria no asignada" : "Category not assigned"
+    if (!teamCategoryId) return fallbackLabel
+    const category = categories.find((item) => item.id === teamCategoryId)
+    if (!category) return fallbackLabel
+    if (locale === "es") {
+      return category.spanishName || category.englishName || category.name || fallbackLabel
+    }
+    return category.englishName || category.spanishName || category.name || fallbackLabel
+  }, [categories, teamCategoryId, locale])
+
+  const teamCategoryIconName = useMemo(() => {
+    if (!teamCategoryId) return ""
+    const category = categories.find((item) => item.id === teamCategoryId)
+    return category?.iconName || ""
+  }, [categories, teamCategoryId])
+
   useEffect(() => {
     if (user) {
       setOnboardingStep(user.onboardingStep || 0)
@@ -115,6 +154,15 @@ export default function ParticipanteDashboard() {
   useEffect(() => {
     loadProject()
   }, [loadProject])
+
+  useEffect(() => {
+    if (!teamCategoryId) return
+    setProjectForm((prev) =>
+      prev.categoryId === teamCategoryId
+        ? prev
+        : { ...prev, categoryId: teamCategoryId }
+    )
+  }, [teamCategoryId])
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
     if (!storage) {
@@ -186,9 +234,6 @@ export default function ParticipanteDashboard() {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index))
   }
 
-  // Onboarding disabled - skip directly to dashboard
-  // if (onboardingStep < 3) { ... }
-
   const hasTeam = user?.hasTeam === true && user?.team
 
   return (
@@ -242,26 +287,6 @@ export default function ParticipanteDashboard() {
                       className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                       disabled={!!project && !showProjectForm}
                     />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Category</Label>
-                    <Select
-                      value={projectForm.categoryId}
-                      onValueChange={(value) => setProjectForm({ ...projectForm, categoryId: value })}
-                      disabled={!!project && !showProjectForm}
-                    >
-                      <SelectTrigger className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   <div>

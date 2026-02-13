@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { ArrowLeft, Home } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -68,13 +69,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
         {Array.from({ length: 50 }, (_, i) => (
           <div key={i}>
             {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
           </div>
         ))}
+      </div>
+
+      <div className="absolute top-4 left-4 z-20 flex gap-2">
+        <button
+          onClick={() => router.back()}
+          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
+          title="Go back"
+        >
+          <ArrowLeft size={24} />
+        </button>
+        <Link
+          href={`/${locale}`}
+          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
+          title="Home"
+        >
+          <Home size={24} />
+        </Link>
       </div>
 
       <div className="w-full max-w-md relative z-10">

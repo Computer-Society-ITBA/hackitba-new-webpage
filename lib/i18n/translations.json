@@ -5,6 +5,8 @@
       "pastEditions": "Past Editions",
       "faqs": "FAQs",
       "collaborate": "Collaborate",
+      "login": "Login",
+      "dashboard": "Go to Dashboard",
       "signUp": "Sign Up",
       "about": "About",
       "sponsors": "Sponsors",
@@ -133,7 +135,7 @@
     "auth": {
       "signup": {
         "endpoint": "POST /api/auth/signup",
-        "title": "Create Your Account",
+        "title": "Register",
         "sectionTitle": "Account Setup",
         "fields": {
           "name": "Name",
@@ -307,6 +309,8 @@
       "pastEditions": "Ediciones Pasadas",
       "faqs": "FAQs",
       "collaborate": "Colaborar",
+      "login": "Iniciar Sesión",
+      "dashboard": "Ir al Panel",
       "signUp": "Inscribirse",
       "about": "Sobre Nosotros",
       "sponsors": "Sponsors",

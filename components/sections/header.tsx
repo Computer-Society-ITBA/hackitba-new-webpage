@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
+import { useAuth } from "@/lib/firebase/auth-context"
 
 interface HeaderProps {
   translations: any
@@ -15,6 +16,7 @@ interface HeaderProps {
 export function Header({ translations, locale }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const { user, loading } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,10 +58,21 @@ export function Header({ translations, locale }: HeaderProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="hidden md:block">
-              <PixelButton asChild variant="outline" size="md">
-                <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
-              </PixelButton>
+            <div className="hidden md:flex gap-3">
+              {!loading && user ? (
+                <PixelButton asChild variant="outline" size="md">
+                  <Link href={`/${locale}/dashboard`}>{translations.nav.dashboard}</Link>
+                </PixelButton>
+              ) : (
+                <>
+                  <PixelButton asChild variant="outline" size="md">
+                    <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
+                  </PixelButton>
+                  <PixelButton asChild variant="outline" size="md">
+                    <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                  </PixelButton>
+                </>
+              )}
             </div>
           </nav>
 
@@ -82,10 +95,21 @@ export function Header({ translations, locale }: HeaderProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="px-4 pt-2">
-              <PixelButton asChild variant="outline" size="md" className="w-full">
-                <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
-              </PixelButton>
+            <div className="px-4 pt-2 space-y-2">
+              {!loading && user ? (
+                <PixelButton asChild variant="outline" size="md" className="w-full">
+                  <Link href={`/${locale}/dashboard`}>{translations.nav.dashboard}</Link>
+                </PixelButton>
+              ) : (
+                <>
+                  <PixelButton asChild variant="outline" size="md" className="w-full">
+                    <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
+                  </PixelButton>
+                  <PixelButton asChild variant="outline" size="md" className="w-full">
+                    <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                  </PixelButton>
+                </>
+              )}
             </div>
           </div>
         )}
