@@ -76,7 +76,8 @@
         "tech": "Tech",
         "oratory": "Oratory"
       },
-      "noMentors": "No mentors available in this category"
+      "noMentors": "No mentors available in this category",
+      "errorTitle": "Error Loading Mentors"
     },
     "categories": {
       "title": "Categories",
@@ -377,7 +378,8 @@
         "tech": "Tecnología",
         "oratory": "Oratoria"
       },
-      "noMentors": "No hay mentores disponibles en esta categoría"
+      "noMentors": "No hay mentores disponibles en esta categoría",
+      "errorTitle": "Error al Cargar Mentores"
     },
     "categories": {
       "title": "Categorías",

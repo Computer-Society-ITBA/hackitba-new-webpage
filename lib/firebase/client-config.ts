@@ -35,14 +35,20 @@ export function getAuthClient(): Auth | null {
   return app ? getAuth(app) : null
 }
 
-export function getDbClient(): Firestore | null {
+export function getDbClient(databaseId?: string): Firestore | null {
   const app = getFirebaseApp()
-  return app ? getFirestore(app) : null
+  if (!app) return null
+
+  return databaseId ? getFirestore(app, databaseId) : getFirestore(app)
 }
 
-export function getStorageClient(): FirebaseStorage | null {
+
+export function getStorageClient(databaseId?: string): FirebaseStorage | null {
   const app = getFirebaseApp()
-  return app ? getStorage(app) : null
+  if (app) {
+    return databaseId ? getStorage(app, databaseId) : getStorage(app)
+  }
+  return null
 }
 
 // Only connect to emulators if explicitly enabled and in development
