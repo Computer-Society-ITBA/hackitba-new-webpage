@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload, Users as UsersIcon } from "lucide-react"
@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [teams, setTeams] = useState<any[]>([])
   const [processing, setProcessing] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -71,8 +72,43 @@ export default function AdminDashboard() {
       loadData()
       loadPendingParticipants()
       loadTeams()
+      loadSettings()
     }
   }, [authReady])
+
+  const loadSettings = async () => {
+    if (!db) return
+    try {
+      const settingsRef = doc(db, "settings", "global")
+      const settingsDoc = await getDoc(settingsRef)
+      if (settingsDoc.exists()) {
+        const data = settingsDoc.data()
+        setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+      } else {
+        setProjectSubmissionsEnabled(true)
+        await setDoc(settingsRef, { projectSubmissionsEnabled: true, updatedAt: new Date() }, { merge: true })
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error)
+    }
+  }
+
+  const toggleProjectSubmissions = async () => {
+    if (!db) return
+    const nextValue = !projectSubmissionsEnabled
+    setProjectSubmissionsEnabled(nextValue)
+    try {
+      await setDoc(
+        doc(db, "settings", "global"),
+        { projectSubmissionsEnabled: nextValue, updatedAt: new Date() },
+        { merge: true }
+      )
+    } catch (error) {
+      console.error("Error updating project submissions setting:", error)
+      setProjectSubmissionsEnabled(!nextValue)
+      alert("No se pudo actualizar la configuracion de proyectos")
+    }
+  }
 
   const loadPendingParticipants = async () => {
     try {
@@ -345,6 +381,30 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Project Submissions</h3>
+            </div>
+            <GlassCard>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-brand-cyan font-pixel text-sm">Subida de proyectos</p>
+                  <p className="text-brand-cyan/60 text-xs">Habilita o deshabilita el envio de proyectos</p>
+                </div>
+                <button
+                  onClick={toggleProjectSubmissions}
+                  className={`px-4 py-2 rounded border font-pixel text-xs transition-colors ${
+                    projectSubmissionsEnabled
+                      ? "border-brand-cyan/60 text-brand-cyan bg-brand-cyan/10"
+                      : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
+                  }`}
+                >
+                  {projectSubmissionsEnabled ? "Enabled" : "Disabled"}
+                </button>
+              </div>
+            </GlassCard>
+          </section>
+
           <section>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">

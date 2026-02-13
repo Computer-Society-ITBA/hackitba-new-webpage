@@ -9,6 +9,17 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
@@ -32,6 +43,9 @@ export default function ParticipanteDashboard() {
   const [uploading, setUploading] = useState(false)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploadedVideo, setUploadedVideo] = useState<string>("")
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
+  const hasProjectContent = !!project || uploadedImages.length > 0 || !!uploadedVideo
 
   const [projectForm, setProjectForm] = useState({
     title: "",
@@ -130,6 +144,12 @@ export default function ParticipanteDashboard() {
     return category?.iconName || ""
   }, [categories, teamCategoryId])
 
+  const deleteTitle = locale === "es" ? "Estas seguro?" : "Are you sure?"
+  const deleteDescription =
+    locale === "es"
+      ? "Esta accion eliminara el proyecto de forma permanente y no se puede deshacer."
+      : "This will permanently delete your project and cannot be undone."
+
   useEffect(() => {
     if (user) {
       setOnboardingStep(user.onboardingStep || 0)
@@ -146,6 +166,27 @@ export default function ParticipanteDashboard() {
   useEffect(() => {
     loadCategories()
   }, [loadCategories])
+
+  useEffect(() => {
+    if (!db) return
+    const loadProjectSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+        } else {
+          setProjectSubmissionsEnabled(true)
+        }
+      } catch (error) {
+        console.error("Error loading project submissions setting:", error)
+      } finally {
+        setProjectSubmissionsLoading(false)
+      }
+    }
+
+    loadProjectSettings()
+  }, [db])
 
   useEffect(() => {
     loadTeam()
@@ -197,6 +238,10 @@ export default function ParticipanteDashboard() {
 
   const submitProject = async () => {
     if (!db || !user) return
+    if (!projectSubmissionsEnabled) {
+      alert("La carga de proyectos esta deshabilitada por el administrador")
+      return
+    }
     const teamId = team?.id || user.id
 
     if (project) {
@@ -266,6 +311,7 @@ export default function ParticipanteDashboard() {
             />
           </section>
 
+          {(projectSubmissionsEnabled || hasProjectContent) && (
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>
@@ -280,7 +326,7 @@ export default function ParticipanteDashboard() {
                     value={projectForm.title}
                     onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    disabled={!!project && !showProjectForm}
+                    disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
 
@@ -292,7 +338,7 @@ export default function ParticipanteDashboard() {
                     value={projectForm.description}
                     onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    disabled={!!project && !showProjectForm}
+                    disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
 
@@ -305,7 +351,7 @@ export default function ParticipanteDashboard() {
                     onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://github.com/..."
-                    disabled={!!project && !showProjectForm}
+                    disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
 
@@ -316,7 +362,7 @@ export default function ParticipanteDashboard() {
                     onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://..."
-                    disabled={!!project && !showProjectForm}
+                    disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
 
@@ -330,7 +376,7 @@ export default function ParticipanteDashboard() {
                             alt={`Project ${index + 1}`}
                             className="w-full h-full object-cover rounded"
                           />
-                          {(showProjectForm || !project) && (
+                          {projectSubmissionsEnabled && (showProjectForm || !project) && (
                             <button
                               onClick={() => removeImage(index)}
                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
@@ -347,7 +393,7 @@ export default function ParticipanteDashboard() {
                     {uploadedVideo && (
                       <div className="mb-2">
                         <video src={uploadedVideo} controls className="w-full max-h-64 rounded" />
-                        {(showProjectForm || !project) && (
+                        {projectSubmissionsEnabled && (showProjectForm || !project) && (
                           <button onClick={() => setUploadedVideo("")} className="text-red-500 text-sm mt-2">
                             Remove Video
                           </button>
@@ -357,14 +403,21 @@ export default function ParticipanteDashboard() {
                   </div>
                 </div>
 
+                {!projectSubmissionsEnabled && (
+                  <p className="text-brand-orange text-xs font-pixel">
+                    Project submissions are disabled by admin
+                  </p>
+                )}
+
                 <div className="flex flex-wrap items-center gap-3">
-                  {(showProjectForm || !project) && (
+                  {projectSubmissionsEnabled && (showProjectForm || !project) && (
                     <label className="cursor-pointer inline-block">
                       <Input
                         type="file"
                         accept="image/*"
                         multiple
                         className="hidden"
+                        disabled={!projectSubmissionsEnabled}
                         onChange={async (e) => {
                           const files = Array.from(e.target.files || [])
                           for (const file of files) {
@@ -373,7 +426,7 @@ export default function ParticipanteDashboard() {
                           }
                         }}
                       />
-                      <PixelButton asChild size="sm" disabled={uploading}>
+                      <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                         <span>
                           <Upload size={16} className="mr-2" />
                           {uploading ? "Uploading..." : "Upload Images"}
@@ -381,12 +434,13 @@ export default function ParticipanteDashboard() {
                       </PixelButton>
                     </label>
                   )}
-                  {!uploadedVideo && (showProjectForm || !project) && (
+                  {projectSubmissionsEnabled && !uploadedVideo && (showProjectForm || !project) && (
                     <label className="cursor-pointer inline-block">
                       <Input
                         type="file"
                         accept="video/*"
                         className="hidden"
+                        disabled={!projectSubmissionsEnabled}
                         onChange={async (e) => {
                           const file = e.target.files?.[0]
                           if (file) {
@@ -395,7 +449,7 @@ export default function ParticipanteDashboard() {
                           }
                         }}
                       />
-                      <PixelButton asChild size="sm" disabled={uploading}>
+                      <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                         <span>
                           <Upload size={16} className="mr-2" />
                           {uploading ? "Uploading..." : "Upload Video"}
@@ -404,38 +458,69 @@ export default function ParticipanteDashboard() {
                     </label>
                   )}
                   {!project && (
-                    <PixelButton onClick={submitProject} className="ml-auto px-6" disabled={uploading}>
+                    <PixelButton
+                      onClick={submitProject}
+                      className="ml-auto px-6"
+                      disabled={uploading || projectSubmissionsLoading || !projectSubmissionsEnabled}
+                    >
                       Submit Project
                     </PixelButton>
                   )}
                 </div>
 
-                {project && !showProjectForm ? (
+                {projectSubmissionsEnabled && project && !showProjectForm ? (
                   <div className="flex justify-end gap-3">
                     <PixelButton onClick={() => setShowProjectForm(true)} className="flex-1">
                       Edit Project
                     </PixelButton>
-                    <PixelButton onClick={deleteProject} variant="outline" className="text-red-500">
-                      Delete
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <PixelButton variant="outline" className="text-red-500">
+                          Delete
+                        </PixelButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="font-pixel text-brand-yellow">
+                            {deleteTitle}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-brand-cyan/80">
+                            {deleteDescription}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel asChild>
+                            <PixelButton variant="outline">Cancel</PixelButton>
+                          </AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                            <PixelButton onClick={deleteProject} className="bg-red-600 text-white">
+                              Delete Project
+                            </PixelButton>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                ) : null}
+
+                {projectSubmissionsEnabled && project && showProjectForm ? (
+                  <div className="flex gap-3">
+                    <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
+                      Cancel
+                    </PixelButton>
+                    <PixelButton
+                      onClick={submitProject}
+                      className="px-6"
+                      disabled={uploading || projectSubmissionsLoading}
+                    >
+                      Update Project
                     </PixelButton>
                   </div>
-                ) : (
-                  <div className="flex gap-3">
-                    {project && (
-                      <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
-                        Cancel
-                      </PixelButton>
-                    )}
-                    {project && (
-                      <PixelButton onClick={submitProject} className="px-6" disabled={uploading}>
-                        Update Project
-                      </PixelButton>
-                    )}
-                  </div>
-                )}
+                ) : null}
               </div>
             </GlassCard>
           </section>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>
