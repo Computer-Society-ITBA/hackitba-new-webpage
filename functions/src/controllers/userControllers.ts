@@ -1,6 +1,8 @@
 import {Request, Response} from "express";
 import {logger} from "firebase-functions";
-import {registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete} from "../services/userService";
+import {registerUser, eventRegistration, loginUser, getAllUsers, getUserByIdComplete, updateUserData} from "../services/userService";
+import {getTeamByLabel} from "../services/teamService";
+import {sendWelcomeEmail, sendEventConfirmationEmail, sendPasswordResetEmail} from "../services/emailService";
 
 interface RegisterRequestBody {
   email: string;
@@ -29,6 +31,14 @@ export const register = async (
       surname: surname || "",
     });
 
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (emailError) {
+      logger.error("Error sending welcome email:", emailError);
+      // Don't fail the request if email fails
+    }
+
     return res.status(201).json({
       message: "User registered successfully",
       uid: result.uid,
@@ -53,6 +63,17 @@ export const registerEvent = async (req: Request, res: Response) => {
     logger.info("Request body:", req.body);
 
     await eventRegistration(userId, dni, university, career, age, link_cv, linkedin, instagram, twitter, github, team, food_preference, category_1, category_2, category_3, company, position, photo);
+
+    // Get user to send confirmation email
+    const user = await getUserByIdComplete(userId);
+    if (user) {
+      try {
+        await sendEventConfirmationEmail((user as any).email, (user as any).name, (user as any).role);
+      } catch (emailError) {
+        logger.error("Error sending event confirmation email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     logger.info(`Event registration successful for userId: ${userId}`);
     return res.status(200).json({message: "Registro al evento exitoso"});
@@ -117,5 +138,91 @@ export const getUserById = async (req: Request, res: Response) => {
     return res.status(200).json({user});
   } catch (error) {
     return res.status(500).json({error: "Error al obtener usuario"});
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const {id} = req.params;
+    const {name, surname, email, teamLabel} = req.body;
+    const requesterId = req.user.uid;
+
+    if (!id) {
+      return res.status(400).json({error: "ID de usuario no proporcionado"});
+    }
+
+    // Get user data
+    const user = await getUserByIdComplete(id);
+    if (!user) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    // Verify permissions: must be admin of the team
+    if (teamLabel) {
+      const team = await getTeamByLabel(teamLabel);
+      if (!team) {
+        return res.status(404).json({error: "Equipo no encontrado"});
+      }
+      if (team.data?.admin_id !== requesterId) {
+        return res.status(403).json({error: "No tienes permiso para editar este miembro"});
+      }
+    } else if (requesterId !== id) {
+      // If no teamLabel provided, user can only edit themselves
+      return res.status(403).json({error: "No tienes permiso para editar este usuario"});
+    }
+
+    const updates: {name?: string; surname?: string; email?: string} = {};
+    if (name) updates.name = name;
+    if (surname) updates.surname = surname;
+    if (email) updates.email = email;
+
+    await updateUserData(id, updates);
+
+    return res.status(200).json({
+      message: "Usuario actualizado exitosamente",
+      user: {
+        ...user,
+        ...updates,
+      },
+    });
+  } catch (error: any) {
+    logger.error("Update user error:", error);
+    return res.status(500).json({error: "Error al actualizar usuario"});
+  }
+};
+
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const {email} = req.body;
+
+    if (!email) {
+      return res.status(400).json({error: "Email is required"});
+    }
+
+    // Get user by email
+    const users = await getAllUsers();
+    const user = users.find((u: any) => u.email === email);
+
+    if (!user) {
+      // Don't reveal if email exists for security
+      return res.status(200).json({message: "If email exists, password reset link has been sent"});
+    }
+
+    // In production, generate a real reset token and store it
+    // For now, we'll use a simple approach
+    const resetToken = Buffer.from(`${user.id}:${Date.now()}`).toString("base64");
+    const resetLink = `${process.env.APP_URL || "https://hackitba.com"}/reset-password?token=${resetToken}`;
+
+    try {
+      await sendPasswordResetEmail(email, resetLink);
+    } catch (emailError) {
+      logger.error("Error sending password reset email:", emailError);
+      return res.status(500).json({error: "Error sending password reset email"});
+    }
+
+    return res.status(200).json({message: "Password reset link sent to email"});
+  } catch (error) {
+    logger.error("Password reset error:", error);
+    return res.status(500).json({error: "Error processing password reset"});
   }
 };

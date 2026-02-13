@@ -44,6 +44,7 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
       surname: surname,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       role: role || "participant",
+      onboardingStep: 1,
     });
 
     logger.info(`User successfully registered: ${userRecord.uid}`);
@@ -99,12 +100,13 @@ export const eventRegistration = async (
         twitter: twitter,
         github: github,
         food_preference: food_preference,
+        onboardingStep: 2,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       logger.info(`Mentor/judge record updated successfully for ${userId}`);
     } else {
       logger.info(`Updating participant record for ${userId}`);
-      if (!userId || !dni || !university || !career || !age || !category_1 || !category_2 || !category_3) {
+      if (!userId || !dni || !university || !career || !age || category_1 === null || category_1 === undefined || category_2 === null || category_2 === undefined || category_3 === null || category_3 === undefined) {
         throw new Error("Faltan campos obligatorios");
       }
 
@@ -131,6 +133,7 @@ export const eventRegistration = async (
         category_1: category_1 !== null ? category_1 : category_1,
         category_2: category_2 !== null ? category_2 : category_2,
         category_3: category_3 !== null ? category_3 : category_3,
+        onboardingStep: 2,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       logger.info(`Participant record updated successfully for ${userId}`);
@@ -175,4 +178,29 @@ export const getUserByIdComplete = async (userId: string) => {
     id: userDoc.id,
     ...userDoc.data(),
   };
+};
+
+export const updateUserData = async (
+  userId: string,
+  updates: {
+    name?: string;
+    surname?: string;
+    email?: string;
+  }
+): Promise<void> => {
+  const db = getHackitbaDb();
+  const updateData: any = {
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  if (updates.name) updateData.name = updates.name;
+  if (updates.surname) updateData.surname = updates.surname;
+  if (updates.email) {
+    // If email is being updated, also update in Firebase Auth
+    await admin.auth().updateUser(userId, {email: updates.email});
+    updateData.email = updates.email;
+  }
+
+  await db.collection("users").doc(userId).update(updateData);
+  logger.info(`User ${userId} data updated successfully`);
 };

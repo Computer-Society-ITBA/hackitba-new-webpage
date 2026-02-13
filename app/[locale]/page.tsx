@@ -1,9 +1,5 @@
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { type Locale, locales } from "@/lib/i18n/config"
-
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }))
-}
 import { Header } from "@/components/sections/header"
 import { Hero } from "@/components/sections/hero"
 import { Stats } from "@/components/sections/stats"
@@ -25,6 +21,10 @@ interface PageProps {
 }
 
 import { Countdown } from "@/components/sections/countdown"
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }))
+}
 
 export default async function Page({ params }: PageProps) {
   const { locale } = await params

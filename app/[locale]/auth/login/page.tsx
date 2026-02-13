@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { getAuthClient } from "@/lib/firebase/client-config"
+import { useAuth } from "@/lib/firebase/auth-context"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
@@ -19,10 +20,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [shouldRedirect, setShouldRedirect] = useState(false)
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
   const translations = getTranslations(locale)
+  const { user, loading: authLoading } = useAuth()
+
+  // Redirect when user is loaded after login
+  useEffect(() => {
+    if (shouldRedirect && !authLoading && user) {
+      const onboardingStep = user.onboardingStep || 0
+      
+      console.log("Login - User onboarding step:", onboardingStep, typeof onboardingStep)
+      
+      // Redirect based on onboarding completion
+      if (Number(onboardingStep) < 2) {
+        // Haven't completed event signup
+        router.replace(`/${locale}/auth/event-signup`)
+      } else {
+        // Completed all onboarding, go to dashboard
+        router.replace(`/${locale}/dashboard`)
+      }
+    }
+  }, [shouldRedirect, authLoading, user, router, locale])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,14 +54,15 @@ export default function LoginPage() {
       const authClient = getAuthClient()
       if (!authClient) {
         setError(translations.auth.login.errors.firebaseNotConfigured)
+        setLoading(false)
         return
       }
 
       await signInWithEmailAndPassword(authClient, email, password)
-      router.push("/dashboard")
+      console.log("Login successful, waiting for user data...")
+      setShouldRedirect(true)
     } catch (error: any) {
       setError(error.message || translations.auth.login.errors.loginFailed)
-    } finally {
       setLoading(false)
     }
   }

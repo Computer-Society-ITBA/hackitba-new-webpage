@@ -35,18 +35,18 @@ export function getAuthClient(): Auth | null {
   return app ? getAuth(app) : null
 }
 
-export function getDbClient(databaseId?: string): Firestore | null {
+export function getDbClient(databaseId: string = "hackitba"): Firestore | null {
   const app = getFirebaseApp()
   if (!app) return null
 
-  return databaseId ? getFirestore(app, databaseId) : getFirestore(app)
+  return getFirestore(app, databaseId)
 }
 
 
-export function getStorageClient(databaseId?: string): FirebaseStorage | null {
+export function getStorageClient(databaseId: string = "hackitba"): FirebaseStorage | null {
   const app = getFirebaseApp()
   if (app) {
-    return databaseId ? getStorage(app, databaseId) : getStorage(app)
+    return getStorage(app, databaseId)
   }
   return null
 }

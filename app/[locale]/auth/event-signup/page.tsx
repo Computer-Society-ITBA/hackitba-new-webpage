@@ -18,6 +18,7 @@ import { getTranslations } from "@/lib/i18n/get-translations"
 import { getStorageClient } from "@/lib/firebase/client-config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import { set } from "date-fns"
+import { useAuth } from "@/lib/firebase/auth-context"
 
 
 function EventSignupContent() {
@@ -27,6 +28,7 @@ function EventSignupContent() {
     const translations = getTranslations(locale)
     const searchParams = useSearchParams()
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { user: authUser, loading: authLoading, refreshUser } = useAuth()
 
 
     // Step management
@@ -34,6 +36,17 @@ function EventSignupContent() {
     const [role, setRole] = useState<UserRole | null>(null)
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
     const [photoFile, setPhotoFile] = useState<File | null>(null)
+
+    // Check if user already completed onboarding
+    useEffect(() => {
+        if (!authLoading && authUser) {
+            const onboardingStep = authUser.onboardingStep || 0
+            if (onboardingStep >= 2) {
+                // Already completed event signup, redirect to dashboard
+                router.replace(`/${locale}/dashboard`)
+            }
+        }
+    }, [authUser, authLoading, router, locale])
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -64,14 +77,27 @@ function EventSignupContent() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        // Fetch user's assigned role from backend
+        // Fetch user's assigned role from authUser if available
         const fetchUserRole = async () => {
+            // Wait for auth to finish loading
+            if (authLoading) {
+                return
+            }
+
+            // If we have authUser from context, use it directly
+            if (authUser) {
+                console.log("Using role from authUser context:", authUser.role)
+                setRole(authUser.role)
+                return
+            }
+
+            // Fallback: try localStorage and API
             try {
                 const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
                 
                 if (!uid) {
                     console.error("No user ID found. Please register first.")
-                    setRole("participante")
+                    setRole("participant")
                     return
                 }
 
@@ -81,10 +107,10 @@ function EventSignupContent() {
                 
                 if (!currentUser) {
                     console.error("No Firebase user authenticated")
-                    setRole("participante")
+                    setRole("participant")
                     return
                 }
-
+ 
                 const idToken = await currentUser.getIdToken()
 
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
@@ -96,27 +122,21 @@ function EventSignupContent() {
                 
                 if (response.ok) {
                     const data = await response.json()
-                    setRole(data.role || "participante")
+                    setRole(data.role || "participant")
                 } else {
                     console.error(`Failed to fetch user role: ${response.status} ${response.statusText}`)
-                    // Fallback: Use query param for testing
-                    const roleParam = searchParams.get("role") as UserRole
-                    if (roleParam && ["jurado", "participante", "mentor"].includes(roleParam)) {
-                        setRole(roleParam)
-                    } else {
-                        setRole("participante") // Default
-                    }
+                    setRole("participant") // Default
                 }
             } catch (err) {
                 console.error("Failed to fetch user role", err)
-                setRole("participante")
+                setRole("participant")
             }
         }
 
         fetchUserRole()
-    }, [searchParams])
+    }, [authUser, authLoading, router, locale])
 
-    const totalSteps = role === "participante" ? 3 : 2
+    const totalSteps = role === "participant" ? 3 : 2
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
@@ -168,7 +188,7 @@ function EventSignupContent() {
                 return
             }
 
-            if (role === "participante") {
+            if (role === "participant") {
                 if (!formData.age || !formData.university || !formData.career) {
                     setError(translations.auth.eventSignup.errors.allFieldsRequired)
                     return
@@ -272,8 +292,15 @@ function EventSignupContent() {
                 throw new Error(errorData.error || translations.auth.eventSignup.errors.createFailed)
             }
 
+            // Refresh user data to get updated onboardingStep
+            console.log("Event registration successful, refreshing user data...")
+            await refreshUser()
+            
+            // Wait a bit for Firestore to fully update
+            await new Promise(resolve => setTimeout(resolve, 500))
+
             // Success - redirect based on team choice
-            if (role === "participante" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
+            if (role === "participant" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
                 router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
             } else {
                 router.push(`/${locale}/dashboard`)
@@ -299,7 +326,7 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{role === "participante" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{role === "participant" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
                         </div>
 
                         <div className="space-y-2">
@@ -307,7 +334,7 @@ function EventSignupContent() {
                             <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                         </div>
 
-                        {role === "participante" ? (
+                        {role === "participant" ? (
                             <>
                                 <div className="space-y-2">
                                     <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>

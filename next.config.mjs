@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   typescript: {
     ignoreBuildErrors: true,
   },
   pageExtensions: ["tsx"],
-  output: 'export',
   images: {
     unoptimized: true,
   },

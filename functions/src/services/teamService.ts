@@ -41,8 +41,8 @@ export const createLabel = (name: string): string => {
 };
 
 export const teamExists = async (label: string): Promise<boolean> => {
-  const teamDoc = await admin
-    .firestore()
+  const db = getHackitbaDb();
+  const teamDoc = await db
     .collection("teams")
     .doc(label)
     .get();
@@ -51,8 +51,8 @@ export const teamExists = async (label: string): Promise<boolean> => {
 };
 
 export const getUserById = async (userId: string) => {
-  const userDoc = await admin
-    .firestore()
+  const db = getHackitbaDb();
+  const userDoc = await db
     .collection("users")
     .doc(userId)
     .get();
@@ -65,13 +65,15 @@ export const getUserById = async (userId: string) => {
 };
 
 export const createTeam = async (teamData: TeamData): Promise<string> => {
-  await admin.firestore().collection("teams").doc(teamData.label).set(teamData);
+  const db = getHackitbaDb();
+  await db.collection("teams").doc(teamData.label).set(teamData);
   logger.info(`Equipo creado: ${teamData.label} por usuario: ${teamData.admin_id}`);
   return teamData.label;
 };
 
 export const updateUserTeam = async (userId: string, teamLabel: string): Promise<void> => {
-  await admin.firestore().collection("users").doc(userId).update({
+  const db = getHackitbaDb();
+  await db.collection("users").doc(userId).update({
     team: teamLabel,
     hasTeam: true,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -80,8 +82,8 @@ export const updateUserTeam = async (userId: string, teamLabel: string): Promise
 };
 
 export const getTeamByLabel = async (label: string) => {
-  const teamDoc = await admin
-    .firestore()
+  const db = getHackitbaDb();
+  const teamDoc = await db
     .collection("teams")
     .doc(label)
     .get();
@@ -126,8 +128,8 @@ export const updateTeam = async (
 };
 
 export const getTeamMembers = async (teamLabel: string) => {
-  const usersSnapshot = await admin
-    .firestore()
+  const db = getHackitbaDb();
+  const usersSnapshot = await db
     .collection("users")
     .where("team", "==", teamLabel)
     .get();
@@ -139,7 +141,8 @@ export const getTeamMembers = async (teamLabel: string) => {
 };
 
 export const removeMemberFromTeam = async (userId: string): Promise<void> => {
-  await admin.firestore().collection("users").doc(userId).update({
+  const db = getHackitbaDb();
+  await db.collection("users").doc(userId).update({
     team: null,
     hasTeam: false,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),

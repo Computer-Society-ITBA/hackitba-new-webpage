@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { ChevronRight, Users, User } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { getAuthClient } from "@/lib/firebase/client-config"
 
 
 interface CreateTeamPageProps {
@@ -46,19 +47,25 @@ function CreateTeamContent() {
         // TODO: Fetch user data from backend using userId from query params or session
         const fetchUserData = async () => {
             try {
-                const userId = searchParams.get("userId")
+                const authClient = getAuthClient()
+                const currentUser = authClient?.currentUser
+                const userId = currentUser?.uid || searchParams.get("userId")
+
+                if (!userId) {
+                    setError("No se pudo determinar el usuario")
+                    return
+                }
 
                 // TODO: Replace with actual API call
-                // const response = await fetch(`/api/auth/user/${userId}`)
-                // const data = await response.json()
-                // setAdminUser(data)
-
-                // Temporary mock data
-                setAdminUser({
-                    id: userId || "user-123",
-                    name: "Juan",
-                    surname: "Pérez",
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                const idToken = currentUser ? await currentUser.getIdToken() : localStorage.getItem("userToken")
+                const response = await fetch(`${apiUrl}/users/${userId}`,{
+                    headers: {
+                        Authorization: `Bearer ${idToken}`,
+                    }
                 })
+                const data = await response.json()
+                setAdminUser(data.user)
             } catch (err) {
                 console.error("Failed to fetch user data", err)
             }
@@ -115,32 +122,58 @@ function CreateTeamContent() {
         try {
             // Check if team name already exists
             // TODO: Replace with actual API call
-            // const teamsResponse = await fetch('/api/teams')
-            // const teams = await teamsResponse.json()
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const authClient = getAuthClient()
+            const userToken = await authClient?.currentUser?.getIdToken() || localStorage.getItem("userToken")
 
-            // Mock existing teams for testing
-            const existingTeams = ["Los Hackers", "Team Alpha", "Code Warriors"]
+            if (!userToken) {
+                throw new Error("No se encontro una sesion activa")
+            }
+            const teamsResponse = await fetch(`${apiUrl}/teams`,{
+                headers: {
+                    Authorization: `Bearer ${userToken}`,
+                }
+            })
+            const teamsData = await teamsResponse.json()
+            const teamsList = Array.isArray(teamsData?.teams) ? teamsData.teams : []
+            const existingTeams = teamsList.map((team: any) => team?.name).filter(Boolean)
 
-            if (existingTeams.some(team => team.toLowerCase() === formData.teamName.toLowerCase())) {
+            if (existingTeams.some((teamName: string) => teamName.toLowerCase() === formData.teamName.toLowerCase())) {
                 setError("Team name already exists. Please choose a different name.")
                 setLoading(false)
                 return
             }
 
+            const categoryMap = ["AI", "Web3", "HealthTech"]
+            const category_1 = categoryMap.indexOf(formData.priorities[0])
+            const category_2 = categoryMap.indexOf(formData.priorities[1])
+            const category_3 = categoryMap.indexOf(formData.priorities[2])
+
             const payload = {
-                teamName: formData.teamName,
-                motivation: formData.motivation,
-                categoryPriorities: formData.priorities,
-                adminUserId: adminUser.id,
+                name: formData.teamName,
+                tell_why: formData.motivation,
+                category_1,
+                category_2,
+                category_3,
+                uid: adminUser.id,
             }
             console.log("Creating team...", payload)
 
             // TODO: Replace with actual API call
-            // const response = await fetch('/api/teams/create', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(payload)
-            // })
+            console.log(payload)
+                        const response = await fetch(`${apiUrl}/teams`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${userToken}`,
+                            },
+                            body: JSON.stringify(payload)
+                        })
+
+                        if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}))
+                                throw new Error(errorData.error || "Failed to create team")
+                        }
 
             // Simulating API call
             await new Promise(resolve => setTimeout(resolve, 1500))

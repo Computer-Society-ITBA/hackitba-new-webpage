@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -15,6 +15,7 @@ import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Progress } from "@/components/ui/progress"
 import { Upload, X } from "lucide-react"
+import { TeamSection } from "@/components/dashboard/team-section"
 
 export default function ParticipanteDashboard() {
   const db = getDbClient()
@@ -45,43 +46,27 @@ export default function ParticipanteDashboard() {
     twitter: "",
   })
 
-  useEffect(() => {
-    if (user) {
-      setOnboardingStep(user.onboardingStep)
-      setProfileForm({
-        company: user.profile.company || "",
-        bio: user.profile.bio || "",
-        linkedin: user.profile.linkedin || "",
-        github: user.profile.github || "",
-        twitter: user.profile.twitter || "",
-      })
-      loadCategories()
-      loadTeam()
-      loadProject()
-    }
-  }, [user])
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     if (!db) {
       return
     }
 
     const categoriesSnapshot = await getDocs(collection(db, "categories"))
-    const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-    cats.sort((a, b) => a.order - b.order)
+    const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as any[]
+    cats.sort((a, b) => (a.order || 0) - (b.order || 0))
     setCategories(cats)
-  }
+  }, [db])
 
-  const loadTeam = async () => {
+  const loadTeam = useCallback(async () => {
     if (!db || !user) return
     const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
     const teamsSnapshot = await getDocs(teamsQuery)
     if (teamsSnapshot.docs.length > 0) {
       setTeam({ id: teamsSnapshot.docs[0].id, ...teamsSnapshot.docs[0].data() })
     }
-  }
+  }, [db, user])
 
-  const loadProject = async () => {
+  const loadProject = useCallback(async () => {
     if (!db || !user) return
     let projectsQuery
     if (team) {
@@ -104,7 +89,32 @@ export default function ParticipanteDashboard() {
       setUploadedImages(projectData.images || [])
       setUploadedVideo(projectData.videoUrl || "")
     }
-  }
+  }, [db, user, team])
+
+  useEffect(() => {
+    if (user) {
+      setOnboardingStep(user.onboardingStep || 0)
+      setProfileForm({
+        company: user.profile?.company || "",
+        bio: user.profile?.bio || "",
+        linkedin: user.profile?.linkedin || "",
+        github: user.profile?.github || "",
+        twitter: user.profile?.twitter || "",
+      })
+    }
+  }, [user])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
+
+  useEffect(() => {
+    loadTeam()
+  }, [loadTeam])
+
+  useEffect(() => {
+    loadProject()
+  }, [loadProject])
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
     if (!storage) {
@@ -176,85 +186,22 @@ export default function ParticipanteDashboard() {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index))
   }
 
-  if (onboardingStep < 3) {
-    return (
-      <ProtectedRoute allowedRoles={["participante"]}>
-        <DashboardLayout title="Welcome!">
-          <div className="max-w-2xl mx-auto">
-            <GlassCard>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-pixel text-2xl text-brand-yellow mb-4">Complete Your Profile</h3>
-                  <Progress value={(onboardingStep / 3) * 100} className="mb-4" />
-                  <p className="text-brand-cyan text-sm">Step {onboardingStep + 1} of 3</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Company/University</Label>
-                    <Input
-                      value={profileForm.company}
-                      onChange={(e) => setProfileForm({ ...profileForm, company: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Bio</Label>
-                    <Textarea
-                      value={profileForm.bio}
-                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">LinkedIn</Label>
-                    <Input
-                      value={profileForm.linkedin}
-                      onChange={(e) => setProfileForm({ ...profileForm, linkedin: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://linkedin.com/in/..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">GitHub</Label>
-                    <Input
-                      value={profileForm.github}
-                      onChange={(e) => setProfileForm({ ...profileForm, github: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://github.com/..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Twitter</Label>
-                    <Input
-                      value={profileForm.twitter}
-                      onChange={(e) => setProfileForm({ ...profileForm, twitter: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://twitter.com/..."
-                    />
-                  </div>
-                </div>
-
-                <PixelButton onClick={completeOnboarding} className="w-full">
-                  Complete Onboarding
-                </PixelButton>
-              </div>
-            </GlassCard>
-          </div>
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  }
+  // Onboarding disabled - skip directly to dashboard
+  // if (onboardingStep < 3) { ... }
 
   return (
-    <ProtectedRoute allowedRoles={["participante"]}>
+    <ProtectedRoute allowedRoles={["participant"]}>
       <DashboardLayout title="Participant Dashboard">
         <div className="space-y-8">
+          {/* Team Section */}
+          <section>
+            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">My Team</h3>
+            <TeamSection 
+              userId={user?.id || ""} 
+              userTeamLabel={user?.team || null} 
+            />
+          </section>
+
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>

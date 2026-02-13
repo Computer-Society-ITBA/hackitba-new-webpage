@@ -1,0 +1,516 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings } from "lucide-react"
+import type { User } from "@/lib/firebase/types"
+import { PixelButton } from "@/components/ui/pixel-button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { getAuth } from "firebase/auth"
+
+interface TeamMember {
+  id: string
+  name: string
+  surname: string
+  email: string
+  isAdmin: boolean
+}
+
+interface Team {
+  id: string
+  name: string
+  admin_id: string
+  tell_why?: string
+  status?: string
+}
+
+interface TeamSectionProps {
+  userId: string
+  userTeamLabel: string | null
+}
+
+export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
+  const [team, setTeam] = useState<Team | null>(null)
+  const [members, setMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+  const [editForm, setEditForm] = useState({ name: "", surname: "", email: "" })
+  const [editingTeam, setEditingTeam] = useState(false)
+  const [teamForm, setTeamForm] = useState({ name: "", tell_why: "" })
+  const [saving, setSaving] = useState(false)
+  const [rejoinCode, setRejoinCode] = useState("")
+  const [rejoinError, setRejoinError] = useState("")
+  const db = getDbClient()
+
+  useEffect(() => {
+    const loadTeam = async () => {
+      if (!db || !userTeamLabel) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Get team data
+        const teamDoc = await getDoc(doc(db, "teams", userTeamLabel))
+        if (teamDoc.exists()) {
+          const teamData = teamDoc.data() as Team
+          setTeam({
+            id: teamDoc.id,
+            name: teamData.name,
+            admin_id: teamData.admin_id,
+            tell_why: teamData.tell_why,
+            status: teamData.status,
+          })
+
+          // Get all team members
+          const usersQuery = query(
+            collection(db, "users"),
+            where("team", "==", userTeamLabel)
+          )
+          const usersSnapshot = await getDocs(usersQuery)
+          const teamMembers: TeamMember[] = usersSnapshot.docs.map((doc) => {
+            const data = doc.data() as User
+            return {
+              id: doc.id,
+              name: data.name || "",
+              surname: data.surname || "",
+              email: data.email || "",
+              isAdmin: doc.id === teamData.admin_id,
+            }
+          })
+
+          // Sort: admin first, then alphabetically
+          teamMembers.sort((a, b) => {
+            if (a.isAdmin) return -1
+            if (b.isAdmin) return 1
+            return a.name.localeCompare(b.name)
+          })
+
+          setMembers(teamMembers)
+        }
+      } catch (error) {
+        console.error("Error loading team:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadTeam()
+  }, [db, userTeamLabel])
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!team || !userTeamLabel) return
+    
+    if (!confirm("¿Estás seguro de que quieres eliminar este miembro del equipo?")) {
+      return
+    }
+
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      
+      const response = await fetch(`${apiUrl}/teams/${userTeamLabel}/members/${memberId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${idToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Error al eliminar miembro")
+      }
+
+      // Reload team members
+      setMembers(members.filter(m => m.id !== memberId))
+    } catch (error: any) {
+      console.error("Error removing member:", error)
+      alert(error.message || "Error al eliminar miembro")
+    }
+  }
+
+  const handleEditMember = (member: TeamMember) => {
+    setEditingMember(member)
+    setEditForm({
+      name: member.name,
+      surname: member.surname,
+      email: member.email,
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingMember || !userTeamLabel) return
+
+    setSaving(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      
+      const response = await fetch(`${apiUrl}/users/${editingMember.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          ...editForm,
+          teamLabel: userTeamLabel,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Error al actualizar miembro")
+      }
+
+      // Update local state
+      setMembers(members.map(m => 
+        m.id === editingMember.id 
+          ? { ...m, ...editForm }
+          : m
+      ))
+      setEditingMember(null)
+    } catch (error: any) {
+      console.error("Error updating member:", error)
+      alert(error.message || "Error al actualizar miembro")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleEditTeam = () => {
+    if (!team) return
+    setTeamForm({
+      name: team.name,
+      tell_why: team.tell_why || "",
+    })
+    setEditingTeam(true)
+  }
+
+  const handleSaveTeam = async () => {
+    if (!team || !userTeamLabel) return
+
+    setSaving(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      
+      const response = await fetch(`${apiUrl}/teams/${userTeamLabel}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(teamForm),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Error al actualizar equipo")
+      }
+
+      // Update local state
+      setTeam({ ...team, ...teamForm })
+      setEditingTeam(false)
+    } catch (error: any) {
+      console.error("Error updating team:", error)
+      alert(error.message || "Error al actualizar equipo")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const isAdmin = team?.admin_id === userId
+
+  const handleRejoinTeam = async () => {
+    if (!rejoinCode.trim()) {
+      setRejoinError("Please enter a team code")
+      return
+    }
+
+    setSaving(true)
+    setRejoinError("")
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      
+      // Join team with code
+      const response = await fetch(`${apiUrl}/teams/${rejoinCode}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Error joining team")
+      }
+
+      // Reload page to get updated team data
+      window.location.reload()
+    } catch (error: any) {
+      console.error("Error joining team:", error)
+      setRejoinError(error.message || "Error joining team. Check the team code.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <GlassCard>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">
+            Loading team...
+          </p>
+        </div>
+      </GlassCard>
+    )
+  }
+
+  if (!userTeamLabel || !team) {
+    return (
+      <GlassCard>
+        <div className="flex flex-col items-center justify-center py-8 space-y-4">
+          <Users className="w-12 h-12 text-brand-cyan/50" />
+          <p className="text-brand-cyan/70 text-center">
+            You haven't joined a team yet
+          </p>
+          <div className="w-full max-w-sm space-y-3 pt-4">
+            <p className="text-brand-cyan text-xs text-center">Do you have a team code?</p>
+            <div className="flex gap-2">
+              <Input
+                value={rejoinCode}
+                onChange={(e) => {
+                  setRejoinCode(e.target.value)
+                  setRejoinError("")
+                }}
+                placeholder="Enter team code..."
+                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
+                onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
+              />
+              <PixelButton 
+                onClick={handleRejoinTeam}
+                disabled={saving || !rejoinCode.trim()}
+                size="sm"
+              >
+                {saving ? "..." : "Join"}
+              </PixelButton>
+            </div>
+            {rejoinError && (
+              <p className="text-red-400 text-xs text-center">{rejoinError}</p>
+            )}
+          </div>
+        </div>
+      </GlassCard>
+    )
+  }
+
+  const getStatusColor = (status: string | undefined) => {
+    if (!status) return "bg-gray-500/20 border-gray-500/40 text-gray-400"
+    
+    switch (status.toLowerCase()) {
+      case "approved":
+        return "bg-green-500/20 border-green-500/40 text-green-400"
+      case "finalist":
+      case "finalista":
+        return "bg-brand-yellow/20 border-brand-yellow/40 text-brand-yellow"
+      case "on process":
+      case "in progress":
+        return "bg-blue-500/20 border-blue-500/40 text-blue-400"
+      case "denied":
+      case "rejected":
+        return "bg-red-500/20 border-red-500/40 text-red-400"
+      default:
+        return "bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan"
+    }
+  }
+
+  const capitalizeStatus = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+  }
+
+  return (
+    <GlassCard>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-brand-cyan/20 pb-4">
+          <div className="flex items-center gap-3">
+            <Users className="w-6 h-6 text-brand-cyan" />
+            <h3 className="font-pixel text-xl text-brand-yellow">{team.name}</h3>
+            {isAdmin && (
+              <button
+                onClick={handleEditTeam}
+                className="p-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors"
+                title="Edit team"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          {team.status && (
+            <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
+              {capitalizeStatus(team.status)}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="font-pixel text-sm text-brand-cyan">
+            Team Members ({members.length})
+          </h4>
+          <div className="space-y-2">
+            {members.map((member) => (
+              <div
+                key={member.id}
+                className={`flex items-center gap-3 p-3 rounded border ${
+                  member.id === userId
+                    ? "border-brand-cyan/40 bg-brand-cyan/5"
+                    : "border-brand-cyan/20 bg-brand-navy/30"
+                }`}
+              >
+                <div className="flex-1 flex items-center gap-3">
+                  <UserCircle className="w-5 h-5 text-brand-cyan/70" />
+                  <div>
+                    <p className="text-brand-cyan font-medium">
+                      {member.name} {member.surname}
+                      {member.id === userId && (
+                        <span className="text-brand-cyan/50 text-xs ml-2">(You)</span>
+                      )}
+                    </p>
+                    <p className="text-brand-cyan/50 text-xs">{member.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {member.isAdmin && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 border border-brand-yellow/40">
+                      <Crown className="w-4 h-4 text-brand-yellow" />
+                      <span className="text-brand-yellow font-pixel text-xs">Admin</span>
+                    </div>
+                  )}
+                  {isAdmin && !member.isAdmin && (
+                    <button
+                      onClick={() => handleRemoveMember(member.id)}
+                      className="p-2 rounded hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors"
+                      title="Remove member"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Member Dialog */}
+      <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
+        <DialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-brand-yellow">Edit Team Member</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name" className="text-brand-cyan text-xs">Name</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-surname" className="text-brand-cyan text-xs">Surname</Label>
+              <Input
+                id="edit-surname"
+                value={editForm.surname}
+                onChange={(e) => setEditForm({ ...editForm, surname: e.target.value })}
+                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email" className="text-brand-cyan text-xs">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editForm.email}
+                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+              />
+            </div>
+            <div className="flex gap-3 pt-4">
+              <PixelButton 
+                onClick={handleSaveEdit} 
+                disabled={saving}
+                className="flex-1"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </PixelButton>
+              <PixelButton 
+                onClick={() => setEditingMember(null)}
+                variant="outline"
+                disabled={saving}
+              >
+                Cancel
+              </PixelButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Team Dialog */}
+      <Dialog open={editingTeam} onOpenChange={() => setEditingTeam(false)}>
+        <DialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-brand-yellow">Edit Team Info</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="team-name" className="text-brand-cyan text-xs">Team Name</Label>
+              <Input
+                id="team-name"
+                value={teamForm.name}
+                onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })}
+                className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-brand-cyan text-xs">Why this team?</Label>
+              <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm">
+                {teamForm.tell_why || "No description provided"}
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4">
+              <PixelButton 
+                onClick={handleSaveTeam} 
+                disabled={saving}
+                className="flex-1"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </PixelButton>
+              <PixelButton 
+                onClick={() => setEditingTeam(false)}
+                variant="outline"
+                disabled={saving}
+              >
+                Cancel
+              </PixelButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </GlassCard>
+  )
+}
