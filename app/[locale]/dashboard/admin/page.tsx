@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useState, useEffect } from "react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
@@ -11,14 +13,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
-import { getAuth } from "firebase/auth"
+import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload, Users as UsersIcon } from "lucide-react"
 
 export default function AdminDashboard() {
   const db = getDbClient()
   const storage = getStorageClient()
-  const auth = getAuth()
+  const auth = getAuthClient()
   const [events, setEvents] = useState<any[]>([])
   const [sponsors, setSponsors] = useState<any[]>([])
   const [speakers, setSpeakers] = useState<any[]>([])
@@ -87,6 +88,7 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
+    if (!auth) return
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         console.log("Auth ready, user:", user.uid)
@@ -106,7 +108,7 @@ export default function AdminDashboard() {
 
   const loadPendingParticipants = async () => {
     try {
-      const idToken = await auth.currentUser?.getIdToken()
+      const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) {
         console.error("No auth token available")
         return
@@ -155,7 +157,7 @@ export default function AdminDashboard() {
 
     setProcessing(userId)
     try {
-      const idToken = await auth.currentUser?.getIdToken()
+      const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) return
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
@@ -192,7 +194,7 @@ export default function AdminDashboard() {
     
     setProcessing(userId)
     try {
-      const idToken = await auth.currentUser?.getIdToken()
+      const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) return
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
@@ -245,7 +247,7 @@ export default function AdminDashboard() {
 
     setProcessing(pendingParticipantId)
     try {
-      const idToken = await auth.currentUser?.getIdToken()
+      const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) return
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
