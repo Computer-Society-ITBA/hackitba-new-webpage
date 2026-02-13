@@ -8,55 +8,30 @@ import { getDbClient } from "@/lib/firebase/client-config"
 import * as LucideIcons from "lucide-react"
 import { LoremIpsum } from "lorem-ipsum"
 
+import { useCategories } from "@/hooks/use-categories"
+import type { Locale } from "@/lib/i18n/config"
+
 interface CategoriesProps {
   translations: any
+  locale: Locale
 }
 
-const lorem = new LoremIpsum()
-
-export function Categories({ translations }: CategoriesProps) {
+export function Categories({ translations, locale }: CategoriesProps) {
+  const { categories, loading, error } = useCategories(locale)
   const [selectedCategory, setSelectedCategory] = useState<any | null>(null)
-  // const [categories, setCategories] = useState<any[]>([])
 
-  // useEffect(() => {
-  //   loadCategories()
-  // }, [])
+  if (loading) {
+    return (
+      <section id="categories" className="py-20 px-4">
+        <div className="container mx-auto flex flex-col items-center">
+          <p className="font-pixel text-brand-yellow animate-pulse text-xs">LOADING CATEGORIES...</p>
+        </div>
+      </section>
+    )
+  }
 
-  // const loadCategories = async () => {
-  //   const db = getDbClient()
-  //   if (!db) {
-  //     return
-  //   }
-  //   const categoriesSnapshot = await getDocs(collection(db, "categories"))
-  //   const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-  //   cats.sort((a, b) => a.order - b.order)
-  //   setCategories(cats)
-  // }
+  if (error) return null
 
-  const categories =
-    [
-      {
-        "id": "0",
-        "name": "Inteligencia Artificial",
-        "details": lorem.generateParagraphs(1),
-        "icon": "BrainCircuit",
-        "description": ""
-      },
-      {
-        "id": "1",
-        "name": "Web3",
-        "details": lorem.generateParagraphs(1),
-        "icon": "GlobeLock",
-        "description": ""
-      },
-      {
-        "id": "2",
-        "name": "GameDev",
-        "details": lorem.generateParagraphs(1),
-        "icon": "Gamepad",
-        "description": ""
-      }
-    ]
 
   return (
     <section id="categories" className="py-20 px-4">
@@ -70,7 +45,7 @@ export function Categories({ translations }: CategoriesProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {categories.map((category) => {
-            const IconComponent = (LucideIcons as any)[category.icon] || LucideIcons.HelpCircle
+            const IconComponent = (LucideIcons as any)[category.iconName] || LucideIcons.HelpCircle
             return (
               <button
                 key={category.id}
@@ -102,13 +77,13 @@ export function Categories({ translations }: CategoriesProps) {
               <div className="flex items-center justify-center">
                 <div className="w-24 h-24 flex items-center justify-center neon-glow-cyan">
                   {(() => {
-                    const IconComponent = (LucideIcons as any)[selectedCategory.icon] || LucideIcons.HelpCircle
+                    const IconComponent = (LucideIcons as any)[selectedCategory.iconName] || LucideIcons.HelpCircle
                     return <IconComponent size={64} />
                   })()}
                 </div>
               </div>
 
-              <p className="leading-relaxed">{selectedCategory.details}</p>
+              <p className="leading-relaxed">{selectedCategory.description}</p>
             </div>
           )}
         </DialogContent>
