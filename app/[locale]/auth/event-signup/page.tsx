@@ -199,7 +199,7 @@ function EventSignupContent() {
             }
 
             if (role === "participant") {
-                if (!formData.age || !formData.university || !formData.career) {
+                if (!formData.age) {
                     setError(translations.auth.eventSignup.errors.allFieldsRequired)
                     return
                 }
@@ -356,12 +356,12 @@ function EventSignupContent() {
                         {role === "participant" ? (
                             <>
                                 <div className="space-y-2">
-                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university}</Label>
                                     <Input id="university" value={formData.university} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career}</Label>
                                         <Input id="career" value={formData.career} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                     </div>
                                     <div className="space-y-2">

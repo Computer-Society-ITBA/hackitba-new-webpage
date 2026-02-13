@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (onboardingStep === 0) {
               if (rawData?.role === "participant") {
                 // Check if participant has completed event-signup fields
-                if (rawData?.dni && rawData?.university && rawData?.career) {
+                if (rawData?.dni && rawData?.age) {
                   onboardingStep = 2 // Already completed event-signup
                 }
               } else if (rawData?.role === "judge" || rawData?.role === "mentor") {
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (onboardingStep === 0) {
           if (rawData?.role === "participant") {
             // Check if participant has completed event-signup fields
-            if (rawData?.dni && rawData?.university && rawData?.career) {
+            if (rawData?.dni && rawData?.age) {
               onboardingStep = 2 // Already completed event-signup
             }
           } else if (rawData?.role === "judge" || rawData?.role === "mentor") {

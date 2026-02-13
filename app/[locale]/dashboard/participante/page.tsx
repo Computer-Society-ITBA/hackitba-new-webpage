@@ -269,60 +269,59 @@ export default function ParticipanteDashboard() {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>
-              {!project && (
-                <PixelButton onClick={() => setShowProjectForm(true)} size="sm">
-                  Submit Project
-                </PixelButton>
-              )}
             </div>
+            <GlassCard>
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-brand-cyan">
+                    Project Title <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    value={projectForm.title}
+                    onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                    className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    disabled={!!project && !showProjectForm}
+                  />
+                </div>
 
-            {showProjectForm || project ? (
-              <GlassCard>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Project Title</Label>
-                    <Input
-                      value={projectForm.title}
-                      onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      disabled={!!project && !showProjectForm}
-                    />
-                  </div>
+                <div>
+                  <Label className="text-brand-cyan">
+                    Description <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    value={projectForm.description}
+                    onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                    className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    disabled={!!project && !showProjectForm}
+                  />
+                </div>
 
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
-                    <Textarea
-                      value={projectForm.description}
-                      onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      disabled={!!project && !showProjectForm}
-                    />
-                  </div>
+                <div>
+                  <Label className="text-brand-cyan">
+                    Repository URL <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    value={projectForm.repoUrl}
+                    onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
+                    className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    placeholder="https://github.com/..."
+                    disabled={!!project && !showProjectForm}
+                  />
+                </div>
 
-                  <div>
-                    <Label className="text-brand-cyan">Repository URL</Label>
-                    <Input
-                      value={projectForm.repoUrl}
-                      onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://github.com/..."
-                      disabled={!!project && !showProjectForm}
-                    />
-                  </div>
+                <div>
+                  <Label className="text-brand-cyan">Demo URL</Label>
+                  <Input
+                    value={projectForm.demoUrl}
+                    onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
+                    className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    placeholder="https://..."
+                    disabled={!!project && !showProjectForm}
+                  />
+                </div>
 
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label className="text-brand-cyan">Demo URL (Optional)</Label>
-                    <Input
-                      value={projectForm.demoUrl}
-                      onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://..."
-                      disabled={!!project && !showProjectForm}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Project Images</Label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {uploadedImages.map((url, index) => (
                         <div key={index} className="relative w-24 h-24">
@@ -342,33 +341,9 @@ export default function ParticipanteDashboard() {
                         </div>
                       ))}
                     </div>
-                    {(showProjectForm || !project) && (
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={async (e) => {
-                            const files = Array.from(e.target.files || [])
-                            for (const file of files) {
-                              const url = await handleFileUpload(file, "projects")
-                              setUploadedImages([...uploadedImages, url])
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} className="mr-2" />
-                            {uploading ? "Uploading..." : "Upload Images"}
-                          </span>
-                        </PixelButton>
-                      </label>
-                    )}
                   </div>
 
                   <div>
-                    <Label className="text-brand-cyan">Project Video (Optional)</Label>
                     {uploadedVideo && (
                       <div className="mb-2">
                         <video src={uploadedVideo} controls className="w-full max-h-64 rounded" />
@@ -379,60 +354,87 @@ export default function ParticipanteDashboard() {
                         )}
                       </div>
                     )}
-                    {!uploadedVideo && (showProjectForm || !project) && (
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="video/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = await handleFileUpload(file, "projects")
-                              setUploadedVideo(url)
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} className="mr-2" />
-                            {uploading ? "Uploading..." : "Upload Video"}
-                          </span>
-                        </PixelButton>
-                      </label>
-                    )}
                   </div>
+                </div>
 
-                  {project && !showProjectForm ? (
-                    <div className="flex gap-3">
-                      <PixelButton onClick={() => setShowProjectForm(true)} className="flex-1">
-                        Edit Project
+                <div className="flex flex-wrap items-center gap-3">
+                  {(showProjectForm || !project) && (
+                    <label className="cursor-pointer inline-block">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || [])
+                          for (const file of files) {
+                            const url = await handleFileUpload(file, "projects")
+                            setUploadedImages([...uploadedImages, url])
+                          }
+                        }}
+                      />
+                      <PixelButton asChild size="sm" disabled={uploading}>
+                        <span>
+                          <Upload size={16} className="mr-2" />
+                          {uploading ? "Uploading..." : "Upload Images"}
+                        </span>
                       </PixelButton>
-                      <PixelButton onClick={deleteProject} variant="outline" className="text-red-500">
-                        Delete
+                    </label>
+                  )}
+                  {!uploadedVideo && (showProjectForm || !project) && (
+                    <label className="cursor-pointer inline-block">
+                      <Input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const url = await handleFileUpload(file, "projects")
+                            setUploadedVideo(url)
+                          }
+                        }}
+                      />
+                      <PixelButton asChild size="sm" disabled={uploading}>
+                        <span>
+                          <Upload size={16} className="mr-2" />
+                          {uploading ? "Uploading..." : "Upload Video"}
+                        </span>
                       </PixelButton>
-                    </div>
-                  ) : (
-                    <div className="flex gap-3">
-                      <PixelButton onClick={submitProject} className="flex-1" disabled={uploading}>
-                        {project ? "Update Project" : "Submit Project"}
-                      </PixelButton>
-                      {project && (
-                        <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
-                          Cancel
-                        </PixelButton>
-                      )}
-                    </div>
+                    </label>
+                  )}
+                  {!project && (
+                    <PixelButton onClick={submitProject} className="ml-auto px-6" disabled={uploading}>
+                      Submit Project
+                    </PixelButton>
                   )}
                 </div>
-              </GlassCard>
-            ) : (
-              <GlassCard>
-                <p className="text-brand-cyan text-center py-8">
-                  You haven't submitted a project yet. Click the button above to get started!
-                </p>
-              </GlassCard>
-            )}
+
+                {project && !showProjectForm ? (
+                  <div className="flex justify-end gap-3">
+                    <PixelButton onClick={() => setShowProjectForm(true)} className="flex-1">
+                      Edit Project
+                    </PixelButton>
+                    <PixelButton onClick={deleteProject} variant="outline" className="text-red-500">
+                      Delete
+                    </PixelButton>
+                  </div>
+                ) : (
+                  <div className="flex gap-3">
+                    {project && (
+                      <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
+                        Cancel
+                      </PixelButton>
+                    )}
+                    {project && (
+                      <PixelButton onClick={submitProject} className="px-6" disabled={uploading}>
+                        Update Project
+                      </PixelButton>
+                    )}
+                  </div>
+                )}
+              </div>
+            </GlassCard>
           </section>
         </div>
       </DashboardLayout>

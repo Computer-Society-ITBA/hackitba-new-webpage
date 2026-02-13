@@ -7,7 +7,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, Settings, LogOut } from "lucide-react"
+import { ArrowLeft, Home, User, LogOut } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 
 interface DashboardLayoutProps {
@@ -28,14 +28,24 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 glass-effect border-r border-brand-cyan/20 p-6 flex flex-col">
+      <aside className="w-64 glass-effect border-r border-brand-cyan/20 p-6 flex flex-col sticky top-0 h-screen">
         <div className="mb-8">
           <h1 className="font-pixel text-2xl text-brand-orange neon-glow-orange">
             <Link href={`/${locale}`}>{"<HackITBA>"}</Link>
           </h1>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <div className="mb-4">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-pixel text-sm">Back</span>
+          </button>
+        </div>
+
+        <nav className="flex-1 space-y-2 overflow-y-auto">
           <Link
             href={`/${locale}/dashboard`}
             className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
@@ -52,16 +62,9 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             <span className="font-pixel text-sm">Profile</span>
           </Link>
 
-          <Link
-            href={`/${locale}/dashboard/settings`}
-            className="flex items-center gap-3 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
-          >
-            <Settings size={20} />
-            <span className="font-pixel text-sm">Settings</span>
-          </Link>
         </nav>
 
-        <div className="border-t border-brand-cyan/20 pt-6">
+        <div className="border-t border-brand-cyan/20 pt-6 mt-auto">
           <div className="mb-4">
             <p className="text-brand-cyan text-sm">{user?.name} {user?.surname}</p>
             <p className="text-brand-cyan/60 text-xs">{user?.email}</p>
