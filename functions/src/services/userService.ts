@@ -137,6 +137,7 @@ export const eventRegistration = async (
         github: github,
         team: team,
         hasTeam: hasTeam,
+        teamAssignmentStatus: hasTeam ? null : "in_process",
         food_preference: food_preference,
         category_1: category_1 !== null ? category_1 : category_1,
         category_2: category_2 !== null ? category_2 : category_2,

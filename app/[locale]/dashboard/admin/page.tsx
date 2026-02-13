@@ -8,26 +8,40 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
-import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+import { getAuth } from "firebase/auth"
+import { Pencil, Trash2, Plus, Upload, Users as UsersIcon } from "lucide-react"
 
 export default function AdminDashboard() {
   const db = getDbClient()
   const storage = getStorageClient()
+  const auth = getAuth()
   const [events, setEvents] = useState<any[]>([])
   const [sponsors, setSponsors] = useState<any[]>([])
   const [speakers, setSpeakers] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
+  const [pendingParticipants, setPendingParticipants] = useState<any[]>([])
+  const [teams, setTeams] = useState<any[]>([])
+  const [processing, setProcessing] = useState<string | null>(null)
+  const [authReady, setAuthReady] = useState(false)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
   const [showSpeakerForm, setShowSpeakerForm] = useState(false)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [showScoringForm, setShowScoringForm] = useState(false)
+  const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
+  const [pendingParticipantId, setPendingParticipantId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+
+  const [newTeamForm, setNewTeamForm] = useState({
+    name: "",
+    category: "",
+  })
 
   const [eventForm, setEventForm] = useState({
     title: "",
@@ -73,8 +87,212 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
-    loadData()
-  }, [])
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log("Auth ready, user:", user.uid)
+        setAuthReady(true)
+      }
+    })
+    return () => unsubscribe()
+  }, [auth])
+
+  useEffect(() => {
+    if (authReady) {
+      loadData()
+      loadPendingParticipants()
+      loadTeams()
+    }
+  }, [authReady])
+
+  const loadPendingParticipants = async () => {
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        console.error("No auth token available")
+        return
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      console.log("Fetching pending participants from:", `${apiUrl}/users/pending-participants`)
+      
+      const response = await fetch(`${apiUrl}/users/pending-participants`, {
+        headers: {
+          "Authorization": `Bearer ${idToken}`,
+        },
+      })
+
+      console.log("Response status:", response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log("Pending participants data:", data)
+        setPendingParticipants(data.participants || [])
+      } else {
+        const errorData = await response.text()
+        console.error("Error response:", errorData)
+      }
+    } catch (error) {
+      console.error("Error loading pending participants:", error)
+    }
+  }
+
+  const loadTeams = async () => {
+    if (!db) return
+    
+    try {
+      const teamsSnapshot = await getDocs(collection(db, "teams"))
+      setTeams(teamsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+    } catch (error) {
+      console.error("Error loading teams:", error)
+    }
+  }
+
+  const approveParticipant = async (userId: string, teamId: string) => {
+    if (!teamId) {
+      alert("Por favor selecciona un equipo")
+      return
+    }
+
+    setProcessing(userId)
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/users/approve-and-assign-team`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          userId,
+          teamCode: teamId,
+          status: "accepted",
+        }),
+      })
+
+      if (response.ok) {
+        alert("Participante aprobado y asignado exitosamente")
+        loadPendingParticipants()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error("Error approving participant:", error)
+      alert("Error al aprobar participante")
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const rejectParticipant = async (userId: string) => {
+    const reason = prompt("Razón del rechazo (opcional):")
+    
+    setProcessing(userId)
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/users/approve-and-assign-team`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          userId,
+          status: "rejected",
+          reason: reason || undefined,
+        }),
+      })
+
+      if (response.ok) {
+        alert("Participante rechazado")
+        loadPendingParticipants()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error("Error rejecting participant:", error)
+      alert("Error al rechazar participante")
+    } finally {
+      setProcessing(null)
+    }
+  }
+
+  const openCreateTeamModal = (participantId: string) => {
+    setPendingParticipantId(participantId)
+    setNewTeamForm({ name: "", category: "" })
+    setShowCreateTeamModal(true)
+  }
+
+  const createNewTeam = async () => {
+    if (!newTeamForm.name || newTeamForm.name.trim().length < 3) {
+      alert("El nombre debe tener al menos 3 caracteres")
+      return
+    }
+
+    if (!newTeamForm.category) {
+      alert("Debe seleccionar una categoría")
+      return
+    }
+
+    if (!pendingParticipantId) return
+
+    setProcessing(pendingParticipantId)
+    try {
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) return
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      
+      // Crear el equipo vacío (sin admin_id inicial)
+      const response = await fetch(`${apiUrl}/teams`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          name: newTeamForm.name.trim(),
+          tell_why: "Equipo creado por administrador",
+          category_1: newTeamForm.category,
+          category_2: null,
+          category_3: null,
+          uid: "admin-created", // Temporal, será reemplazado por el primer participante
+        }),
+      })
+
+      if (response.ok) {
+        const newTeam = await response.json()
+        setShowCreateTeamModal(false)
+        alert(`Equipo "${newTeamForm.name}" creado exitosamente`)
+        
+        // Recargar equipos
+        await loadTeams()
+        
+        // Preseleccionar el equipo en el selector
+        setTimeout(() => {
+          const select = document.getElementById(`team-select-${pendingParticipantId}`) as HTMLSelectElement
+          if (select) {
+            select.value = newTeam.id
+          }
+        }, 500)
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error}`)
+      }
+    } catch (error) {
+      console.error("Error creating team:", error)
+      alert("Error al crear equipo")
+    } finally {
+      setProcessing(null)
+    }
+  }
 
   const loadData = async () => {
     if (!db) {
@@ -244,6 +462,96 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
+          {/* Pending Participants Section */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <UsersIcon className="w-6 h-6 text-brand-orange" />
+                <h3 className="font-pixel text-2xl text-brand-yellow">Participantes Pendientes</h3>
+                <span className="bg-brand-orange/20 text-brand-orange px-3 py-1 rounded-full text-sm font-pixel">
+                  {pendingParticipants.length}
+                </span>
+              </div>
+            </div>
+
+            {pendingParticipants.length === 0 ? (
+              <GlassCard>
+                <p className="text-brand-cyan/60 text-center py-8">
+                  No hay participantes pendientes de aprobación
+                </p>
+              </GlassCard>
+            ) : (
+              <div className="space-y-4">
+                {pendingParticipants.map((participant) => (
+                  <GlassCard key={participant.id} neonOnHover>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="font-pixel text-brand-yellow">
+                            {participant.name} {participant.surname}
+                          </p>
+                          <span className="text-xs bg-brand-orange/20 text-brand-orange px-2 py-1 rounded">
+                            En Proceso
+                          </span>
+                        </div>
+                        <div className="text-sm text-brand-cyan/80 space-y-1">
+                          <p>📧 {participant.email}</p>
+                          <p>🎓 {participant.university} - {participant.career}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <select
+                          id={`team-select-${participant.id}`}
+                          className="bg-brand-navy/80 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2 text-sm"
+                          disabled={processing === participant.id}
+                        >
+                          <option value="">Seleccionar equipo...</option>
+                          {teams.map((team) => (
+                            <option key={team.id} value={team.id}>
+                              {team.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        <button
+                          onClick={() => openCreateTeamModal(participant.id)}
+                          disabled={processing === participant.id}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded disabled:opacity-50"
+                          title="Crear nuevo equipo"
+                        >
+                          +
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            const select = document.getElementById(`team-select-${participant.id}`) as HTMLSelectElement
+                            const teamId = select?.value
+                            if (teamId) {
+                              approveParticipant(participant.id, teamId)
+                            }
+                          }}
+                          disabled={processing === participant.id}
+                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded disabled:opacity-50"
+                        >
+                          {processing === participant.id ? "..." : "✓"}
+                        </button>
+
+                        <button
+                          onClick={() => rejectParticipant(participant.id)}
+                          disabled={processing === participant.id}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded disabled:opacity-50"
+                        >
+                          {processing === participant.id ? "..." : "✗"}
+                        </button>
+                      </div>
+                    </div>
+                  </GlassCard>
+                ))}
+              </div>
+            )}
+          </section>
+
           <section>
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">Events</h3>
@@ -701,6 +1009,59 @@ export default function AdminDashboard() {
             </div>
           </section>
         </div>
+
+        {/* Create Team Modal */}
+        <Dialog open={showCreateTeamModal} onOpenChange={setShowCreateTeamModal}>
+          <DialogContent className="bg-brand-navy border-brand-cyan/30">
+            <DialogHeader>
+              <DialogTitle className="font-pixel text-brand-yellow">Crear Nuevo Equipo</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div>
+                <Label className="text-brand-cyan">Nombre del Equipo</Label>
+                <Input
+                  value={newTeamForm.name}
+                  onChange={(e) => setNewTeamForm({ ...newTeamForm, name: e.target.value })}
+                  className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                  placeholder="Nombre del equipo..."
+                />
+              </div>
+
+              <div>
+                <Label className="text-brand-cyan">Categoría</Label>
+                <select
+                  value={newTeamForm.category}
+                  onChange={(e) => setNewTeamForm({ ...newTeamForm, category: e.target.value })}
+                  className="w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2"
+                >
+                  <option value="">Seleccionar categoría...</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <button
+                onClick={() => setShowCreateTeamModal(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={createNewTeam}
+                disabled={!newTeamForm.name || !newTeamForm.category}
+                className="px-4 py-2 bg-brand-green hover:bg-brand-green/80 text-white rounded disabled:opacity-50"
+              >
+                Crear Equipo
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DashboardLayout>
     </ProtectedRoute>
   )

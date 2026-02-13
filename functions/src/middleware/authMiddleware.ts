@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from "express";
 import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import {getHackitbaDb} from "../helpers/getDb";
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
@@ -66,6 +67,52 @@ export const validateToken = async (
       error: "Token inválido o expirado",
       details: err.message || "Unknown error", // Solo en desarrollo
     });
+    return;
+  }
+};
+
+/**
+ * Middleware to validate that user has admin role
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @param {NextFunction} next - Next middleware function
+ * @return {Promise<void>}
+ */
+export const requireAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  if (!req.user || !req.user.uid) {
+    logger.error("No user in request. Did you forget validateToken middleware?");
+    res.status(401).json({error: "No autorizado"});
+    return;
+  }
+
+  try {
+    const db = getHackitbaDb();
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+
+    if (!userDoc.exists) {
+      logger.error(`User ${req.user.uid} not found in database`);
+      res.status(404).json({error: "Usuario no encontrado"});
+      return;
+    }
+
+    const userData = userDoc.data();
+    if (userData?.role !== "admin") {
+      logger.error(`User ${req.user.uid} is not an admin. Role: ${userData?.role}`);
+      res.status(403).json({error: "Acceso denegado. Solo administradores."});
+      return;
+    }
+
+    logger.info(`Admin access granted for ${req.user.uid}`);
+    next();
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    logger.error("Error checking admin role:", err.message || err);
+    res.status(500).json({error: "Error verificando permisos"});
     return;
   }
 };

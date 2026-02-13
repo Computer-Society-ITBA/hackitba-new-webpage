@@ -198,9 +198,17 @@ export default function ParticipanteDashboard() {
           {/* Team Section */}
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">My Team</h3>
-            {!hasTeam && (
+            {!hasTeam && user?.teamAssignmentStatus === "in_process" && (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixal font-bold mb-2">⚠️ You don't have a team yet</p>
+                <p className="text-brand-orange font-pixel font-bold mb-2">⏳ Estado: En Proceso</p>
+                <p className="text-brand-cyan text-sm mb-4">
+                  Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto o podrás unirte a uno existente.
+                </p>
+              </div>
+            )}
+            {!hasTeam && !user?.teamAssignmentStatus && (
+              <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
+                <p className="text-brand-orange font-pixel font-bold mb-2">⚠️ You don't have a team yet</p>
                 <p className="text-brand-cyan text-sm mb-4">
                   You are currently without a team. You can create a new team or join an existing one to start working on your project.
                 </p>
@@ -208,7 +216,8 @@ export default function ParticipanteDashboard() {
             )}
             <TeamSection 
               userId={user?.id || ""} 
-              userTeamLabel={user?.team || null} 
+              userTeamLabel={user?.team || null}
+              teamAssignmentStatus={user?.teamAssignmentStatus || null}
             />
           </section>
 

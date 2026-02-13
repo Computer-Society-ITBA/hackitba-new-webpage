@@ -277,3 +277,104 @@ export const sendTeamNotificationEmail = async (
     throw error;
   }
 };
+
+/**
+ * Envía un email cuando un participante es aceptado y asignado a un equipo
+ * @param {string} email - Email del participante
+ * @param {string} name - Nombre del participante
+ * @param {string} teamName - Nombre del equipo asignado
+ * @return {Promise<{success: boolean}>}
+ */
+export const sendTeamAssignmentAcceptedEmail = async (
+  email: string,
+  name: string,
+  teamName: string
+): Promise<{success: boolean}> => {
+  try {
+    logger.info(`Queuing team assignment accepted email to ${email}`);
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #FF8C00;">¡Felicitaciones ${name}!</h2>
+        <p>Tu solicitud ha sido <strong style="color: #00CED1;">aceptada</strong>.</p>
+        <p>Has sido asignado al equipo: <strong>${teamName}</strong></p>
+        <p>Ahora puedes acceder a tu dashboard para ver los detalles de tu equipo 
+           y comenzar a trabajar en tu proyecto.</p>
+        <a href="${APP_URL}/es/dashboard/participante" 
+           style="display: inline-block; padding: 12px 24px; background: #FF8C00; 
+           color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+          Ver mi equipo
+        </a>
+        <p style="margin-top: 30px; color: #666;">¡Buena suerte en el hackathon!</p>
+      </div>
+    `;
+
+    await getDb().collection(MAIL_COLLECTION).add({
+      to: email,
+      message: {
+        subject: "¡Has sido aceptado! - Equipo asignado en HackITBA",
+        html,
+      },
+    });
+
+    logger.info(`Team assignment accepted email queued for ${email}`);
+    return {success: true};
+  } catch (error) {
+    logger.error(`Error queuing team assignment accepted email to ${email}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Envía un email cuando un participante es rechazado
+ * @param {string} email - Email del participante
+ * @param {string} name - Nombre del participante
+ * @param {string} reason - Razón del rechazo (opcional)
+ * @return {Promise<{success: boolean}>}
+ */
+export const sendTeamAssignmentRejectedEmail = async (
+  email: string,
+  name: string,
+  reason?: string
+): Promise<{success: boolean}> => {
+  try {
+    logger.info(`Queuing team assignment rejected email to ${email}`);
+
+    const reasonText = reason ?
+      `<p>Motivo: <em>${reason}</em></p>` :
+      "";
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #FF8C00;">Hola ${name}</h2>
+        <p>Lamentamos informarte que tu solicitud para participar sin equipo no ha sido aceptada en esta ocasión.</p>
+        ${reasonText}
+        <p>Sin embargo, aún puedes:</p>
+        <ul>
+          <li>Crear tu propio equipo desde el dashboard</li>
+          <li>Unirte a un equipo existente con un código de invitación</li>
+        </ul>
+        <a href="${APP_URL}/es/dashboard/participante" 
+           style="display: inline-block; padding: 12px 24px; background: #00CED1; 
+           color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
+          Ir al Dashboard
+        </a>
+        <p style="margin-top: 30px; color: #666;">Si tienes preguntas, no dudes en contactarnos.</p>
+      </div>
+    `;
+
+    await getDb().collection(MAIL_COLLECTION).add({
+      to: email,
+      message: {
+        subject: "Actualización sobre tu solicitud - HackITBA",
+        html,
+      },
+    });
+
+    logger.info(`Team assignment rejected email queued for ${email}`);
+    return {success: true};
+  } catch (error) {
+    logger.error(`Error queuing team assignment rejected email to ${email}:`, error);
+    throw error;
+  }
+};

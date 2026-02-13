@@ -23,6 +23,7 @@ export interface User {
   category_3?: number
   team?: string | null
   hasTeam?: boolean // true if participant has a team, false if without team, undefined if not applicable
+  teamAssignmentStatus?: "pending" | "in_process" | "accepted" | "rejected" | null // Estado de asignación de equipo para participantes sin equipo
   company?: string
   position?: string
   photo?: string

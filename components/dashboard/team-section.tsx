@@ -34,9 +34,10 @@ interface Team {
 interface TeamSectionProps {
   userId: string
   userTeamLabel: string | null
+  teamAssignmentStatus?: "pending" | "in_process" | "accepted" | "rejected" | null
 }
 
-export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
+export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: TeamSectionProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -286,54 +287,76 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   }
 
   if (!userTeamLabel || !team) {
+    const isInProcess = teamAssignmentStatus === "in_process" || teamAssignmentStatus === "pending"
+    
     return (
       <GlassCard>
         <div className="flex flex-col items-center justify-center py-12 space-y-6">
           <Users className="w-16 h-16 text-brand-orange/60" />
           <div className="text-center space-y-2 max-w-md">
-            <p className="text-brand-yellow font-pixel text-lg">Without Team</p>
-            <p className="text-brand-cyan/90 text-sm">
-              You are currently a solo participant. You can join an existing team using a team code or create a new team.
-            </p>
+            {isInProcess ? (
+              <>
+                <p className="text-brand-orange font-pixel text-lg">En Proceso</p>
+                <p className="text-brand-cyan/90 text-sm">
+                  Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto. Por favor espera la confirmación.
+                </p>
+                <div className="mt-4 p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
+                  <p className="text-brand-orange text-xs font-pixel">
+                    ⏳ Estado: Esperando asignación de equipo
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-brand-yellow font-pixel text-lg">Without Team</p>
+                <p className="text-brand-cyan/90 text-sm">
+                  You are currently a solo participant. You can join an existing team using a team code or create a new team.
+                </p>
+              </>
+            )}
           </div>
-          <div className="w-full max-w-sm space-y-4 pt-4">
-            <div className="space-y-2">
-              <p className="text-brand-cyan text-xs font-pixel uppercase">Join Existing Team</p>
-              <div className="flex gap-2">
-                <Input
-                  value={rejoinCode}
-                  onChange={(e) => {
-                    setRejoinCode(e.target.value)
-                    setRejoinError("")
-                  }}
-                  placeholder="Enter team code..."
-                  className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                  onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
-                />
+          {!isInProcess && (
+            <>
+              <div className="w-full max-w-sm space-y-4 pt-4">
+                <div className="space-y-2">
+                  <p className="text-brand-cyan text-xs font-pixel uppercase">Join Existing Team</p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={rejoinCode}
+                      onChange={(e) => {
+                        setRejoinCode(e.target.value)
+                        setRejoinError("")
+                      }}
+                      placeholder="Enter team code..."
+                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
+                      onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
+                    />
+                    <PixelButton 
+                      onClick={handleRejoinTeam}
+                      disabled={saving || !rejoinCode.trim()}
+                      size="sm"
+                    >
+                      {saving ? "..." : "Join"}
+                    </PixelButton>
+                  </div>
+                  {rejoinError && (
+                    <p className="text-red-400 text-xs">{rejoinError}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-brand-cyan/50 text-xs">
+                  <div className="flex-1 h-px bg-brand-cyan/20"></div>
+                  <span>OR</span>
+                  <div className="flex-1 h-px bg-brand-cyan/20"></div>
+                </div>
                 <PixelButton 
-                  onClick={handleRejoinTeam}
-                  disabled={saving || !rejoinCode.trim()}
-                  size="sm"
-                >
-                  {saving ? "..." : "Join"}
-                </PixelButton>
-              </div>
-              {rejoinError && (
-                <p className="text-red-400 text-xs">{rejoinError}</p>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-brand-cyan/50 text-xs">
-              <div className="flex-1 h-px bg-brand-cyan/20"></div>
-              <span>OR</span>
-              <div className="flex-1 h-px bg-brand-cyan/20"></div>
-            </div>
-            <PixelButton 
               onClick={() => router.push(`/${locale}/dashboard/create-team`)}
               className="w-full"
             >
               Create New Team
             </PixelButton>
           </div>
+            </>
+          )}
         </div>
       </GlassCard>
     )

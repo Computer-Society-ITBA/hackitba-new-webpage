@@ -1,5 +1,7 @@
 import {Request, Response} from "express";
 import {logger} from "firebase-functions";
+import admin from "firebase-admin";
+import {getHackitbaDb} from "../helpers/getDb";
 import {
   registerUser,
   eventRegistration,
@@ -13,6 +15,8 @@ import {
   sendWelcomeEmail,
   sendEventConfirmationEmail,
   sendPasswordResetEmail,
+  sendTeamAssignmentAcceptedEmail,
+  sendTeamAssignmentRejectedEmail,
 } from "../services/emailService";
 
 interface RegisterRequestBody {
@@ -285,5 +289,139 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error("Password reset error:", error);
     return res.status(500).json({error: "Error processing password reset"});
+  }
+};
+
+/**
+ * Approve participant and assign team
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const approveParticipantAndAssignTeam = async (req: Request, res: Response) => {
+  try {
+    const {userId, teamCode, status, reason} = req.body;
+
+    if (!userId || !status) {
+      return res.status(400).json({error: "userId and status are required"});
+    }
+
+    if (status === "accepted" && !teamCode) {
+      return res.status(400).json({error: "teamCode is required when status is accepted"});
+    }
+
+    const db = getHackitbaDb();
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({error: "User not found"});
+    }
+
+    const userData = userDoc.data();
+    const userName = userData?.name || "Participante";
+    const userEmail = userData?.email;
+
+    const updateData: Record<string, unknown> = {
+      teamAssignmentStatus: status,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    let teamName = "";
+
+    if (status === "accepted" && teamCode) {
+      // Verify team exists
+      const teamDoc = await db.collection("teams").doc(teamCode).get();
+      if (!teamDoc.exists) {
+        return res.status(404).json({error: "Team not found"});
+      }
+
+      const teamData = teamDoc.data();
+      teamName = teamData?.name || teamCode;
+
+      // Check if team is empty (no members yet, or admin_id is "admin-created")
+      const isEmptyTeam = !teamData?.admin_id || teamData.admin_id === "admin-created";
+
+      // If team is empty, make this user the admin
+      if (isEmptyTeam) {
+        await db.collection("teams").doc(teamCode).update({
+          admin_id: userId,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        logger.info(`User ${userId} set as admin of empty team ${teamCode}`);
+      }
+
+      updateData.team = teamCode;
+      updateData.hasTeam = true;
+    }
+
+    await userRef.update(updateData);
+
+    // Send notification email
+    if (userEmail) {
+      try {
+        if (status === "accepted") {
+          await sendTeamAssignmentAcceptedEmail(userEmail, userName, teamName);
+        } else if (status === "rejected") {
+          await sendTeamAssignmentRejectedEmail(userEmail, userName, reason);
+        }
+      } catch (emailError) {
+        logger.error("Error sending notification email:", emailError);
+        // Don't fail the request if email fails
+      }
+    }
+
+    return res.status(200).json({
+      message: "Participant status updated successfully",
+      userId,
+      status,
+      teamCode: status === "accepted" ? teamCode : null,
+    });
+  } catch (error) {
+    logger.error("Error approving participant:", error);
+    return res.status(500).json({error: "Error approving participant"});
+  }
+};
+
+/**
+ * Get pending participants (in_process status)
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const getPendingParticipants = async (req: Request, res: Response) => {
+  try {
+    logger.info("Getting pending participants...");
+    const db = getHackitbaDb();
+    const usersSnapshot = await db.collection("users")
+      .where("teamAssignmentStatus", "==", "in_process")
+      .get();
+
+    logger.info(`Found ${usersSnapshot.size} pending participants`);
+
+    const pendingParticipants = usersSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      logger.info(`Participant: ${doc.id} - ${data.name} ${data.surname}`);
+      return {
+        id: doc.id,
+        name: data.name,
+        surname: data.surname,
+        email: data.email,
+        university: data.university,
+        career: data.career,
+        teamAssignmentStatus: data.teamAssignmentStatus,
+        createdAt: data.createdAt,
+      };
+    });
+
+    logger.info(`Returning ${pendingParticipants.length} participants`);
+
+    return res.status(200).json({
+      participants: pendingParticipants,
+      count: pendingParticipants.length,
+    });
+  } catch (error) {
+    logger.error("Error getting pending participants:", error);
+    return res.status(500).json({error: "Error getting pending participants"});
   }
 };
