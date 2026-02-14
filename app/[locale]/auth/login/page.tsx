@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
-import { getAuthClient } from "@/lib/firebase/client-config"
+import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { ArrowLeft, Home } from "lucide-react"
+import { doc, getDoc } from "firebase/firestore"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -22,11 +23,32 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
+  const [signupEnabled, setSignupEnabled] = useState(true)
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
   const translations = getTranslations(locale)
   const { user, loading: authLoading } = useAuth()
+  const db = getDbClient()
+
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      }
+    }
+    loadSettings()
+  }, [db])
 
   // Redirect when user is loaded after login
   useEffect(() => {
@@ -37,14 +59,19 @@ export default function LoginPage() {
       
       // Redirect based on onboarding completion
       if (Number(onboardingStep) < 2) {
-        // Haven't completed event signup
-        router.replace(`/${locale}/auth/event-signup`)
+        // Haven't completed event signup - only redirect if signup is enabled
+        if (signupEnabled) {
+          router.replace(`/${locale}/auth/event-signup`)
+        } else {
+          // Signup disabled, go to home
+          router.replace(`/${locale}`)
+        }
       } else {
         // Completed all onboarding, go to dashboard
         router.replace(`/${locale}/dashboard`)
       }
     }
-  }, [shouldRedirect, authLoading, user, router, locale])
+  }, [shouldRedirect, authLoading, user, router, locale, signupEnabled])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

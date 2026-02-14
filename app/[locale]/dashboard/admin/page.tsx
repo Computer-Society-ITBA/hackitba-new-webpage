@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const [processing, setProcessing] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [signupEnabled, setSignupEnabled] = useState(true)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -84,9 +85,15 @@ export default function AdminDashboard() {
       if (settingsDoc.exists()) {
         const data = settingsDoc.data()
         setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+        setSignupEnabled(data?.signupEnabled !== false)
       } else {
         setProjectSubmissionsEnabled(true)
-        await setDoc(settingsRef, { projectSubmissionsEnabled: true, updatedAt: new Date() }, { merge: true })
+        setSignupEnabled(true)
+        await setDoc(
+          settingsRef,
+          { projectSubmissionsEnabled: true, signupEnabled: true, updatedAt: new Date() },
+          { merge: true }
+        )
       }
     } catch (error) {
       console.error("Error loading settings:", error)
@@ -107,6 +114,23 @@ export default function AdminDashboard() {
       console.error("Error updating project submissions setting:", error)
       setProjectSubmissionsEnabled(!nextValue)
       alert("No se pudo actualizar la configuracion de proyectos")
+    }
+  }
+
+  const toggleSignupEnabled = async () => {
+    if (!db) return
+    const nextValue = !signupEnabled
+    setSignupEnabled(nextValue)
+    try {
+      await setDoc(
+        doc(db, "settings", "global"),
+        { signupEnabled: nextValue, updatedAt: new Date() },
+        { merge: true }
+      )
+    } catch (error) {
+      console.error("Error updating signup setting:", error)
+      setSignupEnabled(!nextValue)
+      alert("No se pudo actualizar la configuracion de inscripcion")
     }
   }
 
@@ -400,6 +424,24 @@ export default function AdminDashboard() {
                   }`}
                 >
                   {projectSubmissionsEnabled ? "Enabled" : "Disabled"}
+                </button>
+              </div>
+            </GlassCard>
+            <GlassCard className="mt-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-brand-cyan font-pixel text-sm">Inscripcion</p>
+                  <p className="text-brand-cyan/60 text-xs">Habilita o deshabilita el registro de usuarios</p>
+                </div>
+                <button
+                  onClick={toggleSignupEnabled}
+                  className={`px-4 py-2 rounded border font-pixel text-xs transition-colors ${
+                    signupEnabled
+                      ? "border-brand-cyan/60 text-brand-cyan bg-brand-cyan/10"
+                      : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
+                  }`}
+                >
+                  {signupEnabled ? "Enabled" : "Disabled"}
                 </button>
               </div>
             </GlassCard>

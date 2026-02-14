@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 interface FloatingSignupButtonProps {
   locale: Locale
@@ -14,6 +16,30 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
+  const [signupEnabled, setSignupEnabled] = useState(true)
+  const [signupLoading, setSignupLoading] = useState(true)
+  const db = getDbClient()
+
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      } finally {
+        setSignupLoading(false)
+      }
+    }
+    loadSettings()
+  }, [db])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,20 +72,24 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
     return () => clearTimeout(timeout)
   }, [isHovered, currentFrame])
 
+  const isDisabled = signupLoading || !signupEnabled
+  const Component = isDisabled ? "div" : Link
+
   return (
-    <Link
-      href={`/${locale}/auth/signup`}
-      onMouseEnter={() => setIsHovered(true)}
+    <Component
+      {...(!isDisabled && { href: `/${locale}/auth/signup` })}
+      onMouseEnter={() => !isDisabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsHovered(true)}
+      onFocus={() => !isDisabled && setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
       className={cn(
         "fixed bottom-8 right-8 z-50",
         "w-24 h-24 flex items-center justify-center",
-        "transition-all duration-300 hover:scale-110",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none",
+        isDisabled ? "cursor-not-allowed" : "transition-all duration-300 hover:scale-110",
+        isVisible ? (isDisabled ? "opacity-30 translate-y-0" : "opacity-100 translate-y-0") : "opacity-0 translate-y-4 pointer-events-none",
       )}
       aria-label="Sign up"
+      {...(isDisabled && { "aria-disabled": "true" })}
     >
       <div className="relative w-24 h-24">
         {[0, 1, 2, 3, 4, 5].map((frame) => (
@@ -77,6 +107,6 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
           />
         ))}
       </div>
-    </Link>
+    </Component>
   )
 }

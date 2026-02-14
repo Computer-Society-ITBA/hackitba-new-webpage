@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams, useParams } from "next/navigation"
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth"
 import { PixelButton } from "@/components/ui/pixel-button"
@@ -13,6 +13,8 @@ import { ChevronRight, ArrowLeft, Home } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { NeonGlow } from "@/components/effects/neon-glow"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 function SignupContent() {
   const router = useRouter()
@@ -20,6 +22,10 @@ function SignupContent() {
   const locale = params.locale as Locale
   const translations = getTranslations(locale)
   const searchParams = useSearchParams()
+  const db = getDbClient()
+
+  const [signupEnabled, setSignupEnabled] = useState(true)
+  const [signupLoading, setSignupLoading] = useState(true)
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -33,6 +39,34 @@ function SignupContent() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      } finally {
+        setSignupLoading(false)
+      }
+    }
+
+    loadSettings()
+  }, [db])
+
+  useEffect(() => {
+    if (!signupLoading && !signupEnabled) {
+      router.replace(`/${locale}`)
+    }
+  }, [signupEnabled, signupLoading, router, locale])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prev) => ({ ...prev, [id]: value }))
@@ -40,6 +74,11 @@ function SignupContent() {
 
   const handleSubmit = async () => {
     setError("")
+
+    if (!signupEnabled) {
+      setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+      return
+    }
 
     // Validation
     if (!formData.name || !formData.surname || !formData.email || !formData.password || !formData.confirmPassword) {
@@ -110,6 +149,14 @@ function SignupContent() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (signupLoading || !signupEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">Loading...</div>
+      </div>
+    )
   }
 
   return (
@@ -185,13 +232,21 @@ function SignupContent() {
               </Label>
               <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
             </div>
+            {!signupLoading && !signupEnabled && (
+              <div className="p-3 rounded bg-brand-orange/10 border border-brand-orange/30">
+                <p className="text-brand-orange text-sm">
+                  {locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled."}
+                </p>
+              </div>
+            )}
+
             {error && (
               <div className="p-3 rounded bg-red-500/10 border border-red-500/30">
                 <p className="text-red-400 text-sm">{error}</p>
               </div>
             )}
 
-            <PixelButton type="submit" disabled={loading} className="w-full" size="lg">
+            <PixelButton type="submit" disabled={loading || !signupEnabled} className="w-full" size="lg">
               {loading ? translations.auth.signup.buttons.creating : translations.auth.signup.buttons.create}
             </PixelButton>
 

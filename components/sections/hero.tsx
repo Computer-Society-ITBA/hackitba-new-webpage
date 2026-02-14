@@ -1,9 +1,13 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { TypingEffect } from "@/components/effects/typing-effect"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { FloatingArrow } from "@/components/effects/floating-arrow"
 import { LoremIpsum } from "lorem-ipsum"
+import { useAuth } from "@/lib/firebase/auth-context"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 interface HeroProps {
   translations: any
@@ -12,6 +16,32 @@ interface HeroProps {
 const lorem = new LoremIpsum()
 
 export function Hero({ translations }: HeroProps) {
+  const { user, loading } = useAuth()
+  const [signupEnabled, setSignupEnabled] = useState(true)
+  const [signupLoading, setSignupLoading] = useState(true)
+  const db = getDbClient()
+
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      } finally {
+        setSignupLoading(false)
+      }
+    }
+    loadSettings()
+  }, [db])
+
   const scrollToNext = () => {
     const nextSection = document.getElementById("stats")
     nextSection?.scrollIntoView({ behavior: "smooth" })
@@ -40,6 +70,11 @@ export function Hero({ translations }: HeroProps) {
             </NeonGlow>
           </h1>
           <p className="font-pixel text-lg md:text-xl text-brand-yellow">{translations.hero.subtitle}</p>
+          {!loading && !signupLoading && !user && signupEnabled && (
+            <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-navy/60 px-4 py-2 font-pixel text-xs md:text-sm text-brand-cyan">
+              Para participar tenes que hacer signup
+            </div>
+          )}
         </div>
       </div>
 

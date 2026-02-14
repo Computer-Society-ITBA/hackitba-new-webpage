@@ -15,8 +15,9 @@ import type { UserRole } from "@/lib/firebase/types"
 import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter, ExternalLink, Users, UserPlus } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { getStorageClient } from "@/lib/firebase/client-config"
+import { getStorageClient, getDbClient } from "@/lib/firebase/client-config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
+import { doc, getDoc } from "firebase/firestore"
 import { set } from "date-fns"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { useCategories } from "@/hooks/use-categories"
@@ -31,6 +32,9 @@ function EventSignupContent() {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const { user: authUser, loading: authLoading, refreshUser } = useAuth()
     const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(locale)
+    const db = getDbClient()
+    const [signupEnabled, setSignupEnabled] = useState(true)
+    const [signupLoading, setSignupLoading] = useState(true)
 
 
     // Step management
@@ -85,6 +89,34 @@ function EventSignupContent() {
             setFormData(prev => ({ ...prev, priorities: initialPriorities }))
         }
     }, [categories])
+
+    useEffect(() => {
+        if (!db) return
+        const loadSettings = async () => {
+            try {
+                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data()
+                    setSignupEnabled(data?.signupEnabled !== false)
+                } else {
+                    setSignupEnabled(true)
+                }
+            } catch (err) {
+                console.error("Error loading signup setting:", err)
+                setSignupEnabled(true)
+            } finally {
+                setSignupLoading(false)
+            }
+        }
+
+        loadSettings()
+    }, [db])
+
+    useEffect(() => {
+        if (!signupLoading && !signupEnabled) {
+            router.replace(`/${locale}`)
+        }
+    }, [signupEnabled, signupLoading, router, locale])
 
     useEffect(() => {
         // Fetch user's assigned role from authUser if available
@@ -187,6 +219,11 @@ function EventSignupContent() {
     const handleNext = () => {
         setError("")
 
+        if (!signupEnabled) {
+            setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+            return
+        }
+
         // Validation for Step 1
         if (currentStep === 1) {
             if (!formData.dni) {
@@ -251,6 +288,10 @@ function EventSignupContent() {
     }
 
     const handleSubmit = async () => {
+        if (!signupEnabled) {
+            setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+            return
+        }
         setLoading(true)
         try {
             const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
@@ -567,6 +608,14 @@ function EventSignupContent() {
         }
     }
 
+    if (signupLoading || !signupEnabled) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">Loading...</div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden relative">
             {/* Background decoration */}
@@ -600,6 +649,14 @@ function EventSignupContent() {
                     <div className="min-h-[320px] flex flex-col">
                         {renderStep()}
 
+                        {!signupLoading && !signupEnabled && (
+                            <div className="mt-4 px-8 p-2 rounded bg-brand-orange/10 border border-brand-orange/30 animate-in zoom-in-95 duration-200">
+                                <p className="text-[10px] text-brand-orange font-pixel">
+                                    {locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled."}
+                                </p>
+                            </div>
+                        )}
+
                         {error && (
                             <div className="mt-4 px-8 p-2 rounded bg-red-500/10 border border-red-500/30 animate-in zoom-in-95 duration-200">
                                 <p className="text-[10px] text-red-400 font-pixel">{error}</p>
@@ -612,7 +669,7 @@ function EventSignupContent() {
                                     variant="outline"
                                     onClick={handleBack}
                                     className="w-[35%] flex flex-row justify-between items-center p-4"
-                                    disabled={loading}
+                                    disabled={loading || !signupEnabled}
                                 >
                                     <ChevronLeft className="w-6 h-6" />
                                     {translations.auth.eventSignup.buttons.back}
@@ -620,7 +677,7 @@ function EventSignupContent() {
                             )}
                             <PixelButton
                                 onClick={handleNext}
-                                disabled={loading}
+                                disabled={loading || !signupEnabled}
                                 className="w-full flex flex-row justify-between items-center"
                             >
                                 {loading ? (

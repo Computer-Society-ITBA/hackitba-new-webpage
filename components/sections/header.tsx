@@ -7,6 +7,8 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
 import { useAuth } from "@/lib/firebase/auth-context"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 interface HeaderProps {
   translations: any
@@ -17,6 +19,30 @@ export function Header({ translations, locale }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, loading } = useAuth()
+  const [signupEnabled, setSignupEnabled] = useState(true)
+  const [signupLoading, setSignupLoading] = useState(true)
+  const db = getDbClient()
+
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      } finally {
+        setSignupLoading(false)
+      }
+    }
+    loadSettings()
+  }, [db])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,8 +94,18 @@ export function Header({ translations, locale }: HeaderProps) {
                   <PixelButton asChild variant="outline" size="md">
                     <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
                   </PixelButton>
-                  <PixelButton asChild variant="outline" size="md">
-                    <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                  <PixelButton 
+                    asChild={signupEnabled && !signupLoading}
+                    variant="outline" 
+                    size="md"
+                    disabled={signupLoading || !signupEnabled}
+                    className={cn(signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
+                  >
+                    {signupEnabled && !signupLoading ? (
+                      <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                    ) : (
+                      <span>{translations.nav.signUp}</span>
+                    )}
                   </PixelButton>
                 </>
               )}
@@ -105,8 +141,18 @@ export function Header({ translations, locale }: HeaderProps) {
                   <PixelButton asChild variant="outline" size="md" className="w-full">
                     <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
                   </PixelButton>
-                  <PixelButton asChild variant="outline" size="md" className="w-full">
-                    <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                  <PixelButton 
+                    asChild={signupEnabled && !signupLoading}
+                    variant="outline" 
+                    size="md" 
+                    className={cn("w-full", signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
+                    disabled={signupLoading || !signupEnabled}
+                  >
+                    {signupEnabled && !signupLoading ? (
+                      <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                    ) : (
+                      <span>{translations.nav.signUp}</span>
+                    )}
                   </PixelButton>
                 </>
               )}
