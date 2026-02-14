@@ -54,9 +54,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (shouldRedirect && !authLoading && user) {
       const onboardingStep = user.onboardingStep || 0
-      
+
       console.log("Login - User onboarding step:", onboardingStep, typeof onboardingStep)
-      
+
       // Redirect based on onboarding completion
       if (Number(onboardingStep) < 2) {
         // Haven't completed event signup - only redirect if signup is enabled
@@ -97,7 +97,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
+      <div className="font-pixel absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
         {Array.from({ length: 50 }, (_, i) => (
           <div key={i}>
             {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
@@ -122,12 +122,12 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-md relative z-10 py-8">
+        <div className="text-center mb-6">
+          <p className="text-brand-cyan text-xs font-pixel mb-2 opacity-70">{translations.auth.login.endpoint}</p>
           <h1 className="font-pixel text-4xl md:text-5xl mb-2">
             <NeonGlow color="orange">{translations.auth.login.title}</NeonGlow>
           </h1>
-          <p className="text-brand-cyan text-sm">{translations.auth.login.endpoint}</p>
         </div>
 
         <GlassCard neonOnHover neonColor="cyan">
@@ -175,7 +175,7 @@ export default function LoginPage() {
             <div className="text-center pt-4 border-t border-brand-cyan/20">
               <p className="text-brand-cyan text-sm">
                 {translations.auth.login.footer.noAccount}{" "}
-                <Link href={`/${locale}/auth/signup`} className="text-brand-orange hover:neon-glow-orange">
+                <Link href={`/${locale}/auth/signup`} className="text-brand-yellow hover:neon-glow-orange">
                   {translations.auth.login.footer.signUp}
                 </Link>
               </p>

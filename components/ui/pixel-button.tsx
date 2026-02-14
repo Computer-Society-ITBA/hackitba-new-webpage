@@ -49,6 +49,7 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
           "font-pixel uppercase tracking-wider transition-all duration-200",
           "border-3 relative overflow-hidden",
           "hover:scale-105 active:scale-95",
+          "flex flex-row justify-center gap-x-4  items-center ",
           {
             "bg-transparent border-brand-cyan/80 text-brand-cyan neon-glow-cyan neon-border-cyan hover:neon-border-cyan hover:neon-glow-cyan":
               variant === "primary",

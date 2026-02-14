@@ -55,7 +55,6 @@ export function Header({ translations, locale }: HeaderProps) {
 
   const navLinks = [
     { href: `/${locale}#faqs`, label: translations.nav.faqs },
-    { href: `/${locale}#collaborate`, label: translations.nav.collaborate },
   ]
 
   return (
@@ -68,7 +67,7 @@ export function Header({ translations, locale }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <span className="font-pixel text-2xl md:text-3xl text-brand-orange neon-glow-orange">
+            <span className="font-pixel text-2xl md:text-3xl text-brand-yellow neon-glow-orange">
               <img className="hover:neon-glow-orange" src="/images/hackitba-icon.png" alt="" />
             </span>
           </Link>
@@ -93,9 +92,9 @@ export function Header({ translations, locale }: HeaderProps) {
                   <PixelButton asChild variant="outline" size="md">
                     <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
                   </PixelButton>
-                  <PixelButton 
+                  <PixelButton
                     asChild={signupEnabled && !signupLoading}
-                    variant="outline" 
+                    variant="outline"
                     size="md"
                     disabled={signupLoading || !signupEnabled}
                     className={cn(signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
@@ -140,10 +139,10 @@ export function Header({ translations, locale }: HeaderProps) {
                   <PixelButton asChild variant="outline" size="md" className="w-full">
                     <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
                   </PixelButton>
-                  <PixelButton 
+                  <PixelButton
                     asChild={signupEnabled && !signupLoading}
-                    variant="outline" 
-                    size="md" 
+                    variant="outline"
+                    size="md"
                     className={cn("w-full", signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
                     disabled={signupLoading || !signupEnabled}
                   >

@@ -130,7 +130,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const handleRemoveMember = async (memberId: string) => {
     if (!team || !userTeamLabel) return
-    
+
     if (!confirm("¿Estás seguro de que quieres eliminar este miembro del equipo?")) {
       return
     }
@@ -139,7 +139,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const auth = getAuth()
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      
+
       const response = await fetch(`${apiUrl}/teams/${userTeamLabel}/members/${memberId}`, {
         method: "DELETE",
         headers: {
@@ -177,7 +177,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const auth = getAuth()
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      
+
       const response = await fetch(`${apiUrl}/users/${editingMember.id}`, {
         method: "PATCH",
         headers: {
@@ -196,8 +196,8 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       }
 
       // Update local state
-      setMembers(members.map(m => 
-        m.id === editingMember.id 
+      setMembers(members.map(m =>
+        m.id === editingMember.id
           ? { ...m, ...editForm }
           : m
       ))
@@ -227,7 +227,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const auth = getAuth()
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      
+
       const response = await fetch(`${apiUrl}/teams/${userTeamLabel}`, {
         method: "PATCH",
         headers: {
@@ -295,7 +295,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const auth = getAuth()
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      
+
       // Join team with code
       const response = await fetch(`${apiUrl}/teams/${rejoinCode}/join`, {
         method: "POST",
@@ -323,7 +323,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const handleCopyTeamCode = async () => {
     if (!userTeamLabel) return
-    
+
     try {
       await navigator.clipboard.writeText(userTeamLabel)
       setCopied(true)
@@ -347,7 +347,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   if (!userTeamLabel || !team) {
     const isInProcess = teamAssignmentStatus === "in_process" || teamAssignmentStatus === "pending"
-    
+
     return (
       <GlassCard>
         <div className="flex flex-col items-center justify-center py-12 space-y-6">
@@ -390,7 +390,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                       className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
                       onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
                     />
-                    <PixelButton 
+                    <PixelButton
                       onClick={handleRejoinTeam}
                       disabled={saving || !rejoinCode.trim()}
                       size="sm"
@@ -407,13 +407,13 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                   <span>OR</span>
                   <div className="flex-1 h-px bg-brand-cyan/20"></div>
                 </div>
-                <PixelButton 
-              onClick={() => router.push(`/${locale}/dashboard/create-team`)}
-              className="w-full"
-            >
-              Create New Team
-            </PixelButton>
-          </div>
+                <PixelButton
+                  onClick={() => router.push(`/${locale}/dashboard/create-team`)}
+                  className="w-full"
+                >
+                  Create New Team
+                </PixelButton>
+              </div>
             </>
           )}
         </div>
@@ -423,7 +423,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const getStatusColor = (status: string | undefined) => {
     if (!status) return "bg-gray-500/20 border-gray-500/40 text-gray-400"
-    
+
     switch (status.toLowerCase()) {
       case "approved":
         return "bg-green-500/20 border-green-500/40 text-green-400"
@@ -449,55 +449,67 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     <GlassCard>
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-brand-cyan/20 pb-4">
-          <div className="flex items-center gap-3">
-            <Users className="w-6 h-6 text-brand-cyan" />
-            <h3 className="font-pixel text-xl text-brand-yellow">{team.name}</h3>
-            <button
-              onClick={handleCopyTeamCode}
-              className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20"
-              title={locale === "es" ? "Copiar código del equipo" : "Copy team code"}
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-green-400" />
-                  <span className="text-xs font-pixel text-green-400">
-                    {locale === "es" ? "¡Copiado!" : "Copied!"}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  <span className="text-xs font-pixel">
-                    {locale === "es" ? "Copiar código" : "Copy code"}
-                  </span>
-                </>
-              )}
-            </button>
-            {isAdmin && (
-              <button
-                onClick={handleEditTeam}
-                className="p-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors"
-                title="Edit team"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-brand-cyan/90 font-pixel text-sm tracking-wider">
-              {(() => {
-                const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
-                return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
-              })()}
-              <span className="text-brand-cyan/70">Category</span>
-              <span>{teamCategoryLabel}</span>
-            </div>
-            {team.status && (
-              <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
-                {capitalizeStatus(team.status)}
+          <div className="flex flex-col items-center gap-3 w-full">
+
+            <div className="flex flex-row items-center justify-between gap-3 w-full">
+              <div className="flex flex-row items-center gap-4">
+                <Users className="w-6 h-6 text-brand-cyan" />
+                <h3 className="font-pixel text-lg text-brand-yellow">{team.name}</h3>
+                {isAdmin && (
+                  <button
+                    onClick={handleEditTeam}
+                    className="p-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors"
+                    title="Edit team"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-            )}
+              {team.status && (
+                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
+                  {capitalizeStatus(team.status)}
+                </div>
+              )}
+
+            </div>
+            <div className="flex flex-row items-center gap-3 w-full justify-between">
+              <div className="flex flex-row w-full items-center justify-between gap-3">
+                <div className="flex items-center gap-3 font-pixel text-sm">
+                  {(() => {
+                    const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
+                    return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
+                  })()}
+                  <span className="text-brand-cyan">Category: </span>
+                  <span className="text-brand-cyan/70">{teamCategoryLabel}</span>
+                </div>
+                <button
+                  onClick={handleCopyTeamCode}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20"
+                  title={locale === "es" ? "Copiar código del equipo" : "Copy team code"}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-400" />
+                      <span className="text-xs font-pixel text-green-400">
+                        {locale === "es" ? "¡Copiado!" : "Copied!"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span className="text-xs font-pixel">
+                        {locale === "es" ? "Copiar código del equipo" : "Copy team code"}
+                      </span>
+                    </>
+                  )}
+                </button>
+
+              </div>
+            </div>
+
+
           </div>
+
         </div>
 
         <div className="space-y-3">
@@ -508,11 +520,10 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             {members.map((member) => (
               <div
                 key={member.id}
-                className={`flex items-center gap-3 p-3 rounded border ${
-                  member.id === userId
-                    ? "border-brand-cyan/40 bg-brand-cyan/5"
-                    : "border-brand-cyan/20 bg-brand-navy/30"
-                }`}
+                className={`flex items-center gap-3 p-3 rounded border ${member.id === userId
+                  ? "border-brand-cyan/40 bg-brand-cyan/5"
+                  : "border-brand-cyan/20 bg-brand-navy/30"
+                  }`}
               >
                 <div className="flex-1 flex items-center gap-3">
                   <UserCircle className="w-5 h-5 text-brand-cyan/70" />
@@ -585,14 +596,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               />
             </div>
             <div className="flex gap-3 pt-4">
-              <PixelButton 
-                onClick={handleSaveEdit} 
+              <PixelButton
+                onClick={handleSaveEdit}
                 disabled={saving}
                 className="flex-1"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </PixelButton>
-              <PixelButton 
+              <PixelButton
                 onClick={() => setEditingMember(null)}
                 variant="outline"
                 disabled={saving}
@@ -627,14 +638,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               </div>
             </div>
             <div className="flex gap-3 pt-4">
-              <PixelButton 
-                onClick={handleSaveTeam} 
+              <PixelButton
+                onClick={handleSaveTeam}
                 disabled={saving}
                 className="flex-1"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </PixelButton>
-              <PixelButton 
+              <PixelButton
                 onClick={() => setEditingTeam(false)}
                 variant="outline"
                 disabled={saving}

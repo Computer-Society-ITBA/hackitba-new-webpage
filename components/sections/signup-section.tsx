@@ -52,9 +52,9 @@ export function SignupSection({ translations, locale }: SignupSectionProps) {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
-          <PixelButton 
+          <PixelButton
             asChild={!isDisabled}
-            size="lg" 
+            size="lg"
             variant="outline"
             disabled={isDisabled}
             className={cn(isDisabled ? "opacity-50 cursor-not-allowed" : "")}
@@ -65,18 +65,6 @@ export function SignupSection({ translations, locale }: SignupSectionProps) {
               <span>{translations.signup.participant}</span>
             )}
           </PixelButton>
-
-          {!isDisabled ? (
-            <Link className="font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200 uppercase" href={`/${locale}/auth/signup?role=mentor`}>{translations.signup.mentor}</Link>
-          ) : (
-            <span className="font-pixel text-md text-brand-yellow/50 cursor-not-allowed uppercase">{translations.signup.mentor}</span>
-          )}
-
-          {!isDisabled ? (
-            <Link className="font-pixel text-md text-brand-yellow neon-glow-orange hover:neon-glow-orange transition-all duration-200 uppercase" href={`/${locale}/auth/signup?role=jurado`}>Jurado</Link>
-          ) : (
-            <span className="font-pixel text-md text-brand-yellow/50 cursor-not-allowed uppercase">Jurado</span>
-          )}
         </div>
       </div>
     </section>

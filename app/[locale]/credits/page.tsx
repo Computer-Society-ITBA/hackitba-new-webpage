@@ -27,7 +27,7 @@ export default async function CreditsPage({ params }: PageProps) {
       <Header translations={translations} locale={locale} />
 
       <main className="min-h-screen flex items-center justify-center px-4 py-24">
-        <div className="absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
+        <div className="absolute font-pixel inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
           {Array.from({ length: 50 }, (_, i) => (
             <div key={i}>
               {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
@@ -36,24 +36,15 @@ export default async function CreditsPage({ params }: PageProps) {
         </div>
 
         <div className="relative z-10 w-full max-w-4xl">
-          <div className="mb-6">
-            <Link 
-              href={`/${locale}`}
-              className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-orange transition-colors font-pixel text-sm"
-            >
-              <ArrowLeft size={16} />
-              {locale === "es" ? "Volver" : "Back"}
-            </Link>
-          </div>
 
           <GlassCard className="p-8 md:p-12">
             <div className="space-y-8">
               <div className="text-center border-b border-brand-cyan/20 pb-6">
-                <h1 className="font-pixel text-3xl md:text-4xl text-brand-orange mb-4">
+                <h1 className="font-pixel neon-glow-orange text-3xl md:text-4xl text-brand-yellow mb-4">
                   {locale === "es" ? "Créditos" : "Credits"}
                 </h1>
-                <p className="font-pixel text-sm text-brand-cyan">
-                  {locale === "es" 
+                <p className="font-pixel text-sm">
+                  {locale === "es"
                     ? "El sitio completo fue posible gracias al fantástico esfuerzo de estos miembros del equipo ITBA de IEEE Computer Society. Todo, desde el diseño hasta la ejecución, fue hecho por ellos:"
                     : "This entire site was made possible thanks to the fantastic effort of these members of the ITBA IEEE Computer Society team. Everything, from design to execution, was done by them:"}
                 </p>
@@ -63,9 +54,9 @@ export default async function CreditsPage({ params }: PageProps) {
                 {teamMembers.length > 0 ? (
                   <div className="text-center space-y-3">
                     {teamMembers.map((name, index) => (
-                      <p 
+                      <p
                         key={index}
-                        className="font-pixel text-md text-brand-yellow"
+                        className="font-pixel text-md"
                       >
                         {name}
                       </p>

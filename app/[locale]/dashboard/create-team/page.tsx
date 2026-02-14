@@ -59,7 +59,7 @@ function CreateTeamContent() {
                 // TODO: Replace with actual API call
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
                 const idToken = currentUser ? await currentUser.getIdToken() : localStorage.getItem("userToken")
-                const response = await fetch(`${apiUrl}/users/${userId}`,{
+                const response = await fetch(`${apiUrl}/users/${userId}`, {
                     headers: {
                         Authorization: `Bearer ${idToken}`,
                     }
@@ -129,7 +129,7 @@ function CreateTeamContent() {
             if (!userToken) {
                 throw new Error("No se encontro una sesion activa")
             }
-            const teamsResponse = await fetch(`${apiUrl}/teams`,{
+            const teamsResponse = await fetch(`${apiUrl}/teams`, {
                 headers: {
                     Authorization: `Bearer ${userToken}`,
                 }
@@ -161,19 +161,19 @@ function CreateTeamContent() {
 
             // TODO: Replace with actual API call
             console.log(payload)
-                        const response = await fetch(`${apiUrl}/teams`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${userToken}`,
-                            },
-                            body: JSON.stringify(payload)
-                        })
+            const response = await fetch(`${apiUrl}/teams`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${userToken}`,
+                },
+                body: JSON.stringify(payload)
+            })
 
-                        if (!response.ok) {
-                                const errorData = await response.json().catch(() => ({}))
-                                throw new Error(errorData.error || "Failed to create team")
-                        }
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.error || "Failed to create team")
+            }
 
             // Simulating API call
             await new Promise(resolve => setTimeout(resolve, 1500))
@@ -302,7 +302,7 @@ function CreateTeamContent() {
 
                 {/* Footer */}
                 <p className="text-center text-[10px] font-pixel text-brand-cyan/40 uppercase">
-                    Changed your mind? <button onClick={() => router.push(`/${locale}/dashboard`)} className="text-brand-orange hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Skip for now</button>
+                    Changed your mind? <button onClick={() => router.push(`/${locale}/dashboard`)} className="text-brand-yellow hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Skip for now</button>
                 </p>
             </div>
         </div>

@@ -151,7 +151,7 @@ export default function JuradoDashboard() {
                           href={project.repoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-brand-orange hover:neon-glow-orange text-sm"
+                          className="text-brand-yellow hover:neon-glow-orange text-sm"
                         >
                           View Repository →
                         </a>

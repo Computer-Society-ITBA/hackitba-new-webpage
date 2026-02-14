@@ -114,7 +114,7 @@ function SignupContent() {
       console.log("Creating account...", payload)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
       // TODO: Replace with actual API call
-      const response = await fetch(`${apiUrl}/users/register`, {
+      const response = await fetch(`${apiUrl}/users/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -126,7 +126,7 @@ function SignupContent() {
 
       const data = await response.json()
       console.log("Registration response:", data)
-      
+
       // Save uid to localStorage for event signup
       if (typeof window !== 'undefined') {
         localStorage.setItem('userUid', data.uid)
@@ -153,10 +153,10 @@ function SignupContent() {
       // Wait a moment for Firebase to sync user data, then redirect
       console.log("Waiting for user sync before redirecting...")
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Success - redirect to event signup
-      console.log("Redirecting to event signup...")
-      router.push(`/${locale}/auth/event-signup`)
+
+      // Success - redirect to verify email required
+      console.log("Redirecting to verify email required...")
+      router.push(`/${locale}/auth/verify-email-required`)
     } catch (err: any) {
       console.error("Registration error:", err)
       setError(err.message || translations.auth.signup.errors.createFailed)
@@ -175,7 +175,7 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
+      <div className="font-pixel absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
         {Array.from({ length: 50 }, (_, i) => (
           <div key={i}>
             {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
@@ -200,87 +200,87 @@ function SignupContent() {
         </Link>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
+      <div className="w-full max-w-md relative z-10 py-8">
+        <div className="text-center mb-6">
+          <p className="text-brand-cyan text-xs font-pixel mb-2 opacity-70">{translations.auth.signup.endpoint}</p>
           <h1 className="font-pixel text-4xl md:text-5xl mb-2">
             <NeonGlow color="orange">{translations.auth.signup.title || "Sign Up"}</NeonGlow>
           </h1>
-          <p className="text-brand-cyan text-sm">{translations.auth.signup.endpoint}</p>
         </div>
 
-        <GlassCard neonOnHover neonColor="cyan">
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-6">
+        <GlassCard neonOnHover neonColor="cyan" className="py-2">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4 px-6 py-4">
 
-              <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-brand-cyan font-pixel">
-                {translations.auth.signup.fields.name}
-              </Label>
-              <Input id="name" value={formData.name} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="surname" className="text-brand-cyan font-pixel">
-                {translations.auth.signup.fields.surname}
-              </Label>
-              <Input id="surname" value={formData.surname} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-brand-cyan font-pixel text-xs">
+                  {translations.auth.signup.fields.name}
+                </Label>
+                <Input id="name" value={formData.name} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" />
               </div>
+              <div className="space-y-1">
+                <Label htmlFor="surname" className="text-brand-cyan font-pixel text-xs">
+                  {translations.auth.signup.fields.surname}
+                </Label>
+                <Input id="surname" value={formData.surname} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" />
+              </div>
+            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-brand-cyan font-pixel">
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-brand-cyan font-pixel text-xs">
                 {translations.auth.signup.fields.email}
               </Label>
-              <Input id="email" type="email" value={formData.email} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" placeholder={translations.auth.signup.fields.emailPlaceholder} />
+              <Input id="email" type="email" value={formData.email} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.emailPlaceholder} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-brand-cyan font-pixel">
+            <div className="space-y-1">
+              <Label htmlFor="password" className="text-brand-cyan font-pixel text-xs">
                 {translations.auth.signup.fields.password}
               </Label>
-              <Input id="password" type="password" value={formData.password} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
+              <Input id="password" type="password" value={formData.password} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-brand-cyan font-pixel">
+            <div className="space-y-1">
+              <Label htmlFor="confirmPassword" className="text-brand-cyan font-pixel text-xs">
                 {translations.auth.signup.fields.confirmPassword}
               </Label>
-              <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
+              <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
             </div>
             {!signupLoading && !signupEnabled && (
-              <div className="p-3 rounded bg-brand-orange/10 border border-brand-orange/30">
-                <p className="text-brand-orange text-sm">
+              <div className="p-2 rounded bg-brand-orange/10 border border-brand-orange/30">
+                <p className="text-brand-orange text-xs">
                   {locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled."}
                 </p>
               </div>
             )}
 
             {error && (
-              <div className="p-3 rounded bg-red-500/10 border border-red-500/30">
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="p-2 rounded bg-red-500/10 border border-red-500/30">
+                <p className="text-red-400 text-xs">{error}</p>
               </div>
             )}
 
-            <div className="p-3 rounded bg-brand-cyan/5 border border-brand-cyan/20">
-              <p className="text-brand-cyan/70 text-xs">
-                {locale === "es" 
+            <div className="p-2 rounded bg-brand-cyan/5 border border-brand-cyan/20">
+              <p className="text-brand-cyan/70 text-[10px] leading-tight">
+                {locale === "es"
                   ? "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
                   : "By completing this form, you agree to share your data with the event organizers and sponsors."}
               </p>
             </div>
 
-            <PixelButton type="submit" disabled={loading || !signupEnabled} className="w-full" size="lg">
+            <PixelButton type="submit" disabled={loading || !signupEnabled} className="w-full" size="sm">
               {loading ? translations.auth.signup.buttons.creating : translations.auth.signup.buttons.create}
             </PixelButton>
 
-            <div className="text-center pt-4 border-t border-brand-cyan/20">
-              <p className="text-brand-cyan text-sm">
+            <div className="text-center pt-2 border-t border-brand-cyan/20">
+              <p className="text-brand-cyan text-xs">
                 {translations.auth.signup.footer.alreadyRegistered}{" "}
                 <Link href={`/${locale}/auth/login`} className="text-brand-orange hover:neon-glow-orange">
                   {translations.auth.signup.footer.login}
                 </Link>
               </p>
             </div>
-            </form>
+          </form>
         </GlassCard>
       </div>
     </div>
