@@ -63,7 +63,13 @@ export function Footer({ translations, locale }: FooterProps) {
           </div>
 
           <div className="space-y-6">
-            <p className="font-pixel text-xs text-brand-cyan text-center md:text-left">{translations.footer.madeWith}</p>
+            <p className="font-pixel text-xs text-brand-cyan text-center md:text-left">
+              {locale === "es" ? "Hecho con " : "Made with "}
+              <Link href={`/${locale}/credits`} className="hover:scale-125 inline-block transition-transform">
+                🧡
+              </Link>
+              {locale === "es" ? " por Computer Society ITBA" : " by Computer Society ITBA"}
+            </p>
 
             <div>
               <h3 className="font-pixel text-xs text-brand-cyan mb-4 text-center md:text-left">
