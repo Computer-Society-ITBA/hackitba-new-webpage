@@ -29,10 +29,13 @@ import { Upload, X } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
 import { toast } from "@/hooks/use-toast"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function ParticipanteDashboard() {
   const params = useParams()
-  const locale = (params?.locale as string) || "en"
+  const locale = (params?.locale as Locale) || "en"
+  const t = getTranslations(locale)
   const db = getDbClient()
   const storage = getStorageClient()
   const { user } = useAuth()
@@ -89,7 +92,6 @@ export default function ParticipanteDashboard() {
     if (!teamDoc.exists()) return
 
     const teamData = teamDoc.data() as any
-    setTeam({ id: teamDoc.id, ...teamData })
 
     const projectData = teamData.project
     if (!projectData) {
@@ -123,7 +125,7 @@ export default function ParticipanteDashboard() {
   }, [team, categories])
 
   const teamCategoryLabel = useMemo(() => {
-    const fallbackLabel = locale === "es" ? "Categoria no asignada" : "Category not assigned"
+    const fallbackLabel = t.dashboard.participant.categoryNotAssigned
     if (!teamCategoryId) return fallbackLabel
     const category = categories.find((item) => item.id === teamCategoryId)
     if (!category) return fallbackLabel
@@ -131,7 +133,7 @@ export default function ParticipanteDashboard() {
       return category.spanishName || category.englishName || category.name || fallbackLabel
     }
     return category.englishName || category.spanishName || category.name || fallbackLabel
-  }, [categories, teamCategoryId, locale])
+  }, [categories, teamCategoryId, t])
 
   const teamCategoryIconName = useMemo(() => {
     if (!teamCategoryId) return ""
@@ -139,11 +141,8 @@ export default function ParticipanteDashboard() {
     return category?.iconName || ""
   }, [categories, teamCategoryId])
 
-  const deleteTitle = locale === "es" ? "Estas seguro?" : "Are you sure?"
-  const deleteDescription =
-    locale === "es"
-      ? "Esta accion eliminara el proyecto de forma permanente y no se puede deshacer."
-      : "This will permanently delete your project and cannot be undone."
+  const deleteTitle = t.dashboard.participant.deleteDialog.title
+  const deleteDescription = t.dashboard.participant.deleteDialog.description
 
   useEffect(() => {
     loadCategories()
@@ -171,16 +170,22 @@ export default function ParticipanteDashboard() {
   }, [db])
 
   useEffect(() => {
-    loadTeam()
-  }, [loadTeam])
+    if (user && db) {
+      loadTeam()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, db])
 
   useEffect(() => {
-    loadProject()
-  }, [loadProject])
+    if (team?.id && db) {
+      loadProject()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team?.id, db])
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
     if (!storage) {
-      throw new Error("Firebase Storage is not configured")
+      throw new Error(t.dashboard.participant.errors.storageNotConfigured)
     }
 
     setUploading(true)
@@ -198,11 +203,8 @@ export default function ParticipanteDashboard() {
     if (!db || !user) return
     if (!projectSubmissionsEnabled) {
       const { dismiss } = toast({
-        title: locale === "es" ? "Carga deshabilitada" : "Submissions disabled",
-        description:
-          locale === "es"
-            ? "La carga de proyectos esta deshabilitada por el administrador."
-            : "Project submissions are disabled by the admin.",
+        title: t.dashboard.participant.toasts.submissionsDisabled.title,
+        description: t.dashboard.participant.toasts.submissionsDisabled.description,
         variant: "destructive",
       })
       setTimeout(dismiss, 4000)
@@ -212,9 +214,8 @@ export default function ParticipanteDashboard() {
       !projectForm.title.trim() || !projectForm.description.trim() || !projectForm.repoUrl.trim()
     if (requiredMissing) {
       const { dismiss } = toast({
-        title: locale === "es" ? "Faltan campos" : "Missing fields",
-        description:
-          locale === "es" ? "Completa los campos obligatorios." : "Please fill in the required fields.",
+        title: t.dashboard.participant.toasts.missingFields.title,
+        description: t.dashboard.participant.toasts.missingFields.description,
         variant: "destructive",
       })
       setTimeout(dismiss, 4000)
@@ -222,9 +223,8 @@ export default function ParticipanteDashboard() {
     }
     if (!team?.id) {
       const { dismiss } = toast({
-        title: locale === "es" ? "Equipo requerido" : "Team required",
-        description:
-          locale === "es" ? "Necesitas un equipo para enviar el proyecto." : "You need a team to submit a project.",
+        title: t.dashboard.participant.toasts.teamRequired.title,
+        description: t.dashboard.participant.toasts.teamRequired.description,
         variant: "destructive",
       })
       setTimeout(dismiss, 4000)
@@ -269,24 +269,24 @@ export default function ParticipanteDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={["participant"]}>
-      <DashboardLayout title="Participant Dashboard">
+      <DashboardLayout title={t.dashboard.participant.title}>
         <div className="space-y-8">
           {/* Team Section */}
           <section>
-            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">My Team</h3>
+            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myTeam}</h3>
             {!hasTeam && user?.teamAssignmentStatus === "in_process" && (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixel font-bold mb-2">⏳ Estado: En Proceso</p>
+                <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.inProcess}</p>
                 <p className="text-brand-cyan text-sm mb-4">
-                  Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto o podrás unirte a uno existente.
+                  {t.dashboard.participant.teamStatus.inProcessDescription}
                 </p>
               </div>
             )}
             {!hasTeam && !user?.teamAssignmentStatus && (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixel font-bold mb-2">⚠️ You don't have a team yet</p>
+                <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.noTeam}</p>
                 <p className="text-brand-cyan text-sm mb-4">
-                  You are currently without a team. You can create a new team or join an existing one to start working on your project.
+                  {t.dashboard.participant.teamStatus.noTeamDescription}
                 </p>
               </div>
             )}
@@ -300,13 +300,13 @@ export default function ParticipanteDashboard() {
           {(projectSubmissionsEnabled || hasProjectContent) && (
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>
+              <h3 className="font-pixel text-2xl text-brand-yellow">{t.dashboard.participant.myProject}</h3>
             </div>
             <GlassCard>
               <div className="space-y-4">
                 <div>
                   <Label className="text-brand-cyan">
-                    Project Title <span className="text-red-500">*</span>
+                    {t.dashboard.participant.project.title} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
                   </Label>
                   <Input
                     value={projectForm.title}
@@ -319,7 +319,7 @@ export default function ParticipanteDashboard() {
 
                 <div>
                   <Label className="text-brand-cyan">
-                    Description <span className="text-red-500">*</span>
+                    {t.dashboard.participant.project.description} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
                   </Label>
                   <Textarea
                     value={projectForm.description}
@@ -332,25 +332,25 @@ export default function ParticipanteDashboard() {
 
                 <div>
                   <Label className="text-brand-cyan">
-                    Repository URL <span className="text-red-500">*</span>
+                    {t.dashboard.participant.project.repoUrl} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
                   </Label>
                   <Input
                     value={projectForm.repoUrl}
                     onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    placeholder="https://github.com/..."
+                    placeholder={t.dashboard.participant.project.repoPlaceholder}
                     required
                     disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
 
                 <div>
-                  <Label className="text-brand-cyan">Demo URL</Label>
+                  <Label className="text-brand-cyan">{t.dashboard.participant.project.demoUrl}</Label>
                   <Input
                     value={projectForm.demoUrl}
                     onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    placeholder="https://..."
+                    placeholder={t.dashboard.participant.project.demoPlaceholder}
                     disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
@@ -384,7 +384,7 @@ export default function ParticipanteDashboard() {
                         <video src={uploadedVideo} controls className="w-full max-h-64 rounded" />
                         {projectSubmissionsEnabled && (showProjectForm || !project) && (
                           <button onClick={() => setUploadedVideo("")} className="text-red-500 text-sm mt-2">
-                            Remove Video
+                            {t.dashboard.participant.project.removeVideo}
                           </button>
                         )}
                       </div>
@@ -394,7 +394,7 @@ export default function ParticipanteDashboard() {
 
                 {!projectSubmissionsEnabled && (
                   <p className="text-brand-orange text-xs font-pixel">
-                    Project submissions are disabled by admin
+                    {t.dashboard.participant.project.submissionsDisabled}
                   </p>
                 )}
 
@@ -418,7 +418,7 @@ export default function ParticipanteDashboard() {
                       <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                         <span>
                           <Upload size={16} className="mr-2" />
-                          {uploading ? "Uploading..." : "Upload Images"}
+                          {uploading ? t.dashboard.participant.project.uploading : t.dashboard.participant.project.uploadImages}
                         </span>
                       </PixelButton>
                     </label>
@@ -441,7 +441,7 @@ export default function ParticipanteDashboard() {
                       <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                         <span>
                           <Upload size={16} className="mr-2" />
-                          {uploading ? "Uploading..." : "Upload Video"}
+                          {uploading ? t.dashboard.participant.project.uploading : t.dashboard.participant.project.uploadVideo}
                         </span>
                       </PixelButton>
                     </label>
@@ -452,7 +452,7 @@ export default function ParticipanteDashboard() {
                       className="ml-auto px-6"
                       disabled={uploading || projectSubmissionsLoading || !projectSubmissionsEnabled}
                     >
-                      Submit Project
+                      {t.dashboard.participant.project.submit}
                     </PixelButton>
                   )}
                 </div>
@@ -460,12 +460,12 @@ export default function ParticipanteDashboard() {
                 {projectSubmissionsEnabled && project && !showProjectForm ? (
                   <div className="flex w-full justify-end gap-3">
                     <PixelButton onClick={() => setShowProjectForm(true)} className="min-w-[140px] px-4">
-                      Edit Project
+                      {t.dashboard.participant.project.edit}
                     </PixelButton>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <PixelButton variant="outline" className="min-w-[120px] px-4 text-red-500">
-                          Delete
+                          {t.dashboard.participant.project.delete}
                         </PixelButton>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
@@ -480,12 +480,12 @@ export default function ParticipanteDashboard() {
                         <AlertDialogFooter className="gap-3 items-center justify-center sm:flex-row">
                           <AlertDialogCancel asChild>
                             <PixelButton variant="outline" size="sm">
-                              Cancel
+                              {t.dashboard.participant.project.cancel}
                             </PixelButton>
                           </AlertDialogCancel>
                           <AlertDialogAction asChild>
                             <PixelButton onClick={deleteProject} size="sm" className="bg-red-600 text-white">
-                              Delete
+                              {t.dashboard.participant.project.delete}
                             </PixelButton>
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -497,14 +497,14 @@ export default function ParticipanteDashboard() {
                 {projectSubmissionsEnabled && project && showProjectForm ? (
                   <div className="flex gap-3">
                     <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
-                      Cancel
+                      {t.dashboard.participant.project.cancel}
                     </PixelButton>
                     <PixelButton
                       onClick={submitProject}
                       className="px-6"
                       disabled={uploading || projectSubmissionsLoading}
                     >
-                      Update Project
+                      {t.dashboard.participant.project.update}
                     </PixelButton>
                   </div>
                 ) : null}

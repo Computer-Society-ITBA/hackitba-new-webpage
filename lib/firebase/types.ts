@@ -38,6 +38,7 @@ export interface User {
   }
   createdAt?: Date
   updatedAt?: Date
+  emailVerified?: boolean
 }
 
 export interface Event {

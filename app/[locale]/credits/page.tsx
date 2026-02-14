@@ -41,7 +41,7 @@ export default async function CreditsPage({ params }: PageProps) {
             <div className="space-y-8">
               <div className="text-center border-b border-brand-cyan/20 pb-6">
                 <h1 className="font-pixel neon-glow-orange text-3xl md:text-4xl text-brand-yellow mb-4">
-                  {locale === "es" ? "Créditos" : "Credits"}
+                  {translations.credits.title}
                 </h1>
                 <p className="font-pixel text-sm">
                   {locale === "es"

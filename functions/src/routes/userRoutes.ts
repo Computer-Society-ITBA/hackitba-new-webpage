@@ -11,6 +11,7 @@ import {
   getPendingParticipants,
   verifyEmail,
   resendVerificationEmail,
+  changeEmail,
 } from "../controllers/userControllers";
 import {validateToken, requireAdmin} from "../middleware/authMiddleware";
 
@@ -22,6 +23,12 @@ router.get("/", validateToken, getUsers);
 
 // GET /api/users/verify-email (BEFORE dynamic routes)
 router.get("/verify-email", verifyEmail);
+
+// POST /api/users/resend-verification-email (BEFORE dynamic routes)
+router.post("/resend-verification-email", resendVerificationEmail);
+
+// POST /api/users/change-email (BEFORE dynamic routes)
+router.post("/change-email", changeEmail);
 
 // Admin-only routes (BEFORE dynamic routes)
 // GET /api/users/pending-participants
@@ -35,7 +42,6 @@ router.patch("/:id", validateToken, updateUser);
 
 // POST /api/users/register
 router.post("/register", register);
-router.post("/resend-verification-email", resendVerificationEmail);
 router.post("/register-event", validateToken, registerEvent);
 router.post("/login", login);
 router.post("/request-password-reset", requestPasswordReset);

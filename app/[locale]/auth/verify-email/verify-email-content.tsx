@@ -26,7 +26,7 @@ export function VerifyEmailContent() {
     const verifyEmail = async () => {
       if (!token) {
         setStatus("error")
-        setMessage("Token de verificación no encontrado. Por favor, verifica el link del email.")
+        setMessage(translations.verifyEmailPage.errors.tokenNotFound)
         return
       }
 
@@ -39,7 +39,7 @@ export function VerifyEmailContent() {
         if (response.ok) {
           setEmail(data.email)
           setStatus("success")
-          setMessage(data.message || "¡Email verificado exitosamente!")
+          setMessage(data.message || translations.verifyEmailPage.messages.success)
           
           // Redirigir al dashboard después de 3 segundos
           setTimeout(() => {
@@ -47,12 +47,12 @@ export function VerifyEmailContent() {
           }, 3000)
         } else {
           setStatus("error")
-          setMessage(data.error || "Error al verificar el email. Por favor, intenta de nuevo.")
+          setMessage(data.error || translations.verifyEmailPage.errors.verificationFailed)
         }
       } catch (error) {
         console.error("Verification error:", error)
         setStatus("error")
-        setMessage("Error al conectar con el servidor. Por favor, intenta de nuevo más tarde.")
+        setMessage(translations.verifyEmailPage.errors.serverError)
       }
     }
 
@@ -68,8 +68,8 @@ export function VerifyEmailContent() {
         <div className="p-8">
           {/* Header */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold mb-2">Verificación de Email</h1>
-            <p className="text-gray-400">Estamos verificando tu dirección de correo</p>
+            <h1 className="text-3xl font-bold mb-2">{translations.verifyEmailPage.pageTitle}</h1>
+            <p className="text-gray-400">{translations.verifyEmailPage.pageSubtitle}</p>
           </div>
 
           {/* Status Content */}
@@ -77,7 +77,7 @@ export function VerifyEmailContent() {
             {status === "loading" && (
               <>
                 <Loader className="w-12 h-12 animate-spin text-orange-500 mb-4" />
-                <p className="text-gray-300">Verificando tu email...</p>
+                <p className="text-gray-300">{translations.verifyEmailPage.verifying}</p>
               </>
             )}
 
@@ -93,7 +93,7 @@ export function VerifyEmailContent() {
                   </p>
                 )}
                 <p className="text-sm text-gray-400 text-center">
-                  Redirigiendo al dashboard en unos segundos...
+                  {translations.verifyEmailPage.redirecting}
                 </p>
               </>
             )}
@@ -113,15 +113,15 @@ export function VerifyEmailContent() {
             <Link href={`/${locale}`} className="w-full">
               <PixelButton variant="outline" className="w-full">
                 <Home className="w-4 h-4 mr-2" />
-                Volver al inicio
+                {translations.verifyEmailPage.backToHome}
               </PixelButton>
             </Link>
           </div>
 
           {/* Footer Links */}
           <div className="mt-6 text-center text-sm text-gray-400">
-            <p>¿Problemas? <Link href={`/${locale}/#faqs`} className="text-orange-500 hover:text-orange-400">
-              Contacta soporte
+            <p>{translations.verifyEmailPage.problems} <Link href={`/${locale}/#faqs`} className="text-orange-500 hover:text-orange-400">
+              {translations.verifyEmailPage.contactSupport}
             </Link></p>
           </div>
         </div>

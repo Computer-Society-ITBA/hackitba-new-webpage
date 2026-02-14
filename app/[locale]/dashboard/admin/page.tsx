@@ -17,10 +17,13 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload, Users as UsersIcon } from "lucide-react"
 import * as LucideIcons from "lucide-react"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function AdminDashboard() {
   const params = useParams()
-  const locale = (params?.locale as string) || "en"
+  const locale = (params?.locale as Locale) || "en"
+  const translations = getTranslations(locale)
   const db = getDbClient()
   const storage = getStorageClient()
   const auth = getAuthClient()
@@ -113,7 +116,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating project submissions setting:", error)
       setProjectSubmissionsEnabled(!nextValue)
-      alert("No se pudo actualizar la configuracion de proyectos")
+      alert(translations.admin.projectSubmissions.updateError)
     }
   }
 
@@ -130,7 +133,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating signup setting:", error)
       setSignupEnabled(!nextValue)
-      alert("No se pudo actualizar la configuracion de inscripcion")
+      alert(translations.admin.signup.updateError)
     }
   }
 
@@ -179,7 +182,7 @@ export default function AdminDashboard() {
 
   const approveParticipant = async (userId: string, teamId: string) => {
     if (!teamId) {
-      alert("Por favor selecciona un equipo")
+      alert(translations.admin.pendingParticipants.selectTeamError)
       return
     }
 
@@ -203,7 +206,7 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        alert("Participante aprobado y asignado exitosamente")
+        alert(translations.admin.pendingParticipants.approveSuccess)
         loadPendingParticipants()
       } else {
         const error = await response.json()
@@ -211,14 +214,14 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error approving participant:", error)
-      alert("Error al aprobar participante")
+      alert(translations.admin.pendingParticipants.approveError)
     } finally {
       setProcessing(null)
     }
   }
 
   const rejectParticipant = async (userId: string) => {
-    const reason = prompt("Razón del rechazo (opcional):")
+    const reason = prompt(translations.admin.pendingParticipants.rejectPrompt)
     
     setProcessing(userId)
     try {
@@ -240,7 +243,7 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        alert("Participante rechazado")
+        alert(translations.admin.pendingParticipants.rejectSuccess)
         loadPendingParticipants()
       } else {
         const error = await response.json()
@@ -248,7 +251,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error rejecting participant:", error)
-      alert("Error al rechazar participante")
+      alert(translations.admin.pendingParticipants.rejectError)
     } finally {
       setProcessing(null)
     }
@@ -262,18 +265,18 @@ export default function AdminDashboard() {
 
   const createNewTeam = async () => {
     if (!newTeamForm.name || newTeamForm.name.trim().length < 3) {
-      alert("El nombre debe tener al menos 3 caracteres")
+      alert(translations.admin.createTeam.nameLengthError)
       return
     }
 
     if (!newTeamForm.category) {
-      alert("Debe seleccionar una categoría")
+      alert(translations.admin.createTeam.categoryRequired)
       return
     }
 
     const categoryIndex = categories.findIndex((category) => category.id === newTeamForm.category)
     if (categoryIndex === -1) {
-      alert("Categoría inválida")
+      alert(translations.admin.createTeam.invalidCategory)
       return
     }
 
@@ -281,7 +284,7 @@ export default function AdminDashboard() {
     try {
       const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) {
-        alert("No se pudo validar la sesión")
+        alert(translations.admin.createTeam.sessionError)
         return
       }
 
@@ -296,7 +299,7 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({
           name: newTeamForm.name.trim(),
-          tell_why: "Equipo creado por administrador",
+          tell_why: translations.admin.createTeam.defaultReason,
           category_1: categoryIndex,
           category_2: null,
           category_3: null,
@@ -306,7 +309,7 @@ export default function AdminDashboard() {
       if (response.ok) {
         const newTeam = await response.json()
         setShowCreateTeamModal(false)
-        alert(`Equipo "${newTeamForm.name}" creado exitosamente`)
+        alert(`${translations.admin.createTeam.create} "${newTeamForm.name}" ${translations.admin.createTeam.createSuccess}`)
         
         // Recargar equipos
         await loadTeams()
@@ -321,7 +324,7 @@ export default function AdminDashboard() {
           }, 500)
         }
       } else {
-        let errorMessage = "Error al crear equipo"
+        let errorMessage = translations.admin.createTeam.createError
         try {
           const error = await response.json()
           errorMessage = error.error || errorMessage
@@ -335,7 +338,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error creating team:", error)
-      alert("Error al crear equipo")
+      alert(translations.admin.createTeam.createError)
     } finally {
       setProcessing(null)
     }
@@ -407,13 +410,13 @@ export default function AdminDashboard() {
         <div className="space-y-8">
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Project Submissions</h3>
+              <h3 className="font-pixel text-2xl text-brand-yellow">{translations.admin.projectSubmissions.title}</h3>
             </div>
             <GlassCard>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-brand-cyan font-pixel text-sm">Subida de proyectos</p>
-                  <p className="text-brand-cyan/60 text-xs">Habilita o deshabilita el envio de proyectos</p>
+                  <p className="text-brand-cyan font-pixel text-sm">{translations.admin.projectSubmissions.label}</p>
+                  <p className="text-brand-cyan/60 text-xs">{translations.admin.projectSubmissions.description}</p>
                 </div>
                 <button
                   onClick={toggleProjectSubmissions}
@@ -423,15 +426,15 @@ export default function AdminDashboard() {
                       : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
                   }`}
                 >
-                  {projectSubmissionsEnabled ? "Enabled" : "Disabled"}
+                  {projectSubmissionsEnabled ? translations.admin.projectSubmissions.enabled : translations.admin.projectSubmissions.disabled}
                 </button>
               </div>
             </GlassCard>
             <GlassCard className="mt-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-brand-cyan font-pixel text-sm">Inscripcion</p>
-                  <p className="text-brand-cyan/60 text-xs">Habilita o deshabilita el registro de usuarios</p>
+                  <p className="text-brand-cyan font-pixel text-sm">{translations.admin.signup.label}</p>
+                  <p className="text-brand-cyan/60 text-xs">{translations.admin.signup.description}</p>
                 </div>
                 <button
                   onClick={toggleSignupEnabled}
@@ -441,7 +444,7 @@ export default function AdminDashboard() {
                       : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
                   }`}
                 >
-                  {signupEnabled ? "Enabled" : "Disabled"}
+                  {signupEnabled ? translations.admin.projectSubmissions.enabled : translations.admin.projectSubmissions.disabled}
                 </button>
               </div>
             </GlassCard>
@@ -451,21 +454,21 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <UsersIcon className="w-6 h-6 text-brand-orange" />
-                <h3 className="font-pixel text-2xl text-brand-yellow">Participantes Pendientes</h3>
+                <h3 className="font-pixel text-2xl text-brand-yellow">{translations.admin.pendingParticipants.title}</h3>
                 <span className="bg-brand-orange/20 text-brand-orange px-3 py-1 rounded-full text-sm font-pixel">
                   {pendingParticipants.length}
                 </span>
               </div>
               <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
                 <Plus size={16} className="mr-2" />
-                Crear Equipo
+                {translations.admin.pendingParticipants.createTeam}
               </PixelButton>
             </div>
 
             {pendingParticipants.length === 0 ? (
               <GlassCard>
                 <p className="text-brand-cyan/60 text-center py-8">
-                  No hay participantes pendientes de aprobación
+                  {translations.admin.pendingParticipants.noParticipants}
                 </p>
               </GlassCard>
             ) : (
@@ -491,7 +494,7 @@ export default function AdminDashboard() {
                           className="pixel-select bg-brand-navy/80 border border-brand-cyan/80 text-brand-cyan/80 rounded px-3 py-2"
                           disabled={processing === participant.id}
                         >
-                          <option value="">Seleccionar equipo...</option>
+                          <option value="">{translations.admin.pendingParticipants.selectTeam}</option>
                           {teams.map((team) => (
                             <option key={team.id} value={team.id}>
                               {team.name}
@@ -611,28 +614,28 @@ export default function AdminDashboard() {
         <Dialog open={showCreateTeamModal} onOpenChange={setShowCreateTeamModal}>
           <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
             <DialogHeader className="pb-2">
-              <DialogTitle className="font-pixel text-brand-yellow">Crear Nuevo Equipo</DialogTitle>
+              <DialogTitle className="font-pixel text-brand-yellow">{translations.admin.createTeam.modalTitle}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-5 pt-2 pb-4">
               <div>
-                <Label className="text-brand-cyan">Nombre del Equipo</Label>
+                <Label className="text-brand-cyan">{translations.admin.createTeam.teamName}</Label>
                 <Input
                   value={newTeamForm.name}
                   onChange={(e) => setNewTeamForm({ ...newTeamForm, name: e.target.value })}
                   className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                  placeholder="Nombre del equipo..."
+                  placeholder={translations.admin.createTeam.teamNamePlaceholder}
                 />
               </div>
 
               <div>
-                <Label className="text-brand-cyan">Categoría</Label>
+                <Label className="text-brand-cyan">{translations.admin.createTeam.category}</Label>
                 <select
                   value={newTeamForm.category}
                   onChange={(e) => setNewTeamForm({ ...newTeamForm, category: e.target.value })}
                   className="pixel-select mt-2 w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2"
                 >
-                  <option value="">Seleccionar categoría...</option>
+                  <option value="">{translations.admin.createTeam.selectCategory}</option>
                   {categories.map((category) => {
                     const displayName = locale === "es" ? category.spanishName : category.englishName
                     return (
@@ -651,14 +654,14 @@ export default function AdminDashboard() {
                 variant="outline"
                 size="sm"
               >
-                Cancelar
+                {translations.admin.createTeam.cancel}
               </PixelButton>
               <PixelButton
                 onClick={createNewTeam}
                 disabled={!newTeamForm.name || !newTeamForm.category}
                 size="sm"
               >
-                Crear Equipo
+                {translations.admin.createTeam.create}
               </PixelButton>
             </DialogFooter>
           </DialogContent>

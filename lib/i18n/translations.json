@@ -164,7 +164,8 @@
           "invalidEmail": "Please enter a valid email address",
           "passwordTooShort": "Password must be at least 6 characters",
           "passwordMismatch": "Passwords do not match",
-          "createFailed": "Failed to create account"
+          "createFailed": "Failed to create account",
+          "signupDisabled": "Signup is disabled."
         }
       },
       "login": {
@@ -289,7 +290,15 @@
           "allFieldsRequired": "All personal data fields are required",
           "minAge": "You must be at least 18 years old",
           "companyRequired": "Company, Role and Photo are required",
-          "createFailed": "Failed to submit registration"
+          "createFailed": "Failed to submit registration",
+          "signupDisabled": "Signup is disabled.",
+          "userNotAuthenticated": "User not authenticated. Please register first.",
+          "storageNotConfigured": "Firebase Storage is not configured",
+          "noCategoriesAvailable": "No categories available",
+          "teamCodeRequired": "Team code is required"
+        },
+        "messages": {
+          "dataShareConsent": "By completing this form, you agree to share your data with the event organizers and sponsors."
         }
       },
       "createTeam": {
@@ -322,338 +331,698 @@
           "motivationRequired": "Please tell us why you want to participate",
           "motivationTooShort": "Motivation must be at least 20 characters",
           "teamNameExists": "Team name already exists. Please choose a different name.",
-          "createFailed": "Failed to create team"
+          "createFailed": "Failed to create team",
+          "signupDisabled": "Signup is disabled",
+          "noSession": "No active session found",
+          "userNotFound": "Could not determine user"
         }
       }
-    }
-  }
-},
-"es": {
-  "nav": {
-    "home": "Inicio",
-    "pastEditions": "Ediciones Pasadas",
-    "faqs": "FAQs",
-    "collaborate": "Colaborar",
-    "login": "Iniciar Sesión",
-    "dashboard": "Ir al Panel",
-    "signUp": "Inscribirse",
-    "about": "Sobre Nosotros",
-    "sponsors": "Sponsors",
-    "mentors": "Mentores",
-    "categories": "Categorías",
-    "beAMentor": "Ser mentor",
-    "beASponsor": "Ser sponsor"
-  },
-  "hero": {
-    "title": "HACKITBA",
-    "subtitle": "By Computer Society ITBA"
-  },
-  "stats": {
-    "categories": "Categorías",
-    "hoursOfCoding": "Horas\nde código",
-    "participants": "Participantes"
-  },
-  "event": {
-    "location": "Parque Patricios, CABA",
-    "dates": "27, 28 y 29 de Marzo",
-    "free": "Sin costo"
-  },
-  "timeline": {
-    "title": "Cronograma del Evento",
-    "beginning": {
-      "title": "El inicio",
-      "description": "Networking y mentoría desde el minuto uno. Conoce a tu equipo."
     },
-    "challenge": {
-      "title": "El desafío",
-      "description": "Desarrollo intenso. 36 horas de programación non-stop."
-    },
-    "closing": {
-      "title": "El cierre",
-      "description": "Solución desplegada, Pitch final y acceso a premios."
-    },
-    "future": {
-      "title": "El futuro",
-      "description": "Continuidad del proyecto y ofertas laborales de sponsors."
-    }
-  },
-  "about": {
-    "title": "Sobre Nosotros",
-    "history": "Nuestra Historia",
-    "historyText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "vision": "Nuestra Visión",
-    "visionText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "objective": "Nuestro Objetivo",
-    "objectiveText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-  },
-  "location": {
-    "title": "Ubicación",
-    "description": "ITBA Sede Distrito Tecnológico",
-    "address": "Lavardén 235, CABA, Argentina",
-    "coordinates": "Coordenadas: -34.633250, -58.451300"
-  },
-  "sponsors": {
-    "title": "Sponsors",
-    "endpoint": "v2026/sponsors"
-  },
-  "mentors": {
-    "title": "Mentores",
-    "endpoint": "v2026/mentors",
-    "modalTitle": "Detalles del Mentor",
-    "role": "Rol",
-    "company": "Empresa",
-    "categories": {
-      "entrepreneurship": "Emprendimiento",
-      "tech": "Tecnología",
-      "oratory": "Oratoria"
-    },
-    "noMentors": "No hay mentores disponibles en esta categoría",
-    "errorTitle": "Error al Cargar Mentores"
-  },
-  "categories": {
-    "title": "Categorías",
-    "endpoint": "v2026/categories",
-    "web3": "Web3",
-    "ia": "IA",
-    "gameDev": "GameDev",
-    "ai": "IA",
-    "healthTech": "HealthTech"
-  },
-  "weProvide": {
-    "title": "Nosotros te damos",
-    "swag": "Comida",
-    "space": "Espacio para cada equipo",
-    "mentors": "Mentores profesionales en el área",
-    "results": "Acceso a reclutadores y empresas",
-    "prizes": "Premios impresionantes"
-  },
-  "youBring": {
-    "title": "Vos traes",
-    "talent": "Tu talento",
-    "sleepingBag": "Tu bolsa de dormir",
-    "computer": "Tu computadora"
-  },
-  "signup": {
-    "endpoint": "v2026/sign-up",
-    "title": "Inscribite",
-    "participant": "Inscribite",
-    "sponsor": "Sponsor",
-    "mentor": "Mentor"
-  },
-  "faqs": {
-    "title": "FAQs",
-    "endpoint": "v2026/faqs",
-    "question": "Pregunta",
-    "answer": "Resumen de la respuesta"
-  },
-  "footer": {
-    "menu": "Nav Menu",
-    "madeWith": "Hecho con 🧡 por Computer Society ITBA",
-    "socials": "Nuestras redes",
-    "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados."
-  },
-  "countdown": {
-    "title": "Tiempo Restante",
-    "endpoint": "v2026/time-left",
-    "days": "Días",
-    "hours": "Horas",
-    "minutes": "Minutos",
-    "seconds": "Segundos",
-    "ended": "Competencia Finalizada"
-  },
-  "auth": {
-    "signup": {
-      "endpoint": "POST /api/auth/signup",
-      "title": "Crea tu Cuenta",
-      "sectionTitle": "Configuración de Cuenta",
-      "fields": {
-        "name": "Nombre",
-        "surname": "Apellido",
-        "email": "Email",
-        "password": "Contraseña",
-        "confirmPassword": "Confirmar Contraseña",
-        "emailPlaceholder": "tuemail@gmail.com",
-        "passwordPlaceholder": "••••••••"
+    "dashboard": {
+      "participant": {
+        "title": "Participant Dashboard",
+        "myTeam": "My Team",
+        "myProject": "My Project",
+        "categoryNotAssigned": "Category not assigned",
+        "teamStatus": {
+          "inProcess": "⏳ Status: In Process",
+          "inProcessDescription": "Your request is being reviewed by staff. We will assign you a team soon or you can join an existing one.",
+          "noTeam": "⚠️ You don't have a team yet",
+          "noTeamDescription": "You are currently without a team. You can create a new team or join an existing one, ask for the code."
+        },
+        "project": {
+          "title": "Project Title",
+          "description": "Description",
+          "repoUrl": "Repository URL",
+          "repoPlaceholder": "https://github.com/...",
+          "demoUrl": "Demo URL",
+          "demoPlaceholder": "https://...",
+          "uploadImages": "Upload Images",
+          "uploadVideo": "Upload Video",
+          "uploading": "Uploading...",
+          "removeVideo": "Remove Video",
+          "submit": "Submit Project",
+          "edit": "Edit Project",
+          "update": "Update Project",
+          "delete": "Delete",
+          "cancel": "Cancel",
+          "required": "*",
+          "submissionsDisabled": "Project submissions are disabled by admin"
+        },
+        "deleteDialog": {
+          "title": "Are you sure?",
+          "description": "This will permanently delete your project and cannot be undone."
+        },
+        "toasts": {
+          "submissionsDisabled": {
+            "title": "Submissions disabled",
+            "description": "Project submissions are disabled by the admin."
+          },
+          "missingFields": {
+            "title": "Missing fields",
+            "description": "Please fill in the required fields."
+          },
+          "teamRequired": {
+            "title": "Team required",
+            "description": "You need a team to submit a project."
+          }
+        },
+        "errors": {
+          "storageNotConfigured": "Firebase Storage is not configured"
+        }
       },
-      "validation": {
-        "minCharacters": "Mín 6 caracteres",
-        "required": "*"
+      "profile": {
+        "title": "My Profile",
+        "cvLink": "CV Link",
+        "foodPreference": "Food Preference",
+        "foodPlaceholder": "E.g: Vegetarian, Vegan, Gluten-free...",
+        "edit": "Edit Profile",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "toasts": {
+          "updated": {
+            "title": "Profile updated",
+            "description": "Your profile has been saved successfully."
+          },
+          "error": {
+            "title": "Error",
+            "description": "Could not save profile."
+          }
+        }
       },
-      "buttons": {
-        "creating": "CREANDO CUENTA...",
-        "create": "CREAR CUENTA"
-      },
-      "footer": {
-        "alreadyRegistered": "¿Ya estás registrado?",
-        "login": "Iniciar Sesión"
-      },
-      "loading": "Estableciendo Protocolo de Equipo...",
-      "errors": {
-        "fillAllFields": "Por favor completa todos los campos",
-        "invalidEmail": "Por favor ingresa un email válido",
-        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
-        "passwordMismatch": "Las contraseñas no coinciden",
-        "createFailed": "Fallo al crear la cuenta"
+      "settings": {
+        "title": "Settings",
+        "comingSoon": "Settings page - Coming soon"
       }
     },
-    "login": {
-      "title": "Iniciar Sesión",
-      "endpoint": "POST /auth/login",
-      "fields": {
-        "email": "Email",
-        "password": "Contraseña",
-        "emailPlaceholder": "tuemail@gmail.com",
-        "passwordPlaceholder": "••••••••"
-      },
-      "buttons": {
-        "loggingIn": "Iniciando sesión...",
-        "login": "Iniciar Sesión"
-      },
-      "footer": {
-        "noAccount": "¿No tienes cuenta?",
-        "signUp": "Registrarse"
-      },
-      "errors": {
-        "firebaseNotConfigured": "Firebase Auth no está configurado",
-        "loginFailed": "Fallo al iniciar sesión"
-      }
+    "credits": {
+      "title": "Credits",
+      "back": "Back"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "backToHome": "Back to home"
     },
     "verifyEmail": {
-      "endpoint": "GET /auth/verify-email",
-      "title": "Verificación de Email",
-      "verifying": "Verificando tu email...",
-      "success": "¡Email verificado exitosamente!",
-      "error": "Error de verificación",
-      "redirecting": "Redirigiendo a completar perfil...",
+      "title": "Verify Your Email",
+      "sentTo": "Verification email sent to:",
+      "change": "Change",
+      "newEmailPlaceholder": "New email",
+      "resend": "Resend",
+      "cancel": "Cancel",
+      "nextSteps": "Next steps:",
+      "step1": "Open your email client",
+      "step2": "Find the verification email",
+      "step3": "Click the confirmation link",
+      "sending": "Sending...",
+      "resendEmail": "Resend Email",
+      "alreadyVerified": "Already verified (reload)",
+      "didntReceive": "Didn't receive the email?",
+      "errors": {
+        "invalidEmail": "Please enter a valid email",
+        "changeFailed": "Failed to change email. Please try again."
+      },
+      "messages": {
+        "emailSent": "Verification email sent to your new address!"
+      }
+    },
+    "verifyEmailPage": {
+      "loading": "Loading...",
+      "verifying": "Verifying your email...",
+      "pageTitle": "Email Verification",
+      "pageSubtitle": "We are verifying your email address",
+      "backToHome": "Back to home",
+      "contactSupport": "Contact support",
+      "problems": "Problems?",
+      "redirecting": "Redirecting to dashboard in a few seconds...",
+      "errors": {
+        "tokenNotFound": "Verification token not found. Please check the email link.",
+        "verificationFailed": "Error verifying email. Please try again.",
+        "serverError": "Error connecting to server. Please try again later."
+      },
+      "messages": {
+        "success": "Email verified successfully!"
+      }
+    },
+    "admin": {
+      "projectSubmissions": {
+        "title": "Project Submissions",
+        "label": "Project Submissions",
+        "description": "Enable or disable project submissions",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "updateError": "Could not update project submissions settings"
+      },
+      "signup": {
+        "label": "Registration",
+        "description": "Enable or disable user registration",
+        "updateError": "Could not update registration settings"
+      },
+      "pendingParticipants": {
+        "title": "Pending Participants",
+        "createTeam": "Create Team",
+        "noParticipants": "No pending participants for approval",
+        "selectTeam": "Select team...",
+        "selectTeamError": "Please select a team",
+        "approveSuccess": "Participant approved and assigned successfully",
+        "approveError": "Error approving participant",
+        "rejectPrompt": "Rejection reason (optional):",
+        "rejectSuccess": "Participant rejected",
+        "rejectError": "Error rejecting participant"
+      },
+      "createTeam": {
+        "modalTitle": "Create New Team",
+        "teamName": "Team Name",
+        "teamNamePlaceholder": "Team name...",
+        "category": "Category",
+        "selectCategory": "Select category...",
+        "cancel": "Cancel",
+        "create": "Create Team",
+        "nameLengthError": "Name must be at least 3 characters",
+        "categoryRequired": "Must select a category",
+        "invalidCategory": "Invalid category",
+        "sessionError": "Could not validate session",
+        "defaultReason": "Team created by administrator",
+        "createSuccess": "Team created successfully",
+        "createError": "Error creating team"
+      }
+    },
+    "judge": {
+      "title": "Jurado Dashboard",
+      "projectsToScore": "Projects to Score",
+      "myScores": "My Scores",
+      "scoreProject": "Score Project",
+      "scored": "Scored",
+      "viewRepository": "View Repository →",
+      "updateScore": "Update Score",
+      "comments": "Comments",
+      "addFeedback": "Add your feedback...",
+      "submitScore": "Submit Score",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "redirecting": "Redirecting..."
+  },
+  "es": {
+    "nav": {
+      "home": "Inicio",
+      "pastEditions": "Ediciones Pasadas",
+      "faqs": "FAQs",
+      "collaborate": "Colaborar",
+      "login": "Iniciar Sesión",
+      "dashboard": "Ir al Panel",
+      "signUp": "Inscribirse",
+      "about": "Sobre Nosotros",
+      "sponsors": "Sponsors",
+      "mentors": "Mentores",
+      "categories": "Categorías",
+      "beAMentor": "Ser mentor",
+      "beASponsor": "Ser sponsor"
+    },
+    "hero": {
+      "title": "HACKITBA",
+      "subtitle": "By Computer Society ITBA"
+    },
+    "stats": {
+      "categories": "Categorías",
+      "hoursOfCoding": "Horas\nde código",
+      "participants": "Participantes"
+    },
+    "event": {
+      "location": "Parque Patricios, CABA",
+      "dates": "27, 28 y 29 de Marzo",
+      "free": "Sin costo"
+    },
+    "timeline": {
+      "title": "Cronograma del Evento",
+      "beginning": {
+        "title": "El inicio",
+        "description": "Networking y mentoría desde el minuto uno. Conoce a tu equipo."
+      },
+      "challenge": {
+        "title": "El desafío",
+        "description": "Desarrollo intenso. 36 horas de programación non-stop."
+      },
+      "closing": {
+        "title": "El cierre",
+        "description": "Solución desplegada, Pitch final y acceso a premios."
+      },
+      "future": {
+        "title": "El futuro",
+        "description": "Continuidad del proyecto y ofertas laborales de sponsors."
+      }
+    },
+    "about": {
+      "title": "Sobre Nosotros",
+      "history": "Nuestra Historia",
+      "historyText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "vision": "Nuestra Visión",
+      "visionText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "objective": "Nuestro Objetivo",
+      "objectiveText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+    },
+    "location": {
+      "title": "Ubicación",
+      "description": "ITBA Sede Distrito Tecnológico",
+      "address": "Lavardén 235, CABA, Argentina",
+      "coordinates": "Coordenadas: -34.633250, -58.451300"
+    },
+    "sponsors": {
+      "title": "Sponsors",
+      "endpoint": "v2026/sponsors"
+    },
+    "mentors": {
+      "title": "Mentores",
+      "endpoint": "v2026/mentors",
+      "modalTitle": "Detalles del Mentor",
+      "role": "Rol",
+      "company": "Empresa",
+      "categories": {
+        "entrepreneurship": "Emprendimiento",
+        "tech": "Tecnología",
+        "oratory": "Oratoria"
+      },
+      "noMentors": "No hay mentores disponibles en esta categoría",
+      "errorTitle": "Error al Cargar Mentores"
+    },
+    "categories": {
+      "title": "Categorías",
+      "endpoint": "v2026/categories",
+      "web3": "Web3",
+      "ia": "IA",
+      "gameDev": "GameDev",
+      "ai": "IA",
+      "healthTech": "HealthTech"
+    },
+    "weProvide": {
+      "title": "Nosotros te damos",
+      "swag": "Comida",
+      "space": "Espacio para cada equipo",
+      "mentors": "Mentores profesionales en el área",
+      "results": "Acceso a reclutadores y empresas",
+      "prizes": "Premios impresionantes"
+    },
+    "youBring": {
+      "title": "Vos traes",
+      "talent": "Tu talento",
+      "sleepingBag": "Tu bolsa de dormir",
+      "computer": "Tu computadora"
+    },
+    "signup": {
+      "endpoint": "v2026/sign-up",
+      "title": "Inscribite",
+      "participant": "Inscribite",
+      "sponsor": "Sponsor",
+      "mentor": "Mentor"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "endpoint": "v2026/faqs",
+      "question": "Pregunta",
+      "answer": "Resumen de la respuesta"
+    },
+    "footer": {
+      "menu": "Nav Menu",
+      "madeWith": "Hecho con 🧡 por Computer Society ITBA",
+      "socials": "Nuestras redes",
+      "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados."
+    },
+    "countdown": {
+      "title": "Tiempo Restante",
+      "endpoint": "v2026/time-left",
+      "days": "Días",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos",
+      "ended": "Competencia Finalizada"
+    },
+    "auth": {
+      "signup": {
+        "endpoint": "POST /api/auth/signup",
+        "title": "Crea tu Cuenta",
+        "sectionTitle": "Configuración de Cuenta",
+        "fields": {
+          "name": "Nombre",
+          "surname": "Apellido",
+          "email": "Email",
+          "password": "Contraseña",
+          "confirmPassword": "Confirmar Contraseña",
+          "emailPlaceholder": "tuemail@gmail.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "validation": {
+          "minCharacters": "Mín 6 caracteres",
+          "required": "*"
+        },
+        "buttons": {
+          "creating": "CREANDO CUENTA...",
+          "create": "CREAR CUENTA"
+        },
+        "footer": {
+          "alreadyRegistered": "¿Ya estás registrado?",
+          "login": "Iniciar Sesión"
+        },
+        "loading": "Estableciendo Protocolo de Equipo...",
+        "errors": {
+          "fillAllFields": "Por favor completa todos los campos",
+          "invalidEmail": "Por favor ingresa un email válido",
+          "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+          "passwordMismatch": "Las contraseñas no coinciden",
+          "createFailed": "Fallo al crear la cuenta",
+          "signupDisabled": "La inscripción está deshabilitada."
+        }
+      },
+      "login": {
+        "title": "Iniciar Sesión",
+        "endpoint": "POST /auth/login",
+        "fields": {
+          "email": "Email",
+          "password": "Contraseña",
+          "emailPlaceholder": "tuemail@gmail.com",
+          "passwordPlaceholder": "••••••••"
+        },
+        "buttons": {
+          "loggingIn": "Iniciando sesión...",
+          "login": "Iniciar Sesión"
+        },
+        "footer": {
+          "noAccount": "¿No tienes cuenta?",
+          "signUp": "Registrarse"
+        },
+        "errors": {
+          "firebaseNotConfigured": "Firebase Auth no está configurado",
+          "loginFailed": "Fallo al iniciar sesión"
+        }
+      },
+      "eventSignup": {
+        "endpoint": "POST /api/event/register",
+        "title": "Registro al Evento",
+        "roleTitle": {
+          "jurado": "Jurado",
+          "participante": "Participante",
+          "mentor": "Mentor"
+        },
+        "loading": "Cargando...",
+        "initializing": "Inicializando Terminal...",
+        "progress": {
+          "init": "Inicio",
+          "complete": "Completar"
+        },
+        "steps": {
+          "personalData": "Datos Personales",
+          "professionalData": "Datos Profesionales",
+          "contactSocial": "Contacto y Redes Sociales",
+          "teamStatus": "Estado del Equipo"
+        },
+        "fields": {
+          "dni": "DNI",
+          "university": "Universidad",
+          "career": "Carrera",
+          "age": "Edad",
+          "company": "Empresa",
+          "professionalRole": "Rol en la empresa",
+          "photo": "Foto",
+          "dietaryPreference": "Preferencia Alimenticia (Opcional)",
+          "dietaryPlaceholder": "Vegetariano, Celíaco, etc.",
+          "github": "Github",
+          "linkedin": "LinkedIn",
+          "instagram": "Instagram",
+          "twitter": "Twitter",
+          "cvLink": "Link a CV",
+          "cvPlaceholder": "https://...",
+          "teamCode": "Ingresar código o nombre de equipo",
+          "teamCodePlaceholder": "TEAM-XXXX"
+        },
+        "photo": {
+          "choose": "Elegir archivo",
+          "change": "Cambiar Foto",
+          "ready": "Listo"
+        },
+        "warnings": {
+          "agePreference": "Aviso: Prioridad dada a edades de 27 años o menos."
+        },
+        "team": {
+          "question": "¿Vas con equipo?",
+          "yesHave": "Sí, ya tengo",
+          "noTeam": "No tengo equipo",
+          "howToContinue": "¿Cómo quieres seguir?",
+          "goSolo": "Ir solo",
+          "createTeam": "Crear equipo",
+          "dragToReorder": "Arrastra para reordenar categorías",
+          "redirectNotice": "* Serás redirigido a la creación de equipo al finalizar."
+        },
+        "buttons": {
+          "back": "ATRÁS",
+          "nextStep": "SIGUIENTE PASO",
+          "finishRegistration": "FINALIZAR REGISTRO",
+          "uploading": "SUBIENDO..."
+        },
+        "footer": {
+          "needHelp": "¿Necesitas ayuda?",
+          "contactSupport": "Contactar Soporte"
+        },
+        "validation": {
+          "required": "*"
+        },
+        "errors": {
+          "dniRequired": "El DNI es requerido",
+          "dniNumeric": "El DNI debe ser numérico",
+          "allFieldsRequired": "Todos los campos de datos personales son requeridos",
+          "minAge": "Debes tener al menos 18 años",
+          "companyRequired": "Empresa, Rol y Foto son requeridos",
+          "createFailed": "Fallo al enviar el registro",
+          "signupDisabled": "La inscripción está deshabilitada.",
+          "userNotAuthenticated": "Usuario no autenticado. Por favor regístrate primero.",
+          "storageNotConfigured": "Firebase Storage no está configurado",
+          "noCategoriesAvailable": "No hay categorías disponibles",
+          "teamCodeRequired": "El código del equipo es obligatorio"
+        },
+        "messages": {
+          "dataShareConsent": "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
+        }
+      },
+      "createTeam": {
+        "endpoint": "POST /api/teams/create",
+        "title": "Crea tu Equipo",
+        "sectionTitle": "Configuración del Equipo",
+        "teamAdmin": "Administrador del Equipo",
+        "fields": {
+          "teamName": "Nombre del Equipo",
+          "teamNamePlaceholder": "Los Hackers",
+          "motivation": "Cuéntanos por qué quieres participar",
+          "motivationPlaceholder": "Queremos participar porque..."
+        },
+        "validation": {
+          "required": "*",
+          "minCharacters": "Mín 20 caracteres"
+        },
+        "categoryPreference": "Preferencia de Categoría (Arrastra para reordenar)",
+        "buttons": {
+          "creating": "CREANDO EQUIPO...",
+          "create": "CREAR EQUIPO"
+        },
+        "footer": {
+          "changedMind": "¿Cambiaste de opinión?",
+          "skipForNow": "Omitir por ahora"
+        },
+        "loading": "Estableciendo Protocolo de Equipo...",
+        "errors": {
+          "teamNameRequired": "El nombre del equipo es requerido",
+          "motivationRequired": "Por favor cuéntanos por qué quieres participar",
+          "motivationTooShort": "La motivación debe tener al menos 20 caracteres",
+          "teamNameExists": "El nombre del equipo ya existe. Por favor elige un nombre diferente.",
+          "noSession": "No se encontró una sesión activa",
+          "userNotFound": "No se pudo determinar el usuario",
+          "createFailed": "Fallo al crear el equipo",
+          "signupDisabled": "Las inscripciones están cerradas"
+        }
+      }
+    },
+    "dashboard": {
+      "participant": {
+        "title": "Panel de Participante",
+        "myTeam": "Mi Equipo",
+        "myProject": "Mi Proyecto",
+        "categoryNotAssigned": "Categoria no asignada",
+        "teamStatus": {
+          "inProcess": "⏳ Estado: En Proceso",
+          "inProcessDescription": "Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto o podrás unirte a uno existente.",
+          "noTeam": "⚠️ No tienes equipo aún",
+          "noTeamDescription": "Actualmente estás sin equipo. Puedes crear un nuevo equipo o unirte a uno existente, pide el código."
+        },
+        "project": {
+          "title": "Título del Proyecto",
+          "description": "Descripción",
+          "repoUrl": "URL del Repositorio",
+          "repoPlaceholder": "https://github.com/...",
+          "demoUrl": "URL de Demo",
+          "demoPlaceholder": "https://...",
+          "uploadImages": "Subir Imágenes",
+          "uploadVideo": "Subir Video",
+          "uploading": "Subiendo...",
+          "removeVideo": "Eliminar Video",
+          "submit": "Enviar Proyecto",
+          "edit": "Editar Proyecto",
+          "update": "Actualizar Proyecto",
+          "delete": "Eliminar",
+          "cancel": "Cancelar",
+          "required": "*",
+          "submissionsDisabled": "La carga de proyectos está deshabilitada por el administrador"
+        },
+        "deleteDialog": {
+          "title": "¿Estás seguro?",
+          "description": "Esta acción eliminará el proyecto de forma permanente y no se puede deshacer."
+        },
+        "toasts": {
+          "submissionsDisabled": {
+            "title": "Carga deshabilitada",
+            "description": "La carga de proyectos está deshabilitada por el administrador."
+          },
+          "missingFields": {
+            "title": "Faltan campos",
+            "description": "Completa los campos obligatorios."
+          },
+          "teamRequired": {
+            "title": "Equipo requerido",
+            "description": "Necesitas un equipo para enviar el proyecto."
+          }
+        },
+        "errors": {
+          "storageNotConfigured": "Firebase Storage no está configurado"
+        }
+      },
+      "profile": {
+        "title": "Mi Perfil",
+        "cvLink": "Link CV",
+        "foodPreference": "Preferencia Alimenticia",
+        "foodPlaceholder": "Ej: Vegetariano, Vegano, Sin gluten...",
+        "edit": "Editar Perfil",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "toasts": {
+          "updated": {
+            "title": "Perfil actualizado",
+            "description": "Tu perfil se ha guardado correctamente."
+          },
+          "error": {
+            "title": "Error",
+            "description": "No se pudo guardar el perfil."
+          }
+        }
+      },
+      "settings": {
+        "title": "Configuración",
+        "comingSoon": "Página de configuración - Próximamente"
+      }
+    },
+    "credits": {
+      "title": "Créditos",
+      "back": "Volver"
+    },
+    "notFound": {
+      "title": "Página no encontrada",
       "backToHome": "Volver al inicio"
     },
-    "verifyEmailRequired": {
-      "endpoint": "GET /auth/verify-email-required",
+    "verifyEmail": {
       "title": "Confirma tu Email",
-      "subtitle": "Necesitamos que confirmes tu dirección de email para continuar",
       "sentTo": "Email enviado a:",
+      "change": "Cambiar",
+      "newEmailPlaceholder": "Nuevo email",
+      "resend": "Reenviar",
+      "cancel": "Cancelar",
       "nextSteps": "Próximos pasos:",
       "step1": "Abre tu cliente de email",
       "step2": "Busca el email de verificación",
       "step3": "Haz clic en el link de confirmación",
-      "resend": "Reenviar Email",
       "sending": "Enviando...",
+      "resendEmail": "Reenviar Email",
       "alreadyVerified": "Ya confirmé (recargar)",
-      "notReceived": "¿No recibiste el email?",
-      "checkSpam": "Revisa tu carpeta de spam o espera unos minutos"
-    },
-    "eventSignup": {
-      "endpoint": "POST /api/event/register",
-      "title": "Registro al Evento",
-      "roleTitle": {
-        "jurado": "Jurado",
-        "participante": "Participante",
-        "mentor": "Mentor"
+      "didntReceive": "¿No recibiste el email?",
+      "errors": {
+        "invalidEmail": "Por favor ingresa un email válido",
+        "changeFailed": "Error al cambiar email"
       },
+      "messages": {
+        "emailSent": "Email de verificación enviado a tu nueva dirección!"
+      }
+    },
+    "verifyEmailPage": {
       "loading": "Cargando...",
-      "initializing": "Inicializando Terminal...",
-      "progress": {
-        "init": "Inicio",
-        "complete": "Completar"
-      },
-      "steps": {
-        "personalData": "Datos Personales",
-        "professionalData": "Datos Profesionales",
-        "contactSocial": "Contacto y Redes Sociales",
-        "teamStatus": "Estado del Equipo"
-      },
-      "fields": {
-        "dni": "DNI",
-        "university": "Universidad",
-        "career": "Carrera",
-        "age": "Edad",
-        "company": "Empresa",
-        "professionalRole": "Rol en la empresa",
-        "photo": "Foto",
-        "dietaryPreference": "Preferencia Alimenticia (Opcional)",
-        "dietaryPlaceholder": "Vegetariano, Celíaco, etc.",
-        "github": "Github",
-        "linkedin": "LinkedIn",
-        "instagram": "Instagram",
-        "twitter": "Twitter",
-        "cvLink": "Link a CV",
-        "cvPlaceholder": "https://...",
-        "teamCode": "Ingresar código o nombre de equipo",
-        "teamCodePlaceholder": "TEAM-XXXX"
-      },
-      "photo": {
-        "choose": "Elegir archivo",
-        "change": "Cambiar Foto",
-        "ready": "Listo"
-      },
-      "warnings": {
-        "agePreference": "Aviso: Prioridad dada a edades de 27 años o menos."
-      },
-      "team": {
-        "question": "¿Vas con equipo?",
-        "yesHave": "Sí, ya tengo",
-        "noTeam": "No tengo equipo",
-        "howToContinue": "¿Cómo quieres seguir?",
-        "goSolo": "Ir solo",
-        "createTeam": "Crear equipo",
-        "dragToReorder": "Arrastra para reordenar categorías",
-        "redirectNotice": "* Serás redirigido a la creación de equipo al finalizar."
-      },
-      "buttons": {
-        "back": "ATRÁS",
-        "nextStep": "SIGUIENTE PASO",
-        "finishRegistration": "FINALIZAR REGISTRO",
-        "uploading": "SUBIENDO..."
-      },
-      "footer": {
-        "needHelp": "¿Necesitas ayuda?",
-        "contactSupport": "Contactar Soporte"
-      },
-      "validation": {
-        "required": "*"
-      },
+      "verifying": "Verificando tu email...",
+      "pageTitle": "Verificación de Email",
+      "pageSubtitle": "Estamos verificando tu dirección de correo",
+      "backToHome": "Volver al inicio",
+      "contactSupport": "Contacta soporte",
+      "problems": "¿Problemas?",
+      "redirecting": "Redirigiendo al dashboard en unos segundos...",
       "errors": {
-        "dniRequired": "El DNI es requerido",
-        "dniNumeric": "El DNI debe ser numérico",
-        "allFieldsRequired": "Todos los campos de datos personales son requeridos",
-        "minAge": "Debes tener al menos 18 años",
-        "companyRequired": "Empresa, Rol y Foto son requeridos",
-        "createFailed": "Fallo al enviar el registro"
+        "tokenNotFound": "Token de verificación no encontrado. Por favor, verifica el link del email.",
+        "verificationFailed": "Error al verificar el email. Por favor, intenta de nuevo.",
+        "serverError": "Error al conectar con el servidor. Por favor, intenta de nuevo más tarde."
+      },
+      "messages": {
+        "success": "¡Email verificado exitosamente!"
       }
     },
-    "createTeam": {
-      "endpoint": "POST /api/teams/create",
-      "title": "Crea tu Equipo",
-      "sectionTitle": "Configuración del Equipo",
-      "teamAdmin": "Administrador del Equipo",
-      "fields": {
+    "admin": {
+      "projectSubmissions": {
+        "title": "Project Submissions",
+        "label": "Subida de proyectos",
+        "description": "Habilita o deshabilita el envio de proyectos",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "updateError": "No se pudo actualizar la configuracion de proyectos"
+      },
+      "signup": {
+        "label": "Inscripcion",
+        "description": "Habilita o deshabilita el registro de usuarios",
+        "updateError": "No se pudo actualizar la configuracion de inscripcion"
+      },
+      "pendingParticipants": {
+        "title": "Participantes Pendientes",
+        "createTeam": "Crear Equipo",
+        "noParticipants": "No hay participantes pendientes de aprobación",
+        "selectTeam": "Seleccionar equipo...",
+        "selectTeamError": "Por favor selecciona un equipo",
+        "approveSuccess": "Participante aprobado y asignado exitosamente",
+        "approveError": "Error al aprobar participante",
+        "rejectPrompt": "Razón del rechazo (opcional):",
+        "rejectSuccess": "Participante rechazado",
+        "rejectError": "Error al rechazar participante"
+      },
+      "createTeam": {
+        "modalTitle": "Crear Nuevo Equipo",
         "teamName": "Nombre del Equipo",
-        "teamNamePlaceholder": "Los Hackers",
-        "motivation": "Cuéntanos por qué quieres participar",
-        "motivationPlaceholder": "Queremos participar porque..."
-      },
-      "validation": {
-        "required": "*",
-        "minCharacters": "Mín 20 caracteres"
-      },
-      "categoryPreference": "Preferencia de Categoría (Arrastra para reordenar)",
-      "buttons": {
-        "creating": "CREANDO EQUIPO...",
-        "create": "CREAR EQUIPO"
-      },
-      "footer": {
-        "changedMind": "¿Cambiaste de opinión?",
-        "skipForNow": "Omitir por ahora"
-      },
-      "loading": "Estableciendo Protocolo de Equipo...",
-      "errors": {
-        "teamNameRequired": "El nombre del equipo es requerido",
-        "motivationRequired": "Por favor cuéntanos por qué quieres participar",
-        "motivationTooShort": "La motivación debe tener al menos 20 caracteres",
-        "teamNameExists": "El nombre del equipo ya existe. Por favor elige un nombre diferente.",
-        "createFailed": "Fallo al crear el equipo"
+        "teamNamePlaceholder": "Nombre del equipo...",
+        "category": "Categoría",
+        "selectCategory": "Seleccionar categoría...",
+        "cancel": "Cancelar",
+        "create": "Crear Equipo",
+        "nameLengthError": "El nombre debe tener al menos 3 caracteres",
+        "categoryRequired": "Debe seleccionar una categoría",
+        "invalidCategory": "Categoría inválida",
+        "sessionError": "No se pudo validar la sesión",
+        "defaultReason": "Equipo creado por administrador",
+        "createSuccess": "creado exitosamente",
+        "createError": "Error al crear equipo"
       }
-    }
+    },
+    "judge": {
+      "title": "Jurado Dashboard",
+      "projectsToScore": "Proyectos a Puntuar",
+      "myScores": "Mis Puntuaciones",
+      "scoreProject": "Puntuar Proyecto",
+      "scored": "Puntuado",
+      "viewRepository": "Ver Repositorio →",
+      "updateScore": "Actualizar Puntuación",
+      "comments": "Comentarios",
+      "addFeedback": "Agrega tu feedback...",
+      "submitScore": "Enviar Puntuación",
+      "cancel": "Cancelar",
+      "delete": "Eliminar"
+    },
+    "redirecting": "Redirigiendo..."
   }
-}
 }

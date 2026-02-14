@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { ChevronRight, Users, User } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { getAuthClient } from "@/lib/firebase/client-config"
+import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 
 interface CreateTeamPageProps {
@@ -41,6 +42,38 @@ function CreateTeamContent() {
 
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+    const [signupEnabled, setSignupEnabled] = useState(true)
+    const [signupLoading, setSignupLoading] = useState(true)
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const db = getDbClient()
+                if (!db) return
+
+                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data()
+                    setSignupEnabled(data?.signupEnabled !== false)
+                } else {
+                    setSignupEnabled(true)
+                }
+            } catch (err) {
+                console.error("Error loading signup setting:", err)
+                setSignupEnabled(true)
+            } finally {
+                setSignupLoading(false)
+            }
+        }
+
+        loadSettings()
+    }, [])
+
+    useEffect(() => {
+        if (!signupLoading && !signupEnabled) {
+            router.replace(`/${locale}/dashboard`)
+        }
+    }, [signupEnabled, signupLoading, router, locale])
 
     useEffect(() => {
 
@@ -52,7 +85,7 @@ function CreateTeamContent() {
                 const userId = currentUser?.uid || searchParams.get("userId")
 
                 if (!userId) {
-                    setError("No se pudo determinar el usuario")
+                    setError(translations.auth.createTeam.errors.userNotFound)
                     return
                 }
 
@@ -102,19 +135,24 @@ function CreateTeamContent() {
     const handleSubmit = async () => {
         setError("")
 
+        if (!signupEnabled) {
+            setError(translations.auth.createTeam.errors.signupDisabled)
+            return
+        }
+
         // Validation
         if (!formData.teamName) {
-            setError("Team name is required")
+            setError(translations.auth.createTeam.errors.teamNameRequired)
             return
         }
 
         if (!formData.motivation) {
-            setError("Please tell us why you want to participate")
+            setError(translations.auth.createTeam.errors.motivationRequired)
             return
         }
 
         if (formData.motivation.length < 20) {
-            setError("Motivation must be at least 20 characters")
+            setError(translations.auth.createTeam.errors.motivationTooShort)
             return
         }
 
@@ -127,7 +165,7 @@ function CreateTeamContent() {
             const userToken = await authClient?.currentUser?.getIdToken() || localStorage.getItem("userToken")
 
             if (!userToken) {
-                throw new Error("No se encontro una sesion activa")
+                throw new Error(translations.auth.createTeam.errors.noSession)
             }
             const teamsResponse = await fetch(`${apiUrl}/teams`, {
                 headers: {
@@ -139,7 +177,7 @@ function CreateTeamContent() {
             const existingTeams = teamsList.map((team: any) => team?.name).filter(Boolean)
 
             if (existingTeams.some((teamName: string) => teamName.toLowerCase() === formData.teamName.toLowerCase())) {
-                setError("Team name already exists. Please choose a different name.")
+                setError(translations.auth.createTeam.errors.teamNameExists)
                 setLoading(false)
                 return
             }
@@ -172,7 +210,7 @@ function CreateTeamContent() {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.error || "Failed to create team")
+                throw new Error(errorData.error || translations.auth.createTeam.errors.createFailed)
             }
 
             // Simulating API call
@@ -181,7 +219,7 @@ function CreateTeamContent() {
             // Success - redirect to dashboard
             router.push(`/${locale}/dashboard`)
         } catch (err: any) {
-            setError(err.message || "Failed to create team")
+            setError(err.message || translations.auth.createTeam.errors.createFailed)
         } finally {
             setLoading(false)
         }
@@ -287,7 +325,7 @@ function CreateTeamContent() {
                         <div className="mt-auto pt-8">
                             <PixelButton
                                 onClick={handleSubmit}
-                                disabled={loading}
+                                disabled={loading || !signupEnabled}
                                 className="w-full flex flex-row justify-between items-center"
                             >
                                 {loading ? (

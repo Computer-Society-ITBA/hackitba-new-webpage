@@ -230,7 +230,7 @@ function EventSignupContent() {
     const uploadPhotoToStorage = async (file: File) => {
         const storage = getStorageClient()
         if (!storage) {
-            throw new Error("Firebase Storage no está configurado")
+            throw new Error(translations.auth.eventSignup.errors.storageNotConfigured)
         }
 
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
@@ -248,7 +248,7 @@ function EventSignupContent() {
         setError("")
 
         if (!signupEnabled) {
-            setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+            setError(translations.auth.eventSignup.errors.signupDisabled)
             return
         }
 
@@ -278,6 +278,14 @@ function EventSignupContent() {
                     setError(translations.auth.eventSignup.errors.companyRequired)
                     return
                 }
+            }
+        }
+
+        // Validation for Step 3 (Team selection)
+        if (currentStep === 3) {
+            if (formData.hasTeam === "yes" && !formData.teamCode.trim()) {
+                setError(translations.auth.eventSignup.errors.teamCodeRequired)
+                return
             }
         }
 
@@ -317,16 +325,16 @@ function EventSignupContent() {
 
     const handleSubmit = async () => {
         if (!signupEnabled) {
-            setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+            setError(translations.auth.eventSignup.errors.signupDisabled)
             return
         }
         setLoading(true)
         try {
-            const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
-
-            if (!uid) {
-                throw new Error("User not authenticated. Please register first.")
+            if (!authUser?.id) {
+                throw new Error(translations.auth.eventSignup.errors.userNotAuthenticated)
             }
+
+            const uid = authUser.id
 
             // Get current user token from Firebase
             const auth = getAuth()
@@ -617,7 +625,7 @@ function EventSignupContent() {
                                                 })}
                                             </div>
                                         ) : (
-                                            <p className="text-red-400/60 text-xs">{"No categories available"}</p>
+                                            <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
                                         )}
                                     </div>
                                 ) : (
@@ -639,7 +647,7 @@ function EventSignupContent() {
     if (signupLoading || !signupEnabled) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">Loading...</div>
+                <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.auth.eventSignup.loading}</div>
             </div>
         )
     }
@@ -680,7 +688,7 @@ function EventSignupContent() {
                         {!signupLoading && !signupEnabled && (
                             <div className="mt-4 px-8 p-2 rounded bg-brand-orange/10 border border-brand-orange/30 animate-in zoom-in-95 duration-200">
                                 <p className="text-[10px] text-brand-orange font-pixel">
-                                    {locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled."}
+                                    {translations.auth.eventSignup.errors.signupDisabled}
                                 </p>
                             </div>
                         )}
@@ -693,9 +701,7 @@ function EventSignupContent() {
 
                         <div className="mt-4 px-8 p-3 rounded bg-brand-cyan/5 border border-brand-cyan/20">
                             <p className="text-brand-cyan/70 text-xs">
-                                {locale === "es" 
-                                    ? "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
-                                    : "By completing this form, you agree to share your data with the event organizers and sponsors."}
+                                {translations.auth.eventSignup.messages.dataShareConsent}
                             </p>
                         </div>
 

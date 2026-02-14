@@ -14,10 +14,12 @@ import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, updateDoc } from "firebase/firestore"
 import { toast } from "@/hooks/use-toast"
 import { Github, Linkedin, Instagram, Twitter, ExternalLink, Utensils } from "lucide-react"
+import { getTranslations } from "@/lib/i18n/get-translations"
 
 export default function ProfilePage() {
   const params = useParams()
   const locale = params.locale as Locale
+  const translations = getTranslations(locale)
   const { user } = useAuth()
   const db = getDbClient()
 
@@ -57,15 +59,15 @@ export default function ProfilePage() {
       })
 
       const { dismiss } = toast({
-        title: locale === "es" ? "Perfil actualizado" : "Profile updated",
-        description: locale === "es" ? "Tu perfil se ha guardado correctamente." : "Your profile has been saved successfully.",
+        title: translations.dashboard.profile.toasts.updated.title,
+        description: translations.dashboard.profile.toasts.updated.description,
       })
       setTimeout(dismiss, 3000)
       setShowProfileForm(false)
     } catch (error) {
       const { dismiss } = toast({
-        title: locale === "es" ? "Error" : "Error",
-        description: locale === "es" ? "No se pudo guardar el perfil." : "Could not save profile.",
+        title: translations.dashboard.profile.toasts.error.title,
+        description: translations.dashboard.profile.toasts.error.description,
         variant: "destructive",
       })
       setTimeout(dismiss, 4000)
@@ -79,7 +81,7 @@ export default function ProfilePage() {
       <DashboardLayout>
         <div className="space-y-6">
           <h1 className="text-3xl font-pixel text-brand-cyan neon-glow-cyan">
-            {locale === "es" ? "Mi Perfil" : "My Profile"}
+            {translations.dashboard.profile.title}
           </h1>
 
           <GlassCard>
@@ -140,7 +142,7 @@ export default function ProfilePage() {
 
               <div>
                 <Label className="text-brand-cyan text-xs font-pixel flex items-center gap-2">
-                  <ExternalLink className="w-3 h-3" /> {locale === "es" ? "Link CV" : "CV Link"}
+                  <ExternalLink className="w-3 h-3" /> {translations.dashboard.profile.cvLink}
                 </Label>
                 <Input
                   value={profileForm.link_cv}
@@ -153,13 +155,13 @@ export default function ProfilePage() {
 
               <div>
                 <Label className="text-brand-cyan text-xs font-pixel flex items-center gap-2">
-                  <Utensils className="w-3 h-3" /> {locale === "es" ? "Preferencia Alimenticia" : "Food Preference"}
+                  <Utensils className="w-3 h-3" /> {translations.dashboard.profile.foodPreference}
                 </Label>
                 <Input
                   value={profileForm.food_preference}
                   onChange={(e) => setProfileForm({ ...profileForm, food_preference: e.target.value })}
                   className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                  placeholder={locale === "es" ? "Ej: Vegetariano, Vegano, Sin gluten..." : "E.g: Vegetarian, Vegan, Gluten-free..."}
+                  placeholder={translations.dashboard.profile.foodPlaceholder}
                   disabled={!showProfileForm}
                 />
               </div>
@@ -167,7 +169,7 @@ export default function ProfilePage() {
               {!showProfileForm ? (
                 <div className="flex justify-end pt-4">
                   <PixelButton onClick={() => setShowProfileForm(true)} className="min-w-[140px] px-4">
-                    {locale === "es" ? "Editar Perfil" : "Edit Profile"}
+                    {translations.dashboard.profile.edit}
                   </PixelButton>
                 </div>
               ) : (
@@ -188,14 +190,14 @@ export default function ProfilePage() {
                     variant="outline"
                     disabled={savingProfile}
                   >
-                    {locale === "es" ? "Cancelar" : "Cancel"}
+                    {translations.dashboard.profile.cancel}
                   </PixelButton>
                   <PixelButton
                     onClick={saveProfile}
                     className="px-6"
                     disabled={savingProfile}
                   >
-                    {savingProfile ? (locale === "es" ? "Guardando..." : "Saving...") : (locale === "es" ? "Guardar" : "Save")}
+                    {savingProfile ? translations.dashboard.profile.saving : translations.dashboard.profile.save}
                   </PixelButton>
                 </div>
               )}
