@@ -55,14 +55,6 @@ export default function ParticipanteDashboard() {
     demoUrl: "",
   })
 
-  const [profileForm, setProfileForm] = useState({
-    company: "",
-    bio: "",
-    linkedin: "",
-    github: "",
-    twitter: "",
-  })
-
   const loadCategories = useCallback(async () => {
     if (!db) {
       return
@@ -154,19 +146,6 @@ export default function ParticipanteDashboard() {
       : "This will permanently delete your project and cannot be undone."
 
   useEffect(() => {
-    if (user) {
-      setOnboardingStep(user.onboardingStep || 0)
-      setProfileForm({
-        company: user.profile?.company || "",
-        bio: user.profile?.bio || "",
-        linkedin: user.profile?.linkedin || "",
-        github: user.profile?.github || "",
-        twitter: user.profile?.twitter || "",
-      })
-    }
-  }, [user])
-
-  useEffect(() => {
     loadCategories()
   }, [loadCategories])
 
@@ -213,21 +192,6 @@ export default function ParticipanteDashboard() {
     } finally {
       setUploading(false)
     }
-  }
-
-  const completeOnboarding = async () => {
-    if (!db || !user) return
-
-    await updateDoc(doc(db, "users", user.id), {
-      onboardingStep: 3,
-      profile: {
-        ...user.profile,
-        ...profileForm,
-      },
-      updatedAt: new Date(),
-    })
-
-    setOnboardingStep(3)
   }
 
   const submitProject = async () => {
