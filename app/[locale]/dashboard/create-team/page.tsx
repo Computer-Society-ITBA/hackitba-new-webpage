@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { ChevronRight, Users, User } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { getAuthClient } from "@/lib/firebase/client-config"
+import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
+import { doc, getDoc } from "firebase/firestore"
 
 
 interface CreateTeamPageProps {
@@ -41,6 +42,38 @@ function CreateTeamContent() {
 
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+    const [signupEnabled, setSignupEnabled] = useState(true)
+    const [signupLoading, setSignupLoading] = useState(true)
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const db = getDbClient()
+                if (!db) return
+                
+                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data()
+                    setSignupEnabled(data?.signupEnabled !== false)
+                } else {
+                    setSignupEnabled(true)
+                }
+            } catch (err) {
+                console.error("Error loading signup setting:", err)
+                setSignupEnabled(true)
+            } finally {
+                setSignupLoading(false)
+            }
+        }
+
+        loadSettings()
+    }, [])
+
+    useEffect(() => {
+        if (!signupLoading && !signupEnabled) {
+            router.replace(`/${locale}/dashboard`)
+        }
+    }, [signupEnabled, signupLoading, router, locale])
 
     useEffect(() => {
 
@@ -101,6 +134,11 @@ function CreateTeamContent() {
 
     const handleSubmit = async () => {
         setError("")
+
+        if (!signupEnabled) {
+            setError(locale === "es" ? "Las inscripciones están cerradas" : "Signup is disabled")
+            return
+        }
 
         // Validation
         if (!formData.teamName) {
@@ -287,7 +325,7 @@ function CreateTeamContent() {
                         <div className="mt-auto pt-8">
                             <PixelButton
                                 onClick={handleSubmit}
-                                disabled={loading}
+                                disabled={loading || !signupEnabled}
                                 className="w-full flex flex-row justify-between items-center"
                             >
                                 {loading ? (

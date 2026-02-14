@@ -171,11 +171,11 @@ export default function VerifyEmailRequiredPage() {
               {locale === "es" ? "Email enviado a:" : "Verification email sent to:"}
             </p>
             {!editingEmail ? (
-              <div className="flex justify-between items-center">
-                <p className="text-brand-orange font-pixel text-center flex-1">{user.email}</p>
+              <div className="flex flex-col gap-2">
+                <p className="text-brand-orange font-pixel">{user.email}</p>
                 <button
                   onClick={() => setEditingEmail(true)}
-                  className="text-xs text-brand-cyan hover:text-brand-orange ml-2 underline"
+                  className="text-xs text-brand-cyan hover:text-brand-orange underline text-left"
                 >
                   {locale === "es" ? "Cambiar" : "Change"}
                 </button>

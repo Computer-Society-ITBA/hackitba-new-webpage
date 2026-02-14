@@ -53,6 +53,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
   const [copied, setCopied] = useState(false)
+  const [signupEnabled, setSignupEnabled] = useState(true)
   const db = getDbClient()
   const router = useRouter()
   const params = useParams()
@@ -128,8 +129,30 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     loadCategories()
   }, [db])
 
+  useEffect(() => {
+    const loadSignupSettings = async () => {
+      if (!db) return
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+      }
+    }
+
+    loadSignupSettings()
+  }, [db])
+
   const handleRemoveMember = async (memberId: string) => {
     if (!team || !userTeamLabel) return
+    
+    if (!signupEnabled) {
+      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      return
+    }
     
     if (!confirm("¿Estás seguro de que quieres eliminar este miembro del equipo?")) {
       return
@@ -171,6 +194,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const handleSaveEdit = async () => {
     if (!editingMember || !userTeamLabel) return
+
+    if (!signupEnabled) {
+      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      return
+    }
 
     setSaving(true)
     try {
@@ -221,6 +249,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const handleSaveTeam = async () => {
     if (!team || !userTeamLabel) return
+
+    if (!signupEnabled) {
+      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      return
+    }
 
     setSaving(true)
     try {
@@ -286,6 +319,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   const handleRejoinTeam = async () => {
     if (!rejoinCode.trim()) {
       setRejoinError("Please enter a team code")
+      return
+    }
+
+    if (!signupEnabled) {
+      setRejoinError(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
       return
     }
 
@@ -376,6 +414,13 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
           </div>
           {!isInProcess && (
             <>
+              {!signupEnabled && (
+                <div className="w-full max-w-sm p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
+                  <p className="text-brand-orange text-xs font-pixel text-center">
+                    {locale === "es" ? "⚠️ Inscripciones cerradas - No se pueden hacer cambios al equipo" : "⚠️ Signup disabled - Team changes not allowed"}
+                  </p>
+                </div>
+              )}
               <div className="w-full max-w-sm space-y-4 pt-4">
                 <div className="space-y-2">
                   <p className="text-brand-cyan text-xs font-pixel uppercase">Join Existing Team</p>
@@ -386,13 +431,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                         setRejoinCode(e.target.value)
                         setRejoinError("")
                       }}
+                      disabled={!signupEnabled}
                       placeholder="Enter team code..."
                       className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
                       onKeyPress={(e) => e.key === "Enter" && handleRejoinTeam()}
                     />
                     <PixelButton 
                       onClick={handleRejoinTeam}
-                      disabled={saving || !rejoinCode.trim()}
+                      disabled={saving || !rejoinCode.trim() || !signupEnabled}
                       size="sm"
                     >
                       {saving ? "..." : "Join"}
@@ -409,6 +455,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                 </div>
                 <PixelButton 
               onClick={() => router.push(`/${locale}/dashboard/create-team`)}
+              disabled={!signupEnabled}
               className="w-full"
             >
               Create New Team
@@ -448,6 +495,13 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   return (
     <GlassCard>
       <div className="space-y-6">
+        {!signupEnabled && (
+          <div className="p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
+            <p className="text-brand-orange text-xs font-pixel text-center">
+              {locale === "es" ? "⚠️ Inscripciones cerradas - No se pueden hacer cambios al equipo" : "⚠️ Signup disabled - Team changes not allowed"}
+            </p>
+          </div>
+        )}
         <div className="flex items-center justify-between border-b border-brand-cyan/20 pb-4">
           <div className="flex items-center gap-3">
             <Users className="w-6 h-6 text-brand-cyan" />
@@ -476,8 +530,9 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             {isAdmin && (
               <button
                 onClick={handleEditTeam}
-                className="p-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors"
-                title="Edit team"
+                disabled={!signupEnabled}
+                className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
+                title={signupEnabled ? "Edit team" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -536,8 +591,9 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                   {isAdmin && !member.isAdmin && (
                     <button
                       onClick={() => handleRemoveMember(member.id)}
-                      className="p-2 rounded hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors"
-                      title="Remove member"
+                      disabled={!signupEnabled}
+                      className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-red-500/10 text-red-400 hover:text-red-300' : 'text-red-400/30 cursor-not-allowed'}`}
+                      title={signupEnabled ? "Remove member" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -587,7 +643,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             <div className="flex gap-3 pt-4">
               <PixelButton 
                 onClick={handleSaveEdit} 
-                disabled={saving}
+                disabled={saving || !signupEnabled}
                 className="flex-1"
               >
                 {saving ? "Saving..." : "Save Changes"}
@@ -629,7 +685,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             <div className="flex gap-3 pt-4">
               <PixelButton 
                 onClick={handleSaveTeam} 
-                disabled={saving}
+                disabled={saving || !signupEnabled}
                 className="flex-1"
               >
                 {saving ? "Saving..." : "Save Changes"}

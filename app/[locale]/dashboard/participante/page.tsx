@@ -286,7 +286,7 @@ export default function ParticipanteDashboard() {
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
                 <p className="text-brand-orange font-pixel font-bold mb-2">⚠️ You don't have a team yet</p>
                 <p className="text-brand-cyan text-sm mb-4">
-                  You are currently without a team. You can create a new team or join an existing one to start working on your project.
+                  You are currently without a team. You can create a new team or join an existing one, ask for the code.
                 </p>
               </div>
             )}
