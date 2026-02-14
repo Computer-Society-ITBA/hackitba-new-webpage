@@ -118,6 +118,13 @@ function EventSignupContent() {
         }
     }, [signupEnabled, signupLoading, router, locale])
 
+    // Redirect to signup if user is not authenticated
+    useEffect(() => {
+        if (!authLoading && !authUser) {
+            router.replace(`/${locale}/auth/signup`)
+        }
+    }, [authLoading, authUser, router, locale])
+
     useEffect(() => {
         // Fetch user's assigned role from authUser if available
         const fetchUserRole = async () => {
@@ -662,6 +669,14 @@ function EventSignupContent() {
                                 <p className="text-[10px] text-red-400 font-pixel">{error}</p>
                             </div>
                         )}
+
+                        <div className="mt-4 px-8 p-3 rounded bg-brand-cyan/5 border border-brand-cyan/20">
+                            <p className="text-brand-cyan/70 text-xs">
+                                {locale === "es" 
+                                    ? "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
+                                    : "By completing this form, you agree to share your data with the event organizers and sponsors."}
+                            </p>
+                        </div>
 
                         <div className="mt-auto pt-8 flex gap-4">
                             {currentStep > 1 && (

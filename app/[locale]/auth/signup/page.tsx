@@ -246,6 +246,14 @@ function SignupContent() {
               </div>
             )}
 
+            <div className="p-3 rounded bg-brand-cyan/5 border border-brand-cyan/20">
+              <p className="text-brand-cyan/70 text-xs">
+                {locale === "es" 
+                  ? "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
+                  : "By completing this form, you agree to share your data with the event organizers and sponsors."}
+              </p>
+            </div>
+
             <PixelButton type="submit" disabled={loading || !signupEnabled} className="w-full" size="lg">
               {loading ? translations.auth.signup.buttons.creating : translations.auth.signup.buttons.create}
             </PixelButton>
