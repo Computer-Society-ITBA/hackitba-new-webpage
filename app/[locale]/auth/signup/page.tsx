@@ -154,9 +154,9 @@ function SignupContent() {
       console.log("Waiting for user sync before redirecting...")
       await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Success - redirect to event signup
-      console.log("Redirecting to event signup...")
-      router.push(`/${locale}/auth/event-signup`)
+      // Success - redirect to verify email page
+      console.log("Redirecting to verify email page...")
+      router.push(`/${locale}/auth/verify-email-required`)
     } catch (err: any) {
       console.error("Registration error:", err)
       setError(err.message || translations.auth.signup.errors.createFailed)

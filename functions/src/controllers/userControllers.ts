@@ -546,3 +546,102 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
     return res.status(500).json({error: "Error al reenviar email de verificación"});
   }
 };
+
+/**
+ * Change user email and send verification
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const changeEmail = async (req: Request, res: Response) => {
+  try {
+    const {oldEmail, newEmail} = req.body;
+
+    if (!oldEmail || !newEmail) {
+      return res.status(400).json({error: "Both old and new email are required"});
+    }
+
+    if (oldEmail === newEmail) {
+      return res.status(400).json({error: "New email must be different from old email"});
+    }
+
+    const {generateVerificationToken, saveVerificationToken} = await import(
+      "../services/emailVerificationService.js"
+    );
+
+    const db = getHackitbaDb();
+
+    // Find user by old email
+    const usersSnapshot = await db.collection("users")
+      .where("email", "==", oldEmail)
+      .limit(1)
+      .get();
+
+    if (usersSnapshot.empty) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    // Check if new email is already registered
+    const existingEmail = await db.collection("users")
+      .where("email", "==", newEmail)
+      .limit(1)
+      .get();
+
+    if (!existingEmail.empty) {
+      return res.status(400).json({error: "El nuevo email ya está registrado"});
+    }
+
+    const userDoc = usersSnapshot.docs[0];
+    const userId = userDoc.id;
+
+    // Update email in Firebase Auth
+    try {
+      await admin.auth().updateUser(userId, {
+        email: newEmail,
+      });
+      logger.info(`Email updated in Firebase Auth for user: ${userId}`);
+    } catch (authError: any) {
+      logger.error("Error updating email in Firebase Auth:", authError);
+      if (authError.code === "auth/email-already-exists") {
+        return res.status(400).json({error: "El nuevo email ya está registrado en Firebase Auth"});
+      }
+      throw authError;
+    }
+
+    // Update email in Firestore
+    await db.collection("users").doc(userId).update({
+      email: newEmail,
+      emailVerified: false,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Generate new verification token
+    const verificationToken = generateVerificationToken();
+    const appUrl = process.env.APP_URL || "https://hackitba.com.ar";
+    const verificationLink = `${appUrl}/es/auth/verify-email?token=${verificationToken}`;
+
+    // Save verification token
+    try {
+      await saveVerificationToken(userId, newEmail, verificationToken);
+    } catch (tokenError) {
+      logger.error("Error saving verification token:", tokenError);
+      return res.status(500).json({error: "Error al generar token de verificación"});
+    }
+
+    // Send verification email to new email
+    try {
+      await sendEmailVerificationEmail(newEmail, verificationLink);
+    } catch (emailError) {
+      logger.error("Error sending verification email:", emailError);
+      return res.status(500).json({error: "Error al enviar email de verificación"});
+    }
+
+    return res.status(200).json({
+      message: "Email actualizado. Por favor verifica tu nuevo email.",
+      email: newEmail,
+    });
+  } catch (error) {
+    logger.error("Error changing email:", error);
+    return res.status(500).json({error: "Error al cambiar email"});
+  }
+};

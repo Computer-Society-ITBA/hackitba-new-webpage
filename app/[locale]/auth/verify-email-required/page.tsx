@@ -17,6 +17,8 @@ export default function VerifyEmailRequiredPage() {
   const [resendLoading, setResendLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState("")
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
@@ -60,6 +62,44 @@ export default function VerifyEmailRequiredPage() {
     } catch (err: any) {
       console.error("Resend error:", err)
       setError(err.message || "Failed to resend verification email. Please try again.")
+    } finally {
+      setResendLoading(false)
+    }
+  }
+
+  const handleResendWithNewEmail = async () => {
+    if (!newEmail || !newEmail.includes('@')) {
+      setError(locale === 'es' ? "Por favor ingresa un email válido" : "Please enter a valid email")
+      return
+    }
+
+    setResendLoading(true)
+    setError("")
+    setMessage("")
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://us-central1-webpage-36e40.cloudfunctions.net/api"
+      
+      // Call change-email endpoint to update email and send verification
+      const response = await fetch(`${apiUrl}/users/change-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldEmail: user.email, newEmail: newEmail })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to change email")
+      }
+
+      setMessage(locale === 'es' ? 
+        `Email actualizado a ${newEmail}. Por favor revisa tu bandeja de entrada para confirmar.` :
+        `Email changed to ${newEmail}. Please check your inbox to verify.`)
+      setEditingEmail(false)
+      setNewEmail("")
+    } catch (err: any) {
+      console.error("Change email error:", err)
+      setError(err.message || (locale === 'es' ? "Error al cambiar email" : "Failed to change email. Please try again."))
     } finally {
       setResendLoading(false)
     }
@@ -130,7 +170,45 @@ export default function VerifyEmailRequiredPage() {
             <p className="text-brand-cyan/70 text-sm mb-2">
               {locale === "es" ? "Email enviado a:" : "Verification email sent to:"}
             </p>
-            <p className="text-brand-orange font-pixel text-center">{user.email}</p>
+            {!editingEmail ? (
+              <div className="flex justify-between items-center">
+                <p className="text-brand-orange font-pixel text-center flex-1">{user.email}</p>
+                <button
+                  onClick={() => setEditingEmail(true)}
+                  className="text-xs text-brand-cyan hover:text-brand-orange ml-2 underline"
+                >
+                  {locale === "es" ? "Cambiar" : "Change"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder={locale === "es" ? "Nuevo email" : "New email"}
+                  className="w-full px-3 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan placeholder-brand-cyan/50 rounded text-sm focus:outline-none focus:border-brand-orange"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleResendWithNewEmail}
+                    disabled={resendLoading || !newEmail}
+                    className="flex-1 px-3 py-2 bg-brand-orange text-black font-pixel text-xs rounded hover:bg-brand-orange/80 disabled:opacity-50"
+                  >
+                    {locale === "es" ? "Reenviar" : "Resend"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingEmail(false)
+                      setNewEmail("")
+                    }}
+                    className="flex-1 px-3 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan font-pixel text-xs rounded hover:bg-brand-cyan/20"
+                  >
+                    {locale === "es" ? "Cancelar" : "Cancel"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Instructions */}
