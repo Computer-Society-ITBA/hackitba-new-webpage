@@ -9,6 +9,8 @@ import {
   requestPasswordReset,
   approveParticipantAndAssignTeam,
   getPendingParticipants,
+  verifyEmail,
+  resendVerificationEmail,
 } from "../controllers/userControllers";
 import {validateToken, requireAdmin} from "../middleware/authMiddleware";
 
@@ -17,6 +19,9 @@ const router = express.Router();
 
 // GET /api/users
 router.get("/", validateToken, getUsers);
+
+// GET /api/users/verify-email (BEFORE dynamic routes)
+router.get("/verify-email", verifyEmail);
 
 // Admin-only routes (BEFORE dynamic routes)
 // GET /api/users/pending-participants
@@ -30,6 +35,7 @@ router.patch("/:id", validateToken, updateUser);
 
 // POST /api/users/register
 router.post("/register", register);
+router.post("/resend-verification-email", resendVerificationEmail);
 router.post("/register-event", validateToken, registerEvent);
 router.post("/login", login);
 router.post("/request-password-reset", requestPasswordReset);

@@ -121,30 +121,44 @@ function SignupContent() {
       })
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || translations.auth.signup.errors.createFailed)
+        throw new Error(errorData.error || errorData.message || translations.auth.signup.errors.createFailed)
       }
 
       const data = await response.json()
+      console.log("Registration response:", data)
+      
       // Save uid to localStorage for event signup
       if (typeof window !== 'undefined') {
         localStorage.setItem('userUid', data.uid)
+        localStorage.setItem('userEmail', formData.email)
       }
 
       // Authenticate with Firebase to get an ID token
       const auth = getAuth()
+      let isAuthenticatedWithFirebase = false
       try {
+        console.log("Attempting Firebase sign-in...")
         const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password)
         const idToken = await userCredential.user.getIdToken()
-        localStorage.setItem('userToken', idToken)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userToken', idToken)
+        }
         console.log("User authenticated with Firebase")
+        isAuthenticatedWithFirebase = true
       } catch (authError) {
-        console.warn("Firebase auth error (non-critical):", authError)
-        // Continue anyway - we have the uid
+        console.warn("Firebase auth error (non-critical, will try again on next page):", authError)
+        // Continue anyway - we have the uid and can authenticate from event-signup page
       }
 
+      // Wait a moment for Firebase to sync user data, then redirect
+      console.log("Waiting for user sync before redirecting...")
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       // Success - redirect to event signup
+      console.log("Redirecting to event signup...")
       router.push(`/${locale}/auth/event-signup`)
     } catch (err: any) {
+      console.error("Registration error:", err)
       setError(err.message || translations.auth.signup.errors.createFailed)
     } finally {
       setLoading(false)

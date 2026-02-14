@@ -45,6 +45,7 @@ export const registerUser = async (userData: UserData): Promise<UserRecord> => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       role: role || "participant",
       onboardingStep: 1,
+      emailVerified: false,
     });
 
     logger.info(`User successfully registered: ${userRecord.uid}`);

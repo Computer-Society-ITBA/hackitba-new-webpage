@@ -17,7 +17,12 @@ import {
   sendPasswordResetEmail,
   sendTeamAssignmentAcceptedEmail,
   sendTeamAssignmentRejectedEmail,
+  sendEmailVerificationEmail,
 } from "../services/emailService";
+import {
+  generateVerificationToken,
+  saveVerificationToken,
+} from "../services/emailVerificationService";
 
 interface RegisterRequestBody {
   email: string;
@@ -47,6 +52,26 @@ export const register = async (
       surname: surname || "",
     });
 
+    // Generate verification token
+    const verificationToken = generateVerificationToken();
+    const appUrl = process.env.APP_URL || "https://hackitba.com.ar";
+    const verificationLink = `${appUrl}/es/auth/verify-email?token=${verificationToken}`;
+
+    // Save verification token
+    try {
+      await saveVerificationToken(result.uid, email, verificationToken);
+    } catch (tokenError) {
+      logger.error("Error saving verification token:", tokenError);
+    }
+
+    // Send email verification email
+    try {
+      await sendEmailVerificationEmail(email, verificationLink);
+    } catch (emailError) {
+      logger.error("Error sending verification email:", emailError);
+      // Don't fail the request if email fails
+    }
+
     // Send welcome email
     try {
       await sendWelcomeEmail(email, name);
@@ -56,7 +81,7 @@ export const register = async (
     }
 
     return res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully. Please verify your email.",
       uid: result.uid,
       email: result.email,
       token: result.token,
@@ -423,5 +448,101 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error("Error getting pending participants:", error);
     return res.status(500).json({error: "Error getting pending participants"});
+  }
+};
+/**
+ * Verify email with token
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const {token} = req.query;
+
+    if (!token || typeof token !== "string") {
+      return res.status(400).json({error: "Token de verificación requerido"});
+    }
+
+    const {verifyEmailToken, markTokenAsVerified} = await import(
+      "../services/emailVerificationService.js"
+    );
+
+    const tokenData = await verifyEmailToken(token);
+    if (!tokenData) {
+      return res.status(400).json({error: "Token inválido o expirado"});
+    }
+
+    await markTokenAsVerified(token, tokenData.userId);
+
+    return res.status(200).json({
+      message: "Email verificado exitosamente",
+      email: tokenData.email,
+    });
+  } catch (error) {
+    logger.error("Error verifying email:", error);
+    return res.status(500).json({error: "Error al verificar email"});
+  }
+};
+/**
+ * Resend email verification
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const resendVerificationEmail = async (req: Request, res: Response) => {
+  try {
+    const {email} = req.body;
+
+    if (!email) {
+      return res.status(400).json({error: "Email requerido"});
+    }
+
+    const {generateVerificationToken, saveVerificationToken} = await import(
+      "../services/emailVerificationService.js"
+    );
+
+    // Find user by email
+    const db = getHackitbaDb();
+    const usersSnapshot = await db.collection("users")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
+
+    if (usersSnapshot.empty) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const userDoc = usersSnapshot.docs[0];
+    const userId = userDoc.id;
+
+    // Generate new verification token
+    const verificationToken = generateVerificationToken();
+    const appUrl = process.env.APP_URL || "https://hackitba.com.ar";
+    const verificationLink = `${appUrl}/es/auth/verify-email?token=${verificationToken}`;
+
+    // Save verification token
+    try {
+      await saveVerificationToken(userId, email, verificationToken);
+    } catch (tokenError) {
+      logger.error("Error saving verification token:", tokenError);
+      return res.status(500).json({error: "Error al generar token de verificación"});
+    }
+
+    // Send email
+    try {
+      await sendEmailVerificationEmail(email, verificationLink);
+    } catch (emailError) {
+      logger.error("Error sending verification email:", emailError);
+      return res.status(500).json({error: "Error al enviar email de verificación"});
+    }
+
+    return res.status(200).json({
+      message: "Email de verificación reenviado",
+      email: email,
+    });
+  } catch (error) {
+    logger.error("Error resending verification email:", error);
+    return res.status(500).json({error: "Error al reenviar email de verificación"});
   }
 };

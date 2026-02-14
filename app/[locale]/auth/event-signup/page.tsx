@@ -43,12 +43,33 @@ function EventSignupContent() {
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
     const [photoFile, setPhotoFile] = useState<File | null>(null)
 
-    // Check if user already completed onboarding
+    // Refresh user data when component mounts
     useEffect(() => {
         if (!authLoading && authUser) {
+            console.log("Refreshing user data at event signup page...")
+            refreshUser()
+        }
+    }, []) // Empty dependency array - only run once on mount
+
+    // Check email verification and onboarding status
+    useEffect(() => {
+        if (!authLoading && authUser) {
+            console.log("Event signup - User:", authUser?.email)
+            console.log("Event signup - Email verified:", authUser?.emailVerified)
+            console.log("Event signup - Onboarding step:", authUser?.onboardingStep)
+            
+            // Check if email is verified
+            if (!authUser.emailVerified) {
+                console.log("Email not verified, redirecting to verification page")
+                router.replace(`/${locale}/auth/verify-email-required`)
+                return
+            }
+            
             const onboardingStep = authUser.onboardingStep || 0
+            console.log("Event signup - User onboarding step:", onboardingStep, "User:", authUser?.email)
             if (onboardingStep >= 2) {
                 // Already completed event signup, redirect to dashboard
+                console.log("User already completed event signup, redirecting to dashboard")
                 router.replace(`/${locale}/dashboard`)
             }
         }

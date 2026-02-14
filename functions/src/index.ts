@@ -16,8 +16,22 @@ admin.initializeApp();
 // Initialize app
 const app = express();
 
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://hackitba.com",
+    "https://hackitba.com.ar",
+    "https://*.vercel.app",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 // Middleware
-app.use(cors({origin: true})); // Enable CORS for all origins
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
