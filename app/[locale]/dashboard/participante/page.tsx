@@ -89,7 +89,6 @@ export default function ParticipanteDashboard() {
     if (!teamDoc.exists()) return
 
     const teamData = teamDoc.data() as any
-    setTeam({ id: teamDoc.id, ...teamData })
 
     const projectData = teamData.project
     if (!projectData) {
@@ -171,12 +170,18 @@ export default function ParticipanteDashboard() {
   }, [db])
 
   useEffect(() => {
-    loadTeam()
-  }, [loadTeam])
+    if (user && db) {
+      loadTeam()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, db])
 
   useEffect(() => {
-    loadProject()
-  }, [loadProject])
+    if (team?.id && db) {
+      loadProject()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team?.id, db])
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
     if (!storage) {
