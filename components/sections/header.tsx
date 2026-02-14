@@ -54,7 +54,6 @@ export function Header({ translations, locale }: HeaderProps) {
   }, [])
 
   const navLinks = [
-    { href: `/${locale}#past-editions`, label: translations.nav.pastEditions },
     { href: `/${locale}#faqs`, label: translations.nav.faqs },
     { href: `/${locale}#collaborate`, label: translations.nav.collaborate },
   ]
