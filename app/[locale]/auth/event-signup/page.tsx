@@ -281,6 +281,18 @@ function EventSignupContent() {
             }
         }
 
+        // Validation for Step 3 (Team selection)
+        if (currentStep === 3) {
+            if (role === "participant" && formData.hasTeam === "no") {
+                setError(locale === "es" ? "Los participantes deben tener un equipo" : "Participants must have a team")
+                return
+            }
+            if (formData.hasTeam === "yes" && !formData.teamCode.trim()) {
+                setError(translations.auth.eventSignup.errors.teamCodeRequired || (locale === "es" ? "El código del equipo es obligatorio" : "Team code is required"))
+                return
+            }
+        }
+
         if (currentStep < totalSteps) {
             setCurrentStep(currentStep + 1)
         } else {
@@ -324,6 +336,11 @@ function EventSignupContent() {
         try {
             if (!authUser?.id) {
                 throw new Error("User not authenticated. Please register first.")
+            }
+
+            // Participants must have a team
+            if (role === "participant" && formData.hasTeam === "no") {
+                throw new Error(locale === "es" ? "Los participantes deben tener un equipo" : "Participants must have a team")
             }
 
             const uid = authUser.id
@@ -550,7 +567,8 @@ function EventSignupContent() {
                                 </button>
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
-                                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                    disabled={role === "participant"}
+                                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${role === "participant" ? "border-brand-cyan/20 bg-black/80 opacity-40 cursor-not-allowed" : formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
                                     <UserPlus className="w-6 h-6 text-brand-cyan" />
                                     <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
