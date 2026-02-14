@@ -38,10 +38,14 @@ export async function GET(request: Request) {
 
     const participantesSnapshot = await adminDb().collection("users").where("role", "==", "participante").get()
 
-    const projectsSnapshot = await adminDb().collection("projects").get()
-    const projectsByTeam = new Map()
-    projectsSnapshot.docs.forEach((doc: { data: () => { (): any; new(): any; teamId: any }; id: any }) => {
-      projectsByTeam.set(doc.data().teamId, { id: doc.id, ...doc.data() })
+    const teamsSnapshot = await adminDb().collection("teams").get()
+    const usersWithProject = new Set<string>()
+    teamsSnapshot.docs.forEach((doc) => {
+      const teamData = doc.data()
+      if (teamData?.project) {
+        const participantIds = teamData.participantIds || []
+        participantIds.forEach((participantId: string) => usersWithProject.add(participantId))
+      }
     })
 
     const notifications = []
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
       const userData = userDoc.data()
       const userId = userDoc.id
 
-      const hasProject = projectsByTeam.has(userId)
+      const hasProject = usersWithProject.has(userId)
 
       if (!hasProject && closedEvents.length > 0) {
         notifications.push({

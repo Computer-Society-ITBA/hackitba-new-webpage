@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc, getDoc } from "firebase/firestore"
+import { collection, getDocs, query, where, updateDoc, doc, getDoc, deleteField } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
@@ -28,6 +28,7 @@ import { Progress } from "@/components/ui/progress"
 import { Upload, X } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
+import { toast } from "@/hooks/use-toast"
 
 export default function ParticipanteDashboard() {
   const params = useParams()
@@ -52,7 +53,6 @@ export default function ParticipanteDashboard() {
     description: "",
     repoUrl: "",
     demoUrl: "",
-    categoryId: "",
   })
 
   const [profileForm, setProfileForm] = useState({
@@ -92,29 +92,32 @@ export default function ParticipanteDashboard() {
   }, [db, user])
 
   const loadProject = useCallback(async () => {
-    if (!db || !user) return
-    let projectsQuery
-    if (team) {
-      projectsQuery = query(collection(db, "projects"), where("teamId", "==", team.id))
-    } else {
-      projectsQuery = query(collection(db, "projects"), where("teamId", "==", user.id))
+    if (!db || !team?.id) return
+    const teamDoc = await getDoc(doc(db, "teams", team.id))
+    if (!teamDoc.exists()) return
+
+    const teamData = teamDoc.data() as any
+    setTeam({ id: teamDoc.id, ...teamData })
+
+    const projectData = teamData.project
+    if (!projectData) {
+      setProject(null)
+      setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "" })
+      setUploadedImages([])
+      setUploadedVideo("")
+      return
     }
 
-    const projectsSnapshot = await getDocs(projectsQuery)
-    if (projectsSnapshot.docs.length > 0) {
-      const projectData = projectsSnapshot.docs[0].data()
-      setProject({ id: projectsSnapshot.docs[0].id, ...projectData })
-      setProjectForm({
-        title: projectData.title || "",
-        description: projectData.description || "",
-        repoUrl: projectData.repoUrl || "",
-        demoUrl: projectData.demoUrl || "",
-        categoryId: projectData.categoryId || "",
-      })
-      setUploadedImages(projectData.images || [])
-      setUploadedVideo(projectData.videoUrl || "")
-    }
-  }, [db, user, team])
+    setProject({ id: teamDoc.id, ...projectData })
+    setProjectForm({
+      title: projectData.title || "",
+      description: projectData.description || "",
+      repoUrl: projectData.repoUrl || "",
+      demoUrl: projectData.demoUrl || "",
+    })
+    setUploadedImages(projectData.images || [])
+    setUploadedVideo(projectData.videoUrl || "")
+  }, [db, team?.id])
 
   const teamCategoryId = useMemo(() => {
     console.log("Calculating team category ID with team data:", team)
@@ -196,15 +199,6 @@ export default function ParticipanteDashboard() {
     loadProject()
   }, [loadProject])
 
-  useEffect(() => {
-    if (!teamCategoryId) return
-    setProjectForm((prev) =>
-      prev.categoryId === teamCategoryId
-        ? prev
-        : { ...prev, categoryId: teamCategoryId }
-    )
-  }, [teamCategoryId])
-
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
     if (!storage) {
       throw new Error("Firebase Storage is not configured")
@@ -239,38 +233,66 @@ export default function ParticipanteDashboard() {
   const submitProject = async () => {
     if (!db || !user) return
     if (!projectSubmissionsEnabled) {
-      alert("La carga de proyectos esta deshabilitada por el administrador")
+      const { dismiss } = toast({
+        title: locale === "es" ? "Carga deshabilitada" : "Submissions disabled",
+        description:
+          locale === "es"
+            ? "La carga de proyectos esta deshabilitada por el administrador."
+            : "Project submissions are disabled by the admin.",
+        variant: "destructive",
+      })
+      setTimeout(dismiss, 4000)
       return
     }
-    const teamId = team?.id || user.id
-
-    if (project) {
-      await updateDoc(doc(db, "projects", project.id), {
-        ...projectForm,
-        images: uploadedImages,
-        videoUrl: uploadedVideo,
-        updatedAt: new Date(),
+    const requiredMissing =
+      !projectForm.title.trim() || !projectForm.description.trim() || !projectForm.repoUrl.trim()
+    if (requiredMissing) {
+      const { dismiss } = toast({
+        title: locale === "es" ? "Faltan campos" : "Missing fields",
+        description:
+          locale === "es" ? "Completa los campos obligatorios." : "Please fill in the required fields.",
+        variant: "destructive",
       })
-    } else {
-      await addDoc(collection(db, "projects"), {
-        teamId,
-        ...projectForm,
-        images: uploadedImages,
-        videoUrl: uploadedVideo,
-        submittedAt: new Date(),
-        updatedAt: new Date(),
-      })
+      setTimeout(dismiss, 4000)
+      return
     }
+    if (!team?.id) {
+      const { dismiss } = toast({
+        title: locale === "es" ? "Equipo requerido" : "Team required",
+        description:
+          locale === "es" ? "Necesitas un equipo para enviar el proyecto." : "You need a team to submit a project.",
+        variant: "destructive",
+      })
+      setTimeout(dismiss, 4000)
+      return
+    }
+
+    const now = new Date()
+    const submittedAt = project?.submittedAt || team?.project?.submittedAt || now
+
+    await updateDoc(doc(db, "teams", team.id), {
+      project: {
+        ...projectForm,
+        images: uploadedImages,
+        videoUrl: uploadedVideo,
+        submittedAt,
+        updatedAt: now,
+      },
+      updatedAt: now,
+    })
 
     setShowProjectForm(false)
     loadProject()
   }
 
   const deleteProject = async () => {
-    if (!db || !project) return
-    await deleteDoc(doc(db, "projects", project.id))
+    if (!db || !team?.id) return
+    await updateDoc(doc(db, "teams", team.id), {
+      project: deleteField(),
+      updatedAt: new Date(),
+    })
     setProject(null)
-    setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "", categoryId: "" })
+    setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "" })
     setUploadedImages([])
     setUploadedVideo("")
   }
@@ -317,7 +339,7 @@ export default function ParticipanteDashboard() {
               <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>
             </div>
             <GlassCard>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
                   <Label className="text-brand-cyan">
                     Project Title <span className="text-red-500">*</span>
@@ -326,6 +348,7 @@ export default function ParticipanteDashboard() {
                     value={projectForm.title}
                     onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    required
                     disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
@@ -338,6 +361,7 @@ export default function ParticipanteDashboard() {
                     value={projectForm.description}
                     onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                    required
                     disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
@@ -351,6 +375,7 @@ export default function ParticipanteDashboard() {
                     onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://github.com/..."
+                    required
                     disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                   />
                 </div>
@@ -409,7 +434,7 @@ export default function ParticipanteDashboard() {
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   {projectSubmissionsEnabled && (showProjectForm || !project) && (
                     <label className="cursor-pointer inline-block">
                       <Input
@@ -469,13 +494,13 @@ export default function ParticipanteDashboard() {
                 </div>
 
                 {projectSubmissionsEnabled && project && !showProjectForm ? (
-                  <div className="flex justify-end gap-3">
-                    <PixelButton onClick={() => setShowProjectForm(true)} className="flex-1">
+                  <div className="flex w-full justify-end gap-3">
+                    <PixelButton onClick={() => setShowProjectForm(true)} className="min-w-[140px] px-4">
                       Edit Project
                     </PixelButton>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <PixelButton variant="outline" className="text-red-500">
+                        <PixelButton variant="outline" className="min-w-[120px] px-4 text-red-500">
                           Delete
                         </PixelButton>
                       </AlertDialogTrigger>
@@ -488,13 +513,15 @@ export default function ParticipanteDashboard() {
                             {deleteDescription}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
+                        <AlertDialogFooter className="gap-3 items-center justify-center sm:flex-row">
                           <AlertDialogCancel asChild>
-                            <PixelButton variant="outline">Cancel</PixelButton>
+                            <PixelButton variant="outline" size="sm">
+                              Cancel
+                            </PixelButton>
                           </AlertDialogCancel>
                           <AlertDialogAction asChild>
-                            <PixelButton onClick={deleteProject} className="bg-red-600 text-white">
-                              Delete Project
+                            <PixelButton onClick={deleteProject} size="sm" className="bg-red-600 text-white">
+                              Delete
                             </PixelButton>
                           </AlertDialogAction>
                         </AlertDialogFooter>

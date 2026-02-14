@@ -1,5 +1,14 @@
-import { redirect } from "next/navigation"
+export function generateStaticParams() {
+  return [{}]
+}
 
 export default function RootPage() {
-  redirect("/en")
+  return (
+    <html>
+      <head>
+        <meta httpEquiv="refresh" content="0; url=/en" />
+      </head>
+      <body></body>
+    </html>
+  )
 }

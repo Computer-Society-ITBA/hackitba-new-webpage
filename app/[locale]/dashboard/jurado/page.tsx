@@ -50,8 +50,18 @@ export default function JuradoDashboard() {
       return
     }
 
-    const projectsSnapshot = await getDocs(collection(db, "projects"))
-    setProjects(projectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+    const teamsSnapshot = await getDocs(collection(db, "teams"))
+    const teamProjects = teamsSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((team: any) => team.project)
+      .map((team: any) => ({
+        id: team.id,
+        teamId: team.id,
+        teamName: team.name || team.id,
+        ...team.project,
+      }))
+
+    setProjects(teamProjects)
   }
 
   const loadScores = async () => {
@@ -125,7 +135,7 @@ export default function JuradoDashboard() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-pixel text-lg text-brand-yellow">{project.title}</h4>
-                          <p className="text-brand-cyan/60 text-xs">{project.teamId}</p>
+                          <p className="text-brand-cyan/60 text-xs">{project.teamName || project.teamId}</p>
                         </div>
                         {hasScored && (
                           <span className="text-xs font-pixel text-green-400 border border-green-400/30 px-2 py-1 rounded">

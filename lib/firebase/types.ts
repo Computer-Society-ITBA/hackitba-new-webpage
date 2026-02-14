@@ -83,7 +83,19 @@ export interface Team {
   name: string
   participantIds: string[] // 1-4 participants
   eventId: string
+  project?: TeamProject
   createdAt: Date
+  updatedAt: Date
+}
+
+export interface TeamProject {
+  title: string
+  description: string
+  repoUrl: string
+  demoUrl?: string
+  images: string[]
+  videoUrl?: string
+  submittedAt: Date
   updatedAt: Date
 }
 

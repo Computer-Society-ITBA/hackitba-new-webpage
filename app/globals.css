@@ -95,4 +95,18 @@
     background-color: #0b1230;
     color: var(--color-brand-cyan);
   }
+
+  @keyframes toast-drain {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  .toast-progress {
+    transform-origin: left;
+    animation: toast-drain 4s linear forwards;
+  }
 }
