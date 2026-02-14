@@ -110,12 +110,6 @@ export function VerifyEmailContent() {
 
           {/* Actions */}
           <div className="mt-8 flex flex-col gap-3">
-            <Link href={`/${locale}/dashboard`} className="w-full">
-              <PixelButton className="w-full">
-                Ir al Dashboard
-              </PixelButton>
-            </Link>
-            
             <Link href={`/${locale}`} className="w-full">
               <PixelButton variant="outline" className="w-full">
                 <Home className="w-4 h-4 mr-2" />
@@ -126,7 +120,7 @@ export function VerifyEmailContent() {
 
           {/* Footer Links */}
           <div className="mt-6 text-center text-sm text-gray-400">
-            <p>¿Problemas? <Link href={`/${locale}`} className="text-orange-500 hover:text-orange-400">
+            <p>¿Problemas? <Link href={`/${locale}/#faqs`} className="text-orange-500 hover:text-orange-400">
               Contacta soporte
             </Link></p>
           </div>

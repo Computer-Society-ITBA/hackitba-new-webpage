@@ -83,6 +83,9 @@ const templates = {
           O copia este enlace en tu navegador:<br/>
           {{verificationLink}}
         </p>
+        <p style="margin-top: 20px; color: #FF8C00; font-size: 12px; font-weight: bold;">
+          ⏱ Este enlace expira en 5 minutos
+        </p>
         <p style="margin-top: 40px; color: #666; font-size: 12px;">
           HackItBA 2025 - Buenos Aires
         </p>
