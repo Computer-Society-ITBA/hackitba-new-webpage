@@ -405,9 +405,9 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               </>
             ) : (
               <>
-                <p className="text-brand-cyan font-pixel text-lg">You don't have a team yet</p>
+                <p className="text-brand-yellow font-pixel text-lg">Without Team</p>
                 <p className="text-brand-cyan/90 text-sm">
-                  A team is required to participate. Join an existing team using a team code or create a new one.
+                  You are currently a solo participant. You can join an existing team using a team code or create a new team.
                 </p>
               </>
             )}
