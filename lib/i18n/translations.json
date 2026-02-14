@@ -164,7 +164,8 @@
           "invalidEmail": "Please enter a valid email address",
           "passwordTooShort": "Password must be at least 6 characters",
           "passwordMismatch": "Passwords do not match",
-          "createFailed": "Failed to create account"
+          "createFailed": "Failed to create account",
+          "signupDisabled": "Signup is disabled."
         }
       },
       "login": {
@@ -265,7 +266,15 @@
           "allFieldsRequired": "All personal data fields are required",
           "minAge": "You must be at least 18 years old",
           "companyRequired": "Company, Role and Photo are required",
-          "createFailed": "Failed to submit registration"
+          "createFailed": "Failed to submit registration",
+          "signupDisabled": "Signup is disabled.",
+          "userNotAuthenticated": "User not authenticated. Please register first.",
+          "storageNotConfigured": "Firebase Storage is not configured",
+          "noCategoriesAvailable": "No categories available",
+          "teamCodeRequired": "Team code is required"
+        },
+        "messages": {
+          "dataShareConsent": "By completing this form, you agree to share your data with the event organizers and sponsors."
         }
       },
       "createTeam": {
@@ -298,10 +307,198 @@
           "motivationRequired": "Please tell us why you want to participate",
           "motivationTooShort": "Motivation must be at least 20 characters",
           "teamNameExists": "Team name already exists. Please choose a different name.",
-          "createFailed": "Failed to create team"
+          "createFailed": "Failed to create team",
+          "signupDisabled": "Signup is disabled",
+          "noSession": "No active session found",
+          "userNotFound": "Could not determine user"
         }
       }
-    }
+    },
+    "dashboard": {
+      "participant": {
+        "title": "Participant Dashboard",
+        "myTeam": "My Team",
+        "myProject": "My Project",
+        "categoryNotAssigned": "Category not assigned",
+        "teamStatus": {
+          "inProcess": "⏳ Status: In Process",
+          "inProcessDescription": "Your request is being reviewed by staff. We will assign you a team soon or you can join an existing one.",
+          "noTeam": "⚠️ You don't have a team yet",
+          "noTeamDescription": "You are currently without a team. You can create a new team or join an existing one, ask for the code."
+        },
+        "project": {
+          "title": "Project Title",
+          "description": "Description",
+          "repoUrl": "Repository URL",
+          "repoPlaceholder": "https://github.com/...",
+          "demoUrl": "Demo URL",
+          "demoPlaceholder": "https://...",
+          "uploadImages": "Upload Images",
+          "uploadVideo": "Upload Video",
+          "uploading": "Uploading...",
+          "removeVideo": "Remove Video",
+          "submit": "Submit Project",
+          "edit": "Edit Project",
+          "update": "Update Project",
+          "delete": "Delete",
+          "cancel": "Cancel",
+          "required": "*",
+          "submissionsDisabled": "Project submissions are disabled by admin"
+        },
+        "deleteDialog": {
+          "title": "Are you sure?",
+          "description": "This will permanently delete your project and cannot be undone."
+        },
+        "toasts": {
+          "submissionsDisabled": {
+            "title": "Submissions disabled",
+            "description": "Project submissions are disabled by the admin."
+          },
+          "missingFields": {
+            "title": "Missing fields",
+            "description": "Please fill in the required fields."
+          },
+          "teamRequired": {
+            "title": "Team required",
+            "description": "You need a team to submit a project."
+          }
+        },
+        "errors": {
+          "storageNotConfigured": "Firebase Storage is not configured"
+        }
+      },
+      "profile": {
+        "title": "My Profile",
+        "cvLink": "CV Link",
+        "foodPreference": "Food Preference",
+        "foodPlaceholder": "E.g: Vegetarian, Vegan, Gluten-free...",
+        "edit": "Edit Profile",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "toasts": {
+          "updated": {
+            "title": "Profile updated",
+            "description": "Your profile has been saved successfully."
+          },
+          "error": {
+            "title": "Error",
+            "description": "Could not save profile."
+          }
+        }
+      },
+      "settings": {
+        "title": "Settings",
+        "comingSoon": "Settings page - Coming soon"
+      }
+    },
+    "credits": {
+      "title": "Credits",
+      "back": "Back"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "backToHome": "Back to home"
+    },
+    "verifyEmail": {
+      "title": "Verify Your Email",
+      "sentTo": "Verification email sent to:",
+      "change": "Change",
+      "newEmailPlaceholder": "New email",
+      "resend": "Resend",
+      "cancel": "Cancel",
+      "nextSteps": "Next steps:",
+      "step1": "Open your email client",
+      "step2": "Find the verification email",
+      "step3": "Click the confirmation link",
+      "sending": "Sending...",
+      "resendEmail": "Resend Email",
+      "alreadyVerified": "Already verified (reload)",
+      "didntReceive": "Didn't receive the email?",
+      "errors": {
+        "invalidEmail": "Please enter a valid email",
+        "changeFailed": "Failed to change email. Please try again."
+      },
+      "messages": {
+        "emailSent": "Verification email sent to your new address!"
+      }
+    },
+    "verifyEmailPage": {
+      "loading": "Loading...",
+      "verifying": "Verifying your email...",
+      "pageTitle": "Email Verification",
+      "pageSubtitle": "We are verifying your email address",
+      "backToHome": "Back to home",
+      "contactSupport": "Contact support",
+      "problems": "Problems?",
+      "redirecting": "Redirecting to dashboard in a few seconds...",
+      "errors": {
+        "tokenNotFound": "Verification token not found. Please check the email link.",
+        "verificationFailed": "Error verifying email. Please try again.",
+        "serverError": "Error connecting to server. Please try again later."
+      },
+      "messages": {
+        "success": "Email verified successfully!"
+      }
+    },
+    "admin": {
+      "projectSubmissions": {
+        "title": "Project Submissions",
+        "label": "Project Submissions",
+        "description": "Enable or disable project submissions",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "updateError": "Could not update project submissions settings"
+      },
+      "signup": {
+        "label": "Registration",
+        "description": "Enable or disable user registration",
+        "updateError": "Could not update registration settings"
+      },
+      "pendingParticipants": {
+        "title": "Pending Participants",
+        "createTeam": "Create Team",
+        "noParticipants": "No pending participants for approval",
+        "selectTeam": "Select team...",
+        "selectTeamError": "Please select a team",
+        "approveSuccess": "Participant approved and assigned successfully",
+        "approveError": "Error approving participant",
+        "rejectPrompt": "Rejection reason (optional):",
+        "rejectSuccess": "Participant rejected",
+        "rejectError": "Error rejecting participant"
+      },
+      "createTeam": {
+        "modalTitle": "Create New Team",
+        "teamName": "Team Name",
+        "teamNamePlaceholder": "Team name...",
+        "category": "Category",
+        "selectCategory": "Select category...",
+        "cancel": "Cancel",
+        "create": "Create Team",
+        "nameLengthError": "Name must be at least 3 characters",
+        "categoryRequired": "Must select a category",
+        "invalidCategory": "Invalid category",
+        "sessionError": "Could not validate session",
+        "defaultReason": "Team created by administrator",
+        "createSuccess": "Team created successfully",
+        "createError": "Error creating team"
+      }
+    },
+    "judge": {
+      "title": "Jurado Dashboard",
+      "projectsToScore": "Projects to Score",
+      "myScores": "My Scores",
+      "scoreProject": "Score Project",
+      "scored": "Scored",
+      "viewRepository": "View Repository →",
+      "updateScore": "Update Score",
+      "comments": "Comments",
+      "addFeedback": "Add your feedback...",
+      "submitScore": "Submit Score",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "redirecting": "Redirecting..."
   },
   "es": {
     "nav": {
@@ -468,7 +665,8 @@
           "invalidEmail": "Por favor ingresa un email válido",
           "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
           "passwordMismatch": "Las contraseñas no coinciden",
-          "createFailed": "Fallo al crear la cuenta"
+          "createFailed": "Fallo al crear la cuenta",
+          "signupDisabled": "La inscripción está deshabilitada."
         }
       },
       "login": {
@@ -569,7 +767,15 @@
           "allFieldsRequired": "Todos los campos de datos personales son requeridos",
           "minAge": "Debes tener al menos 18 años",
           "companyRequired": "Empresa, Rol y Foto son requeridos",
-          "createFailed": "Fallo al enviar el registro"
+          "createFailed": "Fallo al enviar el registro",
+          "signupDisabled": "La inscripción está deshabilitada.",
+          "userNotAuthenticated": "Usuario no autenticado. Por favor regístrate primero.",
+          "storageNotConfigured": "Firebase Storage no está configurado",
+          "noCategoriesAvailable": "No hay categorías disponibles",
+          "teamCodeRequired": "El código del equipo es obligatorio"
+        },
+        "messages": {
+          "dataShareConsent": "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
         }
       },
       "createTeam": {
@@ -602,9 +808,197 @@
           "motivationRequired": "Por favor cuéntanos por qué quieres participar",
           "motivationTooShort": "La motivación debe tener al menos 20 caracteres",
           "teamNameExists": "El nombre del equipo ya existe. Por favor elige un nombre diferente.",
-          "createFailed": "Fallo al crear el equipo"
+          "noSession": "No se encontró una sesión activa",
+          "userNotFound": "No se pudo determinar el usuario",
+          "createFailed": "Fallo al crear el equipo",
+          "signupDisabled": "Las inscripciones están cerradas"
         }
       }
-    }
+    },
+    "dashboard": {
+      "participant": {
+        "title": "Panel de Participante",
+        "myTeam": "Mi Equipo",
+        "myProject": "Mi Proyecto",
+        "categoryNotAssigned": "Categoria no asignada",
+        "teamStatus": {
+          "inProcess": "⏳ Estado: En Proceso",
+          "inProcessDescription": "Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto o podrás unirte a uno existente.",
+          "noTeam": "⚠️ No tienes equipo aún",
+          "noTeamDescription": "Actualmente estás sin equipo. Puedes crear un nuevo equipo o unirte a uno existente, pide el código."
+        },
+        "project": {
+          "title": "Título del Proyecto",
+          "description": "Descripción",
+          "repoUrl": "URL del Repositorio",
+          "repoPlaceholder": "https://github.com/...",
+          "demoUrl": "URL de Demo",
+          "demoPlaceholder": "https://...",
+          "uploadImages": "Subir Imágenes",
+          "uploadVideo": "Subir Video",
+          "uploading": "Subiendo...",
+          "removeVideo": "Eliminar Video",
+          "submit": "Enviar Proyecto",
+          "edit": "Editar Proyecto",
+          "update": "Actualizar Proyecto",
+          "delete": "Eliminar",
+          "cancel": "Cancelar",
+          "required": "*",
+          "submissionsDisabled": "La carga de proyectos está deshabilitada por el administrador"
+        },
+        "deleteDialog": {
+          "title": "¿Estás seguro?",
+          "description": "Esta acción eliminará el proyecto de forma permanente y no se puede deshacer."
+        },
+        "toasts": {
+          "submissionsDisabled": {
+            "title": "Carga deshabilitada",
+            "description": "La carga de proyectos está deshabilitada por el administrador."
+          },
+          "missingFields": {
+            "title": "Faltan campos",
+            "description": "Completa los campos obligatorios."
+          },
+          "teamRequired": {
+            "title": "Equipo requerido",
+            "description": "Necesitas un equipo para enviar el proyecto."
+          }
+        },
+        "errors": {
+          "storageNotConfigured": "Firebase Storage no está configurado"
+        }
+      },
+      "profile": {
+        "title": "Mi Perfil",
+        "cvLink": "Link CV",
+        "foodPreference": "Preferencia Alimenticia",
+        "foodPlaceholder": "Ej: Vegetariano, Vegano, Sin gluten...",
+        "edit": "Editar Perfil",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "toasts": {
+          "updated": {
+            "title": "Perfil actualizado",
+            "description": "Tu perfil se ha guardado correctamente."
+          },
+          "error": {
+            "title": "Error",
+            "description": "No se pudo guardar el perfil."
+          }
+        }
+      },
+      "settings": {
+        "title": "Configuración",
+        "comingSoon": "Página de configuración - Próximamente"
+      }
+    },
+    "credits": {
+      "title": "Créditos",
+      "back": "Volver"
+    },
+    "notFound": {
+      "title": "Página no encontrada",
+      "backToHome": "Volver al inicio"
+    },
+    "verifyEmail": {
+      "title": "Confirma tu Email",
+      "sentTo": "Email enviado a:",
+      "change": "Cambiar",
+      "newEmailPlaceholder": "Nuevo email",
+      "resend": "Reenviar",
+      "cancel": "Cancelar",
+      "nextSteps": "Próximos pasos:",
+      "step1": "Abre tu cliente de email",
+      "step2": "Busca el email de verificación",
+      "step3": "Haz clic en el link de confirmación",
+      "sending": "Enviando...",
+      "resendEmail": "Reenviar Email",
+      "alreadyVerified": "Ya confirmé (recargar)",
+      "didntReceive": "¿No recibiste el email?",
+      "errors": {
+        "invalidEmail": "Por favor ingresa un email válido",
+        "changeFailed": "Error al cambiar email"
+      },
+      "messages": {
+        "emailSent": "Email de verificación enviado a tu nueva dirección!"
+      }
+    },
+    "verifyEmailPage": {
+      "loading": "Cargando...",
+      "verifying": "Verificando tu email...",
+      "pageTitle": "Verificación de Email",
+      "pageSubtitle": "Estamos verificando tu dirección de correo",
+      "backToHome": "Volver al inicio",
+      "contactSupport": "Contacta soporte",
+      "problems": "¿Problemas?",
+      "redirecting": "Redirigiendo al dashboard en unos segundos...",
+      "errors": {
+        "tokenNotFound": "Token de verificación no encontrado. Por favor, verifica el link del email.",
+        "verificationFailed": "Error al verificar el email. Por favor, intenta de nuevo.",
+        "serverError": "Error al conectar con el servidor. Por favor, intenta de nuevo más tarde."
+      },
+      "messages": {
+        "success": "¡Email verificado exitosamente!"
+      }
+    },
+    "admin": {
+      "projectSubmissions": {
+        "title": "Project Submissions",
+        "label": "Subida de proyectos",
+        "description": "Habilita o deshabilita el envio de proyectos",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "updateError": "No se pudo actualizar la configuracion de proyectos"
+      },
+      "signup": {
+        "label": "Inscripcion",
+        "description": "Habilita o deshabilita el registro de usuarios",
+        "updateError": "No se pudo actualizar la configuracion de inscripcion"
+      },
+      "pendingParticipants": {
+        "title": "Participantes Pendientes",
+        "createTeam": "Crear Equipo",
+        "noParticipants": "No hay participantes pendientes de aprobación",
+        "selectTeam": "Seleccionar equipo...",
+        "selectTeamError": "Por favor selecciona un equipo",
+        "approveSuccess": "Participante aprobado y asignado exitosamente",
+        "approveError": "Error al aprobar participante",
+        "rejectPrompt": "Razón del rechazo (opcional):",
+        "rejectSuccess": "Participante rechazado",
+        "rejectError": "Error al rechazar participante"
+      },
+      "createTeam": {
+        "modalTitle": "Crear Nuevo Equipo",
+        "teamName": "Nombre del Equipo",
+        "teamNamePlaceholder": "Nombre del equipo...",
+        "category": "Categoría",
+        "selectCategory": "Seleccionar categoría...",
+        "cancel": "Cancelar",
+        "create": "Crear Equipo",
+        "nameLengthError": "El nombre debe tener al menos 3 caracteres",
+        "categoryRequired": "Debe seleccionar una categoría",
+        "invalidCategory": "Categoría inválida",
+        "sessionError": "No se pudo validar la sesión",
+        "defaultReason": "Equipo creado por administrador",
+        "createSuccess": "creado exitosamente",
+        "createError": "Error al crear equipo"
+      }
+    },
+    "judge": {
+      "title": "Jurado Dashboard",
+      "projectsToScore": "Proyectos a Puntuar",
+      "myScores": "Mis Puntuaciones",
+      "scoreProject": "Puntuar Proyecto",
+      "scored": "Puntuado",
+      "viewRepository": "Ver Repositorio →",
+      "updateScore": "Actualizar Puntuación",
+      "comments": "Comentarios",
+      "addFeedback": "Agrega tu feedback...",
+      "submitScore": "Enviar Puntuación",
+      "cancel": "Cancelar",
+      "delete": "Eliminar"
+    },
+    "redirecting": "Redirigiendo..."
   }
 }

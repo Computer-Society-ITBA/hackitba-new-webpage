@@ -42,7 +42,7 @@ export default async function CreditsPage({ params }: PageProps) {
               className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-orange transition-colors font-pixel text-sm"
             >
               <ArrowLeft size={16} />
-              {locale === "es" ? "Volver" : "Back"}
+              {translations.credits.back}
             </Link>
           </div>
 
@@ -50,7 +50,7 @@ export default async function CreditsPage({ params }: PageProps) {
             <div className="space-y-8">
               <div className="text-center border-b border-brand-cyan/20 pb-6">
                 <h1 className="font-pixel text-3xl md:text-4xl text-brand-orange mb-4">
-                  {locale === "es" ? "Créditos" : "Credits"}
+                  {translations.credits.title}
                 </h1>
                 <p className="font-pixel text-sm text-brand-cyan">
                   {locale === "es" 

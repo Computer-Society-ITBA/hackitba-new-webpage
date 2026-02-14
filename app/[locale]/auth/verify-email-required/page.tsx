@@ -69,7 +69,7 @@ export default function VerifyEmailRequiredPage() {
 
   const handleResendWithNewEmail = async () => {
     if (!newEmail || !newEmail.includes('@')) {
-      setError(locale === 'es' ? "Por favor ingresa un email válido" : "Please enter a valid email")
+      setError(translations.verifyEmail.errors.invalidEmail)
       return
     }
 
@@ -92,14 +92,12 @@ export default function VerifyEmailRequiredPage() {
         throw new Error(errorData.error || "Failed to change email")
       }
 
-      setMessage(locale === 'es' ? 
-        `Email actualizado a ${newEmail}. Por favor revisa tu bandeja de entrada para confirmar.` :
-        `Email changed to ${newEmail}. Please check your inbox to verify.`)
+      setMessage(translations.verifyEmail.messages.emailSent)
       setEditingEmail(false)
       setNewEmail("")
     } catch (err: any) {
       console.error("Change email error:", err)
-      setError(err.message || (locale === 'es' ? "Error al cambiar email" : "Failed to change email. Please try again."))
+      setError(err.message || translations.verifyEmail.errors.changeFailed)
     } finally {
       setResendLoading(false)
     }
@@ -108,7 +106,7 @@ export default function VerifyEmailRequiredPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-brand-cyan font-pixel">Loading...</div>
+        <div className="text-brand-cyan font-pixel">{translations.verifyEmailPage.loading}</div>
       </div>
     )
   }
@@ -156,7 +154,7 @@ export default function VerifyEmailRequiredPage() {
               <AlertCircle className="w-12 h-12 text-brand-orange" />
             </div>
             <h1 className="text-3xl font-bold font-pixel mb-2">
-              {locale === "es" ? "Confirma tu Email" : "Verify Your Email"}
+              {translations.verifyEmail.title}
             </h1>
             <p className="text-gray-400 text-sm">
               {locale === "es"
@@ -168,7 +166,7 @@ export default function VerifyEmailRequiredPage() {
           {/* Message Box */}
           <div className="bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg p-4 mb-6">
             <p className="text-brand-cyan/70 text-sm mb-2">
-              {locale === "es" ? "Email enviado a:" : "Verification email sent to:"}
+              {translations.verifyEmail.sentTo}
             </p>
             {!editingEmail ? (
               <div className="flex flex-col gap-2">
@@ -177,7 +175,7 @@ export default function VerifyEmailRequiredPage() {
                   onClick={() => setEditingEmail(true)}
                   className="text-xs text-brand-cyan hover:text-brand-orange underline text-left"
                 >
-                  {locale === "es" ? "Cambiar" : "Change"}
+                  {translations.verifyEmail.change}
                 </button>
               </div>
             ) : (
@@ -186,7 +184,7 @@ export default function VerifyEmailRequiredPage() {
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder={locale === "es" ? "Nuevo email" : "New email"}
+                  placeholder={translations.verifyEmail.newEmailPlaceholder}
                   className="w-full px-3 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan placeholder-brand-cyan/50 rounded text-sm focus:outline-none focus:border-brand-orange"
                 />
                 <div className="flex gap-2">
@@ -195,7 +193,7 @@ export default function VerifyEmailRequiredPage() {
                     disabled={resendLoading || !newEmail}
                     className="flex-1 px-3 py-2 bg-brand-orange text-black font-pixel text-xs rounded hover:bg-brand-orange/80 disabled:opacity-50"
                   >
-                    {locale === "es" ? "Reenviar" : "Resend"}
+                    {translations.verifyEmail.resend}
                   </button>
                   <button
                     onClick={() => {
@@ -204,7 +202,7 @@ export default function VerifyEmailRequiredPage() {
                     }}
                     className="flex-1 px-3 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan font-pixel text-xs rounded hover:bg-brand-cyan/20"
                   >
-                    {locale === "es" ? "Cancelar" : "Cancel"}
+                    {translations.verifyEmail.cancel}
                   </button>
                 </div>
               </div>
@@ -217,12 +215,12 @@ export default function VerifyEmailRequiredPage() {
               <Mail className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-brand-cyan font-pixel text-sm mb-2">
-                  {locale === "es" ? "Próximos pasos:" : "Next steps:"}
+                  {translations.verifyEmail.nextSteps}
                 </p>
                 <ol className="text-brand-cyan/70 text-xs space-y-1">
-                  <li>1. {locale === "es" ? "Abre tu cliente de email" : "Open your email client"}</li>
-                  <li>2. {locale === "es" ? "Busca el email de verificación" : "Find the verification email"}</li>
-                  <li>3. {locale === "es" ? "Haz clic en el link de confirmación" : "Click the confirmation link"}</li>
+                  <li>1. {translations.verifyEmail.step1}</li>
+                  <li>2. {translations.verifyEmail.step2}</li>
+                  <li>3. {translations.verifyEmail.step3}</li>
                 </ol>
               </div>
             </div>
@@ -251,8 +249,8 @@ export default function VerifyEmailRequiredPage() {
             >
               <RotateCw className="w-4 h-4 mr-2" />
               {resendLoading
-                ? (locale === "es" ? "Enviando..." : "Sending...")
-                : (locale === "es" ? "Reenviar Email" : "Resend Email")}
+                ? translations.verifyEmail.sending
+                : translations.verifyEmail.resendEmail}
             </PixelButton>
 
             <button
@@ -261,14 +259,14 @@ export default function VerifyEmailRequiredPage() {
               }}
               className="w-full px-4 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/20 transition-colors rounded text-sm font-pixel"
             >
-              {locale === "es" ? "Ya confirmé (recargar)" : "Already verified (reload)"}
+              {translations.verifyEmail.alreadyVerified}
             </button>
           </div>
 
           {/* Footer */}
           <div className="text-center border-t border-brand-cyan/20 pt-4">
             <p className="text-brand-cyan/70 text-xs mb-2">
-              {locale === "es" ? "¿No recibiste el email?" : "Didn't receive the email?"}
+              {translations.verifyEmail.didntReceive}
             </p>
             <p className="text-brand-cyan/70 text-xs">
               {locale === "es"

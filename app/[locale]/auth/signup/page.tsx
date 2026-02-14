@@ -76,7 +76,7 @@ function SignupContent() {
     setError("")
 
     if (!signupEnabled) {
-      setError(locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled.")
+      setError(translations.auth.signup.errors.signupDisabled)
       return
     }
 
@@ -168,7 +168,7 @@ function SignupContent() {
   if (signupLoading || !signupEnabled) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">Loading...</div>
+        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.auth.signup.loading}</div>
       </div>
     )
   }
@@ -249,7 +249,7 @@ function SignupContent() {
             {!signupLoading && !signupEnabled && (
               <div className="p-3 rounded bg-brand-orange/10 border border-brand-orange/30">
                 <p className="text-brand-orange text-sm">
-                  {locale === "es" ? "La inscripcion esta deshabilitada." : "Signup is disabled."}
+                  {translations.auth.signup.errors.signupDisabled}
                 </p>
               </div>
             )}

@@ -85,7 +85,7 @@ function CreateTeamContent() {
                 const userId = currentUser?.uid || searchParams.get("userId")
 
                 if (!userId) {
-                    setError("No se pudo determinar el usuario")
+                    setError(translations.auth.createTeam.errors.userNotFound)
                     return
                 }
 
@@ -136,23 +136,23 @@ function CreateTeamContent() {
         setError("")
 
         if (!signupEnabled) {
-            setError(locale === "es" ? "Las inscripciones están cerradas" : "Signup is disabled")
+            setError(translations.auth.createTeam.errors.signupDisabled)
             return
         }
 
         // Validation
         if (!formData.teamName) {
-            setError("Team name is required")
+            setError(translations.auth.createTeam.errors.teamNameRequired)
             return
         }
 
         if (!formData.motivation) {
-            setError("Please tell us why you want to participate")
+            setError(translations.auth.createTeam.errors.motivationRequired)
             return
         }
 
         if (formData.motivation.length < 20) {
-            setError("Motivation must be at least 20 characters")
+            setError(translations.auth.createTeam.errors.motivationTooShort)
             return
         }
 
@@ -165,7 +165,7 @@ function CreateTeamContent() {
             const userToken = await authClient?.currentUser?.getIdToken() || localStorage.getItem("userToken")
 
             if (!userToken) {
-                throw new Error("No se encontro una sesion activa")
+                throw new Error(translations.auth.createTeam.errors.noSession)
             }
             const teamsResponse = await fetch(`${apiUrl}/teams`,{
                 headers: {
@@ -177,7 +177,7 @@ function CreateTeamContent() {
             const existingTeams = teamsList.map((team: any) => team?.name).filter(Boolean)
 
             if (existingTeams.some((teamName: string) => teamName.toLowerCase() === formData.teamName.toLowerCase())) {
-                setError("Team name already exists. Please choose a different name.")
+                setError(translations.auth.createTeam.errors.teamNameExists)
                 setLoading(false)
                 return
             }
@@ -210,7 +210,7 @@ function CreateTeamContent() {
 
                         if (!response.ok) {
                                 const errorData = await response.json().catch(() => ({}))
-                                throw new Error(errorData.error || "Failed to create team")
+                                throw new Error(errorData.error || translations.auth.createTeam.errors.createFailed)
                         }
 
             // Simulating API call
@@ -219,7 +219,7 @@ function CreateTeamContent() {
             // Success - redirect to dashboard
             router.push(`/${locale}/dashboard`)
         } catch (err: any) {
-            setError(err.message || "Failed to create team")
+            setError(err.message || translations.auth.createTeam.errors.createFailed)
         } finally {
             setLoading(false)
         }

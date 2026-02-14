@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -11,8 +12,13 @@ import { collection, getDocs, addDoc, query, where, deleteDoc, doc } from "fireb
 import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Slider } from "@/components/ui/slider"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function JuradoDashboard() {
+  const params = useParams()
+  const locale = (params?.locale as Locale) || "en"
+  const translations = getTranslations(locale)
   const db = getDbClient()
   const { user } = useAuth()
   const [projects, setProjects] = useState<any[]>([])
@@ -122,10 +128,10 @@ export default function JuradoDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={["judge"]}>
-      <DashboardLayout title="Jurado Dashboard">
+      <DashboardLayout title={translations.judge.title}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>
-            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">Projects to Score</h3>
+            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{translations.judge.projectsToScore}</h3>
             <div className="space-y-4">
               {projects.map((project) => {
                 const hasScored = scores.some((s) => s.projectId === project.id)
@@ -139,7 +145,7 @@ export default function JuradoDashboard() {
                         </div>
                         {hasScored && (
                           <span className="text-xs font-pixel text-green-400 border border-green-400/30 px-2 py-1 rounded">
-                            Scored
+                            {translations.judge.scored}
                           </span>
                         )}
                       </div>
@@ -153,12 +159,12 @@ export default function JuradoDashboard() {
                           rel="noopener noreferrer"
                           className="text-brand-orange hover:neon-glow-orange text-sm"
                         >
-                          View Repository →
+                          {translations.judge.viewRepository}
                         </a>
                       )}
 
                       <PixelButton onClick={() => setSelectedProject(project)} size="sm" className="w-full">
-                        {hasScored ? "Update Score" : "Score Project"}
+                        {hasScored ? translations.judge.updateScore : translations.judge.scoreProject}
                       </PixelButton>
                     </div>
                   </GlassCard>
@@ -169,7 +175,7 @@ export default function JuradoDashboard() {
 
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
-              {selectedProject ? "Score Project" : "My Scores"}
+              {selectedProject ? translations.judge.scoreProject : translations.judge.myScores}
             </h3>
 
             {selectedProject ? (
@@ -199,22 +205,22 @@ export default function JuradoDashboard() {
                     ))}
 
                     <div>
-                      <Label className="text-brand-cyan mb-2 block">Comments</Label>
+                      <Label className="text-brand-cyan mb-2 block">{translations.judge.comments}</Label>
                       <Textarea
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
                         className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                        placeholder="Add your feedback..."
+                        placeholder={translations.judge.addFeedback}
                       />
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <PixelButton onClick={submitScore} className="flex-1">
-                      Submit Score
+                      {translations.judge.submitScore}
                     </PixelButton>
                     <PixelButton onClick={() => setSelectedProject(null)} variant="outline">
-                      Cancel
+                      {translations.judge.cancel}
                     </PixelButton>
                   </div>
                 </div>
@@ -237,7 +243,7 @@ export default function JuradoDashboard() {
                             onClick={() => deleteScore(score.id)}
                             className="text-brand-cyan hover:text-red-500 transition-colors"
                           >
-                            Delete
+                            {translations.judge.delete}
                           </button>
                         </div>
 

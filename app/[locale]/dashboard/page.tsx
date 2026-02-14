@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import type { Locale } from "@/lib/i18n/config"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
+import { getTranslations } from "@/lib/i18n/get-translations"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -71,10 +72,12 @@ export default function DashboardPage() {
     }
   }, [user, loading, router, locale, hasRedirected, signupEnabled])
 
+  const translations = getTranslations(locale)
+  
   return (
     <ProtectedRoute>
       <div className="min-h-screen flex items-center justify-center">
-        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">Redirecting...</div>
+        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.redirecting}</div>
       </div>
     </ProtectedRoute>
   )
