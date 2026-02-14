@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings } from "lucide-react"
+import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings, Copy, Check } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import type { User } from "@/lib/firebase/types"
 import { PixelButton } from "@/components/ui/pixel-button"
@@ -52,6 +52,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   const [saving, setSaving] = useState(false)
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
+  const [copied, setCopied] = useState(false)
   const db = getDbClient()
   const router = useRouter()
   const params = useParams()
@@ -320,6 +321,18 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     }
   }
 
+  const handleCopyTeamCode = async () => {
+    if (!userTeamLabel) return
+    
+    try {
+      await navigator.clipboard.writeText(userTeamLabel)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error("Failed to copy:", error)
+    }
+  }
+
   if (loading) {
     return (
       <GlassCard>
@@ -439,6 +452,27 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
           <div className="flex items-center gap-3">
             <Users className="w-6 h-6 text-brand-cyan" />
             <h3 className="font-pixel text-xl text-brand-yellow">{team.name}</h3>
+            <button
+              onClick={handleCopyTeamCode}
+              className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20"
+              title={locale === "es" ? "Copiar código del equipo" : "Copy team code"}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-green-400" />
+                  <span className="text-xs font-pixel text-green-400">
+                    {locale === "es" ? "¡Copiado!" : "Copied!"}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span className="text-xs font-pixel">
+                    {locale === "es" ? "Copiar código" : "Copy code"}
+                  </span>
+                </>
+              )}
+            </button>
             {isAdmin && (
               <button
                 onClick={handleEditTeam}
