@@ -322,11 +322,11 @@ function EventSignupContent() {
         }
         setLoading(true)
         try {
-            const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
-
-            if (!uid) {
+            if (!authUser?.id) {
                 throw new Error("User not authenticated. Please register first.")
             }
+
+            const uid = authUser.id
 
             // Get current user token from Firebase
             const auth = getAuth()
