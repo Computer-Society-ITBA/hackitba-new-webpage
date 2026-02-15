@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
+import { useAuth } from "@/lib/firebase/auth-context"
 
 interface FloatingSignupButtonProps {
   locale: Locale
@@ -19,6 +20,7 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
   const [signupEnabled, setSignupEnabled] = useState(true)
   const [signupLoading, setSignupLoading] = useState(true)
   const db = getDbClient()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
     if (!db) return
@@ -75,9 +77,12 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
   const isDisabled = signupLoading || !signupEnabled
   const Component = isDisabled ? "div" : Link
 
+  // Determine the href based on user login status
+  const href = user ? `/${locale}/dashboard` : `/${locale}/auth/signup`
+
   return (
     <Component
-      {...(!isDisabled && { href: `/${locale}/auth/signup` })}
+      {...(!isDisabled && { href })}
       onMouseEnter={() => !isDisabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => !isDisabled && setIsHovered(true)}
@@ -88,7 +93,7 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
         isDisabled ? "cursor-not-allowed" : "transition-all duration-300 hover:scale-110",
         isVisible ? (isDisabled ? "opacity-30 translate-y-0" : "opacity-100 translate-y-0") : "opacity-0 translate-y-4 pointer-events-none",
       )}
-      aria-label="Sign up"
+      aria-label={user ? "Go to dashboard" : "Sign up"}
       {...(isDisabled && { "aria-disabled": "true" })}
     >
       <div className="relative w-24 h-24">

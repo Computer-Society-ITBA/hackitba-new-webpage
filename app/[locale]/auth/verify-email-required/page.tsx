@@ -45,7 +45,7 @@ export default function VerifyEmailRequiredPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://us-central1-webpage-36e40.cloudfunctions.net/api"
-      
+
       // Create a new verification token
       const response = await fetch(`${apiUrl}/users/resend-verification-email`, {
         method: 'POST',
@@ -79,7 +79,7 @@ export default function VerifyEmailRequiredPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://us-central1-webpage-36e40.cloudfunctions.net/api"
-      
+
       // Call change-email endpoint to update email and send verification
       const response = await fetch(`${apiUrl}/users/change-email`, {
         method: 'POST',
@@ -126,8 +126,6 @@ export default function VerifyEmailRequiredPage() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">
-      <NeonGlow variant="orange" position="top-left" />
-      <NeonGlow variant="blue" position="bottom-right" />
 
       <div className="absolute top-4 left-4 z-20 flex gap-2">
         <button
@@ -156,11 +154,6 @@ export default function VerifyEmailRequiredPage() {
             <h1 className="text-3xl font-bold font-pixel mb-2">
               {translations.verifyEmail.title}
             </h1>
-            <p className="text-gray-400 text-sm">
-              {locale === "es"
-                ? "Necesitamos que confirmes tu dirección de email para continuar"
-                : "We need you to verify your email address to continue"}
-            </p>
           </div>
 
           {/* Message Box */}
@@ -170,7 +163,7 @@ export default function VerifyEmailRequiredPage() {
             </p>
             {!editingEmail ? (
               <div className="flex flex-col gap-2">
-                <p className="text-brand-orange font-pixel">{user.email}</p>
+                <p className="text-brand-orange font-pixel text-xs">{user.email}</p>
                 <button
                   onClick={() => setEditingEmail(true)}
                   className="text-xs text-brand-cyan hover:text-brand-orange underline text-left"
@@ -212,7 +205,6 @@ export default function VerifyEmailRequiredPage() {
           {/* Instructions */}
           <div className="bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg p-4 mb-6">
             <div className="flex gap-3 mb-3">
-              <Mail className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-brand-cyan font-pixel text-sm mb-2">
                   {translations.verifyEmail.nextSteps}

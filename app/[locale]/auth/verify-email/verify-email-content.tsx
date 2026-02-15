@@ -32,7 +32,7 @@ export function VerifyEmailContent() {
 
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://us-central1-webpage-36e40.cloudfunctions.net/api"
-        
+
         const response = await fetch(`${apiUrl}/users/verify-email?token=${token}`)
         const data = await response.json()
 
@@ -40,7 +40,7 @@ export function VerifyEmailContent() {
           setEmail(data.email)
           setStatus("success")
           setMessage(data.message || translations.verifyEmailPage.messages.success)
-          
+
           // Redirigir al dashboard después de 3 segundos
           setTimeout(() => {
             router.push(`/${locale}/dashboard`)
@@ -61,9 +61,7 @@ export function VerifyEmailContent() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">
-      <NeonGlow variant="orange" position="top-left" />
-      <NeonGlow variant="blue" position="bottom-right" />
-      
+
       <GlassCard className="w-full max-w-md">
         <div className="p-8">
           {/* Header */}

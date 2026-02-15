@@ -4,16 +4,14 @@ import { useEffect, useState } from "react"
 import { TypingEffect } from "@/components/effects/typing-effect"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { FloatingArrow } from "@/components/effects/floating-arrow"
-import { LoremIpsum } from "lorem-ipsum"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
+import { codeSnippet } from "@/lib/code-snippet"
 
 interface HeroProps {
   translations: any
 }
-
-const lorem = new LoremIpsum()
 
 export function Hero({ translations }: HeroProps) {
   const { user, loading } = useAuth()
@@ -49,11 +47,11 @@ export function Hero({ translations }: HeroProps) {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
-      <div className="[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-s text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
+      <div className="[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-sm text-brand-cyan leading-relaxed pointer-events-none">
         <TypingEffect
-          text={lorem.generateParagraphs(55)}
+          text={codeSnippet}
           speed="fast"
-          direction="vertical"
+          direction="horizontal"
         />
       </div>
 
