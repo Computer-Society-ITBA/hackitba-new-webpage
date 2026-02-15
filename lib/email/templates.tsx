@@ -1,106 +1,779 @@
-export const ONBOARDING_REMINDER_TEMPLATE = (name: string, role: string, onboardingStep: number) => `
-<!DOCTYPE html>
-<html>
+// Email verification template
+export const EMAIL_VERIFICATION_TEMPLATE = (verificationLink: string) => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background-color: #14192D;
-      color: #6EB6F9;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: rgba(30, 38, 66, 0.6);
-      border: 1px solid rgba(175, 239, 243, 0.2);
-      border-radius: 8px;
-      padding: 40px;
-    }
-    .title {
-      font-family: 'Courier New', monospace;
-      color: #EF802F;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    .content {
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: #EF802F;
-      color: #14192D;
-      text-decoration: none;
-      border-radius: 4px;
-      font-weight: bold;
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Verificar Email</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .mw95 { max-width: 95% !important; }
+      .mw50 { max-width: 50% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+      .mblpdrm-r { padding-right: 0 !important; }
+      .mblpdrm-l { padding-left: 0 !important; }
+      .Hellode { display: none !important; }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="title">[HackITBA] Complete Your Onboarding</div>
-    <div class="content">
-      <p>Hello ${name},</p>
-      <p>We noticed you haven't completed your ${role} onboarding yet (Step ${onboardingStep + 1} of 3).</p>
-      <p>Complete your profile to get full access to all HackITBA 2026 features and connect with mentors, sponsors, and other participants.</p>
-    </div>
-    <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">Complete Onboarding →</a>
-  </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #fad399; text-decoration: none;">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 75%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          Verificá tu dirección de email
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Te enviamos este correo para confirmar que esta dirección de email te pertenece y poder activar correctamente tu cuenta.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Para completar el proceso de registro, hacé click en el botón de abajo y verificá tu dirección de email.
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 40px">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
+                          <a href="${verificationLink}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                            Verificar mi email
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" border="0" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" border="0" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" border="0" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar"><img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" border="0" /></a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
 </body>
 </html>
 `
 
-export const SUBMISSION_DEADLINE_TEMPLATE = (name: string, eventTitle: string) => `
-<!DOCTYPE html>
-<html>
+// Successful registration template
+export const REGISTRATION_SUCCESS_TEMPLATE = () => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background-color: #14192D;
-      color: #6EB6F9;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: rgba(30, 38, 66, 0.6);
-      border: 1px solid rgba(175, 239, 243, 0.2);
-      border-radius: 8px;
-      padding: 40px;
-    }
-    .title {
-      font-family: 'Courier New', monospace;
-      color: #EF802F;
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    .content {
-      line-height: 1.6;
-      margin-bottom: 30px;
-    }
-    .warning {
-      background-color: rgba(239, 128, 47, 0.1);
-      border-left: 4px solid #ef802f;
-      padding: 15px;
-      margin: 20px 0;
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Inscripción Exitosa</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <div class="title">[HackITBA] Submission Deadline Passed</div>
-    <div class="content">
-      <p>Hello ${name},</p>
-      <div class="warning">
-        <strong>The submission deadline for ${eventTitle} has passed.</strong>
-      </div>
-      <p>We noticed you didn't submit a project for this event. Don't worry - there will be more opportunities to participate in future hackathons!</p>
-      <p>Stay tuned for upcoming events and keep building amazing projects.</p>
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="text-decoration: none">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          ¡Ya estás inscripto a la HackITBA!
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
+                    ¡Estamos felices de que seas parte!
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Te confirmamos que hemos recibido correctamente tu formulario de inscripción. Tu lugar para la competencia está reservado.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    No te olvides de seguirnos en nuestras redes sociales para enterarte de todas las novedades y anuncios importantes antes del evento.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    ¡Nos vemos pronto!
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="text-decoration: none">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" style="display: block; border: 0; width: 116px; height: auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+// Incomplete registration template  
+export const REGISTRATION_INCOMPLETE_TEMPLATE = (completionLink: string) => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Inscripción Incompleta</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="text-decoration: none">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          Tu inscripción está incompleta
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
+                    ¡Falta muy poco para terminar!
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Notamos que iniciaste el proceso de inscripción para la HackITBA, pero todavía faltan algunos pasos para terminarla.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Para asegurar tu lugar y poder participar de los desafíos que tenemos preparados este año, es necesario que finalices el registro lo antes posible.
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 40px">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
+                          <a href="${completionLink}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                            Completar mi inscripción
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="text-decoration: none">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" style="display: block; border: 0; width: 116px; height: auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+// Team member notification template
+export const NEW_TEAM_MEMBER_TEMPLATE = (memberName: string) => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Nuevo integrante</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="text-decoration: none">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          ¡Tu equipo tiene un nuevo integrante!
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
+                    Bienvenido/a al equipo, ${memberName}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Te escribimos para avisarte que <strong>${memberName}</strong> se ha unido oficialmente a tu equipo para esta edición de la HackITBA.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="text-decoration: none">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" style="display: block; border: 0; width: 116px; height: auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+// Event reminder template
+export const EVENT_REMINDER_TEMPLATE = (startTime: string, address: string) => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Recordatorio</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="text-decoration: none">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          ¡Faltan pocas semanas para la HackITBA!
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
+                    Viernes 27 de Marzo
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Te escribimos para recordarte que el viernes 27 de marzo se realizará la HackITBA. Pueden ingresar a partir de las ${startTime}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    📍 Dirección: ${address}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Estamos muy entusiasmados por tenerte a vos y a tu equipo como parte de esta edición.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="text-decoration: none">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" style="display: block; border: 0; width: 116px; height: auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+// Post-event thank you template
+export const POST_EVENT_TEMPLATE = (projectsLink: string) => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - ¡Gracias por participar!</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="text-decoration: none">
+                      <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto;" />
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          ¡Gracias por ser parte de HackITBA!
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
+                    Fue un placer tenerte con nosotros
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Queremos agradecerte por tu participación y compromiso durante esta edición. Tu dedicación y creatividad son las que hacen que este evento sea único año tras año.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    Hacé clic en el botón de abajo para ver nuevamente los proyectos presentados y conocer los resultados finales de la competencia.
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top: 40px">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
+                          <a href="${projectsLink}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                            Ver proyectos y resultados
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/facebook.png" alt="Facebook" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                          &nbsp;
+                          <a href=""><img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" width="25" style="border: 0; width: 25px; height: auto;" align="middle" /></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="text-decoration: none">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="116" style="display: block; border: 0; width: 116px; height: auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
 </body>
 </html>
 `

@@ -23,10 +23,10 @@ export function Footer({ translations, locale }: FooterProps) {
   ]
 
   const socials = [
-    { icon: Github, href: "https://github.com" },
-    { icon: Twitter, href: "https://twitter.com" },
-    { icon: Linkedin, href: "https://linkedin.com" },
-    { icon: Instagram, href: "https://instagram.com" },
+    { icon: Github, href: "https://github.com/Computer-Society-ITBA" },
+    { icon: Twitter, href: "https://x.com/cs_itba" },
+    { icon: Linkedin, href: "https://www.linkedin.com/company/itba-computer-society/" },
+    { icon: Instagram, href: "https://www.instagram.com/computer.society.itba/" },
   ]
 
   return (

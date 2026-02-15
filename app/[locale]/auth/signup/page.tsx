@@ -114,7 +114,7 @@ function SignupContent() {
       console.log("Creating account...", payload)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
       // TODO: Replace with actual API call
-      const response = await fetch(`${apiUrl}/users/signup`, {
+      const response = await fetch(`${apiUrl}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
