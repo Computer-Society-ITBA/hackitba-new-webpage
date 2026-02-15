@@ -24,7 +24,7 @@ export function Categories({ translations, locale }: CategoriesProps) {
     return (
       <section id="categories" className="py-20 px-4">
         <div className="container mx-auto flex flex-col items-center">
-          <p className="font-pixel text-brand-yellow animate-pulse text-xs">LOADING CATEGORIES...</p>
+          <p className="font-pixel text-brand-yellow animate-pulse text-xs">{translations.categories.loading?.toUpperCase()}</p>
         </div>
       </section>
     )

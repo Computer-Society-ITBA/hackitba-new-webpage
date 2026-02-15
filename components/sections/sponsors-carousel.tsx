@@ -19,7 +19,7 @@ export function SponsorsCarousel({ translations }: SponsorsCarouselProps) {
     return (
       <section id="sponsors" className="py-20 px-4">
         <div className="container mx-auto flex flex-col items-center">
-          <p className="font-pixel text-brand-yellow animate-pulse text-xs">LOADING SPONSORS...</p>
+          <p className="font-pixel text-brand-yellow animate-pulse text-xs">{translations.sponsors.loading?.toUpperCase()}</p>
         </div>
       </section>
     )

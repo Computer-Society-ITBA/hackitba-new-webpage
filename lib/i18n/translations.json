@@ -66,7 +66,8 @@
     },
     "sponsors": {
       "title": "Sponsors",
-      "endpoint": "v2026/sponsors"
+      "endpoint": "v2026/sponsors",
+      "loading": "Loading sponsors..."
     },
     "mentors": {
       "title": "Mentors",
@@ -85,6 +86,7 @@
     "categories": {
       "title": "Categories",
       "endpoint": "v2026/categories",
+      "loading": "Loading categories...",
       "web3": "Web3",
       "ia": "IA",
       "gameDev": "GameDev",
@@ -592,7 +594,8 @@
     },
     "sponsors": {
       "title": "Sponsors",
-      "endpoint": "v2026/sponsors"
+      "endpoint": "v2026/sponsors",
+      "loading": "Cargando sponsors..."
     },
     "mentors": {
       "title": "Mentores",
@@ -611,6 +614,7 @@
     "categories": {
       "title": "Categorías",
       "endpoint": "v2026/categories",
+      "loading": "Cargando categorías...",
       "web3": "Web3",
       "ia": "IA",
       "gameDev": "GameDev",
