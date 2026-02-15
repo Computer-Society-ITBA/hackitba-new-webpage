@@ -20,7 +20,7 @@ export function InfoCards({ translations }: InfoCardsProps) {
         <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-8 mb-8">
           <GlassCard className="px-8">
             <div className="mb-4">
-              <p className="font-pixel text-xs text-brand-yellow mb-2">GET</p>
+              <p className="font-pixel text-xs text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
               <p className="font-pixel text-md text-brand-yellow">v2026/about-us</p>
             </div>
             <div className="mb-8">
@@ -44,7 +44,7 @@ export function InfoCards({ translations }: InfoCardsProps) {
 
           <GlassCard className="px-8 flex flex-col">
             <div className="mb-4">
-              <p className="font-pixel text-xs text-brand-yellow mb-2">GET</p>
+              <p className="font-pixel text-xs text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
               <p className="font-pixel text-md text-brand-yellow">v2026/location</p>
             </div>
             <div className="mb-8">

@@ -17,7 +17,8 @@
     },
     "hero": {
       "title": "HACKITBA",
-      "subtitle": "By Computer Society ITBA"
+      "subtitle": "By Computer Society ITBA",
+      "signupOpen": "Signups are open!"
     },
     "stats": {
       "categories": "Categories",
@@ -542,7 +543,8 @@
     },
     "hero": {
       "title": "HACKITBA",
-      "subtitle": "By Computer Society ITBA"
+      "subtitle": "By Computer Society ITBA",
+      "signupOpen": "¡Están abiertas las inscripciones!"
     },
     "stats": {
       "categories": "Categorías",

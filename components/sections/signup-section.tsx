@@ -46,7 +46,7 @@ export function SignupSection({ translations, locale }: SignupSectionProps) {
       <div className="container mx-auto max-w-4xl">
         <div className="flex flex-col items-center mb-12">
           <div>
-            <p className="font-pixel text-md text-brand-yellow mb-2">POST</p>
+            <p className="font-pixel text-md text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
             <p className="font-pixel text-lg text-brand-yellow">{translations.signup.endpoint}</p>
           </div>
         </div>

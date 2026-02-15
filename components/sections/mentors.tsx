@@ -55,7 +55,7 @@ export function Mentors({ translations }: MentorsProps) {
       <div className="container mx-auto">
         <div className="flex flex-col items-center mb-12">
           <div className="mb-8">
-            <p className="font-pixel text-md text-brand-yellow mb-2">GET</p>
+            <p className="font-pixel text-md text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
             <p className="font-pixel text-lg text-brand-yellow">{translations.mentors.endpoint}</p>
           </div>
 

@@ -33,7 +33,7 @@ export function SponsorsCarousel({ translations }: SponsorsCarouselProps) {
       <div className="container mx-auto relative">
         <div className="flex flex-col items-center mb-12">
           <div>
-            <p className="font-pixel text-md text-brand-yellow mb-2">GET</p>
+            <p className="font-pixel text-md text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
             <p className="font-pixel text-lg text-brand-yellow">{translations.sponsors.endpoint}</p>
           </div>
         </div>
