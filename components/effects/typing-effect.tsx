@@ -21,7 +21,7 @@ export function TypingEffect({
   const [displayText, setDisplayText] = useState("")
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const typingSpeed = speed === "slow" ? 100 : 0.001
+  const typingSpeed = speed === "slow" ? 100 : 0.01
 
   useEffect(() => {
     if (currentIndex < text.length) {
