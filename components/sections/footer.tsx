@@ -64,7 +64,24 @@ export function Footer({ translations, locale }: FooterProps) {
 
           <div className="space-y-6">
             <p className="font-pixel text-xs text-brand-cyan text-center md:text-left">
-              {translations.footer.madeWith}
+              {(() => {
+                const madeWith: string = translations.footer.madeWith || ''
+                const heart = '🧡'
+                if (madeWith.includes(heart)) {
+                  const parts = madeWith.split(heart)
+                  return (
+                    <>
+                      {parts[0]}
+                      <Link href={`/${locale}/credits`} className="hover:scale-125 inline-block transition-transform">
+                        {heart}
+                      </Link>
+                      {parts[1]}
+                    </>
+                  )
+                }
+                // Fallback: render original string
+                return madeWith
+              })()}
             </p>
 
             <div>

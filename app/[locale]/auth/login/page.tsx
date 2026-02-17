@@ -12,6 +12,7 @@ import Link from "next/link"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { CodeBackground } from "@/components/effects/code-background"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { ArrowLeft, Home } from "lucide-react"
@@ -25,7 +26,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
-  const [randomLines, setRandomLines] = useState<string[]>([])
+  
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
@@ -52,13 +53,7 @@ export default function LoginPage() {
     loadSettings()
   }, [db])
 
-  // Generate decorative random lines only on client after mount (prevents SSR/client mismatch)
-  useEffect(() => {
-    const lines: string[] = Array.from({ length: 50 }, () =>
-      Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")
-    )
-    setRandomLines(lines)
-  }, [])
+  
 
   // Redirect when user is loaded after login
   useEffect(() => {
@@ -122,11 +117,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="font-pixel absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        {randomLines.map((line, i) => (
-          <div key={i}>{line}</div>
-        ))}
-      </div>
+      <CodeBackground />
 
       <div className="absolute top-4 left-4 z-20 flex gap-2">
         <button

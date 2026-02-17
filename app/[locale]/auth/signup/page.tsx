@@ -14,6 +14,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { toast } from "@/hooks/use-toast"
+import { CodeBackground } from "@/components/effects/code-background"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
 
@@ -188,13 +189,7 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="font-pixel absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }, (_, i) => (
-          <div key={i}>
-            {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
-          </div>
-        ))}
-      </div>
+      <CodeBackground />
 
       <div className="absolute top-4 left-4 z-20 flex gap-2">
         <button

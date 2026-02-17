@@ -1,6 +1,7 @@
 "use client"
 
 import { GlassCard } from "@/components/ui/glass-card"
+import { CodeBackground } from "@/components/effects/code-background"
 
 interface CreditsSectionProps {
   translations: any
@@ -16,13 +17,7 @@ export function CreditsSection({ translations, locale }: CreditsSectionProps) {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
-      <div className="[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-s text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        {Array.from({ length: 500 }, (_, i) => (
-          <div key={i}>
-            {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
-          </div>
-        ))}
-      </div>
+      <CodeBackground className="opacity-20" />
 
       <div className="relative z-10 w-full max-w-4xl mx-auto">
         <GlassCard className="p-8 md:p-12">

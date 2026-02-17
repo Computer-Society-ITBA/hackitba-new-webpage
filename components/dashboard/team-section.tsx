@@ -161,7 +161,10 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       return
     }
 
-    if (!confirm(t.dashboard.participant.toasts.confirmRemoveMember.prompt)) {
+    const confirmMsg = locale === "es"
+      ? "¿Estás seguro de que deseas eliminar este miembro del equipo?"
+      : "Are you sure you want to remove this team member?";
+    if (!confirm(confirmMsg)) {
       return
     }
 
