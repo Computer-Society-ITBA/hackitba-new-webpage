@@ -348,8 +348,9 @@
         "myProject": "My Project",
         "categoryNotAssigned": "Category not assigned",
         "teamStatus": {
-          "inProcess": "⏳ Status: In Process",
-          "inProcessDescription": "Your request is being reviewed by staff. We will assign you a team soon or you can join an existing one.",
+          "processTitle": "In Process",
+          "inProcess": "⏳ Status: Waiting for team assignment",
+          "inProcessDescription": "Your request is being reviewed by staff. We will assign you a team soon. Please wait for confirmation.",
           "noTeam": "⚠️ You don't have a team yet",
           "noTeamDescription": "You are currently without a team. You can create a new team or join an existing one, ask for the code."
         },
@@ -852,8 +853,9 @@
         "myProject": "Mi Proyecto",
         "categoryNotAssigned": "Categoria no asignada",
         "teamStatus": {
-          "inProcess": "⏳ Estado: En Proceso",
-          "inProcessDescription": "Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto o podrás unirte a uno existente.",
+          "processTitle": "En Proceso",
+          "inProcess": "⏳ Estado: Esperando asignación de equipo",
+          "inProcessDescription": "Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto. Por favor espera la confirmación.",
           "noTeam": "⚠️ No tienes equipo aún",
           "noTeamDescription": "Actualmente estás sin equipo. Puedes crear un nuevo equipo o unirte a uno existente, pide el código."
         },

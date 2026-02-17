@@ -1,0 +1,33 @@
+# .gcloudignore — controls files uploaded when deploying functions
+# Format follows .gitignore semantics
+
+# Ignore local scripts used for maintenance / templates
+src/scripts/
+scripts/
+
+# Node and tooling
+node_modules/
+npm-debug.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+
+# Git
+.git
+.gitignore
+
+# Keep compiled output and package files
+!lib/
+!package.json
+
+# Exclude compiled scripts directory (keep other lib files)
+lib/scripts/
+lib/**/scripts/

@@ -13,7 +13,6 @@ import {
 import {getTeamByLabel} from "../services/teamService";
 import {
   sendWelcomeEmail,
-  sendEventConfirmationEmail,
   sendPasswordResetEmail,
   sendTeamAssignmentAcceptedEmail,
   sendTeamAssignmentRejectedEmail,
@@ -72,14 +71,6 @@ export const register = async (
       // Don't fail the request if email fails
     }
 
-    // Send welcome email
-    try {
-      await sendWelcomeEmail(email, name);
-    } catch (emailError) {
-      logger.error("Error sending welcome email:", emailError);
-      // Don't fail the request if email fails
-    }
-
     return res.status(201).json({
       message: "User registered successfully. Please verify your email.",
       uid: result.uid,
@@ -100,6 +91,7 @@ export const register = async (
 
 export const registerEvent = async (req: Request, res: Response) => {
   try {
+    // Accept both snake_case and camelCase from clients
     // eslint-disable-next-line camelcase
     const {
       userId,
@@ -107,6 +99,8 @@ export const registerEvent = async (req: Request, res: Response) => {
       university,
       career,
       age,
+      // link_cv / linkCv
+      linkCv,
       link_cv,
       linkedin,
       instagram,
@@ -114,9 +108,15 @@ export const registerEvent = async (req: Request, res: Response) => {
       github,
       team,
       hasTeam,
+      // food_preference / foodPreference
+      foodPreference,
       food_preference,
+      // categories
+      category1,
       category_1,
+      category2,
       category_2,
+      category3,
       category_3,
       company,
       position,
@@ -132,30 +132,31 @@ export const registerEvent = async (req: Request, res: Response) => {
       university,
       career,
       age,
-      link_cv,
-      linkedin,
-      instagram,
-      twitter,
-      github,
-      team,
-      hasTeam,
-      food_preference,
-      category_1,
-      category_2,
-      category_3,
-      company,
-      position,
-      photo
+      // prefer snake_case if provided (received from some clients), otherwise camelCase
+      (link_cv as string | null) ?? (linkCv as string | null) ?? null,
+      linkedin ?? null,
+      instagram ?? null,
+      twitter ?? null,
+      github ?? null,
+      team ?? null,
+      typeof hasTeam === "boolean" ? hasTeam : !!hasTeam,
+      (food_preference as string) ?? (foodPreference as string) ?? "",
+      (category_1 as number) ?? (category1 as number) ?? null,
+      (category_2 as number) ?? (category2 as number) ?? null,
+      (category_3 as number) ?? (category3 as number) ?? null,
+      company ?? null,
+      position ?? null,
+      photo ?? null
     );
 
-    // Get user to send confirmation email
+    // Get user to send welcome email
     const user = await getUserByIdComplete(userId);
     if (user) {
       try {
         const userData = user as {email: string; name: string; role: string};
-        await sendEventConfirmationEmail(userData.email, userData.name, userData.role);
+        await sendWelcomeEmail(userData.email, userData.name);
       } catch (emailError) {
-        logger.error("Error sending event confirmation email:", emailError);
+        logger.error("Error sending welcome email:", emailError);
         // Don't fail the request if email fails
       }
     }
@@ -163,8 +164,7 @@ export const registerEvent = async (req: Request, res: Response) => {
     logger.info(`Event registration successful for userId: ${userId}`);
     return res.status(200).json({message: "Registro al evento exitoso"});
   } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const err = error as any;
+    const err = error as Error;
     logger.error("RegisterEvent error:", err.message || err);
     if (err.message === "El equipo especificado no existe") {
       return res.status(404).json({error: err.message});
@@ -474,6 +474,8 @@ export const verifyEmail = async (req: Request, res: Response) => {
     }
 
     await markTokenAsVerified(token, tokenData.userId);
+
+    // ...existing code...
 
     return res.status(200).json({
       message: "Email verificado exitosamente",

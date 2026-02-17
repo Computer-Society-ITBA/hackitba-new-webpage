@@ -32,7 +32,6 @@ const MAIL_COLLECTION = "mail";
 const templates = [
   "welcome",
   "emailVerification",
-  "registrationSuccess",
   "registrationIncomplete",
   "teamNotification_joined",
   "eventReminder",
@@ -93,7 +92,7 @@ async function sendTemplatePreview(email: string) {
 
     console.log(
       `\n🎉 ¡Todos los templates han sido enviados a ${email}!\n` +
-      `Deberías recibirlos en los próximos minutos una vez que Firebase procese los emails.`
+      "Deberías recibirlos en los próximos minutos una vez que Firebase procese los emails."
     );
   } catch (error) {
     console.error("❌ Error:", error);

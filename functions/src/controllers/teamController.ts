@@ -8,33 +8,31 @@ import {sendTeamNotificationEmail} from "../services/emailService";
 
 // eslint-disable-next-line camelcase
 interface TeamRequestData {
-    name: string;
-    tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+  name: string;
+  tell_why: string;
+  category_1: number;
+  category_2: number;
+  category_3: number;
   uid?: string;
 }
 
 // eslint-disable-next-line camelcase
 interface TeamResponseData {
-    id: string;
-    name: string;
-    tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
-    status: string;
+  id: string;
+  name: string;
+  tell_why: string;
+  category_1: number;
+  category_2: number;
+  category_3: number;
+  status: string;
   uid: string | null;
 }
 
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
-    // eslint-disable-next-line camelcase
     const {name, tell_why, category_1, category_2, category_3, uid}: TeamRequestData = req.body;
 
-    // eslint-disable-next-line camelcase
     logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid});
 
     // Validaciones

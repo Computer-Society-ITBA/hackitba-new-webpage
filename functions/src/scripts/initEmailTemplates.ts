@@ -30,7 +30,7 @@ const templates = {
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>HackITBA - Bienvenida</title>
+  <title>HackITBA - Bienvenido</title>
   <style type="text/css">
     table { border-collapse: collapse; }
     img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
@@ -90,12 +90,12 @@ const templates = {
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: center;">
                     Gracias por registrarte en HackItBA. Estamos emocionados de tenerte con nosotros.
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                  <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: center;">
                     Ya puedes acceder a tu cuenta e historia en el evento.
                   </td>
                 </tr>
@@ -103,8 +103,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Ir a mi Dashboard
                           </a>
                         </td>
@@ -238,8 +238,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{verificationLink}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{verificationLink}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Verificar mi email
                           </a>
                         </td>
@@ -312,14 +312,14 @@ const templates = {
     variables: ["verificationLink"],
   },
   registrationSuccess: {
-    subject: "HackITBA - ¡Ya estás inscripto!",
+    subject: "¡Bienvenido a HackItBA!",
     html: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>HackITBA - Inscripción Exitosa</title>
+  <title>HackITBA - Bienvenida</title>
   <style type="text/css">
     table { border-collapse: collapse; }
     img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
@@ -327,6 +327,12 @@ const templates = {
     img { -ms-interpolation-mode: bicubic; }
     #outlook a { padding: 0; }
     table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a [x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
     @media screen and (max-width: 480px) {
       .mw100 { max-width: 100% !important; }
       .w100 { width: 100% !important; }
@@ -361,7 +367,7 @@ const templates = {
                     <table cellpadding="0" cellspacing="0" border="0" style="width: 85%" class="w100">
                       <tr>
                         <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
-                          ¡Ya estás inscripto a la HackITBA!
+                          ¡Bienvenido a HackItBA!
                         </td>
                       </tr>
                     </table>
@@ -369,22 +375,30 @@ const templates = {
                 </tr>
                 <tr>
                   <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 22px; color: #101214; text-align: center;">
-                    ¡Estamos felices de que seas parte, {{name}}!
+                    ¡Hola {{name}}!
                   </td>
                 </tr>
                 <tr>
                   <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
-                    Te confirmamos que hemos recibido correctamente tu formulario de inscripción. Tu lugar para la competencia está reservado.
+                    Gracias por registrarte en HackItBA. Estamos emocionados de tenerte con nosotros.
                   </td>
                 </tr>
                 <tr>
                   <td style="padding-top: 20px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
-                    No te olvides de seguirnos en nuestras redes sociales para enterarte de todas las novedades y anuncios importantes antes del evento.
+                    Ya puedes acceder a tu cuenta e historia en el evento.
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding-top: 40px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
-                    ¡Nos vemos pronto!
+                  <td align="center" style="padding-top: 40px">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                            Ir a mi Dashboard
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
@@ -434,8 +448,8 @@ const templates = {
   </table>
 </body>
 </html>`,
-    description: "Email de confirmación de inscripción exitosa",
-    variables: ["name"],
+    description: "Email de bienvenida para nuevos usuarios registrados",
+    variables: ["name", "dashboardUrl"],
   },
   registrationIncomplete: {
     subject: "HackITBA - Tu inscripción está incompleta",
@@ -507,8 +521,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Completar mi inscripción
                           </a>
                         </td>
@@ -631,8 +645,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Ver mi equipo
                           </a>
                         </td>
@@ -885,8 +899,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{projectsLink}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{projectsLink}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Ver proyectos y resultados
                           </a>
                         </td>
@@ -1020,8 +1034,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{resetLink}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{resetLink}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Restablecer Contraseña
                           </a>
                         </td>
@@ -1150,8 +1164,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Ver mi equipo
                           </a>
                         </td>
@@ -1280,8 +1294,8 @@ const templates = {
                   <td align="center" style="padding-top: 40px">
                     <table cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
-                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                        <td align="center" style="border-radius: 3px; background-color: #EF802F;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 2px solid #EF802F; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
                             Ver mi equipo
                           </a>
                         </td>
@@ -1351,7 +1365,7 @@ async function initializeTemplates(): Promise<void> {
     if (!admin.apps.length) {
       console.log(`🔧 Inicializando Firebase Admin con proyecto: ${PROJECT_ID}`);
       console.log(`📦 Usando base de datos: ${DATABASE_ID}\n`);
-      
+
       // Try to load service account key
       const serviceAccountPath = path.join(__dirname, "..", "..", "service-account-key.json");
       try {

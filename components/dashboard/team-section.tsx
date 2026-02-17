@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { getAuth } from "firebase/auth"
 import { useRouter, useParams } from "next/navigation"
 import type { Locale } from "@/lib/i18n/config"
+import { getTranslations } from "@/lib/i18n/get-translations"
 
 interface TeamMember {
   id: string
@@ -58,6 +59,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   const router = useRouter()
   const params = useParams()
   const locale = (params.locale as Locale) || "es"
+  const t = getTranslations(locale)
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -393,21 +395,21 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
           <div className="text-center space-y-2 max-w-md">
             {isInProcess ? (
               <>
-                <p className="text-brand-orange font-pixel text-lg">En Proceso</p>
+                <p className="text-brand-orange font-pixel text-lg">{locale === "es" ? t.dashboard.participant.teamStatus.processTitle : t.dashboard.participant.teamStatus.processTitle}</p>
                 <p className="text-brand-cyan/90 text-sm">
-                  Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto. Por favor espera la confirmación.
+                  {t.dashboard.participant.teamStatus.inProcessDescription}
                 </p>
                 <div className="mt-4 p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
                   <p className="text-brand-orange text-xs font-pixel">
-                    ⏳ Estado: Esperando asignación de equipo
+                    {t.dashboard.participant.teamStatus.inProcess}
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <p className="text-brand-yellow font-pixel text-lg">Without Team</p>
+                <p className="text-brand-yellow font-pixel text-lg">{t.dashboard.participant.teamStatus.noTeam}</p>
                 <p className="text-brand-cyan/90 text-sm">
-                  You are currently a solo participant. You can join an existing team using a team code or create a new team.
+                  {t.dashboard.participant.teamStatus.noTeamDescription}
                 </p>
               </>
             )}

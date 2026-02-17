@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
+  const [randomLines, setRandomLines] = useState<string[]>([])
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
@@ -49,6 +50,14 @@ export default function LoginPage() {
     }
     loadSettings()
   }, [db])
+
+  // Generate decorative random lines only on client after mount (prevents SSR/client mismatch)
+  useEffect(() => {
+    const lines: string[] = Array.from({ length: 50 }, () =>
+      Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")
+    )
+    setRandomLines(lines)
+  }, [])
 
   // Redirect when user is loaded after login
   useEffect(() => {
@@ -98,10 +107,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="font-pixel absolute inset-0 opacity-5 text-xs text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }, (_, i) => (
-          <div key={i}>
-            {Array.from({ length: 100 }, () => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join("")}
-          </div>
+        {randomLines.map((line, i) => (
+          <div key={i}>{line}</div>
         ))}
       </div>
 
