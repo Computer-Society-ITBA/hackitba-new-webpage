@@ -13,6 +13,7 @@ import { ChevronRight, ArrowLeft, Home } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { NeonGlow } from "@/components/effects/neon-glow"
+import { toast } from "@/hooks/use-toast"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
 
@@ -76,29 +77,39 @@ function SignupContent() {
     setError("")
 
     if (!signupEnabled) {
-      setError(translations.auth.signup.errors.signupDisabled)
+      const msg = translations.auth.signup.errors.signupDisabled
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
       return
     }
 
     // Validation
     if (!formData.name || !formData.surname || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError(translations.auth.signup.errors.fillAllFields)
+      const msg = translations.auth.signup.errors.fillAllFields
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      setError(translations.auth.signup.errors.invalidEmail)
+      const msg = translations.auth.signup.errors.invalidEmail
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
       return
     }
 
     if (formData.password.length < 6) {
-      setError(translations.auth.signup.errors.passwordTooShort)
+      const msg = translations.auth.signup.errors.passwordTooShort
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError(translations.auth.signup.errors.passwordMismatch)
+      const msg = translations.auth.signup.errors.passwordMismatch
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
       return
     }
 
@@ -159,7 +170,9 @@ function SignupContent() {
       router.push(`/${locale}/auth/verify-email-required`)
     } catch (err: any) {
       console.error("Registration error:", err)
-      setError(err.message || translations.auth.signup.errors.createFailed)
+      const msg = err?.message || translations.auth.signup.errors.createFailed
+      setError(msg)
+      toast({ title: translations.auth.signup.title || (locale === "es" ? "Error" : "Error"), description: msg, variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -214,13 +227,13 @@ function SignupContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label htmlFor="name" className="text-brand-cyan font-pixel text-xs">
-                  {translations.auth.signup.fields.name}
+                  {translations.auth.signup.fields.name} <span className="text-red-400">{translations.auth.signup.validation.required}</span>
                 </Label>
                 <Input id="name" value={formData.name} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="surname" className="text-brand-cyan font-pixel text-xs">
-                  {translations.auth.signup.fields.surname}
+                  {translations.auth.signup.fields.surname} <span className="text-red-400">{translations.auth.signup.validation.required}</span>
                 </Label>
                 <Input id="surname" value={formData.surname} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" />
               </div>
@@ -228,21 +241,21 @@ function SignupContent() {
 
             <div className="space-y-1">
               <Label htmlFor="email" className="text-brand-cyan font-pixel text-xs">
-                {translations.auth.signup.fields.email}
+                {translations.auth.signup.fields.email} <span className="text-red-400">{translations.auth.signup.validation.required}</span>
               </Label>
               <Input id="email" type="email" value={formData.email} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.emailPlaceholder} />
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="password" className="text-brand-cyan font-pixel text-xs">
-                {translations.auth.signup.fields.password}
+                {translations.auth.signup.fields.password} <span className="text-red-400">{translations.auth.signup.validation.required}</span>
               </Label>
               <Input id="password" type="password" value={formData.password} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="confirmPassword" className="text-brand-cyan font-pixel text-xs">
-                {translations.auth.signup.fields.confirmPassword}
+                {translations.auth.signup.fields.confirmPassword} <span className="text-red-400">{translations.auth.signup.validation.required}</span>
               </Label>
               <Input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleInputChange} className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan h-9" placeholder={translations.auth.signup.fields.passwordPlaceholder} />
             </div>
@@ -254,11 +267,7 @@ function SignupContent() {
               </div>
             )}
 
-            {error && (
-              <div className="p-2 rounded bg-red-500/10 border border-red-500/30">
-                <p className="text-red-400 text-xs">{error}</p>
-              </div>
-            )}
+            {/* Errors are shown with toast notifications */}
 
             <div className="p-2 rounded bg-brand-cyan/5 border border-brand-cyan/20">
               <p className="text-brand-cyan/70 text-[10px] leading-tight">

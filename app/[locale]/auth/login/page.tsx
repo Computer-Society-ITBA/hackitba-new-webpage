@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { ArrowLeft, Home } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 import { doc, getDoc } from "firebase/firestore"
 
 export default function LoginPage() {
@@ -99,7 +100,22 @@ export default function LoginPage() {
       console.log("Login successful, waiting for user data...")
       setShouldRedirect(true)
     } catch (error: any) {
-      setError(error.message || translations.auth.login.errors.loginFailed)
+      // Map Firebase auth errors to friendly, localized messages
+      const code: string | undefined = error?.code || (typeof error?.message === 'string' ? (error.message.match(/auth\/[\w-]+/) || [])[0] : undefined)
+      let msg = translations.auth.login.errors.loginFailed
+
+      if (code && /invalid-credential|wrong-password|invalid-login-credentials|user-not-found/.test(code)) {
+        msg = translations.auth.login.errors.invalidCredentials
+      } else if (error?.message && typeof error.message === 'string') {
+        msg = error.message
+      }
+
+      toast({
+        title: translations.auth.login.errors.loginFailed || (locale === "es" ? "Error" : "Error"),
+        description: msg,
+        variant: "destructive",
+      })
+      setError(msg)
       setLoading(false)
     }
   }
@@ -169,11 +185,7 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && (
-              <div className="p-3 rounded bg-red-500/10 border border-red-500/30">
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            )}
+            {/* Errors are shown via toast notifications */}
 
             <PixelButton type="submit" disabled={loading} className="w-full" size="lg">
               {loading ? translations.auth.login.buttons.loggingIn : translations.auth.login.buttons.login}

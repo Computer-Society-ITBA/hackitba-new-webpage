@@ -8,6 +8,7 @@ import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings, Copy, Check } fro
 import * as LucideIcons from "lucide-react"
 import type { User } from "@/lib/firebase/types"
 import { PixelButton } from "@/components/ui/pixel-button"
+import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -152,11 +153,15 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     if (!team || !userTeamLabel) return
 
     if (!signupEnabled) {
-      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      toast({
+        title: t.dashboard.participant.toasts.actionNotAllowed.title,
+        description: t.dashboard.participant.toasts.actionNotAllowed.description,
+        variant: "destructive",
+      })
       return
     }
 
-    if (!confirm("¿Estás seguro de que quieres eliminar este miembro del equipo?")) {
+    if (!confirm(t.dashboard.participant.toasts.confirmRemoveMember.prompt)) {
       return
     }
 
@@ -181,7 +186,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       setMembers(members.filter(m => m.id !== memberId))
     } catch (error: any) {
       console.error("Error removing member:", error)
-      alert(error.message || "Error al eliminar miembro")
+      toast({
+        title: t.dashboard.participant.toasts.removeMember.error.title,
+        description: error.message || t.dashboard.participant.toasts.removeMember.error.description,
+        variant: "destructive",
+      })
     }
   }
 
@@ -198,7 +207,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     if (!editingMember || !userTeamLabel) return
 
     if (!signupEnabled) {
-      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      toast({
+        title: t.dashboard.participant.toasts.actionNotAllowed.title,
+        description: t.dashboard.participant.toasts.actionNotAllowed.description,
+        variant: "destructive",
+      })
       return
     }
 
@@ -234,7 +247,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       setEditingMember(null)
     } catch (error: any) {
       console.error("Error updating member:", error)
-      alert(error.message || "Error al actualizar miembro")
+      toast({
+        title: t.dashboard.participant.toasts.updateMember.error.title,
+        description: error.message || t.dashboard.participant.toasts.updateMember.error.description,
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -253,7 +270,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     if (!team || !userTeamLabel) return
 
     if (!signupEnabled) {
-      alert(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      toast({
+        title: t.dashboard.participant.toasts.actionNotAllowed.title,
+        description: t.dashboard.participant.toasts.actionNotAllowed.description,
+        variant: "destructive",
+      })
       return
     }
 
@@ -282,7 +303,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       setEditingTeam(false)
     } catch (error: any) {
       console.error("Error updating team:", error)
-      alert(error.message || "Error al actualizar equipo")
+      toast({
+        title: t.dashboard.participant.toasts.updateTeam.error.title,
+        description: error.message || t.dashboard.participant.toasts.updateTeam.error.description,
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -320,12 +345,24 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   const handleRejoinTeam = async () => {
     if (!rejoinCode.trim()) {
-      setRejoinError("Please enter a team code")
+      const enterMsg = t.dashboard.participant.toasts.rejoin.enterCode
+      setRejoinError(enterMsg)
+      toast({
+        title: t.dashboard.participant.toasts.rejoin.error.title,
+        description: enterMsg,
+        variant: "destructive",
+      })
       return
     }
 
     if (!signupEnabled) {
-      setRejoinError(locale === "es" ? "No se pueden hacer cambios al equipo mientras las inscripciones están cerradas" : "Cannot make team changes while signup is disabled")
+      const msg = t.dashboard.participant.toasts.actionNotAllowed.description
+      setRejoinError(msg)
+      toast({
+        title: t.dashboard.participant.toasts.actionNotAllowed.title,
+        description: msg,
+        variant: "destructive",
+      })
       return
     }
 
@@ -355,7 +392,13 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       window.location.reload()
     } catch (error: any) {
       console.error("Error joining team:", error)
-      setRejoinError(error.message || "Error joining team. Check the team code.")
+      const msg = error.message || t.dashboard.participant.toasts.rejoin.error.description
+      setRejoinError(msg)
+      toast({
+        title: t.dashboard.participant.toasts.rejoin.error.title,
+        description: msg,
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -548,14 +591,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                     <>
                       <Check className="w-4 h-4 text-green-400" />
                       <span className="text-xs font-pixel text-green-400">
-                        {locale === "es" ? "¡Copiado!" : "Copied!"}
+                        {t.dashboard.participant.toasts.copyTeamCode.success.title}
                       </span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
                       <span className="text-xs font-pixel">
-                        {locale === "es" ? "Copiar código del equipo" : "Copy team code"}
+                        {t.dashboard.participant.toasts.copyTeamCode.button}
                       </span>
                     </>
                   )}

@@ -190,7 +190,8 @@
         },
         "errors": {
           "firebaseNotConfigured": "Firebase Auth is not configured",
-          "loginFailed": "Failed to log in"
+          "loginFailed": "Failed to log in",
+          "invalidCredentials": "Email or password is incorrect"
         }
       },
       "verifyEmail": {
@@ -390,6 +391,118 @@
             "title": "Team required",
             "description": "You need a team to submit a project."
           }
+        ,
+        "actionNotAllowed": {
+          "title": "Acción no permitida",
+          "description": "Los cambios en el equipo están deshabilitados mientras las inscripciones están cerradas."
+        },
+        "confirmRemoveMember": {
+          "prompt": "¿Estás seguro de que quieres eliminar este miembro del equipo?"
+        },
+        "removeMember": {
+          "success": {
+            "title": "Miembro eliminado",
+            "description": "El miembro fue eliminado del equipo."
+          },
+          "error": {
+            "title": "Error al eliminar miembro",
+            "description": "No se pudo eliminar el miembro. Por favor intenta de nuevo."
+          }
+        },
+        "updateMember": {
+          "success": {
+            "title": "Miembro actualizado",
+            "description": "Los datos del miembro fueron actualizados exitosamente."
+          },
+          "error": {
+            "title": "Error al actualizar miembro",
+            "description": "No se pudo actualizar el miembro. Por favor intenta de nuevo."
+          }
+        },
+        "updateTeam": {
+          "success": {
+            "title": "Equipo actualizado",
+            "description": "La información del equipo fue guardada exitosamente."
+          },
+          "error": {
+            "title": "Error al actualizar equipo",
+            "description": "No se pudo actualizar el equipo. Por favor intenta de nuevo."
+          }
+        },
+        "rejoin": {
+          "enterCode": "Por favor ingresa un código de equipo",
+          "success": {
+            "title": "Te uniste al equipo",
+            "description": "Has sido agregado al equipo."
+          },
+          "error": {
+            "title": "Error al unirse al equipo",
+            "description": "No se pudo unir al equipo. Verifica el código e intenta de nuevo."
+          }
+        },
+        "copyTeamCode": {
+          "success": {
+            "title": "Copiado",
+            "description": "Código de equipo copiado al portapapeles."
+          },
+          "button": "Copiar código del equipo"
+        }
+        ,
+        "actionNotAllowed": {
+          "title": "Action not allowed",
+          "description": "Team changes are disabled while signups are closed."
+        },
+        "confirmRemoveMember": {
+          "prompt": "Are you sure you want to remove this team member?"
+        },
+        "removeMember": {
+          "success": {
+            "title": "Member removed",
+            "description": "The member was removed from the team."
+          },
+          "error": {
+            "title": "Error removing member",
+            "description": "Could not remove member. Please try again."
+          }
+        },
+        "updateMember": {
+          "success": {
+            "title": "Member updated",
+            "description": "Member details updated successfully."
+          },
+          "error": {
+            "title": "Error updating member",
+            "description": "Could not update member. Please try again."
+          }
+        },
+        "updateTeam": {
+          "success": {
+            "title": "Team updated",
+            "description": "Team information saved successfully."
+          },
+          "error": {
+            "title": "Error updating team",
+            "description": "Could not update team. Please try again."
+          }
+        },
+        "rejoin": {
+          "enterCode": "Please enter a team code",
+          "success": {
+            "title": "Joined team",
+            "description": "You have joined the team."
+          },
+          "error": {
+            "title": "Error joining team",
+            "description": "Could not join the team. Check the team code and try again."
+          }
+        },
+        "copyTeamCode": {
+          "success": {
+            "title": "Copied",
+            "description": "Team code copied to clipboard."
+          },
+          "button": "Copy team code"
+        }
         },
         "errors": {
           "storageNotConfigured": "Firebase Storage is not configured"
@@ -719,7 +832,8 @@
         },
         "errors": {
           "firebaseNotConfigured": "Firebase Auth no está configurado",
-          "loginFailed": "Fallo al iniciar sesión"
+          "loginFailed": "Fallo al iniciar sesión",
+          "invalidCredentials": "El correo o la contraseña son incorrectos"
         }
       },
       "eventSignup": {
