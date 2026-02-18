@@ -8,32 +8,33 @@ import {sendTeamNotificationEmail} from "../services/emailService";
 
 // eslint-disable-next-line camelcase
 interface TeamRequestData {
-  name: string;
-  tell_why: string;
-  category_1: number;
-  category_2: number;
-  category_3: number;
+    name: string;
+    tell_why: string;
+    category_1: number;
+    category_2: number;
+    category_3: number;
   uid?: string;
+  is_created_by_admin?: boolean;
 }
 
 // eslint-disable-next-line camelcase
 interface TeamResponseData {
-  id: string;
-  name: string;
-  tell_why: string;
-  category_1: number;
-  category_2: number;
-  category_3: number;
-  status: string;
+    id: string;
+    name: string;
+    tell_why: string;
+    category_1: number;
+    category_2: number;
+    category_3: number;
+    status: string;
   uid: string | null;
 }
 
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
-    const {name, tell_why, category_1, category_2, category_3, uid}: TeamRequestData = req.body;
+    const {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin}: TeamRequestData = req.body;
 
-    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid});
+    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin});
 
     // Validaciones
     if (!name || name.trim().length < 3) {
@@ -106,6 +107,7 @@ export const createTeam = async (req: Request, res: Response) => {
       category_3,
       category: typeof category_1 === "number" ? category_1 : null,
       admin_id: adminId,
+      is_created_by_admin: is_created_by_admin === true,
       is_finalista: false,
       link_deploy: null,
       link_github: null,

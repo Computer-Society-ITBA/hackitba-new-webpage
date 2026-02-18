@@ -15,6 +15,7 @@ export interface TeamData {
     link_deploy: string | null;
     link_github: string | null;
     status: string;
+    is_created_by_admin: boolean;
     createdAt: admin.firestore.FieldValue;
     updatedAt: admin.firestore.FieldValue;
 }

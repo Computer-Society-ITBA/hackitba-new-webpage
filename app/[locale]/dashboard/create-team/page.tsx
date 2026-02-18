@@ -194,6 +194,7 @@ function CreateTeamContent() {
                 category_2,
                 category_3,
                 uid: adminUser.id,
+                is_created_by_admin: false,
             }
             console.log("Creating team...", payload)
 
