@@ -625,16 +625,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               <div className="flex flex-row items-center gap-4">
                 <Users className="w-6 h-6 text-brand-cyan" />
                 <h3 className="font-pixel text-lg text-brand-yellow">{team.name}</h3>
-                {isAdmin && (
-                  <button
-                    onClick={handleEditTeam}
-                    disabled={!signupEnabled}
-                    className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
-                    title={signupEnabled ? "Edit team" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </button>
-                )}
+                <button
+                  onClick={handleEditTeam}
+                  disabled={!signupEnabled}
+                  className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
+                  title={signupEnabled ? (isAdmin ? "Edit team" : (locale === "es" ? "Solicitar cambio de nombre" : "Request name change")) : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
               </div>
               {team.status && (
                 <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
@@ -709,7 +707,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {member.isAdmin && (
+                  {member.isAdmin && !editingTeam && !editingMember && (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 border border-brand-yellow/40">
                       <Crown className="w-4 h-4 text-brand-yellow" />
                       <span className="text-brand-yellow font-pixel text-xs">Admin</span>
@@ -805,7 +803,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             </div>
             <div className="space-y-2">
               <Label className="text-brand-cyan text-xs">Why this team?</Label>
-              <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm">
+              <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm break-words break-all whitespace-pre-wrap">
                 {teamForm.tell_why || "No description provided"}
               </div>
             </div>
