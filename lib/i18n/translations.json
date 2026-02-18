@@ -98,27 +98,27 @@
       "healthTech": "HealthTech"
     },
     "weProvide": {
-      "title": "BENEFITS ⇄ REQUIREMENTS",
-      "subtitle": "Compare what we provide vs. what you need to bring",
+      "title": "WHAT WE OFFER ⇄ WHAT YOU NEED",
+      "subtitle": "Everything provided by us, and what we expect from you",
       "items": [
-        "const workshops: Workshop[] = ['AI/ML', 'Cloud Architecture', 'Security'];",
-        "const mentors: Mentor[] = industryExperts.filter(m => m.available);",
-        "const infrastructure: Cloud = { provider: 'AWS', credits: 'unlimited' };",
-        "const food: Catering = { meals: 3, snacks: true, coffee: 'unlimited' };",
-        "const network: Community = { students: 500, companies: 20, speakers: 15 };",
-        "const swag: Merch = { tshirts: true, stickers: true, exclusive: true };",
-        "const prizes: Prize[] = [{ place: 1, amount: '$5000' }, { place: 2, amount: '$3000' }];"
+        "Technical workshops on AI, cloud architecture, and modern development",
+        "Mentorship from industry professionals and experienced engineers",
+        "Cloud infrastructure credits and development tools",
+        "Full catering: meals, snacks, and unlimited coffee",
+        "Networking with 500+ students, 20 companies, and 15 expert speakers",
+        "Exclusive swag, t-shirts, and event merchandise",
+        "Cash prizes: $5,000 first place, $3,000 second place"
       ]
     },
     "youBring": {
       "title": "Requirements",
       "items": [
-        "let curiosity: boolean = true;",
-        "let laptop: Device = { charged: true, ready: true };",
-        "let teamSpirit: Attitude = 'collaborative';",
-        "let openMind: Mindset = 'growth-oriented';",
-        "let commitment: Duration = '48-hours';",
-        "let passion: Level = 'maximum';"
+        "Curiosity and eagerness to learn new technologies",
+        "A laptop, fully charged and ready to code",
+        "Collaborative team spirit and positive attitude",
+        "Open mindset for experimentation and innovation",
+        "Commitment to participate for the full event duration",
+        "Passion for building and creating solutions"
       ]
     },
     "signup": {
@@ -754,27 +754,27 @@
       "healthTech": "HealthTech"
     },
     "weProvide": {
-      "title": "BENEFICIOS ⇄ REQUISITOS",
-      "subtitle": "Compara lo que te damos vs. lo que necesitas traer",
+      "title": "LO QUE OFRECEMOS ⇄ LO QUE NECESITAS",
+      "subtitle": "Todo lo que proveemos y lo que esperamos de vos",
       "items": [
-        "const talleres: Taller[] = ['IA/ML', 'Arquitectura Cloud', 'Seguridad'];",
-        "const mentores: Mentor[] = expertosIndustria.filter(m => m.disponible);",
-        "const infraestructura: Cloud = { proveedor: 'AWS', creditos: 'ilimitados' };",
-        "const comida: Catering = { comidas: 3, snacks: true, cafe: 'ilimitado' };",
-        "const red: Comunidad = { estudiantes: 500, empresas: 20, speakers: 15 };",
-        "const merchandising: Merch = { remeras: true, stickers: true, exclusivo: true };",
-        "const premios: Premio[] = [{ puesto: 1, monto: '$5000' }, { puesto: 2, monto: '$3000' }];"
+        "Talleres técnicos sobre IA, arquitectura cloud y desarrollo moderno",
+        "Mentoría de profesionales de la industria e ingenieros experimentados",
+        "Créditos de infraestructura cloud y herramientas de desarrollo",
+        "Catering completo: comidas, snacks y café ilimitado",
+        "Networking con más de 500 estudiantes, 20 empresas y 15 speakers expertos",
+        "Merchandising exclusivo, remeras y productos del evento",
+        "Premios en efectivo: $5,000 primer lugar, $3,000 segundo lugar"
       ]
     },
     "youBring": {
       "title": "Requisitos",
       "items": [
-        "let curiosidad: boolean = true;",
-        "let laptop: Dispositivo = { cargada: true, lista: true };",
-        "let espirituEquipo: Actitud = 'colaborativa';",
-        "let menteAbierta: Mentalidad = 'orientada-al-crecimiento';",
-        "let compromiso: Duracion = '48-horas';",
-        "let pasion: Nivel = 'maximo';"
+        "Curiosidad y ganas de aprender nuevas tecnologías",
+        "Una laptop, completamente cargada y lista para programar",
+        "Espíritu de equipo colaborativo y actitud positiva",
+        "Mentalidad abierta para experimentar e innovar",
+        "Compromiso de participar durante todo el evento",
+        "Pasión por construir y crear soluciones"
       ]
     },
     "signup": {

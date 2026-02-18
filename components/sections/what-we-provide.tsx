@@ -50,8 +50,8 @@ export function WhatWeProvide({ translations }: WhatWeProvideProps) {
         </div>
 
         <DiffWindow
-          leftFile="computersociety.ts"
-          rightFile="participant.ts"
+          leftFile="benefits.md"
+          rightFile="checklist.md"
           leftLines={leftLines}
           rightLines={rightLines}
           onRightLineToggle={handleToggle}
