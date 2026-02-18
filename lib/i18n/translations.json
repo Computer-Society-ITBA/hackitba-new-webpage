@@ -98,18 +98,28 @@
       "healthTech": "HealthTech"
     },
     "weProvide": {
-      "title": "What We Provide",
-      "swag": "Swag",
-      "space": "Space for each team",
-      "mentors": "Professional mentors in the area",
-      "results": "Access to recruiters and companies",
-      "prizes": "Impressive prizes"
+      "title": "BENEFITS ⇄ REQUIREMENTS",
+      "subtitle": "Compare what we provide vs. what you need to bring",
+      "items": [
+        "const workshops: Workshop[] = ['AI/ML', 'Cloud Architecture', 'Security'];",
+        "const mentors: Mentor[] = industryExperts.filter(m => m.available);",
+        "const infrastructure: Cloud = { provider: 'AWS', credits: 'unlimited' };",
+        "const food: Catering = { meals: 3, snacks: true, coffee: 'unlimited' };",
+        "const network: Community = { students: 500, companies: 20, speakers: 15 };",
+        "const swag: Merch = { tshirts: true, stickers: true, exclusive: true };",
+        "const prizes: Prize[] = [{ place: 1, amount: '$5000' }, { place: 2, amount: '$3000' }];"
+      ]
     },
     "youBring": {
-      "title": "What You Bring",
-      "talent": "Your talent",
-      "sleepingBag": "Your sleeping bag",
-      "computer": "Your computer"
+      "title": "Requirements",
+      "items": [
+        "let curiosity: boolean = true;",
+        "let laptop: Device = { charged: true, ready: true };",
+        "let teamSpirit: Attitude = 'collaborative';",
+        "let openMind: Mindset = 'growth-oriented';",
+        "let commitment: Duration = '48-hours';",
+        "let passion: Level = 'maximum';"
+      ]
     },
     "signup": {
       "endpoint": "v2026/sign-up",
@@ -744,18 +754,28 @@
       "healthTech": "HealthTech"
     },
     "weProvide": {
-      "title": "Nosotros te damos",
-      "swag": "Comida",
-      "space": "Espacio para cada equipo",
-      "mentors": "Mentores profesionales en el área",
-      "results": "Acceso a reclutadores y empresas",
-      "prizes": "Premios impresionantes"
+      "title": "BENEFICIOS ⇄ REQUISITOS",
+      "subtitle": "Compara lo que te damos vs. lo que necesitas traer",
+      "items": [
+        "const talleres: Taller[] = ['IA/ML', 'Arquitectura Cloud', 'Seguridad'];",
+        "const mentores: Mentor[] = expertosIndustria.filter(m => m.disponible);",
+        "const infraestructura: Cloud = { proveedor: 'AWS', creditos: 'ilimitados' };",
+        "const comida: Catering = { comidas: 3, snacks: true, cafe: 'ilimitado' };",
+        "const red: Comunidad = { estudiantes: 500, empresas: 20, speakers: 15 };",
+        "const merchandising: Merch = { remeras: true, stickers: true, exclusivo: true };",
+        "const premios: Premio[] = [{ puesto: 1, monto: '$5000' }, { puesto: 2, monto: '$3000' }];"
+      ]
     },
     "youBring": {
-      "title": "Vos traes",
-      "talent": "Tu talento",
-      "sleepingBag": "Tu bolsa de dormir",
-      "computer": "Tu computadora"
+      "title": "Requisitos",
+      "items": [
+        "let curiosidad: boolean = true;",
+        "let laptop: Dispositivo = { cargada: true, lista: true };",
+        "let espirituEquipo: Actitud = 'colaborativa';",
+        "let menteAbierta: Mentalidad = 'orientada-al-crecimiento';",
+        "let compromiso: Duracion = '48-horas';",
+        "let pasion: Nivel = 'maximo';"
+      ]
     },
     "signup": {
       "endpoint": "v2026/sign-up",

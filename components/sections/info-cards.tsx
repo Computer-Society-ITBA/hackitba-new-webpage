@@ -198,6 +198,9 @@ export function InfoCards({ translations }: InfoCardsProps) {
     >
       <Timeline translations={translations} />
       <div className="container mx-auto max-w-5xl mt-16">
+        <h2 className="text-center mb-12 font-pixel text-3xl md:text-4xl text-brand-yellow mb-3 tracking-wider">
+          ABOUT HACKITBA
+        </h2>
         <TerminalWindow translations={translations} />
       </div>
     </section>

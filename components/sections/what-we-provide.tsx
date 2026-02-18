@@ -1,100 +1,62 @@
+// app/sections/what-we-provide.tsx
 "use client"
 
 import { useState } from "react"
-import { GlassCard } from "@/components/ui/glass-card"
-import { Square, SquareCheckBig } from "lucide-react"
+import { DiffWindow } from "@/components/effects/diff-window"
 
 interface WhatWeProvideProps {
   translations: any
 }
 
 export function WhatWeProvide({ translations }: WhatWeProvideProps) {
-  const weProvideItems = [
-    translations.weProvide.swag,
-    translations.weProvide.space,
-    translations.weProvide.mentors,
-    translations.weProvide.results,
-    translations.weProvide.prizes,
-  ]
-
-  const youBringItems = [
-    translations.youBring.talent,
-    translations.youBring.sleepingBag,
-    translations.youBring.computer,
-  ]
-
-  const [youBringChecked, setYouBringChecked] = useState<boolean[]>(
-    Array(youBringItems.length).fill(false)
+  const [checkedItems, setCheckedItems] = useState<boolean[]>(
+    new Array(translations.youBring.items.length).fill(false)
   )
 
-  const toggleYouBring = (index: number) => {
-    setYouBringChecked((prev) =>
-      prev.map((value, i) => (i === index ? !value : value))
-    )
+  const handleToggle = (index: number) => {
+    const newChecked = [...checkedItems]
+    newChecked[index] = !newChecked[index]
+    setCheckedItems(newChecked)
   }
 
+  const leftLines = translations.weProvide.items.map((item: string, idx: number) => ({
+    lineNumber: idx + 1,
+    content: item,
+    type: "add" as const
+  }))
+
+  const rightLines = translations.youBring.items.map((item: string, idx: number) => ({
+    lineNumber: idx + 1,
+    content: item,
+    type: "remove" as const
+  }))
+
   return (
-    <section className="py-20 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* WE PROVIDE */}
-          <GlassCard>
-            <h3 className="font-pixel text-md text-brand-yellow mb-6 text-center">
-              {translations.weProvide.title}
-            </h3>
-
-            <ul className="space-y-4">
-              {weProvideItems.map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <SquareCheckBig
-                    size={20}
-                    className="mt-1 text-brand-cyan hover:text-brand-orange transition-colors opacity-80"
-                  />
-                  <span className="leading-relaxed opacity-90">
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </GlassCard>
-
-          {/* YOU BRING */}
-          <GlassCard>
-            <h3 className="font-pixel text-md text-brand-yellow mb-6 text-center">
-              {translations.youBring.title}
-            </h3>
-
-            <ul className="space-y-4">
-              {youBringItems.map((item, index) => {
-                const checked = youBringChecked[index]
-
-                return (
-                  <li
-                    key={index}
-                    className="flex items-start gap-3 cursor-pointer select-none"
-                    onClick={() => toggleYouBring(index)}
-                  >
-                    {checked ? (
-                      <SquareCheckBig
-                        size={20}
-                        className="mt-1 text-brand-cyan hover:text-brand-orange transition-colors"
-                      />
-                    ) : (
-                      <Square
-                        size={20}
-                        className="mt-1 text-brand-cyan hover:text-brand-orange transition-colors"
-                      />
-                    )}
-
-                    <span className="leading-relaxed">
-                      {item}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </GlassCard>
+    <section
+      id="provide"
+      className="py-20 px-4"
+      style={{
+        background: "linear-gradient(to bottom, var(--color-brand-dark-orange), var(--color-brand-navy))"
+      }}
+    >
+      <div className="container mx-auto max-w-5xl">
+        <div className="text-center mb-12">
+          <h2 className="font-pixel text-3xl md:text-4xl text-brand-yellow mb-3 tracking-wider">
+            {translations.weProvide.title}
+          </h2>
+          <p className="text-white/60 font-mono text-sm max-w-2xl mx-auto">
+            {translations.weProvide.subtitle}
+          </p>
         </div>
+
+        <DiffWindow
+          leftFile="computersociety.ts"
+          rightFile="participant.ts"
+          leftLines={leftLines}
+          rightLines={rightLines}
+          onRightLineToggle={handleToggle}
+          rightLineStates={checkedItems}
+        />
       </div>
     </section>
   )
