@@ -23,7 +23,7 @@ router.patch("/:label", validateToken, teamController.updateTeam);
 // Obtener miembros de un equipo
 router.get("/:label/members", validateToken, teamController.getTeamMembers);
 
-// Eliminar miembro de un equipo
-router.delete("/:label/members/:userId", validateToken, teamController.removeMember);
+/* // Eliminar miembro de un equipo
+router.delete("/:label/members/:userId", validateToken, teamController.removeMember); */
 
 export default router;

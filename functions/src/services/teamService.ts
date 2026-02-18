@@ -10,7 +10,6 @@ export interface TeamData {
     category_2: number;
     category_3: number;
     category: number | null;
-  admin_id: string | null;
     is_finalista: boolean;
     link_deploy: string | null;
     link_github: string | null;
@@ -68,7 +67,7 @@ export const getUserById = async (userId: string) => {
 export const createTeam = async (teamData: TeamData): Promise<string> => {
   const db = getHackitbaDb();
   await db.collection("teams").doc(teamData.label).set(teamData);
-  logger.info(`Equipo creado: ${teamData.label} por usuario: ${teamData.admin_id}`);
+  logger.info(`Equipo creado: ${teamData.label}`);
   return teamData.label;
 };
 
@@ -141,11 +140,4 @@ export const getTeamMembers = async (teamLabel: string) => {
   }));
 };
 
-export const removeMemberFromTeam = async (userId: string): Promise<void> => {
-  const db = getHackitbaDb();
-  await db.collection("users").doc(userId).update({
-    team: null,
-    hasTeam: false,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-};
+// Eliminar miembros de equipo deshabilitado

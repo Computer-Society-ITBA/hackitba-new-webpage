@@ -26,7 +26,6 @@ interface TeamResponseData {
     category_2: number;
     category_3: number;
     status: string;
-  uid: string | null;
 }
 
 /* eslint-disable-next-line camelcase */
@@ -106,7 +105,7 @@ export const createTeam = async (req: Request, res: Response) => {
       category_2,
       category_3,
       category: typeof category_1 === "number" ? category_1 : null,
-      admin_id: adminId,
+
       is_created_by_admin: is_created_by_admin === true,
       is_finalista: false,
       link_deploy: null,
@@ -131,7 +130,6 @@ export const createTeam = async (req: Request, res: Response) => {
       category_2: teamData.category_2,
       category_3: teamData.category_3,
       status: teamData.status,
-      uid: teamData.admin_id,
     };
 
     return res.status(201).json(response);
@@ -264,57 +262,7 @@ export const getTeamMembers = async (req: Request, res: Response) => {
   }
 };
 
-export const removeMember = async (req: Request, res: Response) => {
-  try {
-    const {label, userId} = req.params;
-
-    const team = await teamService.getTeamByLabel(label);
-
-    if (!team) {
-      return res.status(404).json({
-        error: "Equipo no encontrado",
-      });
-    }
-
-    // Verificar permisos
-    const requesterId = req.user.uid;
-    if (team.data?.admin_id !== requesterId) {
-      return res.status(403).json({
-        error: "No tienes permiso para eliminar miembros de este equipo",
-      });
-    }
-
-    // Get user data to send notification
-    const user = await teamService.getUserById(userId);
-
-    await teamService.removeMemberFromTeam(userId);
-
-    // Send team notification email
-    if (user?.email && user?.name) {
-      try {
-        await sendTeamNotificationEmail(
-          user.email,
-          user.name,
-          "removed",
-          team.data?.name || label,
-          "You have been removed from the team"
-        );
-      } catch (emailError) {
-        logger.error("Error sending removal notification email:", emailError);
-        // Don't fail the request if email fails
-      }
-    }
-
-    return res.status(200).json({
-      message: "Miembro eliminado del equipo",
-    });
-  } catch (error: any) {
-    logger.error("Error eliminando miembro del equipo:", error);
-    return res.status(500).json({
-      error: "Error al eliminar miembro del equipo",
-    });
-  }
-};
+// Eliminar miembros deshabilitado
 
 export const joinTeam = async (req: Request, res: Response) => {
   try {

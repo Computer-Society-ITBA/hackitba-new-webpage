@@ -23,13 +23,11 @@ interface TeamMember {
   name: string
   surname: string
   email: string
-  isAdmin: boolean
 }
 
 interface Team {
   id: string
   name: string
-  admin_id: string
   tell_why?: string
   status?: string
   category?: number | null
@@ -77,7 +75,6 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
           setTeam({
             id: teamDoc.id,
             name: teamData.name,
-            admin_id: teamData.admin_id,
             tell_why: teamData.tell_why,
             status: teamData.status,
             category: teamData.category,
@@ -97,16 +94,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               name: data.name || "",
               surname: data.surname || "",
               email: data.email || "",
-              isAdmin: doc.id === teamData.admin_id,
             }
           })
 
-          // Sort: admin first, then alphabetically
-          teamMembers.sort((a, b) => {
-            if (a.isAdmin) return -1
-            if (b.isAdmin) return 1
-            return a.name.localeCompare(b.name)
-          })
+          // Sort alphabetically
+          teamMembers.sort((a, b) => a.name.localeCompare(b.name))
 
           setMembers(teamMembers)
         }
@@ -149,53 +141,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     loadSignupSettings()
   }, [db])
 
-  const handleRemoveMember = async (memberId: string) => {
-    if (!team || !userTeamLabel) return
-
-    if (!signupEnabled) {
-      toast({
-        title: t.dashboard.participant.toasts.actionNotAllowed.title,
-        description: t.dashboard.participant.toasts.actionNotAllowed.description,
-        variant: "destructive",
-      })
-      return
-    }
-
-    const confirmMsg = locale === "es"
-      ? "¿Estás seguro de que deseas eliminar este miembro del equipo?"
-      : "Are you sure you want to remove this team member?";
-    if (!confirm(confirmMsg)) {
-      return
-    }
-
-    try {
-      const auth = getAuth()
-      const idToken = await auth.currentUser?.getIdToken()
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-
-      const response = await fetch(`${apiUrl}/teams/${userTeamLabel}/members/${memberId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${idToken}`,
-        },
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Error al eliminar miembro")
-      }
-
-      // Reload team members
-      setMembers(members.filter(m => m.id !== memberId))
-    } catch (error: any) {
-      console.error("Error removing member:", error)
-      toast({
-        title: t.dashboard.participant.toasts.removeMember.error.title,
-        description: error.message || t.dashboard.participant.toasts.removeMember.error.description,
-        variant: "destructive",
-      })
-    }
-  }
+  // Eliminar miembros deshabilitado
 
   const handleEditMember = (member: TeamMember) => {
     setEditingMember(member)
@@ -707,22 +653,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {member.isAdmin && !editingTeam && !editingMember && (
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 border border-brand-yellow/40">
-                      <Crown className="w-4 h-4 text-brand-yellow" />
-                      <span className="text-brand-yellow font-pixel text-xs">Admin</span>
-                    </div>
-                  )}
-                  {isAdmin && !member.isAdmin && (
-                    <button
-                      onClick={() => handleRemoveMember(member.id)}
-                      disabled={!signupEnabled}
-                      className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-red-500/10 text-red-400 hover:text-red-300' : 'text-red-400/30 cursor-not-allowed'}`}
-                      title={signupEnabled ? "Remove member" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  {/* Eliminar miembros y admin removidos */}
                 </div>
               </div>
             ))}
