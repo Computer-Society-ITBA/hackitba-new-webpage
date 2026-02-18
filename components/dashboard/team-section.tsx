@@ -37,10 +37,9 @@ interface Team {
 interface TeamSectionProps {
   userId: string
   userTeamLabel: string | null
-  teamAssignmentStatus?: "pending" | "in_process" | "accepted" | "rejected" | null
 }
 
-export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: TeamSectionProps) {
+export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [categories, setCategories] = useState<any[]>([])
@@ -423,58 +422,17 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   }
 
   if (!userTeamLabel || !team) {
-    const isInProcess = teamAssignmentStatus === "in_process" || teamAssignmentStatus === "pending"
-    const isRejected = teamAssignmentStatus === "rejected"
-
-    if (isRejected) {
-      return (
-        <GlassCard>
-          <div className="flex flex-col items-center justify-center py-12 space-y-6">
-            <Users className="w-16 h-16 text-red-400/70" />
-            <div className="text-center space-y-2 max-w-md">
-              <p className="text-red-400 font-pixel text-lg">{locale === "es" ? "Solicitud rechazada" : "Request Rejected"}</p>
-              <p className="text-brand-cyan/90 text-sm">
-                {locale === "es"
-                  ? "Lamentamos informarte que tu solicitud para participar sin equipo no fue aceptada. Si necesitas algo, contactanos en:"
-                  : "We regret to inform you that your request to participate without a team was not accepted. If you need assistance, contact:"
-                }
-              </p>
-              <p className="text-brand-cyan/90 text-sm">
-                <a href="mailto:computersociety@itba.edu.ar" className="text-brand-cyan underline">computersociety@itba.edu.ar</a>
-              </p>
-            </div>
-          </div>
-        </GlassCard>
-      )
-    }
-
     return (
       <GlassCard>
         <div className="flex flex-col items-center justify-center py-12 space-y-6">
           <Users className="w-16 h-16 text-brand-orange/60" />
           <div className="text-center space-y-2 max-w-md">
-            {isInProcess ? (
-              <>
-                <p className="text-brand-orange font-pixel text-lg">{locale === "es" ? t.dashboard.participant.teamStatus.processTitle : t.dashboard.participant.teamStatus.processTitle}</p>
-                <p className="text-brand-cyan/90 text-sm">
-                  {t.dashboard.participant.teamStatus.inProcessDescription}
-                </p>
-                <div className="mt-4 p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
-                  <p className="text-brand-orange text-xs font-pixel">
-                    {t.dashboard.participant.teamStatus.inProcess}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-brand-yellow font-pixel text-lg">{t.dashboard.participant.teamStatus.noTeam}</p>
-                <p className="text-brand-cyan/90 text-sm">
-                  {t.dashboard.participant.teamStatus.noTeamDescription}
-                </p>
-              </>
-            )}
+            <p className="text-brand-yellow font-pixel text-lg">{t.dashboard.participant.teamStatus.noTeam}</p>
+            <p className="text-brand-cyan/90 text-sm">
+              {t.dashboard.participant.teamStatus.noTeamDescription}
+            </p>
           </div>
-          {!isInProcess && (
+          {(
             <>
               {!signupEnabled && (
                 <div className="w-full max-w-sm p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
