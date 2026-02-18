@@ -128,7 +128,9 @@
       "menu": "Nav Menu",
       "madeWith": "Made with 🧡 by Computer Society ITBA",
       "socials": "Our socials",
-      "copyright": "© 2026 Computer Society ITBA. All rights reserved."
+      "copyright": "© 2026 Computer Society ITBA. All rights reserved.",
+      "credits": "Go to credits",
+      "collaborate": "Would you like to be a sponsor or mentor? \\nHit us up via email and we'll answer shortly."
     },
     "countdown": {
       "title": "Time Left",
@@ -772,7 +774,9 @@
       "menu": "Nav Menu",
       "madeWith": "Hecho con 🧡 por Computer Society ITBA",
       "socials": "Nuestras redes",
-      "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados."
+      "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados.",
+      "credits": "Ver créditos",
+      "collaborate": "¿Te gustaría ser sponsor o mentor? \\nEscribinos un mail y te contestaremos a la brevedad."
     },
     "countdown": {
       "title": "Tiempo Restante",

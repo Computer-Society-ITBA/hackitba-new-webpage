@@ -17,9 +17,7 @@ export function Footer({ translations, locale }: FooterProps) {
         { href: `/${locale}#categories`, label: translations.nav.categories },
         { href: `/${locale}#faqs`, label: translations.nav.faqs },]
     },
-    { href: `/${locale}/auth/signup?role=participant`, label: translations.nav.signUp },
-    { href: `/${locale}/auth/signup?role=mentor`, label: translations.nav.beAMentor },
-    { href: `/${locale}/auth/signup?role=sponsor`, label: translations.nav.beASponsor },
+    { href: `/${locale}/auth/signup`, label: translations.nav.signUp },
   ]
 
   const socials = [
@@ -84,6 +82,14 @@ export function Footer({ translations, locale }: FooterProps) {
               })()}
             </p>
 
+            <p>
+              <Link href={"mailto:computersociety@itba.edu.ar"} className="flex flex-col text-xs hover:text-brand-orange transition-colors">
+                {translations.footer.collaborate.split("\\n").map((line: string, index: number) => (
+                  <span key={index}>{line}</span>
+                ))}
+              </Link>
+            </p>
+
             <div>
               <h3 className="font-pixel text-xs text-brand-cyan mb-4 text-center md:text-left">
                 {translations.footer.socials}
@@ -105,11 +111,15 @@ export function Footer({ translations, locale }: FooterProps) {
                 })}
               </div>
             </div>
+
           </div>
         </div>
 
-        <div className="text-center opacity-60 text-sm pt-8 border-t border-brand-cyan/10">
+        <div className="text-center opacity-60 text-sm pt-8 border-t border-brand-cyan/10 flex flex-col gap-2">
           {translations.footer.copyright}
+          <Link href={`/${locale}/credits`} className="hover:scale-115 transition-transform">
+            {translations.footer.credits}
+          </Link>
         </div>
       </div>
     </footer>
