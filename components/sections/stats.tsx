@@ -20,7 +20,7 @@ export function Stats({ translations }: StatsProps) {
   const stats: StatItem[] = [
     { value: 3, label: translations.stats.categories },
     { value: 36, label: translations.stats.hoursOfCoding },
-    { value: 100, label: translations.stats.participants },
+    { value: 200, label: translations.stats.participants },
   ]
 
   useEffect(() => {

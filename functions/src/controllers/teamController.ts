@@ -200,13 +200,7 @@ export const updateTeam = async (req: Request, res: Response) => {
       });
     }
 
-    // Verificar permisos
-    const userId = req.user.uid;
-    if (team.data?.admin_id !== userId) {
-      return res.status(403).json({
-        error: "No tienes permiso para actualizar este equipo",
-      });
-    }
+    // Permitir que cualquier usuario actualice el equipo
 
     // Actualizar equipo
     // eslint-disable-next-line camelcase

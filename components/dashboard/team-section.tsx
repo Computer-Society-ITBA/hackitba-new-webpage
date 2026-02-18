@@ -535,7 +535,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                   className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
                   title={signupEnabled ? (isAdmin ? "Edit team" : (locale === "es" ? "Solicitar cambio de nombre" : "Request name change")) : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
                 >
-                  <Settings className="w-4 h-4" />
+                  <Edit2 className="w-4 h-4" />
                 </button>
               </div>
               {team.status && (
