@@ -79,6 +79,22 @@ export const createTeam = async (req: Request, res: Response) => {
       adminId = uid;
     }
 
+    // If the requestor is an admin using the dashboard, do not assign admin_id
+    try {
+      const creatorUid = req.user?.uid;
+      if (creatorUid) {
+        const creatorData = await teamService.getUserById(creatorUid);
+        if (creatorData?.role === "admin") {
+          adminId = null;
+        }
+      }
+    } catch (err) {
+      // If role check fails, keep previous behavior (assign adminId if provided)
+      // and continue — this is non-fatal for team creation
+      // eslint-disable-next-line no-console
+      console.warn("Could not determine creator role:", err);
+    }
+
     // Crear equipo
     // eslint-disable-next-line camelcase
     const teamData: teamService.TeamData = {
@@ -317,16 +333,66 @@ export const joinTeam = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if user already has a team
+    // Check + add user to team inside a Firestore transaction to avoid races
+    const db = admin.firestore();
+    const userRef = db.collection("users").doc(userId);
+
     const user = await teamService.getUserById(userId);
-    if (user?.team) {
-      return res.status(400).json({
-        error: "You are already in a team",
-      });
+    let authUser: admin.auth.UserRecord | null = null;
+    try {
+      authUser = await admin.auth().getUser(userId);
+    } catch (e) {
+      // ignore - user might not exist in Auth or permission to fetch may fail
+      authUser = null;
     }
 
-    // Add user to team
-    await teamService.updateUserTeam(userId, label);
+    try {
+      await db.runTransaction(async (tx) => {
+        const userDoc = await tx.get(userRef);
+
+        // Get current members count within the transaction
+        const membersQuery = db.collection("users").where("team", "==", team.id);
+        const membersSnap = await tx.get(membersQuery as any);
+        if (membersSnap.size >= 4) {
+          const err: any = new Error("Team is full (4/4)");
+          err.status = 400;
+          throw err;
+        }
+
+        if (!userDoc.exists) {
+          // Create a minimal user document using available profile data
+          const newUserData: any = {
+            team: label,
+            hasTeam: true,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          };
+          if (user?.name) newUserData.name = user.name;
+          if (user?.email) newUserData.email = user.email;
+          if (!newUserData.email && authUser?.email) newUserData.email = authUser.email;
+          if (!newUserData.name && authUser?.displayName) newUserData.name = authUser.displayName;
+
+          tx.set(userRef, newUserData, {merge: true});
+          return;
+        }
+
+        const userData = userDoc.data();
+        if (userData?.team) {
+          const err: any = new Error("You are already in a team");
+          err.status = 400;
+          throw err;
+        }
+
+        // Safe to add user to team
+        tx.update(userRef, {team: label, hasTeam: true, updatedAt: admin.firestore.FieldValue.serverTimestamp()});
+      });
+    } catch (txError: any) {
+      logger.error("Transaction error joining team:", txError);
+      if (txError && txError.status) {
+        return res.status(txError.status).json({error: txError.message});
+      }
+      return res.status(500).json({error: "Error joining team"});
+    }
 
     // Send team notification email
     if (user?.email && user?.name) {

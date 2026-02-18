@@ -376,14 +376,59 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
 
+      // Check team capacity before attempting to join
+      try {
+        const checkResponse = await fetch(`${apiUrl}/teams/${rejoinCode}/members`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${idToken}`,
+          },
+        })
+
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json()
+          if (checkData.members && checkData.members.length >= 4) {
+            const msg = locale === "es"
+              ? "El equipo está lleno (4/4) — no se pueden añadir más miembros"
+              : "Team is full (4/4) — cannot add more members"
+            setRejoinError(msg)
+            toast({
+              title: t.dashboard.participant.toasts.rejoin.error.title,
+              description: msg,
+              variant: "destructive",
+            })
+            setSaving(false)
+            return
+          }
+        }
+      } catch (err) {
+        // If capacity check fails for some reason, continue to attempt join and let the API handle it
+        console.error("Capacity check failed:", err)
+      }
+
       // Join team with code
+      const uidToSend = userId || auth.currentUser?.uid
+      if (!uidToSend) {
+        const msg = locale === "es"
+          ? "No se pudo determinar el usuario. Vuelve a iniciar sesión e inténtalo de nuevo."
+          : "Unable to determine user. Please sign in again and try."
+        setRejoinError(msg)
+        toast({
+          title: t.dashboard.participant.toasts.rejoin.error.title,
+          description: msg,
+          variant: "destructive",
+        })
+        setSaving(false)
+        return
+      }
+
       const response = await fetch(`${apiUrl}/teams/${rejoinCode}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: uidToSend }),
       })
 
       if (!response.ok) {
@@ -433,6 +478,29 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
 
   if (!userTeamLabel || !team) {
     const isInProcess = teamAssignmentStatus === "in_process" || teamAssignmentStatus === "pending"
+    const isRejected = teamAssignmentStatus === "rejected"
+
+    if (isRejected) {
+      return (
+        <GlassCard>
+          <div className="flex flex-col items-center justify-center py-12 space-y-6">
+            <Users className="w-16 h-16 text-red-400/70" />
+            <div className="text-center space-y-2 max-w-md">
+              <p className="text-red-400 font-pixel text-lg">{locale === "es" ? "Solicitud rechazada" : "Request Rejected"}</p>
+              <p className="text-brand-cyan/90 text-sm">
+                {locale === "es"
+                  ? "Lamentamos informarte que tu solicitud para participar sin equipo no fue aceptada. Si necesitas algo, contactanos en:"
+                  : "We regret to inform you that your request to participate without a team was not accepted. If you need assistance, contact:"
+                }
+              </p>
+              <p className="text-brand-cyan/90 text-sm">
+                <a href="mailto:computersociety@itba.edu.ar" className="text-brand-cyan underline">computersociety@itba.edu.ar</a>
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+      )
+    }
 
     return (
       <GlassCard>
