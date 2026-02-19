@@ -177,6 +177,29 @@ export const getAllTeams = async (req: Request, res: Response) => {
   }
 };
 
+export const updateTeamStatusAdmin = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const {status} = req.body as {status: string};
+
+    if (!status) {
+      return res.status(400).json({error: "status is required"});
+    }
+
+    const team = await teamService.getTeamByLabel(label);
+    if (!team) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    await teamService.updateTeam(team.ref, {status});
+
+    return res.status(200).json({id: team.id, status});
+  } catch (error: any) {
+    logger.error("Error actualizando status del equipo:", error);
+    return res.status(500).json({error: "Error actualizando status del equipo"});
+  }
+};
+
 export const updateTeam = async (req: Request, res: Response) => {
   try {
     const {label} = req.params;

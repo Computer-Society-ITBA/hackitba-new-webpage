@@ -274,11 +274,46 @@ export default function ParticipanteDashboard() {
           {/* Team Section */}
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myTeam}</h3>
-            {!hasTeam && (
+            {user?.participationStatus === "rejected" ? (
+              <div className="mb-6 p-4 border-2 border-red-500/60 rounded-lg bg-red-500/5">
+                <p className="text-red-400 font-pixel font-bold mb-2">
+                  {locale === "es" ? "Tu solicitud no fue aceptada" : "Your application was not accepted"}
+                </p>
+                <p className="text-brand-cyan/80 text-sm">
+                  {locale === "es"
+                    ? "Lamentablemente tu solicitud de participación fue rechazada. Si tenés alguna consulta contactanos en computersociety@itba.edu.ar"
+                    : "Unfortunately your participation request was rejected. If you have any questions, contact us at computersociety@itba.edu.ar"}
+                </p>
+              </div>
+            ) : !hasTeam ? (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
                 <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.noTeam}</p>
                 <p className="text-brand-cyan text-sm mb-4">
                   {t.dashboard.participant.teamStatus.noTeamDescription}
+                </p>
+              </div>
+            ) : null}
+            {team?.status === "registered" && (
+              <div className="mb-6 p-4 border-2 border-brand-cyan/40 rounded-lg bg-brand-cyan/5">
+                <p className="text-brand-cyan font-pixel font-bold mb-2">
+                  {locale === "es" ? "Tu equipo está siendo revisado" : "Your team is under review"}
+                </p>
+                <p className="text-brand-cyan/70 text-sm">
+                  {locale === "es"
+                    ? "El equipo está pendiente de aprobación. Te notificaremos cuando sea revisado."
+                    : "Your team is pending approval. We will notify you once it has been reviewed."}
+                </p>
+              </div>
+            )}
+            {team?.status === "rejected" && (
+              <div className="mb-6 p-4 border-2 border-red-500/60 rounded-lg bg-red-500/5">
+                <p className="text-red-400 font-pixel font-bold mb-2">
+                  {locale === "es" ? "Tu equipo fue rechazado" : "Your team was rejected"}
+                </p>
+                <p className="text-brand-cyan/70 text-sm">
+                  {locale === "es"
+                    ? "Lamentablemente tu equipo no fue aceptado para participar. Contactanos en computersociety@itba.edu.ar"
+                    : "Unfortunately your team was not accepted to participate. Contact us at computersociety@itba.edu.ar"}
                 </p>
               </div>
             )}

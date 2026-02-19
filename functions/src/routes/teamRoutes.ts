@@ -1,6 +1,6 @@
 import {Router} from "express";
 import * as teamController from "../controllers/teamController";
-import {validateToken} from "../middleware/authMiddleware";
+import {validateToken, requireAdmin} from "../middleware/authMiddleware";
 
 // eslint-disable-next-line new-cap
 const router = Router();
@@ -10,6 +10,9 @@ router.post("/", validateToken, teamController.createTeam);
 
 // Unirse a un equipo con código
 router.post("/:label/join", validateToken, teamController.joinTeam);
+
+// Admin-only: actualizar status del equipo
+router.patch("/:label/status", validateToken, requireAdmin, teamController.updateTeamStatusAdmin);
 
 // Obtener equipo por label
 router.get("/:label", validateToken, teamController.getTeamByLabel);

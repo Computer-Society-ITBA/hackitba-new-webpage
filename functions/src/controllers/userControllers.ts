@@ -351,6 +351,12 @@ export const approveParticipantAndAssignTeam = async (req: Request, res: Respons
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    if (status === "rejected") {
+      updateData.participationStatus = "rejected";
+    } else if (status === "accepted") {
+      updateData.participationStatus = null;
+    }
+
     let teamName = "";
 
     if (status === "accepted" && teamCode) {

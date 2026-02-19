@@ -85,6 +85,20 @@ export default function ProfilePage() {
           </h1>
 
           <GlassCard>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center flex-shrink-0">
+                <span className="font-pixel text-brand-cyan text-lg">
+                  {user?.name?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              </div>
+              <div>
+                <p className="text-brand-cyan font-semibold">{user?.name} {user?.surname}</p>
+                <p className="text-brand-cyan/60 text-sm">{user?.email}</p>
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
