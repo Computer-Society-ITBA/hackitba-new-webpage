@@ -287,9 +287,13 @@ export default function ParticipanteDashboard() {
               </div>
             ) : !hasTeam ? (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.noTeam}</p>
+                <p className="text-brand-orange font-pixel font-bold mb-2">
+                  {locale === "es" ? "Sin equipo asignado" : "No team assigned"}
+                </p>
                 <p className="text-brand-cyan text-sm mb-4">
-                  {t.dashboard.participant.teamStatus.noTeamDescription}
+                  {locale === "es"
+                    ? "Se te asignará un equipo próximamente. ¡Estate atento!"
+                    : "You will be assigned a team soon. Stay tuned!"}
                 </p>
               </div>
             ) : null}
