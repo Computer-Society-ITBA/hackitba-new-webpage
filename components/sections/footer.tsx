@@ -61,7 +61,7 @@ export function Footer({ translations, locale }: FooterProps) {
           </div>
 
           <div className="space-y-6">
-            <p className="font-pixel text-xs text-brand-cyan text-center md:text-left">
+            <p className="font-pixel text-xs text-brand-cyan md:text-left">
               {(() => {
                 const madeWith: string = translations.footer.madeWith || ''
                 const heart = '🧡'
@@ -91,7 +91,7 @@ export function Footer({ translations, locale }: FooterProps) {
             </p>
 
             <div>
-              <h3 className="font-pixel text-xs text-brand-cyan mb-4 text-center md:text-left">
+              <h3 className="font-pixel text-xs text-brand-cyan mb-4 md:text-left">
                 {translations.footer.socials}
               </h3>
               <div className="flex gap-4 justify-center md:justify-start">

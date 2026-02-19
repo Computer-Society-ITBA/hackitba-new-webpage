@@ -31,11 +31,11 @@ export default async function Page({ params }: PageProps) {
   const translations = getTranslations(locale)
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
       <Header translations={translations} locale={locale} />
 
-      <main>
-        <Hero translations={translations} />
+      <main className="flex-grow">
+        <Hero translations={translations} locale={locale} />
         <Stats translations={translations} />
         <InfoCards translations={translations} />
         <SponsorsCarousel translations={translations} />

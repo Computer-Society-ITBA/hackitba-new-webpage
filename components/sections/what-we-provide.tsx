@@ -42,7 +42,15 @@ export function WhatWeProvide({ translations }: WhatWeProvideProps) {
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-12">
           <h2 className="font-pixel text-3xl md:text-4xl text-brand-yellow mb-3 tracking-wider">
-            {translations.weProvide.title}
+            {translations.weProvide.title.includes("⇄") ? (
+              <span className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4">
+                <span>{translations.weProvide.title.split("⇄")[0].trim()}</span>
+                <span className="text-2xl md:text-4xl">⇄</span>
+                <span>{translations.weProvide.title.split("⇄")[1].trim()}</span>
+              </span>
+            ) : (
+              translations.weProvide.title
+            )}
           </h2>
           <p className="text-white/60 font-mono text-sm max-w-2xl mx-auto">
             {translations.weProvide.subtitle}
