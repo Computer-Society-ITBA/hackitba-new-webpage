@@ -644,7 +644,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-brand-cyan text-xs">Why this team?</Label>
+              <Label className="text-brand-cyan text-xs">Motivation</Label>
               <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm break-words break-all whitespace-pre-wrap">
                 {teamForm.tell_why || "No description provided"}
               </div>
