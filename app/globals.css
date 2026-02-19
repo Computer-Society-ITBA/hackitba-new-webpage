@@ -79,6 +79,20 @@
     font-family: var(--font-pixel);
     letter-spacing: 2px;
     font-size-adjust: 0.3;
+
+    /* Fallback for browsers/versions without font-size-adjust support */
+    @supports not (font-size-adjust: 0.3) {
+      font-size: 1.15em;
+    }
+
+    @media (max-width: 768px) {
+      font-size-adjust: 0.48;
+      letter-spacing: 1px;
+
+      @supports not (font-size-adjust: 0.48) {
+        font-size: 1.3em;
+      }
+    }
   }
 
   .font-montserrat {
@@ -89,6 +103,21 @@
     font-family: var(--font-pixel);
     font-size: 1rem;
     letter-spacing: 2px;
+    font-size-adjust: 0.3;
+
+    @supports not (font-size-adjust: 0.3) {
+      font-size: 1.15rem;
+    }
+
+    @media (max-width: 768px) {
+      font-size-adjust: 0.4;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+
+      @supports not (font-size-adjust: 0.40) {
+        font-size: 1.3rem;
+      }
+    }
   }
 
   .pixel-select option {
@@ -100,6 +129,7 @@
     from {
       transform: scaleX(1);
     }
+
     to {
       transform: scaleX(0);
     }

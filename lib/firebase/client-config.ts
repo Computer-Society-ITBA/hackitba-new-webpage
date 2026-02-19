@@ -52,19 +52,19 @@ export function getStorageClient(databaseId: string = "hackitba"): FirebaseStora
 }
 
 // Only connect to emulators if explicitly enabled and in development
-const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === "true"
-if (useEmulators && process.env.NODE_ENV === "development" && isBrowser && hasFirebaseConfig) {
-  const emulatorAuth = getAuthClient()
-  const emulatorDb = getDbClient()
-  const emulatorStorage = getStorageClient()
+// const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === "true"
+// if (useEmulators && process.env.NODE_ENV === "development" && isBrowser && hasFirebaseConfig) {
+//   const emulatorAuth = getAuthClient()
+//   const emulatorDb = getDbClient()
+//   const emulatorStorage = getStorageClient()
 
-  if (emulatorAuth && emulatorDb && emulatorStorage) {
-    try {
-      connectAuthEmulator(emulatorAuth, "http://localhost:9099", { disableWarnings: true })
-      connectFirestoreEmulator(emulatorDb, "localhost", 8080)
-      connectStorageEmulator(emulatorStorage, "localhost", 9199)
-    } catch (error) {
-      console.log("Emulators already connected or not available")
-    }
-  }
-}
+//   if (emulatorAuth && emulatorDb && emulatorStorage) {
+//     try {
+//       connectAuthEmulator(emulatorAuth, "http://localhost:9099", { disableWarnings: true })
+//       connectFirestoreEmulator(emulatorDb, "localhost", 8080)
+//       connectStorageEmulator(emulatorStorage, "localhost", 9199)
+//     } catch (error) {
+//       console.log("Emulators already connected or not available")
+//     }
+//   }
+// }
