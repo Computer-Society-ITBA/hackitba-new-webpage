@@ -1353,6 +1353,101 @@ const templates = {
     description: "Notificación cuando el equipo es actualizado",
     variables: ["teamName", "details", "dashboardUrl"],
   },
+  teamAssignment_accepted: {
+    subject: "¡Has sido aceptado! - Equipo asignado en HackITBA",
+    html: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Has sido aceptado</title>
+  <style type="text/css">table{border-collapse:collapse}img,a img{border:0;height:auto;outline:none;text-decoration:none}body{height:100% !important;margin:0 auto !important;padding:0;width:100% !important}img{-ms-interpolation-mode:bicubic}#outlook a{padding:0}table{mso-table-lspace:0pt;mso-table-rspace:0pt}.ReadMsgBody{width:100%}.ExternalClass{width:100%}p,a,td{mso-line-height-rule:exactly}p,a,td,body,table{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{line-height:100%}a [x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;font-size:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}@media screen and (max-width:480px){.mw100{max-width:100% !important}.w100{width:100% !important}.w96{width:96% !important}}</style>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 auto;background-color:#ffffff">
+    <tr>
+      <td style="font-size:0"></td>
+      <td align="center" valign="top" style="width:580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width:100%" class="w96">
+          <tr>
+            <td align="center" style="padding:40px 0;border-bottom:1px solid #cccccc">
+              <a href="https://hackitba.com.ar"><img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="300" style="width:300px;height:auto;" /></a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 40px 0 40px;color:#101214;font-size:16px;line-height:22px;">
+              <h2 style="margin:0 0 12px 0;font-size:22px;line-height:30px;color:#101214;font-weight:700;">¡Felicitaciones {{name}}!</h2>
+              <p style="margin:0 0 12px 0">Tu solicitud ha sido <strong style="color:#101214;">aceptada</strong>.</p>
+              <p style="margin:0 0 12px 0">Has sido asignado al equipo: <strong>{{teamName}}</strong></p>
+              <p style="margin:0 0 20px 0">Ahora puedes acceder a tu dashboard para ver los detalles de tu equipo y comenzar a trabajar en tu proyecto.</p>
+              <div style="text-align:center;margin-top:20px;margin-bottom:12px;">
+                <a href="{{dashboardUrl}}" target="_blank" style="display:inline-block;padding:14px 38px;background-color:#EF802F;color:#ffffff;text-decoration:none;border-radius:4px;border:2px solid #EF802F;font-weight:600;">Ver mi equipo</a>
+              </div>
+              <p style="margin-top:24px;color:#666;font-size:13px;">¡Buena suerte en el hackathon!</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 20px 40px 20px;border-top:1px solid #e6e6e6;text-align:center;color:#9aa1ad;font-size:13px;">
+              © 2026 Computer Society ITBA. Todos los derechos reservados.
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size:0"></td>
+    </tr>
+  </table>
+</body>
+</html>`,
+    description: "Email cuando un participante es aceptado y asignado a un equipo",
+    variables: ["name", "teamName", "dashboardUrl"],
+  },
+  teamAssignment_rejected: {
+    subject: "Actualización sobre tu solicitud - HackITBA",
+    html: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HackITBA - Actualización sobre tu solicitud</title>
+  <style type="text/css">table{border-collapse:collapse}img,a img{border:0;height:auto;outline:none;text-decoration:none}body{height:100% !important;margin:0 auto !important;padding:0;width:100% !important}img{-ms-interpolation-mode:bicubic}#outlook a{padding:0}table{mso-table-lspace:0pt;mso-table-rspace:0pt}.ReadMsgBody{width:100%}.ExternalClass{width:100%}p,a,td{mso-line-height-rule:exactly}p,a,td,body,table{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}.ExternalClass,.ExternalClass p,.ExternalClass td,.ExternalClass div,.ExternalClass span,.ExternalClass font{line-height:100%}a [x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;font-size:inherit!important;font-family:inherit!important;font-weight:inherit!important;line-height:inherit!important}@media screen and (max-width:480px){.mw100{max-width:100% !important}.w100{width:100% !important}.w96{width:96% !important}}</style>
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 auto;background-color:#ffffff">
+    <tr>
+      <td style="font-size:0"></td>
+      <td align="center" valign="top" style="width:580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width:100%" class="w96">
+          <tr>
+            <td align="center" style="padding:40px 0;border-bottom:1px solid #cccccc">
+              <a href="https://hackitba.com.ar"><img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" width="300" style="width:300px;height:auto;" /></a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 40px 0 40px;color:#101214;font-size:16px;line-height:22px;">
+              <h2 style="margin:0 0 12px 0;font-size:22px;line-height:30px;color:#101214;font-weight:700;">Hola {{name}}</h2>
+              <p style="margin:0 0 12px 0">Lamentamos informarte que tu solicitud para participar sin equipo no ha sido aceptada en esta ocasión.</p>
+              <p style="margin:0 0 12px 0">{{reason}}</p>
+              <p style="margin-top:16px;color:#101214;">Si necesitas asistencia, por favor contactanos en: <a href="mailto:computersociety@itba.edu.ar" style="color:#101214; text-decoration:none;">computersociety@itba.edu.ar</a></p>
+              <p style="margin-top:24px;color:#666;font-size:13px;">Si tienes preguntas adicionales, no dudes en contactarnos.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 20px 40px 20px;border-top:1px solid #e6e6e6;text-align:center;color:#9aa1ad;font-size:13px;">
+              © 2026 Computer Society ITBA. Todos los derechos reservados.
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="font-size:0"></td>
+    </tr>
+  </table>
+</body>
+</html>`,
+    description: "Email cuando un participante es rechazado para asignación de equipo",
+    variables: ["name", "reason", "dashboardUrl"],
+  },
 };
 
 /**

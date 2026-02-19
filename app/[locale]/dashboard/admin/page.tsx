@@ -303,6 +303,7 @@ export default function AdminDashboard() {
           category_1: categoryIndex,
           category_2: null,
           category_3: null,
+          is_created_by_admin: true,
         }),
       })
 

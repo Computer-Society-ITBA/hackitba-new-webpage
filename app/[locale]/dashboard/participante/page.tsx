@@ -274,15 +274,7 @@ export default function ParticipanteDashboard() {
           {/* Team Section */}
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myTeam}</h3>
-            {!hasTeam && user?.teamAssignmentStatus === "in_process" && (
-              <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.inProcess}</p>
-                <p className="text-brand-cyan text-sm mb-4">
-                  {t.dashboard.participant.teamStatus.inProcessDescription}
-                </p>
-              </div>
-            )}
-            {!hasTeam && !user?.teamAssignmentStatus && (
+            {!hasTeam && (
               <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
                 <p className="text-brand-orange font-pixel font-bold mb-2">{t.dashboard.participant.teamStatus.noTeam}</p>
                 <p className="text-brand-cyan text-sm mb-4">
@@ -293,7 +285,6 @@ export default function ParticipanteDashboard() {
             <TeamSection 
               userId={user?.id || ""} 
               userTeamLabel={user?.team || null}
-              teamAssignmentStatus={user?.teamAssignmentStatus || null}
             />
           </section>
 

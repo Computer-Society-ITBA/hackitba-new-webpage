@@ -292,27 +292,24 @@ export const sendTeamAssignmentAcceptedEmail = async (
 ): Promise<{success: boolean}> => {
   try {
     logger.info(`Queuing team assignment accepted email to ${email}`);
+    const template = await getEmailTemplate("teamAssignment_accepted");
+    if (!template) {
+      throw new Error("Team assignment accepted email template not found");
+    }
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #FF8C00;">¡Felicitaciones ${name}!</h2>
-        <p>Tu solicitud ha sido <strong style="color: #00CED1;">aceptada</strong>.</p>
-        <p>Has sido asignado al equipo: <strong>${teamName}</strong></p>
-        <p>Ahora puedes acceder a tu dashboard para ver los detalles de tu equipo 
-           y comenzar a trabajar en tu proyecto.</p>
-        <a href="${APP_URL}/es/dashboard/participante" 
-           style="display: inline-block; padding: 12px 24px; background: #FF8C00; 
-           color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-          Ver mi equipo
-        </a>
-        <p style="margin-top: 30px; color: #666;">¡Buena suerte en el hackathon!</p>
-      </div>
-    `;
+    const variables = {
+      name,
+      teamName,
+      dashboardUrl: `${APP_URL}/es/dashboard/participante`,
+    };
+
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
 
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "¡Has sido aceptado! - Equipo asignado en HackITBA",
+        subject,
         html,
       },
     });
@@ -339,34 +336,24 @@ export const sendTeamAssignmentRejectedEmail = async (
 ): Promise<{success: boolean}> => {
   try {
     logger.info(`Queuing team assignment rejected email to ${email}`);
+    const template = await getEmailTemplate("teamAssignment_rejected");
+    if (!template) {
+      throw new Error("Team assignment rejected email template not found");
+    }
 
-    const reasonText = reason ?
-      `<p>Motivo: <em>${reason}</em></p>` :
-      "";
+    const variables = {
+      name,
+      reason: reason || "",
+      dashboardUrl: `${APP_URL}/es/dashboard/participante`,
+    };
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #FF8C00;">Hola ${name}</h2>
-        <p>Lamentamos informarte que tu solicitud para participar sin equipo no ha sido aceptada en esta ocasión.</p>
-        ${reasonText}
-        <p>Sin embargo, aún puedes:</p>
-        <ul>
-          <li>Crear tu propio equipo desde el dashboard</li>
-          <li>Unirte a un equipo existente con un código de invitación</li>
-        </ul>
-        <a href="${APP_URL}/es/dashboard/participante" 
-           style="display: inline-block; padding: 12px 24px; background: #00CED1; 
-           color: white; text-decoration: none; border-radius: 4px; margin-top: 20px;">
-          Ir al Dashboard
-        </a>
-        <p style="margin-top: 30px; color: #666;">Si tienes preguntas, no dudes en contactarnos.</p>
-      </div>
-    `;
+    const subject = replaceTemplateVariables(template.subject, variables);
+    const html = replaceTemplateVariables(template.html, variables);
 
     await getDb().collection(MAIL_COLLECTION).add({
       to: email,
       message: {
-        subject: "Actualización sobre tu solicitud - HackITBA",
+        subject,
         html,
       },
     });

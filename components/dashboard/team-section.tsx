@@ -23,13 +23,11 @@ interface TeamMember {
   name: string
   surname: string
   email: string
-  isAdmin: boolean
 }
 
 interface Team {
   id: string
   name: string
-  admin_id: string
   tell_why?: string
   status?: string
   category?: number | null
@@ -39,10 +37,9 @@ interface Team {
 interface TeamSectionProps {
   userId: string
   userTeamLabel: string | null
-  teamAssignmentStatus?: "pending" | "in_process" | "accepted" | "rejected" | null
 }
 
-export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: TeamSectionProps) {
+export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [categories, setCategories] = useState<any[]>([])
@@ -77,7 +74,6 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
           setTeam({
             id: teamDoc.id,
             name: teamData.name,
-            admin_id: teamData.admin_id,
             tell_why: teamData.tell_why,
             status: teamData.status,
             category: teamData.category,
@@ -97,16 +93,11 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               name: data.name || "",
               surname: data.surname || "",
               email: data.email || "",
-              isAdmin: doc.id === teamData.admin_id,
             }
           })
 
-          // Sort: admin first, then alphabetically
-          teamMembers.sort((a, b) => {
-            if (a.isAdmin) return -1
-            if (b.isAdmin) return 1
-            return a.name.localeCompare(b.name)
-          })
+          // Sort alphabetically
+          teamMembers.sort((a, b) => a.name.localeCompare(b.name))
 
           setMembers(teamMembers)
         }
@@ -149,53 +140,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
     loadSignupSettings()
   }, [db])
 
-  const handleRemoveMember = async (memberId: string) => {
-    if (!team || !userTeamLabel) return
-
-    if (!signupEnabled) {
-      toast({
-        title: t.dashboard.participant.toasts.actionNotAllowed.title,
-        description: t.dashboard.participant.toasts.actionNotAllowed.description,
-        variant: "destructive",
-      })
-      return
-    }
-
-    const confirmMsg = locale === "es"
-      ? "¿Estás seguro de que deseas eliminar este miembro del equipo?"
-      : "Are you sure you want to remove this team member?";
-    if (!confirm(confirmMsg)) {
-      return
-    }
-
-    try {
-      const auth = getAuth()
-      const idToken = await auth.currentUser?.getIdToken()
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-
-      const response = await fetch(`${apiUrl}/teams/${userTeamLabel}/members/${memberId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${idToken}`,
-        },
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Error al eliminar miembro")
-      }
-
-      // Reload team members
-      setMembers(members.filter(m => m.id !== memberId))
-    } catch (error: any) {
-      console.error("Error removing member:", error)
-      toast({
-        title: t.dashboard.participant.toasts.removeMember.error.title,
-        description: error.message || t.dashboard.participant.toasts.removeMember.error.description,
-        variant: "destructive",
-      })
-    }
-  }
+  // Eliminar miembros deshabilitado
 
   const handleEditMember = (member: TeamMember) => {
     setEditingMember(member)
@@ -376,14 +321,59 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
       const idToken = await auth.currentUser?.getIdToken()
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
 
+      // Check team capacity before attempting to join
+      try {
+        const checkResponse = await fetch(`${apiUrl}/teams/${rejoinCode}/members`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${idToken}`,
+          },
+        })
+
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json()
+          if (checkData.members && checkData.members.length >= 4) {
+            const msg = locale === "es"
+              ? "El equipo está lleno (4/4) — no se pueden añadir más miembros"
+              : "Team is full (4/4) — cannot add more members"
+            setRejoinError(msg)
+            toast({
+              title: t.dashboard.participant.toasts.rejoin.error.title,
+              description: msg,
+              variant: "destructive",
+            })
+            setSaving(false)
+            return
+          }
+        }
+      } catch (err) {
+        // If capacity check fails for some reason, continue to attempt join and let the API handle it
+        console.error("Capacity check failed:", err)
+      }
+
       // Join team with code
+      const uidToSend = userId || auth.currentUser?.uid
+      if (!uidToSend) {
+        const msg = locale === "es"
+          ? "No se pudo determinar el usuario. Vuelve a iniciar sesión e inténtalo de nuevo."
+          : "Unable to determine user. Please sign in again and try."
+        setRejoinError(msg)
+        toast({
+          title: t.dashboard.participant.toasts.rejoin.error.title,
+          description: msg,
+          variant: "destructive",
+        })
+        setSaving(false)
+        return
+      }
+
       const response = await fetch(`${apiUrl}/teams/${rejoinCode}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: uidToSend }),
       })
 
       if (!response.ok) {
@@ -432,35 +422,17 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
   }
 
   if (!userTeamLabel || !team) {
-    const isInProcess = teamAssignmentStatus === "in_process" || teamAssignmentStatus === "pending"
-
     return (
       <GlassCard>
         <div className="flex flex-col items-center justify-center py-12 space-y-6">
           <Users className="w-16 h-16 text-brand-orange/60" />
           <div className="text-center space-y-2 max-w-md">
-            {isInProcess ? (
-              <>
-                <p className="text-brand-orange font-pixel text-lg">{locale === "es" ? t.dashboard.participant.teamStatus.processTitle : t.dashboard.participant.teamStatus.processTitle}</p>
-                <p className="text-brand-cyan/90 text-sm">
-                  {t.dashboard.participant.teamStatus.inProcessDescription}
-                </p>
-                <div className="mt-4 p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
-                  <p className="text-brand-orange text-xs font-pixel">
-                    {t.dashboard.participant.teamStatus.inProcess}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-brand-yellow font-pixel text-lg">{t.dashboard.participant.teamStatus.noTeam}</p>
-                <p className="text-brand-cyan/90 text-sm">
-                  {t.dashboard.participant.teamStatus.noTeamDescription}
-                </p>
-              </>
-            )}
+            <p className="text-brand-yellow font-pixel text-lg">{t.dashboard.participant.teamStatus.noTeam}</p>
+            <p className="text-brand-cyan/90 text-sm">
+              {t.dashboard.participant.teamStatus.noTeamDescription}
+            </p>
           </div>
-          {!isInProcess && (
+          {(
             <>
               {!signupEnabled && (
                 <div className="w-full max-w-sm p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
@@ -557,16 +529,14 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
               <div className="flex flex-row items-center gap-4">
                 <Users className="w-6 h-6 text-brand-cyan" />
                 <h3 className="font-pixel text-lg text-brand-yellow">{team.name}</h3>
-                {isAdmin && (
-                  <button
-                    onClick={handleEditTeam}
-                    disabled={!signupEnabled}
-                    className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
-                    title={signupEnabled ? "Edit team" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </button>
-                )}
+                <button
+                  onClick={handleEditTeam}
+                  disabled={!signupEnabled}
+                  className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
+                  title={signupEnabled ? (isAdmin ? "Edit team" : (locale === "es" ? "Solicitar cambio de nombre" : "Request name change")) : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
               </div>
               {team.status && (
                 <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
@@ -641,22 +611,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {member.isAdmin && (
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-yellow/20 border border-brand-yellow/40">
-                      <Crown className="w-4 h-4 text-brand-yellow" />
-                      <span className="text-brand-yellow font-pixel text-xs">Admin</span>
-                    </div>
-                  )}
-                  {isAdmin && !member.isAdmin && (
-                    <button
-                      onClick={() => handleRemoveMember(member.id)}
-                      disabled={!signupEnabled}
-                      className={`p-2 rounded transition-colors ${signupEnabled ? 'hover:bg-red-500/10 text-red-400 hover:text-red-300' : 'text-red-400/30 cursor-not-allowed'}`}
-                      title={signupEnabled ? "Remove member" : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  {/* Eliminar miembros y admin removidos */}
                 </div>
               </div>
             ))}
@@ -737,7 +692,7 @@ export function TeamSection({ userId, userTeamLabel, teamAssignmentStatus }: Tea
             </div>
             <div className="space-y-2">
               <Label className="text-brand-cyan text-xs">Why this team?</Label>
-              <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm">
+              <div className="bg-brand-navy/50 border border-brand-cyan/30 rounded p-3 min-h-[100px] max-h-[200px] overflow-y-auto text-brand-cyan text-sm break-words break-all whitespace-pre-wrap">
                 {teamForm.tell_why || "No description provided"}
               </div>
             </div>

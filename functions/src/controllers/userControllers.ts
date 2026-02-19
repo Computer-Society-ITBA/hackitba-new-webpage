@@ -348,7 +348,6 @@ export const approveParticipantAndAssignTeam = async (req: Request, res: Respons
     const userEmail = userData?.email;
 
     const updateData: Record<string, unknown> = {
-      teamAssignmentStatus: status,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -419,7 +418,7 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
     logger.info("Getting pending participants...");
     const db = getHackitbaDb();
     const usersSnapshot = await db.collection("users")
-      .where("teamAssignmentStatus", "==", "in_process")
+      .where("hasTeam", "==", false)
       .get();
 
     logger.info(`Found ${usersSnapshot.size} pending participants`);
@@ -434,7 +433,6 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
         email: data.email,
         university: data.university,
         career: data.career,
-        teamAssignmentStatus: data.teamAssignmentStatus,
         createdAt: data.createdAt,
       };
     });
