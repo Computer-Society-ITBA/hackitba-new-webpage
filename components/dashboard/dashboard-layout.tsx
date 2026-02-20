@@ -48,13 +48,13 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   const sidebarContent = (
     <>
-      <div className={`mb-8 flex items-center ${collapsed && !isMobile ? "justify-center" : "justify-between"}`}>
-        <h1 className={`font-pixel text-brand-yellow neon-glow-orange ${collapsed && !isMobile ? "text-lg" : "text-2xl"}`}>
+      <div className={`mb-8 flex items-center ${collapsed && !isMobile ? "justify-center" : "justify-between"} ${isMobile ? "gap-2" : "gap-4"}`}>
+        <h1 className={`font-pixel text-brand-yellow neon-glow-orange ${collapsed && !isMobile ? "text-lg" : isMobile ? "text-xs" : "text-2xl"}`}>
           <Link href={`/${locale}`}>{collapsed && !isMobile ? "<H>" : "<HackITBA>"}</Link>
         </h1>
         {isMobile && (
           <button onClick={toggleMobile} className="text-brand-cyan hover:text-brand-yellow transition-colors p-1">
-            <X size={24} />
+            <X size={20} />
           </button>
         )}
       </div>
@@ -175,17 +175,17 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         </aside>
       )}
 
-      <main className={`flex-1 min-w-0 p-4 md:p-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
+      <main className={`flex-1 min-w-0 p-2 sm:p-4 md:p-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
         {/* Mobile header with hamburger */}
         {isMobile && (
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <button
               onClick={toggleMobile}
-              className="text-brand-cyan hover:text-brand-yellow transition-colors p-2 -ml-2"
+              className="text-brand-cyan hover:text-brand-yellow transition-colors p-1 -ml-1"
             >
-              <Menu size={24} />
+              <Menu size={20} />
             </button>
-            <h2 className="font-pixel text-2xl text-brand-yellow truncate">
+            <h2 className="font-pixel text-lg text-brand-yellow truncate">
               <NeonGlow color="orange">{title}</NeonGlow>
             </h2>
           </div>

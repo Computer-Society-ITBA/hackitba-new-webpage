@@ -475,42 +475,42 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
             </p>
           </div>
         )}
-        <div className="flex items-center justify-between border-b border-brand-cyan/20 pb-4">
+        <div className="flex flex-row flex-wrap items-center justify-between border-b border-brand-cyan/20 pb-4 gap-3">
           <div className="flex flex-col items-center gap-3 w-full">
 
-            <div className="flex flex-row items-center justify-between gap-3 w-full">
-              <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 w-full">
+              <div className="flex flex-row items-center gap-2 min-w-0 w-full mb-2 sm:mb-0">
                 <Users className="w-6 h-6 text-brand-cyan" />
-                <h3 className="font-pixel text-lg text-brand-yellow">{team.name}</h3>
+                <h3 className="font-pixel text-lg text-brand-yellow break-words whitespace-normal">{team.name}</h3>
                 <button
                   onClick={handleEditTeam}
                   disabled={!signupEnabled}
-                  className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'}`}
+                  className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'} whitespace-nowrap`}
                   title={signupEnabled ? (isAdmin ? "Edit team" : (locale === "es" ? "Solicitar cambio de nombre" : "Request name change")) : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
               </div>
               {team.status && (
-                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)}`}>
+                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)} whitespace-nowrap mb-2 sm:mb-0`}>
                   {capitalizeStatus(team.status)}
                 </div>
               )}
 
             </div>
-            <div className="flex flex-row items-center gap-3 w-full justify-between">
-              <div className="flex flex-row w-full items-center justify-between gap-3">
-                <div className="flex items-center gap-3 font-pixel text-sm">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full justify-between">
+              <div className="flex flex-col sm:flex-row items-center w-full justify-between gap-2 sm:gap-4 min-w-0">
+                <div className="flex items-center gap-2 font-pixel text-sm min-w-0 break-words whitespace-normal">
                   {(() => {
                     const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
                     return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
                   })()}
                   <span className="text-brand-cyan">Category: </span>
-                  <span className="text-brand-cyan/70">{teamCategoryLabel}</span>
+                  <span className="text-brand-cyan/70 break-words whitespace-normal">{teamCategoryLabel}</span>
                 </div>
                 <button
                   onClick={handleCopyTeamCode}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20"
+                  className="flex items-center gap-2 px-3 py-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20 break-words whitespace-normal"
                   title={locale === "es" ? "Copiar código del equipo" : "Copy team code"}
                 >
                   {copied ? (

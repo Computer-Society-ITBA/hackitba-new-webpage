@@ -227,22 +227,22 @@ function CreateTeamContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden relative">
+        <div className="min-h-screen flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-center px-2 sm:px-4 py-4 sm:py-8 overflow-x-hidden relative">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-            <div className="w-full max-w-lg relative z-10 flex flex-col gap-8">
+            <div className="w-full max-w-full sm:max-w-lg relative z-10 flex flex-col gap-2 sm:gap-8 px-1 sm:px-0">
                 {/* Header */}
-                <div className="text-center space-y-2">
-                    <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-pixel text-xl">POST /api/teams/create</h1>
+                <div className="text-center space-y-1">
+                    <div className="flex items-center justify-center gap-1">
+                        <h1 className="font-pixel text-base sm:text-xl">POST /api/teams/create</h1>
                     </div>
                 </div>
 
                 {/* Main Card */}
-                <GlassCard className="p-8">
-                    <div className="min-h-[500px] flex flex-col">
+                <GlassCard className="p-2 sm:p-8">
+                    <div className="flex flex-col">
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="mb-6">
                                 <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">Team Configuration</h2>
