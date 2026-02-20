@@ -10,7 +10,6 @@ import { Mentors } from "@/components/sections/mentors"
 import { Categories } from "@/components/sections/categories"
 import { WhatWeProvide } from "@/components/sections/what-we-provide"
 import { FAQs } from "@/components/sections/faqs"
-import { SignupSection } from "@/components/sections/signup-section"
 import { Footer } from "@/components/sections/footer"
 import { FloatingSignupButton } from "@/components/ui/floating-signup-button"
 
@@ -43,7 +42,6 @@ export default async function Page({ params }: PageProps) {
         <Categories translations={translations} locale={locale} />
         <WhatWeProvide translations={translations} />
         <Countdown translations={translations} />
-        <SignupSection translations={translations} locale={locale} />
         <FAQs translations={translations} />
       </main>
 
