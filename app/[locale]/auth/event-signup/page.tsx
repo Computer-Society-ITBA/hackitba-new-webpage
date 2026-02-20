@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import type { UserRole } from "@/lib/firebase/types"
 import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter, ExternalLink, Users, UserPlus } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { getStorageClient, getDbClient } from "@/lib/firebase/client-config"
@@ -615,7 +616,8 @@ function EventSignupContent() {
                                                         >
                                                             <div className="flex items-center gap-3 pointer-events-none">
                                                                 <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                                <span className="text-[10px] text-brand-cyan/80 uppercase">{category?.name || "Unknown"}</span>
+                                                                {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                                <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
                                                             </div>
                                                             <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
                                                                 <Users className="w-4 h-4" />

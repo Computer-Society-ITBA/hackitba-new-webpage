@@ -8,10 +8,22 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChevronRight, Users, User } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, collection, getDocs } from "firebase/firestore"
+import { useAuth } from "@/lib/firebase/auth-context"
+
+interface Category {
+    id: string
+    englishName: string
+    spanishName: string
+    englishDescription: string
+    spanishDescription: string
+    iconName: string
+    order: number
+}
 
 
 interface CreateTeamPageProps {
@@ -26,12 +38,13 @@ function CreateTeamContent() {
     const locale = params.locale as Locale
     const translations = getTranslations(locale)
     const searchParams = useSearchParams()
+    const { refreshUser } = useAuth()
 
     // Form Data
     const [formData, setFormData] = useState({
         teamName: "",
         motivation: "",
-        priorities: ["AI", "Web3", "HealthTech"],
+        priorities: [] as string[], // category IDs ordered by preference
     })
 
     const [adminUser, setAdminUser] = useState({
@@ -40,33 +53,46 @@ function CreateTeamContent() {
         surname: "",
     })
 
+    const [categories, setCategories] = useState<Category[]>([])
+    const [categoriesLoading, setCategoriesLoading] = useState(true)
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const [signupEnabled, setSignupEnabled] = useState(true)
     const [signupLoading, setSignupLoading] = useState(true)
 
     useEffect(() => {
-        const loadSettings = async () => {
+        const loadInitialData = async () => {
             try {
                 const db = getDbClient()
                 if (!db) return
 
-                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                const [settingsDoc, categoriesSnapshot] = await Promise.all([
+                    getDoc(doc(db, "settings", "global")),
+                    getDocs(collection(db, "categories")),
+                ])
+
                 if (settingsDoc.exists()) {
                     const data = settingsDoc.data()
                     setSignupEnabled(data?.signupEnabled !== false)
                 } else {
                     setSignupEnabled(true)
                 }
+
+                const cats: Category[] = categoriesSnapshot.docs
+                    .map((d) => ({ id: d.id, ...(d.data() as Omit<Category, "id">) }))
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                setCategories(cats)
+                setFormData((prev) => ({ ...prev, priorities: cats.map((c) => c.id) }))
             } catch (err) {
-                console.error("Error loading signup setting:", err)
+                console.error("Error loading initial data:", err)
                 setSignupEnabled(true)
             } finally {
                 setSignupLoading(false)
+                setCategoriesLoading(false)
             }
         }
 
-        loadSettings()
+        loadInitialData()
     }, [])
 
     useEffect(() => {
@@ -182,10 +208,11 @@ function CreateTeamContent() {
                 return
             }
 
-            const categoryMap = ["AI", "Web3", "HealthTech"]
-            const category_1 = categoryMap.indexOf(formData.priorities[0])
-            const category_2 = categoryMap.indexOf(formData.priorities[1])
-            const category_3 = categoryMap.indexOf(formData.priorities[2])
+            // Map category IDs back to their sorted index (used by backend)
+            const categoryIdToIndex = Object.fromEntries(categories.map((c, i) => [c.id, i]))
+            const category_1 = categoryIdToIndex[formData.priorities[0]] ?? 0
+            const category_2 = categoryIdToIndex[formData.priorities[1]] ?? 1
+            const category_3 = categoryIdToIndex[formData.priorities[2]] ?? 2
 
             const payload = {
                 name: formData.teamName,
@@ -214,8 +241,8 @@ function CreateTeamContent() {
                 throw new Error(errorData.error || translations.auth.createTeam.errors.createFailed)
             }
 
-            // Simulating API call
-            await new Promise(resolve => setTimeout(resolve, 1500))
+            // Refresh auth context so the new team is reflected immediately
+            await refreshUser()
 
             // Success - redirect to dashboard
             router.push(`/${locale}/dashboard`)
@@ -294,26 +321,37 @@ function CreateTeamContent() {
                                 <Label className="text-brand-cyan font-pixel text-xs tracking-tighter">
                                     Category Preference (Drag to reorder)
                                 </Label>
-                                <div className="space-y-2">
-                                    {formData.priorities.map((cat, i) => (
-                                        <div
-                                            key={cat}
-                                            draggable
-                                            onDragStart={(e) => handleDragStart(e, i)}
-                                            onDragOver={handleDragOver}
-                                            onDrop={(e) => handleDrop(e, i)}
-                                            className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
-                                        >
-                                            <div className="flex items-center gap-3 pointer-events-none">
-                                                <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                <span className="text-[10px] text-brand-cyan/80 uppercase">{cat}</span>
-                                            </div>
-                                            <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
-                                                <Users className="w-4 h-4" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                {categoriesLoading ? (
+                                    <p className="text-brand-cyan/40 font-pixel text-xs animate-pulse">Loading categories...</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {formData.priorities.map((catId, i) => {
+                                            const cat = categories.find((c) => c.id === catId)
+                                            if (!cat) return null
+                                            const name = locale === "es" ? cat.spanishName : cat.englishName
+                                            const IconComponent = (LucideIcons as any)[cat.iconName] || LucideIcons.HelpCircle
+                                            return (
+                                                <div
+                                                    key={catId}
+                                                    draggable
+                                                    onDragStart={(e) => handleDragStart(e, i)}
+                                                    onDragOver={handleDragOver}
+                                                    onDrop={(e) => handleDrop(e, i)}
+                                                    className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
+                                                >
+                                                    <div className="flex items-center gap-3 pointer-events-none">
+                                                        <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
+                                                        <IconComponent className="w-4 h-4 text-brand-cyan/60" />
+                                                        <span className="text-[10px] text-brand-cyan/80">{name}</span>
+                                                    </div>
+                                                    <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
+                                                        <Users className="w-4 h-4" />
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
