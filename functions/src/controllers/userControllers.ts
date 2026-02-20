@@ -439,6 +439,8 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
         email: data.email,
         university: data.university,
         career: data.career,
+        age: data.age,
+        food_preference: data.food_preference,
         createdAt: data.createdAt,
       };
     });

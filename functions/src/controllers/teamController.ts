@@ -104,7 +104,7 @@ export const createTeam = async (req: Request, res: Response) => {
       category_1,
       category_2,
       category_3,
-      category: typeof category_1 === "number" ? category_1 : null,
+      category: null,
 
       is_created_by_admin: is_created_by_admin === true,
       is_finalista: false,
@@ -180,7 +180,7 @@ export const getAllTeams = async (req: Request, res: Response) => {
 export const updateTeamStatusAdmin = async (req: Request, res: Response) => {
   try {
     const {label} = req.params;
-    const {status} = req.body as {status: string};
+    const {status, category} = req.body as {status: string; category?: number | null};
 
     if (!status) {
       return res.status(400).json({error: "status is required"});
@@ -191,7 +191,10 @@ export const updateTeamStatusAdmin = async (req: Request, res: Response) => {
       return res.status(404).json({error: "Equipo no encontrado"});
     }
 
-    await teamService.updateTeam(team.ref, {status});
+    const updates: teamService.UpdateTeamData = {status};
+    if (category !== undefined) updates.category = category;
+
+    await teamService.updateTeam(team.ref, updates);
 
     return res.status(200).json({id: team.id, status});
   } catch (error: any) {
