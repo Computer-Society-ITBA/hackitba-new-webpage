@@ -129,6 +129,66 @@
     font-size: calc(3rem * 2);
   }
 
+  /* Responsive fixes for mobile: reduce the doubled pixel font sizes and tighten spacing
+     to avoid text overlap and clipping on small screens. */
+  @media (max-width: 640px) {
+    .font-pixel {
+      line-height: 1.25em;
+      letter-spacing: 0.04em;
+    }
+
+    .font-pixel.text-xs {
+      font-size: 0.75rem; /* normal scale on mobile */
+    }
+
+    .font-pixel.text-sm {
+      font-size: 0.875rem;
+    }
+
+    .font-pixel.text-md {
+      font-size: 1rem;
+    }
+
+    .font-pixel.text-lg {
+      font-size: 1.125rem;
+    }
+
+    .font-pixel.text-xl {
+      font-size: 1.25rem;
+    }
+
+    .font-pixel.text-2xl {
+      font-size: 1.5rem;
+    }
+
+    .font-pixel.text-3xl {
+      font-size: 1.875rem;
+    }
+
+    .font-pixel.text-4xl {
+      font-size: 2.25rem;
+    }
+
+    .font-pixel.text-5xl {
+      font-size: 2.75rem;
+    }
+
+    .font-pixel.text-6xl {
+      font-size: 3rem;
+    }
+
+    /* Hide icon children inside buttons on small screens and center text */
+    [data-slot="button"] {
+      gap: 0 !important;
+      justify-content: center !important;
+    }
+
+    [data-slot="button"] > svg,
+    [data-slot="button"] > img {
+      display: none !important;
+    }
+  }
+
   .font-montserrat {
     font-family: var(--font-montserrat);
   }

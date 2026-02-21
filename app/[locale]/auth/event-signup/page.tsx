@@ -676,11 +676,13 @@ function EventSignupContent() {
                     <div className="flex items-center justify-center gap-2">
                         <h1 className="leading-none font-pixel text-lg">{translations.auth.eventSignup.endpoint}</h1>
                     </div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
-                        {role && role in translations.auth.eventSignup.roleTitle
-                            ? `${translations.auth.eventSignup.title} - ${translations.auth.eventSignup.roleTitle[role as keyof typeof translations.auth.eventSignup.roleTitle]}`
-                            : translations.auth.eventSignup.loading}
-                    </p>
+                    {role && (
+                        <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
+                            {role in translations.auth.eventSignup.roleTitle
+                                ? `${translations.auth.eventSignup.title} - ${translations.auth.eventSignup.roleTitle[role as keyof typeof translations.auth.eventSignup.roleTitle]}`
+                                : translations.auth.eventSignup.title}
+                        </p>
+                    )}
                 </div>
 
                 {/* Progress */}
@@ -721,17 +723,18 @@ function EventSignupContent() {
                             {currentStep > 1 && (
                                 <PixelButton
                                     variant="outline"
+                                    arrow="left"
                                     onClick={handleBack}
                                     className="w-[35%] leading-none text-xs flex flex-row justify-between items-center p-4"
                                     disabled={loading || !signupEnabled}
                                 >
-                                    <ChevronLeft className="w-6 h-6" />
                                     {translations.auth.eventSignup.buttons.back}
                                 </PixelButton>
                             )}
                             <PixelButton
                                 onClick={handleNext}
                                 disabled={loading || !signupEnabled}
+                                size="sm"
                                 className="w-full text-xs leading-none flex flex-row justify-between items-center"
                             >
                                 {loading ? (
