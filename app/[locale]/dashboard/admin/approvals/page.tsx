@@ -409,7 +409,7 @@ export default function ApprovalsPage() {
                         </p>
                         <div className="text-sm text-brand-cyan/80 space-y-1 mt-1">
                           <p>{participant.email}</p>
-                          <p>{participant.university} - {participant.career}</p>
+                          <p>{[participant.university, participant.career].filter(Boolean).join(" - ")}</p>
                         </div>
                       </div>
                     </div>
