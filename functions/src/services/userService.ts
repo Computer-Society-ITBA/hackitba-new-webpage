@@ -78,7 +78,8 @@ export const eventRegistration = async (
   category_3: number,
   company: string|null = null,
   position: string|null = null,
-  photo: string|null = null): Promise<void> => {
+  photo: string|null = null,
+  wantsToCreateTeam: boolean = false): Promise<void> => {
   try {
     const db = getHackitbaDb();
     const userRef = db.collection("users").doc(userId);
@@ -138,6 +139,7 @@ export const eventRegistration = async (
         github: github,
         team: team,
         hasTeam: hasTeam,
+        wantsToCreateTeam: wantsToCreateTeam || false,
         food_preference: food_preference,
         category_1: category_1 !== null ? category_1 : category_1,
         category_2: category_2 !== null ? category_2 : category_2,

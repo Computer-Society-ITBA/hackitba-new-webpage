@@ -77,6 +77,7 @@ export const updateUserTeam = async (userId: string, teamLabel: string): Promise
   await db.collection("users").doc(userId).update({
     team: teamLabel,
     hasTeam: true,
+    wantsToCreateTeam: false,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   logger.info(`Usuario ${userId} actualizado con team: ${teamLabel}`);

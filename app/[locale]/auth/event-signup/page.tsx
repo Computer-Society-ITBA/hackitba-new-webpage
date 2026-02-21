@@ -364,6 +364,7 @@ function EventSignupContent() {
                 github: formData.github || null,
                 team: formData.hasTeam === "yes" ? formData.teamCode : null,
                 hasTeam: formData.hasTeam === "yes",
+                wantsToCreateTeam: formData.hasTeam === "no" && formData.noTeamOption === "create",
                 food_preference: formData.dietaryPreference,
                 category_1: category_1,
                 category_2: category_2,

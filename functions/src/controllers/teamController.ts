@@ -334,6 +334,7 @@ export const joinTeam = async (req: Request, res: Response) => {
           const newUserData: any = {
             team: label,
             hasTeam: true,
+            wantsToCreateTeam: false,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           };
@@ -354,7 +355,7 @@ export const joinTeam = async (req: Request, res: Response) => {
         }
 
         // Safe to add user to team
-        tx.update(userRef, {team: label, hasTeam: true, updatedAt: admin.firestore.FieldValue.serverTimestamp()});
+        tx.update(userRef, {team: label, hasTeam: true, wantsToCreateTeam: false, updatedAt: admin.firestore.FieldValue.serverTimestamp()});
       });
     } catch (txError: any) {
       logger.error("Transaction error joining team:", txError);

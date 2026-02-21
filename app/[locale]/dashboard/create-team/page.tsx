@@ -375,11 +375,6 @@ function CreateTeamContent() {
                         </div>
                     </div>
                 </GlassCard>
-
-                {/* Footer */}
-                <p className="text-center text-xs font-pixel text-brand-cyan/40 uppercase">
-                    Changed your mind? <button onClick={() => router.push(`/${locale}/dashboard`)} className="text-brand-yellow hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Skip for now</button>
-                </p>
             </div>
         </div>
     )

@@ -23,6 +23,7 @@ export interface User {
   category_3?: number
   team?: string | null
   hasTeam?: boolean // true if participant has a team, false if without team, undefined if not applicable
+  wantsToCreateTeam?: boolean // true if participant chose to create a team during signup
   participationStatus?: "rejected" | null // only set when admin explicitly rejects a teamless participant
   company?: string
   position?: string
