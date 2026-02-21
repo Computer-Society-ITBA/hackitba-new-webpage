@@ -127,7 +127,7 @@ export default function VerifyEmailRequiredPage() {
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">
 
-      <div className="absolute top-4 left-4 z-20 flex gap-2">
+      <div className="absolute top-8 left-8 z-20 flex gap-2">
         <button
           onClick={() => router.back()}
           className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
@@ -151,19 +151,19 @@ export default function VerifyEmailRequiredPage() {
             <div className="flex justify-center mb-4">
               <AlertCircle className="w-12 h-12 text-brand-orange" />
             </div>
-            <h1 className="text-3xl font-bold font-pixel mb-2">
+            <h1 className="text-3xl leading-tight font-bold font-pixel mb-2">
               {translations.verifyEmail.title}
             </h1>
           </div>
 
           {/* Message Box */}
           <div className="bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg p-4 mb-6">
-            <p className="text-brand-cyan/70 text-sm mb-2">
+            <p className="text-brand-cyan font-pixel text-sm mb-2">
               {translations.verifyEmail.sentTo}
             </p>
             {!editingEmail ? (
               <div className="flex flex-col gap-2">
-                <p className="text-brand-orange font-pixel text-xs">{user.email}</p>
+                <p className="text-brand-orange font-pixel w-full">{user.email}</p>
                 <button
                   onClick={() => setEditingEmail(true)}
                   className="text-xs text-brand-cyan hover:text-brand-orange underline text-left"
@@ -236,7 +236,7 @@ export default function VerifyEmailRequiredPage() {
             <PixelButton
               onClick={handleResendEmail}
               disabled={resendLoading}
-              className="w-full"
+              className="leading-none w-full"
               variant="outline"
             >
               <RotateCw className="w-4 h-4 mr-2" />
@@ -249,7 +249,7 @@ export default function VerifyEmailRequiredPage() {
               onClick={() => {
                 window.location.reload()
               }}
-              className="w-full px-4 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/20 transition-colors rounded text-sm font-pixel"
+              className="leading-none w-full px-4 py-2 bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/20 transition-colors rounded text-sm font-pixel"
             >
               {translations.verifyEmail.alreadyVerified}
             </button>

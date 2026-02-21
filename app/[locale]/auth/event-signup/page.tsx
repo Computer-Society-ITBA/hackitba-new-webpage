@@ -58,14 +58,14 @@ function EventSignupContent() {
             console.log("Event signup - User:", authUser?.email)
             console.log("Event signup - Email verified:", authUser?.emailVerified)
             console.log("Event signup - Onboarding step:", authUser?.onboardingStep)
-            
+
             // Check if email is verified
             if (!authUser.emailVerified) {
                 console.log("Email not verified, redirecting to verification page")
                 router.replace(`/${locale}/auth/verify-email-required`)
                 return
             }
-            
+
             const onboardingStep = authUser.onboardingStep || 0
             console.log("Event signup - User onboarding step:", onboardingStep, "User:", authUser?.email)
             if (onboardingStep >= 2) {
@@ -165,7 +165,7 @@ function EventSignupContent() {
             // Fallback: try localStorage and API
             try {
                 const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
-                
+
                 if (!uid) {
                     console.error("No user ID found. Please register first.")
                     setRole("participant")
@@ -175,13 +175,13 @@ function EventSignupContent() {
                 // Get current user token from Firebase
                 const auth = getAuth()
                 const currentUser = auth.currentUser
-                
+
                 if (!currentUser) {
                     console.error("No Firebase user authenticated")
                     setRole("participant")
                     return
                 }
- 
+
                 const idToken = await currentUser.getIdToken()
 
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
@@ -190,7 +190,7 @@ function EventSignupContent() {
                         'Authorization': `Bearer ${idToken}`
                     }
                 })
-                
+
                 if (response.ok) {
                     const data = await response.json()
                     setRole(data.role || "participant")
@@ -392,7 +392,7 @@ function EventSignupContent() {
             // Refresh user data to get updated onboardingStep
             console.log("Event registration successful, refreshing user data...")
             await refreshUser()
-            
+
             // Wait a bit for Firestore to fully update
             await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -423,7 +423,7 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{role === "participant" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{role === "participant" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
                         </div>
 
                         <div className="space-y-2">
@@ -446,7 +446,7 @@ function EventSignupContent() {
                                         <Label htmlFor="age" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.age} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                         <Input id="age" type="number" value={formData.age} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                                         {formData.age && parseInt(formData.age) > 27 && (
-                                            <p className="text-xs text-yellow-500 leading-tight font-pixel">{translations.auth.eventSignup.warnings.agePreference}</p>
+                                            <p className="text-xs text-yellow-500 leading-none font-pixel">{translations.auth.eventSignup.warnings.agePreference}</p>
                                         )}
                                     </div>
                                 </div>
@@ -513,7 +513,7 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider text-balance">{translations.auth.eventSignup.steps.contactSocial}</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none text-balance">{translations.auth.eventSignup.steps.contactSocial}</h2>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -545,7 +545,7 @@ function EventSignupContent() {
                 return (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="mb-6">
-                            <h2 className="text-brand-orange font-pixel text-lg uppercase tracking-wider">{translations.auth.eventSignup.steps.teamStatus}</h2>
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{translations.auth.eventSignup.steps.teamStatus}</h2>
                         </div>
                         <div className="space-y-3">
                             <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
@@ -598,7 +598,7 @@ function EventSignupContent() {
 
                                 {formData.noTeamOption === "solo" ? (
                                     <div className="space-y-4 animate-in fade-in duration-300">
-                                        <Label className="text-brand-cyan font-pixel text-xs uppercase tracking-tighter italic">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                        <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
                                         {categoriesLoading ? (
                                             <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
                                         ) : formData.priorities.length > 0 ? (
@@ -664,7 +664,7 @@ function EventSignupContent() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-pixel text-xl">{translations.auth.eventSignup.endpoint}</h1>
+                        <h1 className="leading-none font-pixel text-lg">{translations.auth.eventSignup.endpoint}</h1>
                     </div>
                     <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
                         {role && role in translations.auth.eventSignup.roleTitle
@@ -675,7 +675,7 @@ function EventSignupContent() {
 
                 {/* Progress */}
                 <div className="space-y-2 px-2">
-                    <div className="flex justify-between text-[8px] font-pixel uppercase text-brand-cyan/40 px-1">
+                    <div className="flex justify-between text-xs font-pixel uppercase text-brand-cyan/40 px-1">
                         <span>{translations.auth.eventSignup.progress.init}</span>
                         <span>{translations.auth.eventSignup.progress.complete}</span>
                     </div>
@@ -712,7 +712,7 @@ function EventSignupContent() {
                                 <PixelButton
                                     variant="outline"
                                     onClick={handleBack}
-                                    className="w-[35%] flex flex-row justify-between items-center p-4"
+                                    className="w-[35%] leading-none text-xs flex flex-row justify-between items-center p-4"
                                     disabled={loading || !signupEnabled}
                                 >
                                     <ChevronLeft className="w-6 h-6" />
@@ -722,7 +722,7 @@ function EventSignupContent() {
                             <PixelButton
                                 onClick={handleNext}
                                 disabled={loading || !signupEnabled}
-                                className="w-full flex flex-row justify-between items-center"
+                                className="w-full text-xs leading-none flex flex-row justify-between items-center"
                             >
                                 {loading ? (
                                     translations.auth.eventSignup.buttons.uploading

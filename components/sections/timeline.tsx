@@ -35,14 +35,14 @@ export function Timeline({ translations }: TimelineProps) {
             {/* Top Row */}
             <div className="flex flex-col justify-between h-full">
               <div className="mb-4">
-                <h3 className="font-pixel text-md text-brand-yellow mb-2">{events[0].title}</h3>
+                <h3 className="font-pixel text-sm text-brand-yellow mb-2">{events[0].title}</h3>
                 <p className="text-md">{events[0].description}</p>
               </div>
               <div className="h-8 w-8 self-center neon-border-orange bg-brand-yellow translate-y-4 z-50"></div>
             </div>
             <div className="col-start-3 flex flex-col justify-between h-full">
               <div className="mb-4">
-                <h3 className="font-pixel text-md text-brand-yellow mb-2">{events[2].title}</h3>
+                <h3 className="font-pixel text-sm text-brand-yellow mb-2">{events[2].title}</h3>
                 <p className="text-md">{events[2].description}</p>
               </div>
               <div className="h-8 w-8 self-center neon-border-orange bg-brand-yellow translate-y-4 z-50"></div>
@@ -56,14 +56,14 @@ export function Timeline({ translations }: TimelineProps) {
             <div className="col-start-2 flex flex-col justify-start h-full">
               <div className="h-8 w-8 self-center neon-border-orange bg-brand-yellow -translate-y-5 z-50"></div>
               <div className="mt-4">
-                <h3 className="font-pixel text-md text-brand-yellow mb-2">{events[1].title}</h3>
+                <h3 className="font-pixel text-sm text-brand-yellow mb-2">{events[1].title}</h3>
                 <p className="text-md">{events[1].description}</p>
               </div>
             </div>
             <div className="col-start-4 flex flex-col justify-start h-full">
               <div className="h-8 w-8 self-center neon-border-orange bg-brand-yellow -translate-y-5 z-50"></div>
               <div className="mt-4">
-                <h3 className="font-pixel text-md text-brand-yellow mb-2">{events[3].title}</h3>
+                <h3 className="font-pixel text-sm text-brand-yellow mb-2">{events[3].title}</h3>
                 <p className="text-md">{events[3].description}</p>
               </div>
             </div>
@@ -79,7 +79,7 @@ export function Timeline({ translations }: TimelineProps) {
               <div key={index} className="relative">
                 <div className="absolute -left-[38px] top-6 w-4 h-4 bg-brand-yellow neon-border-orange" />
                 <div>
-                  <h3 className="font-pixel text-md text-brand-yellow mb-2">{event.title}</h3>
+                  <h3 className="font-pixel text-sm text-brand-yellow mb-2">{event.title}</h3>
                   <p className="text-md leading-relaxed">{event.description}</p>
                 </div>
               </div>

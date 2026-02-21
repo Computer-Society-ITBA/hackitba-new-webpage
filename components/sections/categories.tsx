@@ -57,7 +57,7 @@ export function Categories({ translations, locale }: CategoriesProps) {
                     <div className="w-20 h-20 flex items-center justify-center">
                       <IconComponent size={48} />
                     </div>
-                    <h3 className="font-pixel text-md">{category.name}</h3>
+                    <h3 className="font-pixel text-sm leading-tight">{category.name}</h3>
                   </div>
                 </GlassCard>
               </button>
@@ -67,7 +67,7 @@ export function Categories({ translations, locale }: CategoriesProps) {
       </div>
 
       <Dialog open={!!selectedCategory} onOpenChange={() => setSelectedCategory(null)}>
-        <DialogContent className="glass-effect max-w-2xl">
+        <DialogContent className="glass-effect w-[90vw] max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-center font-pixel text-md text-brand-yellow">{selectedCategory?.name}</DialogTitle>
           </DialogHeader>

@@ -28,10 +28,10 @@ export function Footer({ translations, locale }: FooterProps) {
   ]
 
   return (
-    <footer className="bg-brand-black border-t border-brand-cyan/20 py-12 px-4">
+    <footer className="bg-brand-black border-t border-brand-cyan/20 py-12 px-8">
       <div className="container mx-auto max-w-4xl">
-        <div className="grid grid-cols-2 gap-12 mb-8">
-          <div className="justify-self-end">
+        <div className="grid grid-cols-[35%_1fr] md:grid-cols-2 gap-8 md:gap-12 mb-8">
+          <div className="md:justify-self-end">
             <h3 className="font-pixel text-xs text-brand-cyan mb-4">{translations.footer.menu}</h3>
             <div className="space-y-2">
               {navLinks.map((link, index) => (
@@ -83,7 +83,7 @@ export function Footer({ translations, locale }: FooterProps) {
             </p>
 
             <p>
-              <Link href={"mailto:computersociety@itba.edu.ar"} className="flex flex-col text-xs hover:text-brand-orange transition-colors">
+              <Link href={"mailto:computersociety@itba.edu.ar"} className="flex flex-col text-sm hover:text-brand-orange transition-colors">
                 {translations.footer.collaborate.split("\\n").map((line: string, index: number) => (
                   <span key={index}>{line}</span>
                 ))}
@@ -94,7 +94,7 @@ export function Footer({ translations, locale }: FooterProps) {
               <h3 className="font-pixel text-xs text-brand-cyan mb-4 md:text-left">
                 {translations.footer.socials}
               </h3>
-              <div className="flex gap-4 justify-center md:justify-start">
+              <div className="flex gap-4 md:justify-start">
                 {socials.map((social, index) => {
                   const Icon = social.icon
                   return (

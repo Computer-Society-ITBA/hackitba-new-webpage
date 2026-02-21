@@ -66,7 +66,7 @@ export function Hero({ translations, locale }: HeroProps) {
           </h1>
           <p className="font-pixel text-lg md:text-xl text-brand-yellow">{translations.hero.subtitle}</p>
           {!loading && !signupLoading && !user && signupEnabled && (
-            <Link href={`/${locale}/auth/signup`} className="duration-200 ease-in-out transition-colors hover:text-brand-orange hover:border-brand-orange hover:bg-brand-orange/10 mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-navy/60 px-4 py-2 font-pixel text-xs md:text-sm text-brand-cyan">
+            <Link href={`/${locale}/auth/signup`} className="duration-200 ease-in-out transition-colors hover:text-brand-orange hover:border-brand-orange hover:bg-brand-orange/10 mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-navy/60 px-4 py-2 font-pixel text-sm md:text-sm text-brand-cyan">
               {translations.hero.signupOpen}
             </Link>
           )}

@@ -157,7 +157,7 @@ export function Mentors({ translations }: MentorsProps) {
 
       {/* Modal */}
       <Dialog open={!!selectedMentor} onOpenChange={() => setSelectedMentor(null)}>
-        <DialogContent className="glass-effect max-w-2xl" aria-description="Modal that shows mentor information">
+        <DialogContent className="glass-effect w-[90vw] max-w-2xl" aria-description="Modal that shows mentor information">
           {selectedMentor && (
             <div className="space-y-6">
               <div className="flex items-start gap-6">
@@ -174,7 +174,7 @@ export function Mentors({ translations }: MentorsProps) {
                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow">
                       {selectedMentor.name}
                     </DialogTitle>
-                    <span className="px-2 py-1 rounded text-[8px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
+                    <span className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
                       {translations.mentors.categories[selectedMentor.category]}
                     </span>
                   </div>

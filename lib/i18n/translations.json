@@ -223,7 +223,7 @@
         "endpoint": "GET /auth/verify-email-required",
         "title": "Verify Your Email",
         "subtitle": "We need you to verify your email address to continue",
-        "sentTo": "Verification email sent to:",
+        "sentTo": "Email sent to:",
         "nextSteps": "Next steps:",
         "step1": "Open your email client",
         "step2": "Find the verification email",
@@ -235,7 +235,7 @@
         "checkSpam": "Check your spam folder or wait a few minutes"
       },
       "eventSignup": {
-        "endpoint": "POST /api/event/register",
+        "endpoint": "POST /api/event/signup",
         "title": "Event Registration",
         "roleTitle": {
           "jurado": "Judge",
@@ -245,8 +245,8 @@
         "loading": "Loading...",
         "initializing": "Initializing Terminal...",
         "progress": {
-          "init": "Init",
-          "complete": "Complete"
+          "init": "Started",
+          "complete": "Ready"
         },
         "steps": {
           "personalData": "Personal Data",
@@ -329,7 +329,7 @@
         "fields": {
           "teamName": "Team Name",
           "teamNamePlaceholder": "Los Hackers",
-          "motivation": "Tell us why you want to participate",
+          "motivation": "Why do you want to participate?",
           "motivationPlaceholder": "We want to participate because..."
         },
         "validation": {
@@ -867,7 +867,7 @@
         }
       },
       "eventSignup": {
-        "endpoint": "POST /api/event/register",
+        "endpoint": "POST /api/event/signup",
         "title": "Registro al Evento",
         "roleTitle": {
           "jurado": "Jurado",
@@ -878,7 +878,7 @@
         "initializing": "Inicializando Terminal...",
         "progress": {
           "init": "Inicio",
-          "complete": "Completar"
+          "complete": "Listo"
         },
         "steps": {
           "personalData": "Datos Personales",

@@ -263,12 +263,12 @@ function CreateTeamContent() {
                 {/* Header */}
                 <div className="text-center space-y-1">
                     <div className="flex items-center justify-center gap-1">
-                        <h1 className="font-pixel text-base sm:text-xl">POST /api/teams/create</h1>
+                        <h1 className="leading-none font-pixel text-sm">POST /api/teams/create</h1>
                     </div>
                 </div>
 
                 {/* Main Card */}
-                <GlassCard className="p-2 sm:p-8">
+                <GlassCard className="p-6 sm:p-8">
                     <div className="flex flex-col">
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="mb-6">
@@ -279,7 +279,6 @@ function CreateTeamContent() {
                             <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg">
                                 <div className="flex items-center">
                                     <div>
-                                        <p className="text-[8px] text-brand-cyan/60 font-pixel tracking-wider">Team Admin</p>
                                         <p className="text-brand-cyan font-pixel text-sm">
                                             {adminUser.name} {adminUser.surname}
                                         </p>
@@ -318,8 +317,8 @@ function CreateTeamContent() {
 
                             {/* Category Priorities */}
                             <div className="space-y-4">
-                                <Label className="text-brand-cyan font-pixel text-xs tracking-tighter">
-                                    Category Preference (Drag to reorder)
+                                <Label className="text-brand-cyan font-pixel text-xs">
+                                    Category Preference <br />(Drag to reorder)
                                 </Label>
                                 {categoriesLoading ? (
                                     <p className="text-brand-cyan/40 font-pixel text-xs animate-pulse">Loading categories...</p>
@@ -341,8 +340,8 @@ function CreateTeamContent() {
                                                 >
                                                     <div className="flex items-center gap-3 pointer-events-none">
                                                         <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                        <IconComponent className="w-4 h-4 text-brand-cyan/60" />
-                                                        <span className="text-[10px] text-brand-cyan/80">{name}</span>
+                                                        <IconComponent className="w-4 h-4 text-brand-cyan" />
+                                                        <span className="text-[14px] text-brand-cyan">{name}</span>
                                                     </div>
                                                     <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
                                                         <Users className="w-4 h-4" />
@@ -378,7 +377,7 @@ function CreateTeamContent() {
                 </GlassCard>
 
                 {/* Footer */}
-                <p className="text-center text-[10px] font-pixel text-brand-cyan/40 uppercase">
+                <p className="text-center text-xs font-pixel text-brand-cyan/40 uppercase">
                     Changed your mind? <button onClick={() => router.push(`/${locale}/dashboard`)} className="text-brand-yellow hover:neon-glow-orange transition-all ml-2 underline decoration-brand-orange/30">Skip for now</button>
                 </p>
             </div>
