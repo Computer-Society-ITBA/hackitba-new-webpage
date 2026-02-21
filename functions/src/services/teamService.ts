@@ -25,6 +25,7 @@ export interface UpdateTeamData {
     category_1?: number;
     category_2?: number;
     category_3?: number;
+    category?: number | null;
     status?: string;
 }
 
@@ -122,6 +123,7 @@ export const updateTeam = async (
   if (updates.category_1) updatedData.category_1 = updates.category_1;
   if (updates.category_2) updatedData.category_2 = updates.category_2;
   if (updates.category_3) updatedData.category_3 = updates.category_3;
+  if (updates.category !== undefined) updatedData.category = updates.category;
   if (updates.status) updatedData.status = updates.status;
 
   await teamRef.update(updatedData);

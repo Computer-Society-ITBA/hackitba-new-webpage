@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Plus, Users as UsersIcon, ArrowLeft } from "lucide-react"
+import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 
@@ -37,6 +38,10 @@ export default function ApprovalsPage() {
   const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
   const [teamMembers, setTeamMembers] = useState<any[]>([])
   const [selectedMember, setSelectedMember] = useState<any | null>(null)
+  const [selectedApprovalCategory, setSelectedApprovalCategory] = useState<string>("")
+  const [selectedParticipant, setSelectedParticipant] = useState<any | null>(null)
+  const [selectedParticipantTeamId, setSelectedParticipantTeamId] = useState<string>("")
+  const [participantRejectReason, setParticipantRejectReason] = useState<string>("")
 
   useEffect(() => {
     if (!auth) return
@@ -118,16 +123,27 @@ export default function ApprovalsPage() {
     }
   }
 
-  const approveTeam = async (teamId: string) => {
+  const approveTeam = async (teamId: string, categoryId?: string) => {
     setProcessing(teamId)
     try {
       const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) return
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+
+      // Map category ID to its sorted index
+      let categoryIndex: number | null = null
+      if (categoryId) {
+        const idx = categories.findIndex((c) => c.id === categoryId)
+        if (idx !== -1) categoryIndex = idx
+      }
+
+      const body: any = { status: "approved" }
+      if (categoryIndex !== null) body.category = categoryIndex
+
       const response = await fetch(`${apiUrl}/teams/${teamId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-        body: JSON.stringify({ status: "approved" }),
+        body: JSON.stringify(body),
       })
       if (response.ok) {
         await loadPendingTeams()
@@ -206,9 +222,7 @@ export default function ApprovalsPage() {
     }
   }
 
-  const rejectParticipant = async (userId: string) => {
-    const reason = prompt(translations.admin.pendingParticipants.rejectPrompt)
-
+  const rejectParticipant = async (userId: string, reason?: string) => {
     setProcessing(userId)
     try {
       const idToken = await auth?.currentUser?.getIdToken()
@@ -246,6 +260,7 @@ export default function ApprovalsPage() {
   const openTeamDetail = async (team: any) => {
     setSelectedTeam(team)
     setTeamMembers([])
+    setSelectedApprovalCategory("")
     if (!db) return
     try {
       const membersQuery = query(collection(db, "users"), where("team", "==", team.id))
@@ -377,57 +392,25 @@ export default function ApprovalsPage() {
             ) : (
               <div className="space-y-4">
                 {pendingParticipants.map((participant) => (
-                  <GlassCard key={participant.id} neonOnHover>
+                  <GlassCard
+                    key={participant.id}
+                    neonOnHover
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setSelectedParticipant(participant)
+                      setSelectedParticipantTeamId("")
+                      setParticipantRejectReason("")
+                    }}
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <p className="font-pixel text-brand-yellow">
-                            {participant.name} {participant.surname}
-                          </p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-pixel text-brand-yellow">
+                          {participant.name} {participant.surname}
+                        </p>
+                        <div className="text-sm text-brand-cyan/80 space-y-1 mt-1">
+                          <p>{participant.email}</p>
+                          <p>{participant.university} - {participant.career}</p>
                         </div>
-                        <div className="text-sm text-brand-cyan/80 space-y-1">
-                          <p>📧 {participant.email}</p>
-                          <p>🎓 {participant.university} - {participant.career}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <select
-                          id={`team-select-${participant.id}`}
-                          className="pixel-select bg-brand-navy/80 border border-brand-cyan/80 text-brand-cyan/80 rounded px-3 py-2"
-                          disabled={processing === participant.id}
-                        >
-                          <option value="">{translations.admin.pendingParticipants.selectTeam}</option>
-                          {teams.map((team) => (
-                            <option key={team.id} value={team.id}>
-                              {team.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        <PixelButton
-                          onClick={() => {
-                            const select = document.getElementById(`team-select-${participant.id}`) as HTMLSelectElement
-                            const teamId = select?.value
-                            if (teamId) {
-                              approveParticipant(participant.id, teamId)
-                            }
-                          }}
-                          disabled={processing === participant.id}
-                          size="sm"
-                          variant="primary"
-                        >
-                          ✓
-                        </PixelButton>
-
-                        <PixelButton
-                          onClick={() => rejectParticipant(participant.id)}
-                          disabled={processing === participant.id}
-                          size="sm"
-                          variant="primary"
-                        >
-                          ✗
-                        </PixelButton>
                       </div>
                     </div>
                   </GlassCard>
@@ -461,29 +444,11 @@ export default function ApprovalsPage() {
                 {pendingTeams.map((team) => (
                   <GlassCard key={team.id} neonOnHover className="cursor-pointer" onClick={() => openTeamDetail(team)}>
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p className="font-pixel text-brand-yellow mb-1">{team.name}</p>
                         <div className="text-sm text-brand-cyan/80 space-y-1">
-                          <p>🔑 {team.id}</p>
+                          <p>{team.id}</p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <PixelButton
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); approveTeam(team.id) }}
-                          disabled={processing === team.id}
-                          size="sm"
-                          variant="primary"
-                        >
-                          ✓
-                        </PixelButton>
-                        <PixelButton
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); rejectTeam(team.id) }}
-                          disabled={processing === team.id}
-                          size="sm"
-                          variant="primary"
-                        >
-                          ✗
-                        </PixelButton>
                       </div>
                     </div>
                   </GlassCard>
@@ -493,8 +458,106 @@ export default function ApprovalsPage() {
           </section>
         </div>
 
+        {/* Participant Detail Modal */}
+        <Dialog open={!!selectedParticipant} onOpenChange={(open) => { if (!open) { setSelectedParticipant(null); setSelectedParticipantTeamId(""); setParticipantRejectReason("") } }}>
+          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="font-pixel text-brand-yellow">
+                {selectedParticipant?.name} {selectedParticipant?.surname}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedParticipant && (
+              <div className="space-y-3 pt-2 pb-4">
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Nombre" : "Name"}</p>
+                  <p className="text-brand-cyan text-sm">{selectedParticipant.name} {selectedParticipant.surname}</p>
+                </div>
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel">Email</p>
+                  <p className="text-brand-cyan text-sm break-all">{selectedParticipant.email}</p>
+                </div>
+                {selectedParticipant.university && (
+                  <div>
+                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Universidad" : "University"}</p>
+                    <p className="text-brand-cyan text-sm">{selectedParticipant.university}</p>
+                  </div>
+                )}
+                {selectedParticipant.career && (
+                  <div>
+                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Carrera" : "Career"}</p>
+                    <p className="text-brand-cyan text-sm">{selectedParticipant.career}</p>
+                  </div>
+                )}
+                {selectedParticipant.age && (
+                  <div>
+                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Edad" : "Age"}</p>
+                    <p className="text-brand-cyan text-sm">{selectedParticipant.age}</p>
+                  </div>
+                )}
+                {selectedParticipant.food_preference && (
+                  <div>
+                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Preferencia alimentaria" : "Food preference"}</p>
+                    <p className="text-brand-cyan text-sm">{selectedParticipant.food_preference}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{translations.admin.pendingParticipants.selectTeam}</p>
+                  <select
+                    value={selectedParticipantTeamId}
+                    onChange={(e) => setSelectedParticipantTeamId(e.target.value)}
+                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-3 py-2 text-sm"
+                  >
+                    <option value="">{translations.admin.pendingParticipants.selectTeam}</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Motivo de rechazo (opcional)" : "Rejection reason (optional)"}</p>
+                  <textarea
+                    value={participantRejectReason}
+                    onChange={(e) => setParticipantRejectReason(e.target.value)}
+                    rows={2}
+                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-3 py-2 text-sm resize-none"
+                    placeholder={locale === "es" ? "Razón..." : "Reason..."}
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <PixelButton
+                    onClick={() => {
+                      if (!selectedParticipantTeamId) {
+                        alert(translations.admin.pendingParticipants.selectTeamError)
+                        return
+                      }
+                      approveParticipant(selectedParticipant.id, selectedParticipantTeamId)
+                      setSelectedParticipant(null)
+                    }}
+                    disabled={processing === selectedParticipant.id}
+                    size="sm"
+                    variant="primary"
+                  >
+                    {locale === "es" ? "Aprobar" : "Approve"}
+                  </PixelButton>
+                  <PixelButton
+                    onClick={() => {
+                      rejectParticipant(selectedParticipant.id, participantRejectReason || undefined)
+                      setSelectedParticipant(null)
+                    }}
+                    disabled={processing === selectedParticipant.id}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {locale === "es" ? "Rechazar" : "Reject"}
+                  </PixelButton>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Team Detail Modal */}
-        <Dialog open={!!selectedTeam} onOpenChange={(open) => { if (!open) { setSelectedTeam(null); setTeamMembers([]) } }}>
+        <Dialog open={!!selectedTeam} onOpenChange={(open) => { if (!open) { setSelectedTeam(null); setTeamMembers([]); setSelectedApprovalCategory("") } }}>
           <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
             <DialogHeader className="pb-2">
               <DialogTitle className="font-pixel text-brand-yellow">{selectedTeam?.name}</DialogTitle>
@@ -539,7 +602,6 @@ export default function ApprovalsPage() {
                           className="text-brand-cyan text-sm flex items-center gap-2 cursor-pointer hover:bg-brand-cyan/10 rounded px-2 py-1 transition-colors"
                           onClick={() => setSelectedMember(m)}
                         >
-                          <span>👤</span>
                           <span>{m.name} {m.surname}</span>
                           <span className="text-brand-cyan/40 text-xs">({m.email})</span>
                         </li>
@@ -547,9 +609,42 @@ export default function ApprovalsPage() {
                     </ul>
                   )}
                 </div>
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Preferencias del equipo" : "Team preferences"}</p>
+                  <div className="space-y-1">
+                    {[selectedTeam?.category_1, selectedTeam?.category_2, selectedTeam?.category_3].map((idx, i) => {
+                      if (idx === null || idx === undefined) return null
+                      const cat = categories[idx]
+                      if (!cat) return null
+                      const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
+                      const Icon = (LucideIcons as any)[cat.iconName] || LucideIcons.Tag
+                      return (
+                        <div key={i} className="flex items-center gap-2 text-xs text-brand-cyan/70">
+                          <span className="text-brand-orange font-pixel">{i + 1}.</span>
+                          <Icon className="w-3 h-3" />
+                          <span>{name}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Categoría final" : "Final category"}</p>
+                  <select
+                    value={selectedApprovalCategory}
+                    onChange={(e) => setSelectedApprovalCategory(e.target.value)}
+                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-3 py-2 text-sm"
+                  >
+                    <option value="">{locale === "es" ? "— Sin asignar —" : "— Not assigned —"}</option>
+                    {categories.map((cat) => {
+                      const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
+                      return <option key={cat.id} value={cat.id}>{name}</option>
+                    })}
+                  </select>
+                </div>
                 <div className="flex gap-2 pt-3">
                   <PixelButton
-                    onClick={() => { approveTeam(selectedTeam.id); setSelectedTeam(null) }}
+                    onClick={() => { approveTeam(selectedTeam.id, selectedApprovalCategory || undefined); setSelectedTeam(null) }}
                     disabled={processing === selectedTeam.id}
                     size="sm"
                     variant="primary"

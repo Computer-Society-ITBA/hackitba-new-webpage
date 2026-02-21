@@ -27,7 +27,7 @@
     },
     "event": {
       "location": "Parque Patricios, CABA",
-      "dates": "27, 28 and 29 of March",
+      "dates": "March 27–29, 2026",
       "free": "Free"
     },
     "timeline": {
@@ -59,8 +59,8 @@
       "objectiveText": "Empower students to design, build, and deploy meaningful technological solutions."
     },
     "event": {
-      "description": "An annual technology event featuring workshops, hackathons, and industry talks focused on software architecture, AI, and distributed systems.",
-      "date": "April 2026"
+      "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of peers in Argentina and worldwide, with innovative and original ideas.",
+      "date": "March 27–29, 2026"
     },
     "location": {
       "title": "Location",
@@ -131,6 +131,26 @@
     "faqs": {
       "title": "FAQs",
       "endpoint": "v2026/faqs",
+      "list": [
+        { "question": "What is HackITBA and how does it work?", "answer": "It is an event where teams develop technological solutions in a limited time." },
+        { "question": "What programming level is required?", "answer": "At least one team member must have intermediate/advanced knowledge." },
+        { "question": "Can I compete individually?", "answer": "No, it is in groups. However, you can sign up alone and we will assign you a team." },
+        { "question": "Can I sign up if I'm not from ITBA?", "answer": "Yes! It is for students from any institution between 18 and 26 years old. But remember it is in-person at ITBA." },
+        { "question": "How long does the event last?", "answer": "72 hours, of which 36 are for competition." },
+        { "question": "What is the modality?", "answer": "100% in-person." },
+        { "question": "Do I have to sleep at ITBA?", "answer": "Yes! Bring your sleeping bag, pillow, blanket, whatever you want." },
+        { "question": "Do I have to bring my own food?", "answer": "No, we take care of it." },
+        { "question": "Do I have to pay for registration?", "answer": "The event is 100% free." },
+        { "question": "How many people per team?", "answer": "Between 3 and 4 participants." },
+        { "question": "How are the projects evaluated?", "answer": "We will have the best judges, experts in the field." },
+        { "question": "Who are the judges?", "answer": "Find out very soon 👀" },
+        { "question": "Will there be prizes?", "answer": "Of course! The best in each category will be awarded." },
+        { "question": "What are the prizes?", "answer": "Find out on the last day of the competition 💪" },
+        { "question": "What if the project is not finished?", "answer": "It is recommended to present it as functional as possible, it must be usable." },
+        { "question": "Are there recommended technologies?", "answer": "We do not recommend any specific framework." },
+        { "question": "Will there be APIs or datasets?", "answer": "We do not provide any, you can use those your team knows and finds useful." },
+        { "question": "Can I change teams after registering?", "answer": "No, it is not possible." }
+      ],
       "question": "Question",
       "answer": "Resume of the answer"
     },
@@ -715,8 +735,8 @@
       "objectiveText": "Equipar a la próxima generación de ingenieros con las habilidades para arquitecturar, implementar y escalar soluciones de software significativas."
     },
     "event": {
-      "description": "Conferencia anual con talleres prácticos, charlas técnicas de ingenieros de la industria y hackatones colaborativos enfocados en sistemas distribuidos, infraestructura de machine learning y arquitectura de software moderna.",
-      "date": "12-14 de Abril, 2026"
+      "description": "HACKITBA CS es un hackathon anual que se realiza en el ITBA, en el que 25-50 equipos de 3 o 4 personas viven 36 horas de pura intensidad, programando un proyecto práctico que pueda mejorar la calidad de vida de sus pares en la Argentina y en el mundo, con ideas innovadoras y únicas.",
+      "date": "del 27 al 29 de marzo, 2026"
     },
     "location": {
       "title": "Ubicación",
@@ -787,6 +807,26 @@
     "faqs": {
       "title": "FAQs",
       "endpoint": "v2026/faqs",
+      "list": [
+        { "question": "¿Qué es la HackITBA y cómo funciona?", "answer": "Es un evento donde equipos desarrollan soluciones tecnológicas en un tiempo limitado." },
+        { "question": "¿Qué nivel de programación se requiere?", "answer": "Al menos un integrante del equipo debe tener conocimientos intermedios/avanzados." },
+        { "question": "¿Puedo competir individualmente?", "answer": "No, es en grupos. Sin embargo, podés anotarte solo y te asignamos un equipo." },
+        { "question": "¿Puedo anotarme si no soy de ITBA?", "answer": "¡Sí! Está destinado a estudiantes de cualquier institución de entre 18 y 26 años. Pero recordá que es presencial en ITBA." },
+        { "question": "¿Cuánto dura el evento?", "answer": "72 horas, de las cuales 36 son de competencia." },
+        { "question": "¿Cuál es la modalidad?", "answer": "100% presencial." },
+        { "question": "¿Tengo que dormir en ITBA?", "answer": "¡Sí! Traé tu bolsa de dormir, almohada, manta, lo que quieras." },
+        { "question": "¿Tengo que llevar mi propia comida?", "answer": "No, nosotros nos encargamos." },
+        { "question": "¿Debo abonar la inscripción?", "answer": "El evento es 100% gratuito." },
+        { "question": "¿Cuántas personas por equipo?", "answer": "Entre 3 y 4 participantes." },
+        { "question": "¿Cómo se evalúan los proyectos?", "answer": "Vamos a contar con los mejores jurados, expertos en el área." },
+        { "question": "¿Quiénes son los jueces?", "answer": "Enterate muy pronto 👀" },
+        { "question": "¿Van a haber premios?", "answer": "¡Por supuesto! Se van a premiar a los mejores de cada categoría." },
+        { "question": "¿Cuáles son los premios?", "answer": "Enterate el último día de la competencia 💪" },
+        { "question": "¿Qué pasa si no se termina el proyecto?", "answer": "Se recomienda presentarlo lo más funcional posible, debe ser usable." },
+        { "question": "¿Hay tecnologías recomendadas?", "answer": "No recomendamos ningún framework específico." },
+        { "question": "¿Habrá APIs o datasets?", "answer": "No proveemos ninguno, pueden usarse los que el equipo conozca y les sea útil." },
+        { "question": "¿Puedo cambiar de equipo después de inscribirme?", "answer": "No, no hay posibilidad." }
+      ],
       "question": "Pregunta",
       "answer": "Resumen de la respuesta"
     },
