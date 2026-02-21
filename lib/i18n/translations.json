@@ -27,7 +27,7 @@
     },
     "event": {
       "location": "Parque Patricios, CABA",
-      "dates": "27, 28 and 29 of March",
+      "dates": "March 27–29, 2026",
       "free": "Free"
     },
     "timeline": {
@@ -59,8 +59,8 @@
       "objectiveText": "Empower students to design, build, and deploy meaningful technological solutions."
     },
     "event": {
-      "description": "An annual technology event featuring workshops, hackathons, and industry talks focused on software architecture, AI, and distributed systems.",
-      "date": "April 2026"
+      "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of peers in Argentina and worldwide, with innovative and original ideas.",
+      "date": "March 27–29, 2026"
     },
     "location": {
       "title": "Location",
@@ -735,8 +735,8 @@
       "objectiveText": "Equipar a la próxima generación de ingenieros con las habilidades para arquitecturar, implementar y escalar soluciones de software significativas."
     },
     "event": {
-      "description": "Conferencia anual con talleres prácticos, charlas técnicas de ingenieros de la industria y hackatones colaborativos enfocados en sistemas distribuidos, infraestructura de machine learning y arquitectura de software moderna.",
-      "date": "12-14 de Abril, 2026"
+      "description": "HACKITBA CS es un hackathon anual que se realiza en el ITBA, en el que 25-50 equipos de 3 o 4 personas viven 36 horas de pura intensidad, programando un proyecto práctico que pueda mejorar la calidad de vida de sus pares en la Argentina y en el mundo, con ideas innovadoras y únicas.",
+      "date": "del 27 al 29 de marzo, 2026"
     },
     "location": {
       "title": "Ubicación",
