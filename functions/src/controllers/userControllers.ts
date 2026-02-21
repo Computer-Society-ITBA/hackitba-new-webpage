@@ -443,6 +443,9 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
         career: data.career,
         age: data.age,
         food_preference: data.food_preference,
+        category_1: data.category_1 ?? null,
+        category_2: data.category_2 ?? null,
+        category_3: data.category_3 ?? null,
         createdAt: data.createdAt,
       };
     });

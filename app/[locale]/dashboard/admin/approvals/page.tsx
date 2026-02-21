@@ -501,6 +501,25 @@ export default function ApprovalsPage() {
                   </div>
                 )}
                 <div>
+                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Preferencias de categoría" : "Category preferences"}</p>
+                  <div className="space-y-1">
+                    {[selectedParticipant?.category_1, selectedParticipant?.category_2, selectedParticipant?.category_3].map((idx, i) => {
+                      if (idx === null || idx === undefined) return null
+                      const cat = categories[idx]
+                      if (!cat) return null
+                      const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
+                      const Icon = (LucideIcons as any)[cat.iconName] || LucideIcons.Tag
+                      return (
+                        <div key={i} className="flex items-center gap-2 text-xs text-brand-cyan/70">
+                          <span className="text-brand-orange font-pixel">{i + 1}.</span>
+                          <Icon className="w-3 h-3" />
+                          <span>{name}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div>
                   <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{translations.admin.pendingParticipants.selectTeam}</p>
                   <select
                     value={selectedParticipantTeamId}
