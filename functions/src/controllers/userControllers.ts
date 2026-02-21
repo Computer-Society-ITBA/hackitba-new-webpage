@@ -427,6 +427,7 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
     const db = getHackitbaDb();
     const usersSnapshot = await db.collection("users")
       .where("hasTeam", "==", false)
+      .where("participationStatus", "!=", "rejected")
       .get();
 
     logger.info(`Found ${usersSnapshot.size} pending participants`);
