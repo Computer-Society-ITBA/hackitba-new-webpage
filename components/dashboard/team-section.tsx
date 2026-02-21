@@ -268,9 +268,6 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
     if (typeof team.category === "number" && team.category >= 0) {
       return categories[team.category]?.id || ""
     }
-    if (typeof team.category_1 === "number" && team.category_1 >= 0) {
-      return categories[team.category_1]?.id || ""
-    }
     return ""
   }, [team, categories])
 
@@ -500,7 +497,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full justify-between">
               <div className="flex flex-col sm:flex-row items-center w-full justify-between gap-2 sm:gap-4 min-w-0">
-                {teamCategoryId && (
+                {teamCategoryId ? (
                   <div className="flex items-center gap-2 font-pixel text-sm min-w-0 break-words whitespace-normal">
                     {(() => {
                       const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
@@ -508,6 +505,11 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                     })()}
                     <span className="text-brand-cyan">Category: </span>
                     <span className="text-brand-cyan/70 break-words whitespace-normal">{teamCategoryLabel}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 font-pixel text-sm text-brand-cyan/40 italic">
+                    <LucideIcons.Clock className="h-4 w-4" />
+                    <span>{locale === "es" ? "Categoría pendiente de asignación" : "Category pending assignment"}</span>
                   </div>
                 )}
                 <button
