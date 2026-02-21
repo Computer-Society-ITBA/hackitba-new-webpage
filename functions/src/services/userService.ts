@@ -79,7 +79,7 @@ export const eventRegistration = async (
   company: string|null = null,
   position: string|null = null,
   photo: string|null = null,
-  wantsToCreateTeam: boolean = false): Promise<void> => {
+  wantsToCreateTeam = false): Promise<void> => {
   try {
     const db = getHackitbaDb();
     const userRef = db.collection("users").doc(userId);

@@ -434,23 +434,23 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
     const pendingParticipants = usersSnapshot.docs
       .filter((doc) => doc.data().participationStatus !== "rejected")
       .map((doc) => {
-      const data = doc.data();
-      logger.info(`Participant: ${doc.id} - ${data.name} ${data.surname}`);
-      return {
-        id: doc.id,
-        name: data.name,
-        surname: data.surname,
-        email: data.email,
-        university: data.university,
-        career: data.career,
-        age: data.age,
-        food_preference: data.food_preference,
-        category_1: data.category_1 ?? null,
-        category_2: data.category_2 ?? null,
-        category_3: data.category_3 ?? null,
-        createdAt: data.createdAt,
-      };
-    });
+        const data = doc.data();
+        logger.info(`Participant: ${doc.id} - ${data.name} ${data.surname}`);
+        return {
+          id: doc.id,
+          name: data.name,
+          surname: data.surname,
+          email: data.email,
+          university: data.university,
+          career: data.career,
+          age: data.age,
+          food_preference: data.food_preference,
+          category_1: data.category_1 ?? null,
+          category_2: data.category_2 ?? null,
+          category_3: data.category_3 ?? null,
+          createdAt: data.createdAt,
+        };
+      });
 
     logger.info(`Returning ${pendingParticipants.length} participants`);
 

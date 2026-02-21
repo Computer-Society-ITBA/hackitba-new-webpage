@@ -17,6 +17,7 @@ import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/cli
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { toast } from "@/hooks/use-toast"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function AdminDashboard() {
@@ -103,7 +104,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating project submissions setting:", error)
       setProjectSubmissionsEnabled(!nextValue)
-      alert(translations.admin.projectSubmissions.updateError)
+      toast({ title: translations.admin.projectSubmissions.updateError, variant: 'destructive' })
     }
   }
 
@@ -120,7 +121,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating signup setting:", error)
       setSignupEnabled(!nextValue)
-      alert(translations.admin.signup.updateError)
+      toast({ title: translations.admin.signup.updateError, variant: 'destructive' })
     }
   }
 

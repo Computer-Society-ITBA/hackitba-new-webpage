@@ -16,6 +16,7 @@ import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Plus, Users as UsersIcon, ArrowLeft } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { toast } from "@/hooks/use-toast"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function ApprovalsPage() {
@@ -149,7 +150,7 @@ export default function ApprovalsPage() {
         await loadPendingTeams()
       } else {
         const error = await response.json()
-        alert(`Error: ${error.error}`)
+        toast({ title: "Error", description: error.error, variant: 'destructive' })
       }
     } catch (error) {
       console.error("Error approving team:", error)
@@ -173,7 +174,7 @@ export default function ApprovalsPage() {
         await loadPendingTeams()
       } else {
         const error = await response.json()
-        alert(`Error: ${error.error}`)
+        toast({ title: "Error", description: error.error, variant: 'destructive' })
       }
     } catch (error) {
       console.error("Error rejecting team:", error)
@@ -184,7 +185,7 @@ export default function ApprovalsPage() {
 
   const approveParticipant = async (userId: string, teamId: string) => {
     if (!teamId) {
-      alert(translations.admin.pendingParticipants.selectTeamError)
+      toast({ title: translations.admin.pendingParticipants.selectTeamError, variant: 'destructive' })
       return
     }
 
@@ -208,15 +209,15 @@ export default function ApprovalsPage() {
       })
 
       if (response.ok) {
-        alert(translations.admin.pendingParticipants.approveSuccess)
+        toast({ title: translations.admin.pendingParticipants.approveSuccess })
         loadPendingParticipants()
       } else {
         const error = await response.json()
-        alert(`Error: ${error.error}`)
+        toast({ title: "Error", description: error.error, variant: 'destructive' })
       }
     } catch (error) {
       console.error("Error approving participant:", error)
-      alert(translations.admin.pendingParticipants.approveError)
+      toast({ title: translations.admin.pendingParticipants.approveError, variant: 'destructive' })
     } finally {
       setProcessing(null)
     }
@@ -243,15 +244,15 @@ export default function ApprovalsPage() {
       })
 
       if (response.ok) {
-        alert(translations.admin.pendingParticipants.rejectSuccess)
+        toast({ title: translations.admin.pendingParticipants.rejectSuccess })
         loadPendingParticipants()
       } else {
         const error = await response.json()
-        alert(`Error: ${error.error}`)
+        toast({ title: "Error", description: error.error, variant: 'destructive' })
       }
     } catch (error) {
       console.error("Error rejecting participant:", error)
-      alert(translations.admin.pendingParticipants.rejectError)
+      toast({ title: translations.admin.pendingParticipants.rejectError, variant: 'destructive' })
     } finally {
       setProcessing(null)
     }
@@ -279,18 +280,18 @@ export default function ApprovalsPage() {
 
   const createNewTeam = async () => {
     if (!newTeamForm.name || newTeamForm.name.trim().length < 3) {
-      alert(translations.admin.createTeam.nameLengthError)
+      toast({ title: translations.admin.createTeam.nameLengthError, variant: 'destructive' })
       return
     }
 
     if (!newTeamForm.category) {
-      alert(translations.admin.createTeam.categoryRequired)
+      toast({ title: translations.admin.createTeam.categoryRequired, variant: 'destructive' })
       return
     }
 
     const categoryIndex = categories.findIndex((category) => category.id === newTeamForm.category)
     if (categoryIndex === -1) {
-      alert(translations.admin.createTeam.invalidCategory)
+      toast({ title: translations.admin.createTeam.invalidCategory, variant: 'destructive' })
       return
     }
 
@@ -298,7 +299,7 @@ export default function ApprovalsPage() {
     try {
       const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) {
-        alert(translations.admin.createTeam.sessionError)
+        toast({ title: translations.admin.createTeam.sessionError, variant: 'destructive' })
         return
       }
 
@@ -323,7 +324,7 @@ export default function ApprovalsPage() {
       if (response.ok) {
         const newTeam = await response.json()
         setShowCreateTeamModal(false)
-        alert(`${translations.admin.createTeam.create} "${newTeamForm.name}" ${translations.admin.createTeam.createSuccess}`)
+        toast({ title: `${translations.admin.createTeam.create} "${newTeamForm.name}" ${translations.admin.createTeam.createSuccess}` })
 
         await loadTeams()
 
@@ -346,11 +347,11 @@ export default function ApprovalsPage() {
             errorMessage = errorText
           }
         }
-        alert(`Error: ${errorMessage}`)
+        toast({ title: "Error", description: errorMessage, variant: 'destructive' })
       }
     } catch (error) {
       console.error("Error creating team:", error)
-      alert(translations.admin.createTeam.createError)
+      toast({ title: translations.admin.createTeam.createError, variant: 'destructive' })
     } finally {
       setProcessing(null)
     }
@@ -546,7 +547,7 @@ export default function ApprovalsPage() {
                   <PixelButton
                     onClick={() => {
                       if (!selectedParticipantTeamId) {
-                        alert(translations.admin.pendingParticipants.selectTeamError)
+                        toast({ title: translations.admin.pendingParticipants.selectTeamError, variant: 'destructive' })
                         return
                       }
                       approveParticipant(selectedParticipant.id, selectedParticipantTeamId)
