@@ -188,47 +188,6 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">{translations.admin.projectSubmissions.title}</h3>
-            </div>
-            <GlassCard>
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-brand-cyan font-pixel text-sm">{translations.admin.projectSubmissions.label}</p>
-                  <p className="text-brand-cyan/60 text-xs">{translations.admin.projectSubmissions.description}</p>
-                </div>
-                <button
-                  onClick={toggleProjectSubmissions}
-                  className={`px-4 py-2 rounded border font-pixel text-xs transition-colors ${
-                    projectSubmissionsEnabled
-                      ? "border-brand-cyan/60 text-brand-cyan bg-brand-cyan/10"
-                      : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
-                  }`}
-                >
-                  {projectSubmissionsEnabled ? translations.admin.projectSubmissions.enabled : translations.admin.projectSubmissions.disabled}
-                </button>
-              </div>
-            </GlassCard>
-            <GlassCard className="mt-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-brand-cyan font-pixel text-sm">{translations.admin.signup.label}</p>
-                  <p className="text-brand-cyan/60 text-xs">{translations.admin.signup.description}</p>
-                </div>
-                <button
-                  onClick={toggleSignupEnabled}
-                  className={`px-4 py-2 rounded border font-pixel text-xs transition-colors ${
-                    signupEnabled
-                      ? "border-brand-cyan/60 text-brand-cyan bg-brand-cyan/10"
-                      : "border-brand-orange/50 text-brand-orange bg-brand-orange/10"
-                  }`}
-                >
-                  {signupEnabled ? translations.admin.projectSubmissions.enabled : translations.admin.projectSubmissions.disabled}
-                </button>
-              </div>
-            </GlassCard>
-          </section>
 
           <section>
             <div className="flex items-center justify-between mb-6">

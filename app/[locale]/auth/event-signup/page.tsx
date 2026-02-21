@@ -114,6 +114,15 @@ function EventSignupContent() {
 
     useEffect(() => {
         if (!db) return
+
+        const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
+        if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+            const enabled = envVal === "true" || envVal === "1"
+            setSignupEnabled(enabled)
+            setSignupLoading(false)
+            return
+        }
+
         const loadSettings = async () => {
             try {
                 const settingsDoc = await getDoc(doc(db, "settings", "global"))

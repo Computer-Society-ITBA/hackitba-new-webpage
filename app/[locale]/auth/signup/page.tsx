@@ -43,6 +43,17 @@ function SignupContent() {
 
   useEffect(() => {
     if (!db) return
+
+    // If the env var NEXT_PUBLIC_SIGNUP_ENABLED is present, use it as an override.
+    // This allows toggling signups without updating Firestore.
+    const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
+    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+      const enabled = envVal === "true" || envVal === "1"
+      setSignupEnabled(enabled)
+      setSignupLoading(false)
+      return
+    }
+
     const loadSettings = async () => {
       try {
         const settingsDoc = await getDoc(doc(db, "settings", "global"))

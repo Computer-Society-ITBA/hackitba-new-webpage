@@ -150,6 +150,17 @@ export default function ParticipanteDashboard() {
 
   useEffect(() => {
     if (!db) return
+
+    // If the env var NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED is present, use it as an override.
+    // This allows toggling submissions without updating Firestore.
+    const envVal = process.env.NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED
+    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+      const enabled = envVal === "true" || envVal === "1"
+      setProjectSubmissionsEnabled(enabled)
+      setProjectSubmissionsLoading(false)
+      return
+    }
+
     const loadProjectSettings = async () => {
       try {
         const settingsDoc = await getDoc(doc(db, "settings", "global"))

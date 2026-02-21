@@ -521,14 +521,14 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                     <>
                       <Check className="w-4 h-4 text-green-400" />
                       <span className="text-xs font-pixel text-green-400">
-                        {t.dashboard.participant.toasts.copyTeamCode.success.title}
+                        {t?.dashboard?.participant?.toasts?.copyTeamCode?.success?.title ?? (locale === "es" ? "Copiado" : "Copied")}
                       </span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
                       <span className="text-xs font-pixel">
-                        {t.dashboard.participant.toasts.copyTeamCode.button}
+                        {t?.dashboard?.participant?.toasts?.copyTeamCode?.button ?? (locale === "es" ? "Copiar código del equipo" : "Copy team code")}
                       </span>
                     </>
                   )}
