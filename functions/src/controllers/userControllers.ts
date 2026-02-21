@@ -427,12 +427,13 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
     const db = getHackitbaDb();
     const usersSnapshot = await db.collection("users")
       .where("hasTeam", "==", false)
-      .where("participationStatus", "!=", "rejected")
       .get();
 
     logger.info(`Found ${usersSnapshot.size} pending participants`);
 
-    const pendingParticipants = usersSnapshot.docs.map((doc) => {
+    const pendingParticipants = usersSnapshot.docs
+      .filter((doc) => doc.data().participationStatus !== "rejected")
+      .map((doc) => {
       const data = doc.data();
       logger.info(`Participant: ${doc.id} - ${data.name} ${data.surname}`);
       return {
