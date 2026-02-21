@@ -64,6 +64,10 @@ export function Header({ translations, locale }: HeaderProps) {
   }, [])
 
   const navLinks = [
+    { href: `/${locale}#about`, label: translations.nav.about },
+    { href: `/${locale}#sponsors`, label: translations.nav.sponsors },
+    { href: `/${locale}#mentors`, label: translations.nav.mentors },
+    { href: `/${locale}#categories`, label: translations.nav.categories },
     { href: `/${locale}#faqs`, label: translations.nav.faqs },
   ]
 

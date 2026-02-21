@@ -189,7 +189,6 @@ interface InfoCardsProps {
 export function InfoCards({ translations }: InfoCardsProps) {
   return (
     <section
-      id="info"
       className="py-20 px-4"
       style={{
         background:
@@ -198,7 +197,7 @@ export function InfoCards({ translations }: InfoCardsProps) {
     >
       <Timeline translations={translations} />
       <div className="container mx-auto max-w-5xl mt-16">
-        <h2 className="text-center mb-12 font-pixel text-xl md:text-2xl text-brand-yellow mb-3 tracking-wider">
+        <h2 id="about" className="scroll-mt-24 text-center mb-12 font-pixel text-xl md:text-2xl text-brand-yellow mb-3 tracking-wider">
           ABOUT HACKITBA
         </h2>
         <TerminalWindow translations={translations} />
