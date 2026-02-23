@@ -30,7 +30,7 @@
       "location": "ITBA Campus, CABA",
       "dates": "March 27–29, 2026",
       "free": "Free",
-      "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of people in Argentina and worldwide, with innovative and original ideas.",
+      "description": "HackITBA by Computer Society ITBA is an annual hackathon held at ITBA where 25–50 teams of 4 people spend 36 intense hours building practical projects that aim to improve the quality of life of people in Argentina and worldwide, with innovative and original ideas.",
       "date": "March 27–29, 2026"
     },
     "timeline": {
@@ -53,13 +53,13 @@
       }
     },
     "about": {
-      "title": "Computer Society ITBA",
+      "title": "ITBA Chapter of the IEEE Computer Society",
       "history": "Our History",
-      "historyText": "Founded by students passionate about systems, AI, and software engineering, our organization builds technical events that connect academic theory with real-world engineering practice.",
+      "historyText": "With over 30 events held, more than 10,000 participants, and reach across 10+ countries, the organization has grown steadily since its founding. It was established in 2020 with the mission of bringing technology and computer science closer to students through open and free workshops and talks for both ITBA students and external participants. Over time, it expanded its initiatives and introduced new event formats. Its flagship event is HackITBA, the organization’s main hackathon. It also hosts additional initiatives such as the Game Jam and the recently launched QuantumJam, strengthening a community focused on innovation and hands-on learning.",
       "vision": "Our Vision",
-      "visionText": "To create a collaborative environment where innovation, experimentation, and applied computer science thrive — and where students can grow alongside the industry.",
+      "visionText": "To become a leading student-driven technology community that fosters innovation, collaboration, and continuous learning, empowering the next generation of engineers to create meaningful impact through software and technology.",
       "objective": "Our Objective",
-      "objectiveText": "Empower students to design, build, and deploy meaningful technological solutions that have a real impact on the world."
+      "objectiveText": "We organize and host talks, workshops, courses, and interactive activities from a modern, technology-focused perspective. Our goal is to deliver knowledge in an engaging and accessible way for today’s students and anyone interested in learning."
     },
     "location": {
       "title": "Location",
@@ -110,26 +110,24 @@
     },
     "weProvide": {
       "title": "WHAT WE OFFER ⇄ WHAT YOU BRING",
-      "subtitle": "Everything we provide and what we expect from you",
+      "subtitle": "What you can expect at the event",
       "items": [
-        "Technical workshops on AI, cloud architecture, and modern software development",
-        "Mentorship from industry professionals and experienced engineers",
-        "Cloud infrastructure credits and development tools",
-        "Full catering: meals, snacks, and unlimited coffee",
-        "Networking with 500+ students, 20 companies, and 15 expert speakers",
-        "Exclusive swag, t-shirts, and event merchandise",
-        "Cash prizes: $5,000 for first place, $3,000 for second place"
+        "A 36-hour space to build, experiment, and develop projects",
+        "Full catering: meals, snacks, energy drinks, and unlimited coffee",
+        "Mentorship from industry professionals and guest speakers",
+        "Technical talks and guidance throughout the event",
+        "Networking with 200+ students, companies, and invited speakers",
+        "Prizes to be announced for the top projects"
       ]
     },
     "youBring": {
       "title": "What You Need",
       "items": [
-        "Curiosity and eagerness to learn new technologies",
-        "A laptop, fully charged and ready to code",
-        "Collaborative team spirit and a positive attitude",
-        "An open mind for experimentation and innovation",
+        "Curiosity and willingness to learn and network",
         "Commitment to participate for the full duration of the event",
-        "Passion for building and creating solutions that matter"
+        "Your laptop, ready to code",
+        "A sleeping bag or blanket and a change of clothes",
+        "Motivation to build meaningful solutions"
       ]
     },
     "signup": {
@@ -743,8 +741,8 @@
       "location": "Campus ITBA, CABA",
       "dates": "27, 28 y 29 de marzo de 2026",
       "free": "Gratuito",
-      "description": "HACKITBA CS es un hackathon anual en el ITBA donde 25 a 50 equipos de 3 o 4 personas tienen 36 horas intensas para diseñar, construir y presentar proyectos que mejoren la calidad de vida de las personas en Argentina y en el mundo, con ideas innovadoras y originales.",
-      "date": "27 al 29 de marzo de 2026"
+      "description": "HackITBA by Computer Society ITBA es una hackatón anual celebrada en el ITBA, donde 25 a 50 equipos de 4 personas tienen 36 horas intensas para diseñar, construir y presentar proyectos que mejoren la calidad de vida de las personas en Argentina y en el mundo, con ideas innovadoras y originales.",
+      "date": "27, 28 y 29 de marzo de 2026"
     },
     "timeline": {
       "title": "Cronograma del evento",
@@ -766,13 +764,13 @@
       }
     },
     "about": {
-      "title": "Organización Estudiantil de Ciencias de la Computación",
+      "title": "Capítulo ITBA de la IEEE Computer Society",
       "history": "Nuestra historia",
-      "historyText": "Fundada por estudiantes apasionados por los sistemas, la IA y la ingeniería de software, nuestra organización construye eventos técnicos que conectan la teoría académica con la práctica real.",
+      "historyText": "Con más de 30 eventos realizados, más de 10.000 participantes y alcance en más de 10 países, la organización ha crecido de manera sostenida desde su creación. Nació en 2020 con el objetivo de acercar la tecnología y la informática a estudiantes a través de workshops y charlas abiertas y gratuitas, tanto para alumnos del ITBA como para personas externas. Con el tiempo, amplió sus iniciativas e incorporó nuevos formatos y eventos. Su principal evento es la HackITBA, la hackathon insignia de la organización. Además, realiza otras propuestas como la Game Jam y la recientemente lanzada QuantumJam, consolidando una comunidad enfocada en la innovación y el aprendizaje práctico.",
       "vision": "Nuestra visión",
-      "visionText": "Crear un ecosistema colaborativo donde la innovación, la experimentación y las ciencias de la computación aplicadas florezcan junto a quienes serán los próximos ingenieros del país.",
+      "visionText": "Ser una comunidad tecnológica estudiantil referente, que impulse la innovación, la colaboración y el aprendizaje continuo, formando a la próxima generación de ingenieros capaces de generar un impacto significativo a través del software y la tecnología.",
       "objective": "Nuestro objetivo",
-      "objectiveText": "Empoderar a los estudiantes para que diseñen, construyan y desplieguen soluciones tecnológicas con impacto real en el mundo."
+      "objectiveText": "Organizamos y dictamos charlas, workshops, cursos y actividades interactivas desde una perspectiva moderna y centrada en la tecnología. Nuestro objetivo es transmitir conocimiento de manera dinámica y accesible para los estudiantes actuales y cualquier persona interesada en aprender."
     },
     "location": {
       "title": "Sede",
@@ -822,27 +820,25 @@
       "healthTech": "Health Tech"
     },
     "weProvide": {
-      "title": "LO QUE OFRECEMOS ⇄ LO QUE TRAÉS",
-      "subtitle": "Todo lo que proveemos y lo que esperamos de vos",
+      "title": "QUÉ OFRECEMOS ⇄ QUÉ TRAÉS",
+      "subtitle": "Lo que podés esperar del evento",
       "items": [
-        "Workshops técnicos sobre IA, arquitectura cloud y desarrollo de software moderno",
-        "Mentoría de profesionales de la industria e ingenieros con experiencia real",
-        "Créditos de infraestructura cloud y acceso a herramientas de desarrollo",
-        "Catering completo: comidas, snacks y café ilimitado durante todo el evento",
-        "Networking con más de 500 estudiantes, 20 empresas y 15 speakers expertos",
-        "Merchandising exclusivo, remeras y productos del evento",
-        "Premios en efectivo: $5.000 para el primer puesto, $3.000 para el segundo"
+        "Un espacio de 36 horas para crear, experimentar y desarrollar proyectos",
+        "Catering completo: comidas, snacks, bebidas energéticas y café ilimitado",
+        "Mentoría de profesionales de la industria y speakers invitados",
+        "Charlas técnicas y acompañamiento durante todo el evento",
+        "Networking con más de 200 estudiantes, empresas y speakers invitados",
+        "Premios a definir para los mejores proyectos"
       ]
     },
     "youBring": {
-      "title": "Lo que necesitás",
+      "title": "Qué Necesitás",
       "items": [
-        "Curiosidad y ganas de aprender tecnologías nuevas",
-        "Una computadora cargada y lista para programar",
-        "Espíritu de equipo y buena onda",
-        "Mentalidad abierta para experimentar e innovar",
-        "Compromiso de participar durante todo el evento",
-        "Pasión por construir soluciones que tengan impacto"
+        "Curiosidad y ganas de aprender y hacer networking",
+        "Compromiso para participar durante toda la duración del evento",
+        "Tu computadora, lista para programar",
+        "Bolsa de dormir o manta y un cambio de ropa",
+        "Motivación para crear soluciones con impacto"
       ]
     },
     "signup": {
