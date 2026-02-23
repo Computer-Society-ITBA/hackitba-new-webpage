@@ -701,7 +701,7 @@ function EventSignupContent() {
 
                         {!signupLoading && !signupEnabled && (
                             <div className="mt-4 px-8 p-2 rounded bg-brand-orange/10 border border-brand-orange/30 animate-in zoom-in-95 duration-200">
-                                <p className="text-[10px] text-brand-orange font-pixel">
+                                <p className="text-xs text-brand-orange font-pixel">
                                     {translations.auth.eventSignup.errors.signupDisabled}
                                 </p>
                             </div>
@@ -709,7 +709,7 @@ function EventSignupContent() {
 
                         {error && (
                             <div className="mt-4 px-8 p-2 rounded bg-red-500/10 border border-red-500/30 animate-in zoom-in-95 duration-200">
-                                <p className="text-[10px] text-red-400 font-pixel">{error}</p>
+                                <p className="text-xs text-red-400 font-pixel">{error}</p>
                             </div>
                         )}
 

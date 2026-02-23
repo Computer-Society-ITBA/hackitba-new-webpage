@@ -20,32 +20,32 @@ export function CreditsSection({ translations, locale }: CreditsSectionProps) {
       <CodeBackground className="opacity-20" />
 
       <div className="relative z-10 w-full max-w-4xl mx-auto">
-        <GlassCard className="p-8 md:p-12">
+        <GlassCard className="p-4 md:py-4 md:px-12">
           <div className="space-y-8">
-            <div className="text-center border-b border-brand-cyan/20 pb-6">
-              <h1 className="font-pixel neon-glow-orange text-3xl md:text-4xl text-brand-yellow mb-4">
+            <div className="text-center border-b border-brand-cyan/20 pb-2">
+              <h1 className="font-pixel neon-glow-orange text-3xl md:text-4xl text-brand-yellow mb-2">
                 {translations.credits.title}
               </h1>
-              <p className="font-pixel text-sm">
+              <p className="font-pixel text-xs">
                 {locale === "es"
                   ? "El sitio completo fue posible gracias al fantástico esfuerzo de estos miembros del equipo ITBA de IEEE Computer Society. Todo, desde el diseño hasta la ejecución, fue hecho por ellos:"
                   : "This entire site was made possible thanks to the fantastic effort of these members of the ITBA IEEE Computer Society team. Everything, from design to execution, was done by them:"}
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-2">
               {teamMembers.length > 0 ? (
                 <div className="text-center space-y-3">
                   {teamMembers.map((name, index) => (
-                    <p key={index} className="font-pixel text-md">
+                    <p key={index} className="font-pixel text-sm">
                       {name}
                     </p>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className="inline-block p-6 rounded-lg border border-brand-cyan/30 bg-brand-navy/30">
-                    <p className="font-pixel text-sm text-brand-cyan mb-4">🧡</p>
+                <div className="text-center py-2">
+                  <div className="inline-block px-6 py-2 rounded-lg border border-brand-cyan/30 bg-brand-navy/30">
+                    <p className="font-pixel text-sm text-brand-cyan mb-2">🧡</p>
                     <p className="text-sm text-brand-cyan/70">
                       {locale === "es"
                         ? "Equipo IEEE Computer Society ITBA"
@@ -56,7 +56,7 @@ export function CreditsSection({ translations, locale }: CreditsSectionProps) {
               )}
             </div>
 
-            <div className="text-center pt-6 border-t border-brand-cyan/20">
+            <div className="text-center pt-4 border-t border-brand-cyan/20">
               <p className="text-xs text-brand-cyan/60">
                 {locale === "es"
                   ? "IEEE Computer Society ITBA © 2026"

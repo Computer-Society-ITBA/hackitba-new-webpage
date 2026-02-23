@@ -27,7 +27,7 @@
       "participants": "Participants"
     },
     "event": {
-      "location": "Parque Patricios, CABA",
+      "location": "ITBA Campus, CABA",
       "dates": "March 27–29, 2026",
       "free": "Free",
       "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of people in Argentina and worldwide, with innovative and original ideas.",
@@ -53,7 +53,7 @@
       }
     },
     "about": {
-      "title": "Computer Science Organization",
+      "title": "Computer Society ITBA",
       "history": "Our History",
       "historyText": "Founded by students passionate about systems, AI, and software engineering, our organization builds technical events that connect academic theory with real-world engineering practice.",
       "vision": "Our Vision",
@@ -221,7 +221,7 @@
     },
     "footer": {
       "menu": "Navigation",
-      "madeWith": "Made with 🧡 by Computer Society ITBA",
+      "madeWith": "Made with 🧡 by CSITBA",
       "socials": "Follow us",
       "copyright": "© 2026 Computer Society ITBA. All rights reserved.",
       "credits": "View credits",
@@ -308,7 +308,7 @@
         "endpoint": "POST v2026/auth/verify-email",
         "title": "Verify Your Email",
         "subtitle": "You need to verify your email address before continuing",
-        "sentTo": "Verification email sent to:",
+        "sentTo": "Email sent to:",
         "nextSteps": "Next steps:",
         "step1": "Open your email client",
         "step2": "Find the verification email from HackITBA",
@@ -340,7 +340,7 @@
           "teamStatus": "Team Status"
         },
         "fields": {
-          "dni": "ID Number",
+          "dni": "National ID Number",
           "university": "University",
           "career": "Degree / Major",
           "age": "Age",
@@ -390,8 +390,8 @@
           "required": "*"
         },
         "errors": {
-          "dniRequired": "ID number is required",
-          "dniNumeric": "ID number must be numeric",
+          "dniRequired": "National ID number is required",
+          "dniNumeric": "National ID number must be numeric",
           "allFieldsRequired": "Please fill in all required fields",
           "minAge": "You must be at least 18 years old to participate",
           "companyRequired": "Company, role, and photo are required",
@@ -587,7 +587,7 @@
     },
     "verifyEmail": {
       "title": "Verify Your Email",
-      "sentTo": "Verification email sent to:",
+      "sentTo": "Email sent to:",
       "change": "Change",
       "newEmailPlaceholder": "New email address",
       "resend": "Resend",
@@ -689,10 +689,10 @@
     "nav": {
       "home": "Inicio",
       "pastEditions": "Ediciones Anteriores",
-      "faqs": "Preguntas Frecuentes",
+      "faqs": "FAQs",
       "collaborate": "Colaborar",
       "login": "Iniciar sesión",
-      "dashboard": "Ir al panel",
+      "dashboard": "Ir al dashboard",
       "signUp": "Registrarse",
       "about": "Nosotros",
       "sponsors": "Sponsors",
@@ -713,7 +713,7 @@
       "participants": "Participantes"
     },
     "event": {
-      "location": "Parque Patricios, CABA",
+      "location": "Campus ITBA, CABA",
       "dates": "27, 28 y 29 de marzo de 2026",
       "free": "Gratuito",
       "description": "HACKITBA CS es un hackathon anual en el ITBA donde 25 a 50 equipos de 3 o 4 personas tienen 36 horas intensas para diseñar, construir y presentar proyectos que mejoren la calidad de vida de las personas en Argentina y en el mundo, con ideas innovadoras y originales.",
@@ -907,11 +907,11 @@
     },
     "footer": {
       "menu": "Navegación",
-      "madeWith": "Hecho con 🧡 por Computer Society ITBA",
+      "madeWith": "Hecho con 🧡 por CSITBA",
       "socials": "Seguinos",
       "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados.",
       "credits": "Ver créditos",
-      "collaborate": "¿Querés ser sponsor o mentor?\\nEscribinos un mail y te respondemos a la brevedad."
+      "collaborate": "¿Querés ser sponsor o mentor?\\nMandanos un mail y te respondemos a la brevedad."
     },
     "countdown": {
       "title": "Tiempo restante",
@@ -994,7 +994,7 @@
         "endpoint": "POST v2026/auth/verify-email",
         "title": "Verificá tu email",
         "subtitle": "Necesitás verificar tu dirección de email para continuar",
-        "sentTo": "Email de verificación enviado a:",
+        "sentTo": "Email enviado a:",
         "nextSteps": "Próximos pasos:",
         "step1": "Abrí tu cliente de email",
         "step2": "Buscá el email de verificación de HackITBA",
@@ -1273,7 +1273,7 @@
     },
     "verifyEmail": {
       "title": "Verificá tu email",
-      "sentTo": "Email de verificación enviado a:",
+      "sentTo": "Email enviado a:",
       "change": "Cambiar",
       "newEmailPlaceholder": "Nuevo email",
       "resend": "Reenviar",
@@ -1302,7 +1302,7 @@
       "backToHome": "Volver al inicio",
       "contactSupport": "Contactar soporte",
       "problems": "¿Tenés problemas?",
-      "redirecting": "Redirigiendo al panel en unos segundos...",
+      "redirecting": "Redirigiendo al dashboard en unos segundos...",
       "errors": {
         "tokenNotFound": "Token de verificación no encontrado. Por favor revisá el enlace en tu email.",
         "verificationFailed": "No se pudo verificar el email. Por favor intentá de nuevo.",
