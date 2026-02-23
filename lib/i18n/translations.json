@@ -63,7 +63,7 @@
     },
     "location": {
       "title": "Location",
-      "description": "ITBA — Sede Distrito Tecnológico",
+      "description": "ITBA — Sede Distrito Rectorado",
       "address": "Iguazú 341, C1437 CABA, Argentina",
       "coordinates": "-34.64167999367568, -58.40635811937543"
     },
@@ -163,7 +163,7 @@
         },
         {
           "question": "Is the event in-person or remote?",
-          "answer": "HackITBA is 100% in-person. You'll be building alongside your team at ITBA's Sede Distrito Tecnológico. There is no remote participation option."
+          "answer": "HackITBA is 100% in-person. You'll be building alongside your team at ITBA's Sede Distrito Rectorado. There is no remote participation option."
         },
         {
           "question": "Do I have to sleep at ITBA?",
@@ -447,7 +447,7 @@
         "eventInfo": {
           "title": "Event Info",
           "dates": "March 27–29, 2026",
-          "location": "ITBA — Sede Distrito Tecnológico",
+          "location": "ITBA — Sede Distrito Rectorado",
           "address": "Iguazú 341, C1437 CABA",
           "duration": "36 hours",
           "format": "In-person · Free",
@@ -590,7 +590,7 @@
         "title": "Event Info",
         "sidebarLabel": "Event",
         "dates": "March 27–29, 2026",
-        "location": "ITBA — Sede Distrito Tecnológico",
+        "location": "ITBA — Sede Distrito Rectorado",
         "address": "Iguazú 341, C1437 CABA",
         "duration": "36 hours",
         "format": "In-person · Free",
@@ -774,7 +774,7 @@
     },
     "location": {
       "title": "Sede",
-      "description": "ITBA — Sede Distrito Tecnológico",
+      "description": "ITBA — Sede Distrito Rectorado",
       "address": "Iguazú 341, C1437 Cdad. Autónoma de Buenos Aires",
       "coordinates": "-34.64167999367568, -58.40635811937543"
     },
@@ -874,7 +874,7 @@
         },
         {
           "question": "¿El evento es presencial o virtual?",
-          "answer": "HackITBA es 100% presencial. Vas a estar construyendo junto a tu equipo en la Sede Distrito Tecnológico del ITBA. No hay modalidad remota."
+          "answer": "HackITBA es 100% presencial. Vas a estar construyendo junto a tu equipo en la Sede Distrito Rectorado del ITBA. No hay modalidad remota."
         },
         {
           "question": "¿Tengo que dormir en el ITBA?",
@@ -1158,7 +1158,7 @@
         "eventInfo": {
           "title": "Info del evento",
           "dates": "27, 28 y 29 de marzo de 2026",
-          "location": "ITBA — Sede Distrito Tecnológico",
+          "location": "ITBA — Sede Distrito Rectorado",
           "address": "Iguazú 341, C1437 CABA",
           "duration": "36 horas",
           "format": "Presencial · Gratuito",
@@ -1301,7 +1301,7 @@
         "title": "Info del evento",
         "sidebarLabel": "Evento",
         "dates": "27, 28 y 29 de marzo de 2026",
-        "location": "ITBA — Sede Distrito Tecnológico",
+        "location": "ITBA — Sede Distrito Rectorado",
         "address": "Iguazú 341, C1437 CABA",
         "duration": "36 horas",
         "format": "Presencial · Gratuito",
