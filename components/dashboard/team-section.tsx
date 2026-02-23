@@ -473,9 +473,9 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
           </div>
         )}
         <div className="flex flex-row flex-wrap items-center justify-between border-b border-brand-cyan/20 pb-4 gap-3">
-          <div className="flex flex-col items-center gap-3 w-full">
+          <div className="flex flex-col items-start gap-3 w-full">
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 w-full">
               <div className="flex flex-row items-center gap-2 min-w-0 w-full mb-2 sm:mb-0">
                 <Users className="w-6 h-6 text-brand-cyan" />
                 <h3 className="font-pixel text-lg text-brand-yellow break-words whitespace-normal">{team.name}</h3>
@@ -489,16 +489,16 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                 </button>
               </div>
               {team.status && (
-                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-sm ${getStatusColor(team.status)} whitespace-nowrap mb-2 sm:mb-0`}>
+                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-xs sm:text-sm ${getStatusColor(team.status)} whitespace-nowrap mb-2 sm:mb-0`}>
                   {capitalizeStatus(team.status)}
                 </div>
               )}
 
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full justify-between">
-              <div className="flex flex-col sm:flex-row items-center w-full justify-between gap-2 sm:gap-4 min-w-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full justify-between"> {/* was items-center */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center w-full justify-between gap-2 sm:gap-4 min-w-0"> {/* was items-center */}
                 {teamCategoryId ? (
-                  <div className="flex items-center gap-2 font-pixel text-sm min-w-0 break-words whitespace-normal">
+                  <div className="flex items-center gap-2 font-pixel text-xs sm:text-md min-w-0 break-words whitespace-normal"> {/* was text-sm */}
                     {(() => {
                       const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
                       return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
@@ -507,7 +507,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                     <span className="text-brand-cyan/70 break-words whitespace-normal">{teamCategoryLabel}</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 font-pixel text-sm text-brand-cyan/40 italic">
+                  <div className="flex items-center gap-2 font-pixel text-xs sm:text-md text-brand-cyan/40 italic"> {/* was text-sm */}
                     <LucideIcons.Clock className="h-4 w-4" />
                     <span>{locale === "es" ? "Categoría pendiente de asignación" : "Category pending assignment"}</span>
                   </div>
@@ -520,14 +520,14 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                   {copied ? (
                     <>
                       <Check className="w-4 h-4 text-green-400" />
-                      <span className="text-xs font-pixel text-green-400">
+                      <span className="text-xs sm:text-md font-pixel text-green-400"> {/* was text-xs */}
                         {t?.dashboard?.participant?.toasts?.copyTeamCode?.success?.title ?? (locale === "es" ? "Copiado" : "Copied")}
                       </span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
-                      <span className="text-xs font-pixel">
+                      <span className="text-xs sm:text-md font-pixel"> {/* was text-xs */}
                         {t?.dashboard?.participant?.toasts?.copyTeamCode?.button ?? (locale === "es" ? "Copiar código del equipo" : "Copy team code")}
                       </span>
                     </>
@@ -543,7 +543,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
         </div>
 
         <div className="space-y-3">
-          <h4 className="font-pixel text-sm text-brand-cyan">
+          <h4 className="font-pixel text-xs text-brand-cyan"> {/* was text-sm */}
             Team Members ({members.length})
           </h4>
           <div className="space-y-2">

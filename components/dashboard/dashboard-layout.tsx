@@ -57,53 +57,46 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   const sidebarContent = (
     <>
-      <div className={`mb-8 flex items-center ${collapsed && !isMobile ? "justify-center" : "justify-between"} ${isMobile ? "gap-2" : "gap-4"}`}>
-        <h1 className={`font-pixel text-brand-yellow neon-glow-orange ${collapsed && !isMobile ? "text-lg" : isMobile ? "text-xs" : "text-2xl"}`}>
+      {/* Brand header */}
+      <div className={`${isMobile ? "mb-6" : "mb-8"} ${collapsed && !isMobile ? "justify-center" : "justify-between"} ${isMobile ? "gap-3" : "gap-4"} ${isMobile && !mobileOpen ? "hidden" : "flex items-center"}`}>
+        <h1 className={`font-pixel text-brand-yellow neon-glow-orange ${collapsed && !isMobile ? "text-lg" : isMobile ? "text-2xl" : "text-2xl"}`}>
           <Link href={`/${locale}`}>{collapsed && !isMobile ? "<H>" : "<HackITBA>"}</Link>
         </h1>
-        {isMobile && (
-          <button onClick={toggleMobile} className="text-brand-cyan hover:text-brand-yellow transition-colors p-1">
-            <X size={20} />
-          </button>
-        )}
       </div>
 
-      <div>
+      {/* Back button */}
+      <div className={`${isMobile ? "mb-1" : "mb-2"}`}>
         <button
           onClick={() => { router.back(); if (isMobile) setMobileOpen(false) }}
-          className={`flex items-center gap-2 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full ${collapsed && !isMobile ? "justify-center" : ""}`}
+          className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-2 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full ${collapsed && !isMobile ? "justify-center" : ""}`}
           title="Back"
         >
-          <div className="relative -translate-x-2 w-8 h-8 rotate-90 filter">
-            <Image
-              src="/images/flecha-abajo.png"
-              alt="Arrow"
-              fill
-              className="object-contain"
-            />
+          <div className={`relative ${isMobile ? "w-6 h-6" : "-translate-x-2 w-8 h-8"} rotate-90 flex-shrink-0`}>
+            <Image src="/images/flecha-abajo.png" alt="Arrow" fill className="object-contain" />
           </div>
-          {(!collapsed || isMobile) && <span className="font-pixel text-sm">Back</span>}
+          {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Back</span>}
         </button>
       </div>
 
+      {/* Nav links */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden">
         {isDashboardHome ? (
           <span
-            className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+            className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
             title="Dashboard"
           >
-            <Home size={20} className="flex-shrink-0" />
-            {(!collapsed || isMobile) && <span className="font-pixel text-sm">Dashboard</span>}
+            <Home size={isMobile ? 18 : 20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Dashboard</span>}
           </span>
         ) : (
           <Link
             href={`/${locale}/dashboard`}
             onClick={() => isMobile && setMobileOpen(false)}
-            className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+            className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
             title="Dashboard"
           >
-            <Home size={20} className="flex-shrink-0" />
-            {(!collapsed || isMobile) && <span className="font-pixel text-sm">Dashboard</span>}
+            <Home size={isMobile ? 18 : 20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Dashboard</span>}
           </Link>
         )}
 
@@ -111,23 +104,24 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           <Link
             href={`/${locale}/dashboard/admin/approvals`}
             onClick={() => isMobile && setMobileOpen(false)}
-            className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+            className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
             title="Approvals"
           >
-            <CheckSquare size={20} className="flex-shrink-0" />
-            {(!collapsed || isMobile) && <span className="font-pixel text-sm">Approvals</span>}
+            <CheckSquare size={isMobile ? 18 : 20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Approvals</span>}
           </Link>
         )}
       </nav>
 
+      {/* Profile + sign-out */}
       <div className="border-t border-brand-cyan/20 pt-2 mt-auto">
         {(!collapsed || isMobile) && (
-          <p className="px-2 pb-1 text-brand-yellow text-xs font-pixel">{user?.role.toUpperCase()}</p>
+          <p className={`${isMobile ? "px-3 pb-2" : "px-2 pb-1"} text-brand-yellow font-pixel ${isMobile ? "text-lg" : "text-xs"}`}>{user?.role.toUpperCase()}</p>
         )}
         <Link
           href={`/${locale}/dashboard/profile`}
           onClick={() => isMobile && setMobileOpen(false)}
-          className={`flex items-center gap-3 px-2 py-3 rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
+          className={`flex items-center gap-3 ${isMobile ? "px-3 py-2" : "px-2 py-3"} rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
           title="Profile"
         >
           <div className="w-8 h-8 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center flex-shrink-0">
@@ -135,8 +129,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </div>
           {(!collapsed || isMobile) && (
             <div className="min-w-0">
-              <p className="text-brand-cyan text-sm truncate">{user?.name} {user?.surname}</p>
-              <p className="text-brand-cyan/60 text-xs truncate">{user?.email}</p>
+              <p className={`text-brand-cyan ${isMobile ? "font-pixel text-lg" : "text-sm"} truncate`}>{user?.name} {user?.surname}</p>
+              <p className="text-brand-cyan/60 text-xs truncate mt-0.5">{user?.email}</p>
             </div>
           )}
         </Link>
@@ -152,7 +146,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         ) : (
           <PixelButton onClick={handleSignOut} variant="outline" size="sm" className="w-full">
             <LogOut size={16} className="mr-2" />
-            Sign Out
+            <p className={isMobile ? "font-pixel text-lg" : ""}>Sign Out</p>
           </PixelButton>
         )}
       </div>
@@ -199,17 +193,17 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         </aside>
       )}
 
-      <main className={`flex-1 min-w-0 p-2 sm:p-4 md:p-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
+      <main className={`flex-1 min-w-0 p-4 sm:p-6 md:p-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
         {/* Mobile header with hamburger */}
         {isMobile && (
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={toggleMobile}
-              className="text-brand-cyan hover:text-brand-yellow transition-colors p-1 -ml-1"
+              className="text-brand-cyan hover:text-brand-yellow transition-colors p-1 flex-shrink-0"
             >
               <Menu size={20} />
             </button>
-            <h2 className="font-pixel text-lg text-brand-yellow truncate">
+            <h2 className="font-pixel text-sm text-brand-yellow truncate">
               <NeonGlow color="orange">{title}</NeonGlow>
             </h2>
           </div>
