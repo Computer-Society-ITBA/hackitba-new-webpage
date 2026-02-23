@@ -11,7 +11,7 @@ interface CodeBackgroundProps {
 export function CodeBackground({ className }: CodeBackgroundProps) {
   return (
     <div className={cn(
-      "[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-sm text-brand-cyan leading-relaxed pointer-events-none overflow-hidden",
+      "[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-sm text-brand-cyan leading-none pointer-events-none overflow-hidden",
       className,
     )}>
       <TypingEffect text={codeSnippet} speed="fast" direction="horizontal" />

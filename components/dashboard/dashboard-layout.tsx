@@ -2,13 +2,14 @@
 
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
 
 import { useAuth } from "@/lib/firebase/auth-context"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { ArrowLeft, Home, User, LogOut, CheckSquare, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 
 interface DashboardLayoutProps {
@@ -70,15 +71,22 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <div>
         <button
           onClick={() => { router.back(); if (isMobile) setMobileOpen(false) }}
-          className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full ${collapsed && !isMobile ? "justify-center" : ""}`}
+          className={`flex items-center gap-2 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full ${collapsed && !isMobile ? "justify-center" : ""}`}
           title="Back"
         >
-          <ArrowLeft size={20} className="flex-shrink-0" />
+          <div className="relative -translate-x-2 w-8 h-8 rotate-90 filter">
+            <Image
+              src="/images/flecha-abajo.png"
+              alt="Arrow"
+              fill
+              className="object-contain"
+            />
+          </div>
           {(!collapsed || isMobile) && <span className="font-pixel text-sm">Back</span>}
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden">
         {isDashboardHome ? (
           <span
             className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -114,12 +122,12 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
       <div className="border-t border-brand-cyan/20 pt-2 mt-auto">
         {(!collapsed || isMobile) && (
-          <p className="px-4 pb-1 text-brand-yellow text-xs font-pixel">{user?.role.toUpperCase()}</p>
+          <p className="px-2 pb-1 text-brand-yellow text-xs font-pixel">{user?.role.toUpperCase()}</p>
         )}
         <Link
           href={`/${locale}/dashboard/profile`}
           onClick={() => isMobile && setMobileOpen(false)}
-          className={`flex items-center gap-3 px-4 py-3 rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
+          className={`flex items-center gap-3 px-2 py-3 rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
           title="Profile"
         >
           <div className="w-8 h-8 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center flex-shrink-0">

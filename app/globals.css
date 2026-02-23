@@ -88,7 +88,6 @@ html {
   @layer utilities {
     .font-pixel {
       font-family: var(--font-pixel);
-      line-height: 1.15em;
       letter-spacing: 0.08em;
     }
   }
@@ -142,7 +141,8 @@ html {
     }
 
     .font-pixel.text-xs {
-      font-size: 0.75rem; /* normal scale on mobile */
+      font-size: 0.75rem;
+      /* normal scale on mobile */
     }
 
     .font-pixel.text-sm {
@@ -187,8 +187,8 @@ html {
       justify-content: center !important;
     }
 
-    [data-slot="button"] > svg,
-    [data-slot="button"] > img {
+    [data-slot="button"]>svg,
+    [data-slot="button"]>img {
       display: none !important;
     }
   }

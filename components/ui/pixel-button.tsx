@@ -38,7 +38,7 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
           <child.type
             {...child.props}
             className={cn(
-              "font-pixel uppercase tracking-wider transition-all duration-200",
+              "font-pixel uppercase tracking-wider leading-none transition-all duration-200",
               "border-3 relative overflow-hidden",
               "hover:scale-105 active:scale-95",
               "flex flex-row justify-center items-center",
@@ -52,9 +52,9 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
                   variant === "outline",
               },
               {
-                "px-3 py-1.5 text-xs": size === "sm",
-                "px-6 py-2.5 text-sm": size === "md",
-                "px-8 py-3.5 text-base": size === "lg",
+                "px-3 py-1 text-xs": size === "sm",
+                "px-6 py-2 text-sm": size === "md",
+                "px-8 py-3 text-base": size === "lg",
               },
               className,
               child.props.className,
@@ -71,7 +71,7 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
         ref={ref}
         className={cn(
           "font-pixel uppercase tracking-wider transition-all duration-200",
-          "border-3 relative overflow-hidden",
+          "border-3 leading-none relative overflow-hidden",
           "hover:scale-105 active:scale-95",
           "flex flex-row justify-center items-center",
           "sm:gap-x-4 gap-x-0",
@@ -85,14 +85,14 @@ const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
               variant === "outline",
           },
           {
-            "px-3 py-1.5 text-xs": size === "sm",
-            "px-6 py-2.5 text-sm": size === "md",
-            "px-8 py-3.5 text-base": size === "lg",
+            "px-3 py-1 text-xs": size === "sm",
+            "px-6 py-2 text-sm": size === "md",
+            "px-8 py-3 text-base": size === "lg",
           },
           className,
         )}
         {...props}
-        >
+      >
         {
           (() => {
             const leftIcon = <ChevronLeft className="w-6 h-6" />
