@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react"
 
 import { useAuth } from "@/lib/firebase/auth-context"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
 import { ArrowLeft, Home, User, LogOut, CheckSquare, Menu, X, ChevronLeft, ChevronRight } from "lucide-react"
@@ -20,7 +20,15 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { user, signOut } = useAuth()
   const router = useRouter()
   const params = useParams()
+  const pathname = usePathname()
   const locale = (params.locale as Locale) || "es"
+  const dashboardHomeRoutes = [
+    `/${locale}/dashboard`,
+    `/${locale}/dashboard/participante`,
+    `/${locale}/dashboard/admin`,
+    `/${locale}/dashboard/jurado`,
+  ]
+  const isDashboardHome = dashboardHomeRoutes.includes(pathname)
 
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -71,15 +79,25 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       </div>
 
       <nav className="flex-1 overflow-y-auto">
-        <Link
-          href={`/${locale}/dashboard`}
-          onClick={() => isMobile && setMobileOpen(false)}
-          className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
-          title="Dashboard"
-        >
-          <Home size={20} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span className="font-pixel text-sm">Dashboard</span>}
-        </Link>
+        {isDashboardHome ? (
+          <span
+            className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+            title="Dashboard"
+          >
+            <Home size={20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className="font-pixel text-sm">Dashboard</span>}
+          </span>
+        ) : (
+          <Link
+            href={`/${locale}/dashboard`}
+            onClick={() => isMobile && setMobileOpen(false)}
+            className={`flex items-center gap-4 px-4 py-3 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+            title="Dashboard"
+          >
+            <Home size={20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className="font-pixel text-sm">Dashboard</span>}
+          </Link>
+        )}
 
         {user?.role === "admin" && (
           <Link
@@ -146,9 +164,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       {/* Sidebar - Desktop */}
       {!isMobile && (
         <aside
-          className={`glass-effect border-r border-brand-cyan/20 p-6 flex flex-col fixed top-0 left-0 h-screen overflow-visible transition-all duration-300 z-30 ${
-            collapsed ? "w-20" : "w-64"
-          }`}
+          className={`glass-effect border-r border-brand-cyan/20 p-6 flex flex-col fixed top-0 left-0 h-screen overflow-visible transition-all duration-300 z-30 ${collapsed ? "w-20" : "w-64"
+            }`}
         >
           {sidebarContent}
 
@@ -166,9 +183,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       {/* Sidebar - Mobile (drawer) */}
       {isMobile && (
         <aside
-          className={`fixed top-0 left-0 h-full w-64 glass-effect border-r border-brand-cyan/20 p-6 flex flex-col z-50 transition-transform duration-300 ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed top-0 left-0 h-full w-64 glass-effect border-r border-brand-cyan/20 p-6 flex flex-col z-50 transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
           style={{ backgroundColor: "rgba(10, 25, 47, 0.97)" }}
         >
           {sidebarContent}
