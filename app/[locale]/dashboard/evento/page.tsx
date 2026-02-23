@@ -66,7 +66,7 @@ export default function EventoPage() {
               <div className="flex items-center gap-4 px-4 py-3">
                 <Navigation className="w-4 h-4 text-brand-cyan/50 flex-shrink-0" />
                 <div>
-                  <p className="text-[10px] font-pixel uppercase tracking-wider text-brand-cyan/40 mb-0.5">{ei.locationTitle}</p>
+                  <p className="text-[10px] font-pixel uppercase tracking-wider text-brand-cyan/40 mb-0.5">{ei.locationVenue}</p>
                   <p className="text-sm text-brand-cyan">{t.location.description}</p>
                 </div>
               </div>

@@ -600,7 +600,8 @@
         "labelsLocation": "Location",
         "labelsDuration": "Duration",
         "labelsFormat": "Format",
-        "locationTitle": "Venue"
+        "locationTitle": "Location",
+        "locationVenue": "Venue"
       }
     },
     "credits": {
@@ -1312,7 +1313,8 @@
         "labelsLocation": "Lugar",
         "labelsDuration": "Duración",
         "labelsFormat": "Formato",
-        "locationTitle": "Sede"
+        "locationTitle": "Ubicación",
+        "locationVenue": "Sede"
       }
     },
     "credits": {
