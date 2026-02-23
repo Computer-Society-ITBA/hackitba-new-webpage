@@ -33,6 +33,74 @@ function MentorSkeleton() {
   )
 }
 
+// At max-w-4xl (896px) with gap-2 (8px) and 5 columns:
+// card width = (896 - 4*8) / 5 = 172.8px ≈ 172px
+// brick offset = (172 + 8) / 2 = 90px
+const CARD_W = 172
+const CARD_GAP = 8
+const BRICK_OFFSET = (CARD_W + CARD_GAP) / 2
+
+function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor) => void }) {
+  const n = items.length
+  const splitAt = Math.ceil(n / 2)
+  const topRow = n >= 5 ? items.slice(0, splitAt) : items
+  const bottomRow = n >= 5 ? items.slice(splitAt) : []
+  // Offset only when rows are uneven (odd total) — creates the true brick stagger
+  const shouldOffset = bottomRow.length > 0 && bottomRow.length < topRow.length
+
+  const renderCard = (mentor: Mentor, index: number) => (
+    <button
+      key={mentor.id}
+      onClick={() => onSelect(mentor)}
+      className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 md:w-[172px] md:flex-shrink-0"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="p-4">
+        <div className="aspect-square relative mb-3 rounded-lg overflow-hidden border-2 border-brand-cyan/10 group-hover:border-brand-orange/40 transition-colors">
+          <Image
+            src={mentor.avatar || "/placeholder.svg"}
+            alt={mentor.name}
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
+          {mentor.name}
+        </p>
+        <p className="text-xs opacity-60 text-center mt-1">{mentor.company}</p>
+      </div>
+    </button>
+  )
+
+  return (
+    <>
+      {/* Desktop: fixed-width cards in two flex rows, brick-offset on bottom when odd total */}
+      <div className="hidden md:flex flex-col items-center gap-2 max-w-4xl mx-auto">
+        <div className="flex items-start justify-center" style={{ gap: `${CARD_GAP}px` }}>
+          {topRow.map((m, i) => renderCard(m, i))}
+        </div>
+        {bottomRow.length > 0 && (
+          <div
+            className="flex justify-center"
+            style={{
+              gap: `${CARD_GAP}px`,
+              transform: shouldOffset ? `translateX(${BRICK_OFFSET}px)` : undefined,
+            }}
+          >
+            {bottomRow.map((m, i) => renderCard(m, topRow.length + i))}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile: unchanged 2-col grid */}
+      <div className="grid grid-cols-2 gap-2 max-w-4xl mx-auto md:hidden">
+        {items.map((m, i) => renderCard(m, i))}
+      </div>
+    </>
+  )
+}
+
 export function Mentors({ translations }: MentorsProps) {
   const { mentors, loading, error } = useMentors()
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
@@ -66,7 +134,6 @@ export function Mentors({ translations }: MentorsProps) {
                 const Icon = categoryIcons[category]
                 const isActive = activeCategory === category
                 const hasMentors = mentors.some(m => m.category === category)
-
                 return (
                   <button
                     key={category}
@@ -83,9 +150,7 @@ export function Mentors({ translations }: MentorsProps) {
                   >
                     <Icon className="w-4 h-4" />
                     <span>{translations.mentors.categories[category]}</span>
-                    {isActive && (
-                      <div className="absolute inset-0 rounded-lg bg-brand-orange/5 animate-pulse" />
-                    )}
+                    {isActive && <div className="absolute inset-0 rounded-lg bg-brand-orange/5 animate-pulse" />}
                   </button>
                 )
               })}
@@ -93,16 +158,12 @@ export function Mentors({ translations }: MentorsProps) {
           )}
         </div>
 
-        {/* Loading state */}
         {loading && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <MentorSkeleton key={i} />
-            ))}
+            {Array.from({ length: 5 }).map((_, i) => <MentorSkeleton key={i} />)}
           </div>
         )}
 
-        {/* Coming soon — empty collection */}
         {!loading && !error && mentors.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Clock className="w-10 h-10 text-brand-cyan/30" />
@@ -112,61 +173,26 @@ export function Mentors({ translations }: MentorsProps) {
           </div>
         )}
 
-        {/* Mentors grid */}
         {!loading && !error && mentors.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
-            {filteredMentors.length > 0 ? (
-              filteredMentors.map((mentor, index) => (
-                <button
-                  key={mentor.id}
-                  onClick={() => setSelectedMentor(mentor)}
-                  className={cn(
-                    "group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300",
-                    index >= filteredMentors.length - filteredMentors.length % 5 && "md:translate-x-[calc(50%+3px)]"
-                  )}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="p-4">
-                    <div className="aspect-square relative mb-3 rounded-lg overflow-hidden border-2 border-brand-cyan/10 group-hover:border-brand-orange/40 transition-colors">
-                      <Image
-                        src={mentor.avatar || "/placeholder.svg"}
-                        alt={mentor.name}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
-                      {mentor.name}
-                    </p>
-                    <p className="text-xs opacity-60 text-center mt-1">{mentor.company}</p>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="font-pixel text-sm text-brand-cyan/40 uppercase">
-                  {translations.mentors.noMentors}
-                </p>
-              </div>
-            )}
-          </div>
+          filteredMentors.length > 0 ? (
+            <PersonGrid items={filteredMentors} onSelect={setSelectedMentor} />
+          ) : (
+            <div className="text-center py-12">
+              <p className="font-pixel text-sm text-brand-cyan/40 uppercase">
+                {translations.mentors.noMentors}
+              </p>
+            </div>
+          )
         )}
       </div>
 
-      {/* Modal */}
       <Dialog open={!!selectedMentor} onOpenChange={() => setSelectedMentor(null)}>
         <DialogContent className="glass-effect w-[90vw] max-w-2xl" aria-description="Modal that shows mentor information">
           {selectedMentor && (
             <div className="space-y-6">
               <div className="flex items-start gap-6">
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 border-2 border-brand-cyan/20">
-                  <Image
-                    src={selectedMentor.avatar || "/placeholder.svg"}
-                    alt={selectedMentor.name}
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={selectedMentor.avatar || "/placeholder.svg"} alt={selectedMentor.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -177,37 +203,19 @@ export function Mentors({ translations }: MentorsProps) {
                       {translations.mentors.categories[selectedMentor.category]}
                     </span>
                   </div>
-                  <p className="text-brand-yellow">
-                    {translations.mentors.role}:{" "}
-                    <span className="text-white">{selectedMentor.position}</span>
-                  </p>
-                  <p className="text-brand-yellow">
-                    {translations.mentors.company}:{" "}
-                    <span className="text-white">{selectedMentor.company}</span>
-                  </p>
+                  <p className="text-brand-yellow">{translations.mentors.role}: <span className="text-white">{selectedMentor.position}</span></p>
+                  <p className="text-brand-yellow">{translations.mentors.company}: <span className="text-white">{selectedMentor.company}</span></p>
                 </div>
               </div>
-
               <p className="leading-relaxed">{selectedMentor.bio}</p>
-
               <div className="flex gap-4 justify-center">
                 {selectedMentor.linkedin && (
-                  <a
-                    href={selectedMentor.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-orange transition-colors"
-                  >
+                  <a href={selectedMentor.linkedin} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                     <Linkedin size={24} />
                   </a>
                 )}
                 {selectedMentor.github && (
-                  <a
-                    href={selectedMentor.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-brand-cyan hover:text-brand-orange transition-colors"
-                  >
+                  <a href={selectedMentor.github} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                     <Github size={24} />
                   </a>
                 )}

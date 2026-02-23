@@ -7,8 +7,7 @@ import {
     DialogContent,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Linkedin, Mail, Github, AlertCircle, Clock } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Linkedin, Github, AlertCircle, Clock } from "lucide-react"
 import { useJudges, type Judge } from "@/hooks/use-judges"
 
 interface JudgesProps {
@@ -25,6 +24,71 @@ function JudgeSkeleton() {
     )
 }
 
+// Same constants as mentors — keep card sizes consistent across both sections
+const CARD_W = 172
+const CARD_GAP = 8
+const BRICK_OFFSET = (CARD_W + CARD_GAP) / 2
+
+function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) => void }) {
+    const n = items.length
+    const splitAt = Math.ceil(n / 2)
+    const topRow = n >= 5 ? items.slice(0, splitAt) : items
+    const bottomRow = n >= 5 ? items.slice(splitAt) : []
+    const shouldOffset = bottomRow.length > 0 && bottomRow.length < topRow.length
+
+    const renderCard = (judge: Judge, index: number) => (
+        <button
+            key={judge.id}
+            onClick={() => onSelect(judge)}
+            className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 md:w-[172px] md:flex-shrink-0"
+            style={{ animationDelay: `${index * 50}ms` }}
+        >
+            <div className="p-4">
+                <div className="aspect-square relative mb-3 rounded-lg overflow-hidden border-2 border-brand-cyan/10 group-hover:border-brand-orange/40 transition-colors">
+                    <Image
+                        src={judge.avatar || "/placeholder.svg"}
+                        alt={judge.name}
+                        fill
+                        className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
+                    {judge.name}
+                </p>
+                <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>
+            </div>
+        </button>
+    )
+
+    return (
+        <>
+            {/* Desktop: fixed-width cards in two flex rows, brick-offset on bottom when odd total */}
+            <div className="hidden md:flex flex-col items-center gap-2 max-w-4xl mx-auto">
+                <div className="flex items-start justify-center" style={{ gap: `${CARD_GAP}px` }}>
+                    {topRow.map((j, i) => renderCard(j, i))}
+                </div>
+                {bottomRow.length > 0 && (
+                    <div
+                        className="flex justify-center"
+                        style={{
+                            gap: `${CARD_GAP}px`,
+                            transform: shouldOffset ? `translateX(${BRICK_OFFSET}px)` : undefined,
+                        }}
+                    >
+                        {bottomRow.map((j, i) => renderCard(j, topRow.length + i))}
+                    </div>
+                )}
+            </div>
+
+            {/* Mobile: unchanged 2-col grid */}
+            <div className="grid grid-cols-2 gap-2 max-w-4xl mx-auto md:hidden">
+                {items.map((j, i) => renderCard(j, i))}
+            </div>
+        </>
+    )
+}
+
 export function Judges({ translations }: JudgesProps) {
     const { judges, loading, error } = useJudges()
     const [selectedJudge, setSelectedJudge] = useState<Judge | null>(null)
@@ -37,7 +101,7 @@ export function Judges({ translations }: JudgesProps) {
                 <div className="flex flex-col items-center mb-12">
                     <div className="mb-8">
                         <p className="font-pixel text-md text-brand-yellow mb-2">{translations.auth.signup.endpoint?.split(" ")[0]}</p>
-                        <p className="font-pixel text-lg text-brand-yellow">{translations.judges.endpoint}</p>
+                        <p className="font-pixel text-lg text-brand-yellow">{t.endpoint}</p>
                     </div>
 
                     {error && (
@@ -51,16 +115,12 @@ export function Judges({ translations }: JudgesProps) {
                     )}
                 </div>
 
-                {/* Loading state */}
                 {loading && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <JudgeSkeleton key={i} />
-                        ))}
+                        {Array.from({ length: 5 }).map((_, i) => <JudgeSkeleton key={i} />)}
                     </div>
                 )}
 
-                {/* Coming soon — empty collection */}
                 {!loading && !error && judges.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 gap-4">
                         <Clock className="w-10 h-10 text-brand-cyan/30" />
@@ -70,89 +130,36 @@ export function Judges({ translations }: JudgesProps) {
                     </div>
                 )}
 
-                {/* Judges grid */}
                 {!loading && !error && judges.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
-                        {judges.map((judge, index) => (
-                            <button
-                                key={judge.id}
-                                onClick={() => setSelectedJudge(judge)}
-                                className={cn(
-                                    "group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300",
-                                    index >= judges.length - judges.length % 5 && "md:translate-x-[calc(50%+3px)]"
-                                )}
-                                style={{ animationDelay: `${index * 50}ms` }}
-                            >
-                                <div className="p-4">
-                                    <div className="aspect-square relative mb-3 rounded-lg overflow-hidden border-2 border-brand-cyan/10 group-hover:border-brand-orange/40 transition-colors">
-                                        <Image
-                                            src={judge.avatar || "/placeholder.svg"}
-                                            alt={judge.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-                                    <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
-                                        {judge.name}
-                                    </p>
-                                    <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
+                    <JudgeGrid items={judges} onSelect={setSelectedJudge} />
                 )}
             </div>
 
-            {/* Modal */}
             <Dialog open={!!selectedJudge} onOpenChange={() => setSelectedJudge(null)}>
                 <DialogContent className="glass-effect w-[90vw] max-w-2xl" aria-description="Modal that shows judge information">
                     {selectedJudge && (
                         <div className="space-y-6">
                             <div className="flex items-start gap-6">
                                 <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 border-2 border-brand-cyan/20">
-                                    <Image
-                                        src={selectedJudge.avatar || "/placeholder.svg"}
-                                        alt={selectedJudge.name}
-                                        fill
-                                        className="object-cover"
-                                    />
+                                    <Image src={selectedJudge.avatar || "/placeholder.svg"} alt={selectedJudge.name} fill className="object-cover" />
                                 </div>
                                 <div className="flex-1">
                                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow mb-2">
                                         {selectedJudge.name}
                                     </DialogTitle>
-                                    <p className="text-brand-yellow">
-                                        {t.role}:{" "}
-                                        <span className="text-white">{selectedJudge.position}</span>
-                                    </p>
-                                    <p className="text-brand-yellow">
-                                        {t.company}:{" "}
-                                        <span className="text-white">{selectedJudge.company}</span>
-                                    </p>
+                                    <p className="text-brand-yellow">{t.role}: <span className="text-white">{selectedJudge.position}</span></p>
+                                    <p className="text-brand-yellow">{t.company}: <span className="text-white">{selectedJudge.company}</span></p>
                                 </div>
                             </div>
-
                             <p className="leading-relaxed">{selectedJudge.bio}</p>
-
                             <div className="flex gap-4 justify-center">
                                 {selectedJudge.linkedin && (
-                                    <a
-                                        href={selectedJudge.linkedin}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-brand-cyan hover:text-brand-orange transition-colors"
-                                    >
+                                    <a href={selectedJudge.linkedin} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                                         <Linkedin size={24} />
                                     </a>
                                 )}
                                 {selectedJudge.github && (
-                                    <a
-                                        href={selectedJudge.github}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-brand-cyan hover:text-brand-orange transition-colors"
-                                    >
+                                    <a href={selectedJudge.github} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                                         <Github size={24} />
                                     </a>
                                 )}
