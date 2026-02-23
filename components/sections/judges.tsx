@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Linkedin, Github, AlertCircle, Clock } from "lucide-react"
 import { useJudges, type Judge } from "@/hooks/use-judges"
+import { cn } from "@/lib/utils"
 
 interface JudgesProps {
     translations: any
@@ -82,7 +83,7 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
             </div>
 
             {/* Mobile: unchanged 2-col grid */}
-            <div className="grid grid-cols-2 gap-2 max-w-4xl mx-auto md:hidden">
+            <div className="grid grid-cols-2 items-start gap-2 max-w-4xl mx-auto md:hidden">
                 {items.map((j, i) => renderCard(j, i))}
             </div>
         </>
@@ -147,8 +148,18 @@ export function Judges({ translations }: JudgesProps) {
                                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow mb-2">
                                         {selectedJudge.name}
                                     </DialogTitle>
-                                    <p className="text-brand-yellow">{t.role}: <span className="text-white">{selectedJudge.position}</span></p>
-                                    <p className="text-brand-yellow">{t.company}: <span className="text-white">{selectedJudge.company}</span></p>
+                                    {selectedJudge.position && (
+                                        <p className="text-brand-yellow">
+                                            {translations.judges.role}:{" "}
+                                            <span className="text-white">{selectedJudge.position}</span>
+                                        </p>
+                                    )}
+                                    {selectedJudge.company && (
+                                        <p className="text-brand-yellow">
+                                            {translations.judges.company}:{" "}
+                                            <span className="text-white">{selectedJudge.company}</span>
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <p className="leading-relaxed">{selectedJudge.bio}</p>
@@ -170,4 +181,5 @@ export function Judges({ translations }: JudgesProps) {
             </Dialog>
         </section>
     )
+
 }

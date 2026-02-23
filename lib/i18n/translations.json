@@ -64,8 +64,8 @@
     "location": {
       "title": "Location",
       "description": "ITBA — Sede Distrito Tecnológico",
-      "address": "Lavardén 235, Buenos Aires, Argentina",
-      "coordinates": "-34.633250, -58.451300"
+      "address": "Iguazú 341, C1437 CABA, Argentina",
+      "coordinates": "-34.64167999367568, -58.40635811937543"
     },
     "sponsors": {
       "title": "Sponsors",
@@ -446,6 +446,18 @@
     "dashboard": {
       "participant": {
         "title": "Participant Dashboard",
+        "eventInfo": {
+          "title": "Event Info",
+          "dates": "March 27–29, 2026",
+          "location": "ITBA — Sede Distrito Tecnológico",
+          "address": "Iguazú 341, C1437 CABA",
+          "duration": "36 hours",
+          "format": "In-person · Free",
+          "labelsDate": "Date",
+          "labelsLocation": "Location",
+          "labelsDuration": "Duration",
+          "labelsFormat": "Format"
+        },
         "myTeam": "My Team",
         "myProject": "My Project",
         "categoryNotAssigned": "Category not yet assigned",
@@ -575,6 +587,20 @@
       "settings": {
         "title": "Settings",
         "comingSoon": "Settings — Coming soon"
+      },
+      "eventPage": {
+        "title": "Event Info",
+        "sidebarLabel": "Event",
+        "dates": "March 27–29, 2026",
+        "location": "ITBA — Sede Distrito Tecnológico",
+        "address": "Iguazú 341, C1437 CABA",
+        "duration": "36 hours",
+        "format": "In-person · Free",
+        "labelsDate": "Date",
+        "labelsLocation": "Location",
+        "labelsDuration": "Duration",
+        "labelsFormat": "Format",
+        "locationTitle": "Venue"
       }
     },
     "credits": {
@@ -750,8 +776,8 @@
     "location": {
       "title": "Sede",
       "description": "ITBA — Sede Distrito Tecnológico",
-      "address": "Lavardén 235, Ciudad Autónoma de Buenos Aires, Argentina",
-      "coordinates": "-34.633250, -58.451300"
+      "address": "Iguazú 341, C1437 Cdad. Autónoma de Buenos Aires",
+      "coordinates": "-34.64167999367568, -58.40635811937543"
     },
     "sponsors": {
       "title": "Sponsors",
@@ -1132,6 +1158,18 @@
     "dashboard": {
       "participant": {
         "title": "Panel del participante",
+        "eventInfo": {
+          "title": "Info del evento",
+          "dates": "27, 28 y 29 de marzo de 2026",
+          "location": "ITBA — Sede Distrito Tecnológico",
+          "address": "Iguazú 341, C1437 CABA",
+          "duration": "36 horas",
+          "format": "Presencial · Gratuito",
+          "labelsDate": "Fecha",
+          "labelsLocation": "Lugar",
+          "labelsDuration": "Duración",
+          "labelsFormat": "Formato"
+        },
         "myTeam": "Mi equipo",
         "myProject": "Mi proyecto",
         "categoryNotAssigned": "Categoría no asignada aún",
@@ -1261,6 +1299,20 @@
       "settings": {
         "title": "Configuración",
         "comingSoon": "Configuración — Próximamente"
+      },
+      "eventPage": {
+        "title": "Info del evento",
+        "sidebarLabel": "Evento",
+        "dates": "27, 28 y 29 de marzo de 2026",
+        "location": "ITBA — Sede Distrito Tecnológico",
+        "address": "Iguazú 341, C1437 CABA",
+        "duration": "36 horas",
+        "format": "Presencial · Gratuito",
+        "labelsDate": "Fecha",
+        "labelsLocation": "Lugar",
+        "labelsDuration": "Duración",
+        "labelsFormat": "Formato",
+        "locationTitle": "Sede"
       }
     },
     "credits": {

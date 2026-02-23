@@ -68,7 +68,7 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
         <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
           {mentor.name}
         </p>
-        <p className="text-xs opacity-60 text-center mt-1">{mentor.company}</p>
+        {mentor.company && <p className="text-xs opacity-60 text-center mt-1">{mentor.company}</p>}
       </div>
     </button>
   )
@@ -94,7 +94,7 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
       </div>
 
       {/* Mobile: unchanged 2-col grid */}
-      <div className="grid grid-cols-2 gap-2 max-w-4xl mx-auto md:hidden">
+      <div className="grid grid-cols-2 items-start gap-2 max-w-4xl mx-auto md:hidden">
         {items.map((m, i) => renderCard(m, i))}
       </div>
     </>
@@ -203,8 +203,18 @@ export function Mentors({ translations }: MentorsProps) {
                       {translations.mentors.categories[selectedMentor.category]}
                     </span>
                   </div>
-                  <p className="text-brand-yellow">{translations.mentors.role}: <span className="text-white">{selectedMentor.position}</span></p>
-                  <p className="text-brand-yellow">{translations.mentors.company}: <span className="text-white">{selectedMentor.company}</span></p>
+                  {selectedMentor.position && (
+                    <p className="text-brand-yellow">
+                      {translations.mentors.role}:{" "}
+                      <span className="text-white">{selectedMentor.position}</span>
+                    </p>
+                  )}
+                  {selectedMentor.company && (
+                    <p className="text-brand-yellow">
+                      {translations.mentors.company}:{" "}
+                      <span className="text-white">{selectedMentor.company}</span>
+                    </p>
+                  )}
                 </div>
               </div>
               <p className="leading-relaxed">{selectedMentor.bio}</p>
