@@ -10,9 +10,11 @@ import {
 import { Linkedin, Github, Briefcase, Code, Mic, AlertCircle, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useMentors, type Mentor } from "@/hooks/use-mentors"
+import type { Locale } from "@/lib/i18n/config"
 
 interface MentorsProps {
   translations: any
+  locale: Locale
 }
 
 type MentorCategory = "entrepreneurship" | "tech" | "oratory"
@@ -33,9 +35,6 @@ function MentorSkeleton() {
   )
 }
 
-// At max-w-4xl (896px) with gap-2 (8px) and 5 columns:
-// card width = (896 - 4*8) / 5 = 172.8px ≈ 172px
-// brick offset = (172 + 8) / 2 = 90px
 const CARD_W = 172
 const CARD_GAP = 8
 const BRICK_OFFSET = (CARD_W + CARD_GAP) / 2
@@ -45,7 +44,6 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
   const splitAt = Math.ceil(n / 2)
   const topRow = n >= 5 ? items.slice(0, splitAt) : items
   const bottomRow = n >= 5 ? items.slice(splitAt) : []
-  // Offset only when rows are uneven (odd total) — creates the true brick stagger
   const shouldOffset = bottomRow.length > 0 && bottomRow.length < topRow.length
 
   const renderCard = (mentor: Mentor, index: number) => (
@@ -82,7 +80,7 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
         </div>
         {bottomRow.length > 0 && (
           <div
-            className="flex justify-center"
+            className="flex items-start justify-center"
             style={{
               gap: `${CARD_GAP}px`,
               transform: shouldOffset ? `translateX(${BRICK_OFFSET}px)` : undefined,
@@ -101,12 +99,15 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
   )
 }
 
-export function Mentors({ translations }: MentorsProps) {
+export function Mentors({ translations, locale }: MentorsProps) {
   const { mentors, loading, error } = useMentors()
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
   const [activeCategory, setActiveCategory] = useState<MentorCategory>("entrepreneurship")
 
   const filteredMentors = mentors.filter(mentor => mentor.category === activeCategory)
+
+  const getBio = (mentor: Mentor) =>
+    locale === "es" ? mentor.spanishBio : mentor.englishBio
 
   return (
     <section id="mentors" className="pb-20 px-4">
@@ -217,7 +218,7 @@ export function Mentors({ translations }: MentorsProps) {
                   )}
                 </div>
               </div>
-              <p className="leading-relaxed">{selectedMentor.bio}</p>
+              <p className="leading-relaxed">{getBio(selectedMentor)}</p>
               <div className="flex gap-4 justify-center">
                 {selectedMentor.linkedin && (
                   <a href={selectedMentor.linkedin} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">

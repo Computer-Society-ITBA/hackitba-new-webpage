@@ -8,7 +8,8 @@ export interface Judge {
     name: string
     position: string
     company: string
-    bio: string
+    englishBio: string
+    spanishBio: string
 
     // Optional socials
     linkedin?: string
@@ -60,7 +61,8 @@ export function useJudges(): UseJudgesReturn {
                             name: d.name,
                             position: d.position,
                             company: d.company,
-                            bio: d.bio,
+                            englishBio: d.englishBio ?? d.bio ?? "",
+                            spanishBio: d.spanishBio ?? d.bio ?? "",
                             linkedin: d.linkedin,
                             github: d.github,
                             instagram: d.instagram,

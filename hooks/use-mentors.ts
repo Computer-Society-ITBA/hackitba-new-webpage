@@ -11,7 +11,8 @@ export interface Mentor {
     position: string
     company: string
     category: MentorCategory
-    bio: string
+    englishBio: string
+    spanishBio: string
 
     // Optional socials
     linkedin?: string
@@ -66,7 +67,8 @@ export function useMentors(): UseMentorsReturn {
                         position: d.position,
                         company: d.company,
                         category: d.category,
-                        bio: d.bio,
+                        englishBio: d.englishBio ?? d.bio ?? "",
+                        spanishBio: d.spanishBio ?? d.bio ?? "",
                         linkedin: d.linkedin,
                         github: d.github,
                         instagram: d.instagram,

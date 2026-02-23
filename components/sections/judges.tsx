@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/dialog"
 import { Linkedin, Github, AlertCircle, Clock } from "lucide-react"
 import { useJudges, type Judge } from "@/hooks/use-judges"
-import { cn } from "@/lib/utils"
+import type { Locale } from "@/lib/i18n/config"
 
 interface JudgesProps {
     translations: any
+    locale: Locale
 }
 
 function JudgeSkeleton() {
@@ -25,7 +26,6 @@ function JudgeSkeleton() {
     )
 }
 
-// Same constants as mentors — keep card sizes consistent across both sections
 const CARD_W = 172
 const CARD_GAP = 8
 const BRICK_OFFSET = (CARD_W + CARD_GAP) / 2
@@ -57,7 +57,7 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
                 <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
                     {judge.name}
                 </p>
-                <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>
+                {judge.company && <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>}
             </div>
         </button>
     )
@@ -71,7 +71,7 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
                 </div>
                 {bottomRow.length > 0 && (
                     <div
-                        className="flex justify-center"
+                        className="flex items-start justify-center"
                         style={{
                             gap: `${CARD_GAP}px`,
                             transform: shouldOffset ? `translateX(${BRICK_OFFSET}px)` : undefined,
@@ -90,11 +90,14 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
     )
 }
 
-export function Judges({ translations }: JudgesProps) {
+export function Judges({ translations, locale }: JudgesProps) {
     const { judges, loading, error } = useJudges()
     const [selectedJudge, setSelectedJudge] = useState<Judge | null>(null)
 
     const t = translations.judges
+
+    const getBio = (judge: Judge) =>
+        locale === "es" ? judge.spanishBio : judge.englishBio
 
     return (
         <section id="judges" className="pb-20 px-4">
@@ -150,19 +153,19 @@ export function Judges({ translations }: JudgesProps) {
                                     </DialogTitle>
                                     {selectedJudge.position && (
                                         <p className="text-brand-yellow">
-                                            {translations.judges.role}:{" "}
+                                            {t.role}:{" "}
                                             <span className="text-white">{selectedJudge.position}</span>
                                         </p>
                                     )}
                                     {selectedJudge.company && (
                                         <p className="text-brand-yellow">
-                                            {translations.judges.company}:{" "}
+                                            {t.company}:{" "}
                                             <span className="text-white">{selectedJudge.company}</span>
                                         </p>
                                     )}
                                 </div>
                             </div>
-                            <p className="leading-relaxed">{selectedJudge.bio}</p>
+                            <p className="leading-relaxed">{getBio(selectedJudge)}</p>
                             <div className="flex gap-4 justify-center">
                                 {selectedJudge.linkedin && (
                                     <a href={selectedJudge.linkedin} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
@@ -181,5 +184,4 @@ export function Judges({ translations }: JudgesProps) {
             </Dialog>
         </section>
     )
-
 }
