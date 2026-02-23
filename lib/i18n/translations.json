@@ -5,68 +5,66 @@
       "pastEditions": "Past Editions",
       "faqs": "FAQs",
       "collaborate": "Collaborate",
-      "login": "Log in",
+      "login": "Log In",
       "dashboard": "Go to Dashboard",
       "signUp": "Sign Up",
       "about": "About",
       "sponsors": "Sponsors",
       "mentors": "Mentors",
       "categories": "Categories",
-      "beAMentor": "Be a mentor",
-      "beASponsor": "Be a sponsor"
+      "beAMentor": "Become a Mentor",
+      "beASponsor": "Become a Sponsor"
     },
     "hero": {
       "title": "HACKITBA",
       "subtitle": "By Computer Society ITBA",
-      "signupOpen": "Signups are open!",
-      "signupClosed": "Signups are closed."
+      "signupOpen": "Registrations are open!",
+      "signupClosed": "Registrations are closed."
     },
     "stats": {
       "categories": "Categories",
-      "hoursOfCoding": "Hours\nOf coding",
+      "hoursOfCoding": "Hours\nof coding",
       "participants": "Participants"
     },
     "event": {
       "location": "Parque Patricios, CABA",
       "dates": "March 27–29, 2026",
-      "free": "Free"
+      "free": "Free",
+      "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of people in Argentina and worldwide, with innovative and original ideas.",
+      "date": "March 27–29, 2026"
     },
     "timeline": {
       "title": "Event Timeline",
       "beginning": {
-        "title": "The beginning",
-        "description": "Networking and mentoring from minute one. Get to know your team."
+        "title": "The Beginning",
+        "description": "Networking and mentorship from day one. Get to know your teammates and set up your workspace."
       },
       "challenge": {
-        "title": "The challenge",
-        "description": "Intense development. 36 hours of non-stop programming."
+        "title": "The Challenge",
+        "description": "Heads-down development. 36 hours of non-stop building, debugging, and iterating."
       },
       "closing": {
-        "title": "The closing",
-        "description": "Deployed solution, final pitch and access to prizes."
+        "title": "The Closing",
+        "description": "Ship your solution, deliver your final pitch, and compete for prizes."
       },
       "future": {
-        "title": "The future",
-        "description": "Project continuity and job offers from sponsors."
+        "title": "The Future",
+        "description": "Keep building beyond the event — project continuity support and direct connections with sponsor companies."
       }
     },
     "about": {
       "title": "Computer Science Organization",
       "history": "Our History",
-      "historyText": "Founded by students passionate about systems, AI, and software engineering, our organization builds technical events that connect theory with real-world engineering.",
+      "historyText": "Founded by students passionate about systems, AI, and software engineering, our organization builds technical events that connect academic theory with real-world engineering practice.",
       "vision": "Our Vision",
-      "visionText": "To create a collaborative environment where innovation, experimentation, and applied computer science thrive.",
+      "visionText": "To create a collaborative environment where innovation, experimentation, and applied computer science thrive — and where students can grow alongside the industry.",
       "objective": "Our Objective",
-      "objectiveText": "Empower students to design, build, and deploy meaningful technological solutions."
-    },
-    "event": {
-      "description": "HACKITBA CS is an annual hackathon held at ITBA where 25–50 teams of 3–4 people spend 36 intense hours building practical projects that aim to improve the quality of life of peers in Argentina and worldwide, with innovative and original ideas.",
-      "date": "March 27–29, 2026"
+      "objectiveText": "Empower students to design, build, and deploy meaningful technological solutions that have a real impact on the world."
     },
     "location": {
       "title": "Location",
-      "description": "ITBA Sede Distrito Tecnológico",
-      "address": "Lavardén 235, CABA, Argentina",
+      "description": "ITBA — Sede Distrito Tecnológico",
+      "address": "Lavardén 235, Buenos Aires, Argentina",
       "coordinates": "-34.633250, -58.451300"
     },
     "sponsors": {
@@ -83,16 +81,16 @@
       "categories": {
         "entrepreneurship": "Entrepreneurship",
         "tech": "Tech",
-        "oratory": "Oratory"
+        "oratory": "Public Speaking"
       },
-      "noMentors": "No mentors available in this category",
+      "noMentors": "No mentors available in this category.",
       "errorTitle": "Error Loading Mentors",
       "comingSoon": "Mentors coming soon"
     },
     "judges": {
       "title": "Judges",
-      "endpoint": "v2026/judges",
       "subtitle": "Meet the experts who will evaluate your projects",
+      "endpoint": "v2026/judges",
       "modalTitle": "Judge Details",
       "role": "Role",
       "company": "Company",
@@ -105,33 +103,33 @@
       "endpoint": "v2026/categories",
       "loading": "Loading categories...",
       "web3": "Web3",
-      "ia": "IA",
-      "gameDev": "GameDev",
+      "ia": "AI",
+      "gameDev": "Game Dev",
       "ai": "AI",
-      "healthTech": "HealthTech"
+      "healthTech": "Health Tech"
     },
     "weProvide": {
-      "title": "WHAT WE OFFER ⇄ WHAT YOU NEED",
-      "subtitle": "Everything provided by us, and what we expect from you",
+      "title": "WHAT WE OFFER ⇄ WHAT YOU BRING",
+      "subtitle": "Everything we provide and what we expect from you",
       "items": [
-        "Technical workshops on AI, cloud architecture, and modern development",
+        "Technical workshops on AI, cloud architecture, and modern software development",
         "Mentorship from industry professionals and experienced engineers",
         "Cloud infrastructure credits and development tools",
         "Full catering: meals, snacks, and unlimited coffee",
         "Networking with 500+ students, 20 companies, and 15 expert speakers",
         "Exclusive swag, t-shirts, and event merchandise",
-        "Cash prizes: $5,000 first place, $3,000 second place"
+        "Cash prizes: $5,000 for first place, $3,000 for second place"
       ]
     },
     "youBring": {
-      "title": "Requirements",
+      "title": "What You Need",
       "items": [
         "Curiosity and eagerness to learn new technologies",
         "A laptop, fully charged and ready to code",
-        "Collaborative team spirit and positive attitude",
-        "Open mindset for experimentation and innovation",
-        "Commitment to participate for the full event duration",
-        "Passion for building and creating solutions"
+        "Collaborative team spirit and a positive attitude",
+        "An open mind for experimentation and innovation",
+        "Commitment to participate for the full duration of the event",
+        "Passion for building and creating solutions that matter"
       ]
     },
     "signup": {
@@ -147,87 +145,87 @@
       "list": [
         {
           "question": "What is HackITBA and how does it work?",
-          "answer": "It is an event where teams develop technological solutions in a limited time."
+          "answer": "HackITBA is an annual hackathon organized by Computer Society ITBA where teams of 3–4 people have 36 hours to ideate, build, and present a technological project. Teams are evaluated by expert judges, and the best projects in each category receive prizes. The full event includes networking, workshops, and mentorship sessions."
         },
         {
-          "question": "What programming level is required?",
-          "answer": "At least one team member must have intermediate/advanced knowledge."
+          "question": "What programming level is required to participate?",
+          "answer": "There is no strict minimum requirement, but we recommend that at least one member of each team has intermediate to advanced programming knowledge. The hackathon is a great opportunity to learn from your teammates and mentors, regardless of your experience level."
         },
         {
           "question": "Can I compete individually?",
-          "answer": "No, it is in groups. However, you can sign up alone and we will assign you a team."
+          "answer": "No — HackITBA is a team event. However, if you don't have a team yet, you can sign up solo and we will do our best to match you with other participants. It's a great way to meet people who share your interests."
         },
         {
           "question": "Can I sign up if I'm not from ITBA?",
-          "answer": "Yes! It is for students from any institution between 18 and 26 years old. But remember it is in-person at ITBA."
+          "answer": "Absolutely! HackITBA is open to students from any university or institution, as long as you're between 18 and 26 years old. Keep in mind that the event is 100% in-person at ITBA's campus in Buenos Aires."
         },
         {
           "question": "How long does the event last?",
-          "answer": "72 hours, of which 36 are for competition."
+          "answer": "The event runs for 36 hours in total, from March 27 to March 29. Most of this time is dedicated to the hackathon competition itself. The rest of the time includes opening ceremonies, workshops, mentorship sessions, meals, and the final presentation."
         },
         {
-          "question": "What is the modality?",
-          "answer": "100% in-person."
+          "question": "Is the event in-person or remote?",
+          "answer": "HackITBA is 100% in-person. You'll be building alongside your team at ITBA's Sede Distrito Tecnológico. There is no remote participation option."
         },
         {
           "question": "Do I have to sleep at ITBA?",
-          "answer": "Yes! Bring your sleeping bag, pillow, blanket, whatever you want."
+          "answer": "Yes! The event is a 36-hour experience, so you'll be staying on campus in your designated classrooms. We encourage you to bring a sleeping bag, pillow, blanket, or anything that helps you rest between coding sessions. It's all part of the experience."
         },
         {
-          "question": "Do I have to bring my own food?",
-          "answer": "No, we take care of it."
+          "question": "Do I need to bring my own food?",
+          "answer": "Not at all — food and drinks are fully covered. We provide meals, snacks, and unlimited coffee throughout the event, so you can focus entirely on building."
         },
         {
-          "question": "Do I have to pay for registration?",
-          "answer": "The event is 100% free."
+          "question": "Is there a registration fee?",
+          "answer": "No, participation is completely free. HackITBA is made possible thanks to our sponsors and the volunteer work of the Computer Society ITBA team."
         },
         {
-          "question": "How many people per team?",
-          "answer": "Between 3 and 4 participants."
+          "question": "How many people can be on a team?",
+          "answer": "Teams must have between 3 and 4 members. You cannot participate with a team of fewer than 3 or more than 4 people. If you sign up solo, we'll help you find teammates."
         },
         {
-          "question": "How are the projects evaluated?",
-          "answer": "We will have the best judges, experts in the field."
+          "question": "How are projects evaluated?",
+          "answer": "Projects are evaluated by a panel of expert judges — professionals from the industry and academic world — based on criteria such as innovation, technical execution, impact, and presentation quality. Each category has its own set of judges."
         },
         {
           "question": "Who are the judges?",
-          "answer": "Find out very soon 👀"
+          "answer": "We'll be announcing the judges soon — stay tuned to our social media for updates. 👀"
         },
         {
           "question": "Will there be prizes?",
-          "answer": "Of course! The best in each category will be awarded."
+          "answer": "Yes! The top teams in each category will receive prizes. We'll announce the full prize breakdown closer to the event, so keep an eye out."
         },
         {
           "question": "What are the prizes?",
-          "answer": "Find out on the last day of the competition 💪"
+          "answer": "The prizes will be revealed on the last day of the competition. We can confirm it'll be worth the effort. 💪"
         },
         {
-          "question": "What if the project is not finished?",
-          "answer": "It is recommended to present it as functional as possible, it must be usable."
+          "question": "What if our project isn't finished by the deadline?",
+          "answer": "That's okay — shipping something imperfect is part of the hackathon experience. We recommend presenting your project in the most functional state possible. Judges appreciate a working demo, even if it's incomplete, over a polished slide deck with no prototype."
         },
         {
-          "question": "Are there recommended technologies?",
-          "answer": "We do not recommend any specific framework."
+          "question": "Are there any recommended technologies or frameworks?",
+          "answer": "No — you're free to use whatever stack your team is most comfortable with. We do not mandate or recommend any specific language, framework, or platform. Use the tools that let you move fastest."
         },
         {
-          "question": "Will there be APIs or datasets?",
-          "answer": "We do not provide any, you can use those your team knows and finds useful."
+          "question": "Will there be APIs or datasets provided?",
+          "answer": "We don't provide any APIs or datasets, but you're welcome to use any public resources your team finds useful. Some sponsors may share tools or credits during the event — we'll let you know in advance."
         },
         {
-          "question": "Can I change teams after registering?",
-          "answer": "No, it is not possible."
+          "question": "Can I switch teams after registering?",
+          "answer": "Team changes are not allowed after registration is closed. Please make sure you're happy with your team before signing up, or reach out to us early if you have a specific situation we should know about."
         }
       ],
       "question": "Question",
-      "answer": "Resume of the answer"
+      "answer": "Short answer"
     },
     "footer": {
-      "menu": "Nav Menu",
+      "menu": "Navigation",
       "madeWith": "Made with 🧡 by Computer Society ITBA",
-      "socials": "Our socials",
+      "socials": "Follow us",
       "copyright": "© 2026 Computer Society ITBA. All rights reserved.",
-      "credits": "Go to credits",
-      "collaborate": "Would you like to be a sponsor or mentor? \\nHit us up via email and we'll answer shortly."
+      "credits": "View credits",
+      "collaborate": "Interested in sponsoring or mentoring?\\nSend us an email and we'll get back to you shortly."
     },
     "countdown": {
       "title": "Time Left",
@@ -240,20 +238,20 @@
     },
     "auth": {
       "signup": {
-        "endpoint": "POST /api/auth/signup",
-        "title": "Register",
+        "endpoint": "POST v2026/auth/signup",
+        "title": "Create Account",
         "sectionTitle": "Account Setup",
         "fields": {
-          "name": "Name",
-          "surname": "Surname",
+          "name": "First Name",
+          "surname": "Last Name",
           "email": "Email",
           "password": "Password",
           "confirmPassword": "Confirm Password",
-          "emailPlaceholder": "youremail@gmail.com",
+          "emailPlaceholder": "you@email.com",
           "passwordPlaceholder": "••••••••"
         },
         "validation": {
-          "minCharacters": "Min 6 characters",
+          "minCharacters": "At least 6 characters",
           "required": "*"
         },
         "buttons": {
@@ -261,68 +259,68 @@
           "create": "CREATE ACCOUNT"
         },
         "footer": {
-          "alreadyRegistered": "Already registered?",
+          "alreadyRegistered": "Already have an account?",
           "login": "Log in"
         },
-        "loading": "Establishing Team Protocol...",
+        "loading": "Initializing registration...",
         "errors": {
-          "fillAllFields": "Please fill all fields",
+          "fillAllFields": "Please fill in all fields",
           "invalidEmail": "Please enter a valid email address",
           "passwordTooShort": "Password must be at least 6 characters",
           "passwordMismatch": "Passwords do not match",
-          "createFailed": "Failed to create account",
-          "signupDisabled": "Signup is disabled."
+          "createFailed": "Failed to create account. Please try again.",
+          "signupDisabled": "Registrations are currently disabled."
         }
       },
       "login": {
-        "title": "Log in",
-        "endpoint": "POST /auth/login",
+        "title": "Log In",
+        "endpoint": "POST v2026/auth/login",
         "fields": {
           "email": "Email",
           "password": "Password",
-          "emailPlaceholder": "your@email.com",
+          "emailPlaceholder": "you@email.com",
           "passwordPlaceholder": "••••••••"
         },
         "buttons": {
           "loggingIn": "Logging in...",
-          "login": "Log in"
+          "login": "LOG IN"
         },
         "footer": {
           "noAccount": "Don't have an account?",
           "signUp": "Sign up"
         },
         "errors": {
-          "firebaseNotConfigured": "Firebase Auth is not configured",
-          "loginFailed": "Failed to log in",
-          "invalidCredentials": "Email or password is incorrect"
+          "firebaseNotConfigured": "Authentication is not configured",
+          "loginFailed": "Failed to log in. Please try again.",
+          "invalidCredentials": "Incorrect email or password"
         }
       },
       "verifyEmail": {
-        "endpoint": "GET /auth/verify-email",
-        "title": "Email Verification",
-        "verifying": "Verifying your email...",
+        "endpoint": "POST v2026/auth/verify-email",
+        "title": "Verify Your Email",
+        "verifying": "Verifying your email address...",
         "success": "Email verified successfully!",
         "error": "Verification failed",
-        "redirecting": "Redirecting to profile completion...",
+        "redirecting": "Redirecting to profile setup...",
         "backToHome": "Back to Home"
       },
       "verifyEmailRequired": {
-        "endpoint": "GET /auth/verify-email-required",
+        "endpoint": "POST v2026/auth/verify-email",
         "title": "Verify Your Email",
-        "subtitle": "We need you to verify your email address to continue",
-        "sentTo": "Email sent to:",
+        "subtitle": "You need to verify your email address before continuing",
+        "sentTo": "Verification email sent to:",
         "nextSteps": "Next steps:",
         "step1": "Open your email client",
-        "step2": "Find the verification email",
+        "step2": "Find the verification email from HackITBA",
         "step3": "Click the confirmation link",
         "resend": "Resend Email",
         "sending": "Sending...",
-        "alreadyVerified": "Already verified (reload)",
+        "alreadyVerified": "Already verified — reload",
         "notReceived": "Didn't receive the email?",
-        "checkSpam": "Check your spam folder or wait a few minutes"
+        "checkSpam": "Check your spam folder or wait a few minutes before resending"
       },
       "eventSignup": {
-        "endpoint": "POST /api/event/signup",
+        "endpoint": "POST v2026/event/signup",
         "title": "Event Registration",
         "roleTitle": {
           "jurado": "Judge",
@@ -336,28 +334,28 @@
           "complete": "Ready"
         },
         "steps": {
-          "personalData": "Personal Data",
-          "professionalData": "Professional Data",
-          "contactSocial": "Contact & Social Media",
+          "personalData": "Personal Info",
+          "professionalData": "Professional Info",
+          "contactSocial": "Contact & Socials",
           "teamStatus": "Team Status"
         },
         "fields": {
-          "dni": "DNI",
+          "dni": "ID Number",
           "university": "University",
-          "career": "Career",
+          "career": "Degree / Major",
           "age": "Age",
           "company": "Company",
-          "professionalRole": "Role at company",
+          "professionalRole": "Role",
           "photo": "Photo",
-          "dietaryPreference": "Dietary Preference (Optional)",
-          "dietaryPlaceholder": "Vegetarian, Celiac, etc.",
-          "github": "Github",
+          "dietaryPreference": "Dietary Preferences (Optional)",
+          "dietaryPlaceholder": "Vegetarian, gluten-free, etc.",
+          "github": "GitHub",
           "linkedin": "LinkedIn",
           "instagram": "Instagram",
-          "twitter": "Twitter",
-          "cvLink": "CV Link",
+          "twitter": "Twitter / X",
+          "cvLink": "CV / Resume Link",
           "cvPlaceholder": "https://...",
-          "teamCode": "Enter team code or name",
+          "teamCode": "Team code or name",
           "teamCodePlaceholder": "TEAM-XXXX"
         },
         "photo": {
@@ -366,64 +364,64 @@
           "ready": "Ready"
         },
         "warnings": {
-          "agePreference": "Warning: Priorities given to ages 27 and below."
+          "agePreference": "Note: Priority is given to applicants aged 27 or younger."
         },
         "team": {
-          "question": "Do you have a team?",
+          "question": "Do you already have a team?",
           "yesHave": "Yes, I have one",
           "noTeam": "I don't have a team",
-          "howToContinue": "How do you want to continue?",
-          "goSolo": "Go solo",
-          "createTeam": "Create team",
-          "dragToReorder": "Drag to reorder categories",
-          "redirectNotice": "* You will be redirected to team creation upon completion."
+          "howToContinue": "How would you like to continue?",
+          "goSolo": "Join without a team",
+          "createTeam": "Create a team",
+          "dragToReorder": "Drag to reorder your category preferences",
+          "redirectNotice": "* You'll be redirected to team creation once you complete this step."
         },
         "buttons": {
           "back": "BACK",
           "nextStep": "NEXT STEP",
-          "finishRegistration": "FINISH REGISTRATION",
+          "finishRegistration": "COMPLETE REGISTRATION",
           "uploading": "UPLOADING..."
         },
         "footer": {
           "needHelp": "Need help?",
-          "contactSupport": "Contact Support"
+          "contactSupport": "Contact support"
         },
         "validation": {
           "required": "*"
         },
         "errors": {
-          "dniRequired": "DNI is required",
-          "dniNumeric": "DNI must be numeric",
-          "allFieldsRequired": "All personal data fields are required",
-          "minAge": "You must be at least 18 years old",
-          "companyRequired": "Company, Role and Photo are required",
-          "createFailed": "Failed to submit registration",
-          "signupDisabled": "Signup is disabled.",
-          "userNotAuthenticated": "User not authenticated. Please register first.",
-          "storageNotConfigured": "Firebase Storage is not configured",
-          "noCategoriesAvailable": "No categories available",
-          "teamCodeRequired": "Team code is required"
+          "dniRequired": "ID number is required",
+          "dniNumeric": "ID number must be numeric",
+          "allFieldsRequired": "Please fill in all required fields",
+          "minAge": "You must be at least 18 years old to participate",
+          "companyRequired": "Company, role, and photo are required",
+          "createFailed": "Failed to submit registration. Please try again.",
+          "signupDisabled": "Registrations are currently disabled.",
+          "userNotAuthenticated": "You are not logged in. Please create an account first.",
+          "storageNotConfigured": "File storage is not configured",
+          "noCategoriesAvailable": "No categories available at this time",
+          "teamCodeRequired": "Please enter a team code"
         },
         "messages": {
-          "dataShareConsent": "By completing this form, you agree to share your data with the event organizers and sponsors."
+          "dataShareConsent": "By submitting this form, you agree to share your information with the event organizers and sponsors."
         }
       },
       "createTeam": {
-        "endpoint": "POST /api/teams/create",
+        "endpoint": "POST v2026/teams/create",
         "title": "Create Your Team",
-        "sectionTitle": "Team Configuration",
+        "sectionTitle": "Team Setup",
         "teamAdmin": "Team Admin",
         "fields": {
           "teamName": "Team Name",
-          "teamNamePlaceholder": "Los Hackers",
+          "teamNamePlaceholder": "The Hackers",
           "motivation": "Why do you want to participate?",
           "motivationPlaceholder": "We want to participate because..."
         },
         "validation": {
           "required": "*",
-          "minCharacters": "Min 20 characters"
+          "minCharacters": "At least 20 characters"
         },
-        "categoryPreference": "Category Preference (Drag to reorder)",
+        "categoryPreference": "Category Preferences (drag to reorder)",
         "buttons": {
           "creating": "CREATING TEAM...",
           "create": "CREATE TEAM"
@@ -432,16 +430,16 @@
           "changedMind": "Changed your mind?",
           "skipForNow": "Skip for now"
         },
-        "loading": "Establishing Team Protocol...",
+        "loading": "Setting up your team...",
         "errors": {
           "teamNameRequired": "Team name is required",
           "motivationRequired": "Please tell us why you want to participate",
           "motivationTooShort": "Motivation must be at least 20 characters",
-          "teamNameExists": "Team name already exists. Please choose a different name.",
-          "createFailed": "Failed to create team",
-          "signupDisabled": "Signup is disabled",
-          "noSession": "No active session found",
-          "userNotFound": "Could not determine user"
+          "teamNameExists": "That team name is already taken. Please choose a different one.",
+          "createFailed": "Failed to create team. Please try again.",
+          "signupDisabled": "Registrations are currently disabled",
+          "noSession": "No active session found. Please log in again.",
+          "userNotFound": "Could not identify the current user"
         }
       }
     },
@@ -450,13 +448,13 @@
         "title": "Participant Dashboard",
         "myTeam": "My Team",
         "myProject": "My Project",
-        "categoryNotAssigned": "Category not assigned",
+        "categoryNotAssigned": "Category not yet assigned",
         "teamStatus": {
-          "processTitle": "In Process",
-          "inProcess": "⏳ Status: Waiting for team assignment",
-          "inProcessDescription": "Your request is being reviewed by staff. We will assign you a team soon. Please wait for confirmation.",
+          "processTitle": "Pending",
+          "inProcess": "⏳ Status: Awaiting team assignment",
+          "inProcessDescription": "Your registration is being reviewed by our staff. We'll assign you to a team soon — please check back later.",
           "noTeam": "⚠️ You don't have a team yet",
-          "noTeamDescription": "You are currently without a team. You can create a new team or join an existing one, ask for the code."
+          "noTeamDescription": "You're currently not on a team. You can create a new team or join an existing one using a team code."
         },
         "project": {
           "title": "Project Title",
@@ -475,7 +473,7 @@
           "delete": "Delete",
           "cancel": "Cancel",
           "required": "*",
-          "submissionsDisabled": "Project submissions are disabled by admin"
+          "submissionsDisabled": "Project submissions are currently disabled"
         },
         "deleteDialog": {
           "title": "Are you sure?",
@@ -484,117 +482,62 @@
         "toasts": {
           "submissionsDisabled": {
             "title": "Submissions disabled",
-            "description": "Project submissions are disabled by the admin."
+            "description": "Project submissions are currently disabled by the admin."
           },
           "missingFields": {
-            "title": "Missing fields",
-            "description": "Please fill in the required fields."
+            "title": "Missing required fields",
+            "description": "Please fill in all required fields before submitting."
           },
           "teamRequired": {
             "title": "Team required",
-            "description": "You need a team to submit a project."
-          },
-          "actionNotAllowed": {
-            "title": "Acción no permitida",
-            "description": "Los cambios en el equipo están deshabilitados mientras las inscripciones están cerradas."
-          },
-          "confirmRemoveMember": {
-            "prompt": "¿Estás seguro de que quieres eliminar este miembro del equipo?"
-          },
-          "removeMember": {
-            "success": {
-              "title": "Miembro eliminado",
-              "description": "El miembro fue eliminado del equipo."
-            },
-            "error": {
-              "title": "Error al eliminar miembro",
-              "description": "No se pudo eliminar el miembro. Por favor intenta de nuevo."
-            }
-          },
-          "updateMember": {
-            "success": {
-              "title": "Miembro actualizado",
-              "description": "Los datos del miembro fueron actualizados exitosamente."
-            },
-            "error": {
-              "title": "Error al actualizar miembro",
-              "description": "No se pudo actualizar el miembro. Por favor intenta de nuevo."
-            }
-          },
-          "updateTeam": {
-            "success": {
-              "title": "Equipo actualizado",
-              "description": "La información del equipo fue guardada exitosamente."
-            },
-            "error": {
-              "title": "Error al actualizar equipo",
-              "description": "No se pudo actualizar el equipo. Por favor intenta de nuevo."
-            }
-          },
-          "rejoin": {
-            "enterCode": "Por favor ingresa un código de equipo",
-            "success": {
-              "title": "Te uniste al equipo",
-              "description": "Has sido agregado al equipo."
-            },
-            "error": {
-              "title": "Error al unirse al equipo",
-              "description": "No se pudo unir al equipo. Verifica el código e intenta de nuevo."
-            }
-          },
-          "copyTeamCode": {
-            "success": {
-              "title": "Copiado",
-              "description": "Código de equipo copiado al portapapeles."
-            },
-            "button": "Copiar código del equipo"
+            "description": "You need to be on a team before submitting a project."
           },
           "actionNotAllowed": {
             "title": "Action not allowed",
-            "description": "Team changes are disabled while signups are closed."
+            "description": "Team changes are disabled while registrations are closed."
           },
           "confirmRemoveMember": {
-            "prompt": "Are you sure you want to remove this team member?"
+            "prompt": "Are you sure you want to remove this member from the team?"
           },
           "removeMember": {
             "success": {
               "title": "Member removed",
-              "description": "The member was removed from the team."
+              "description": "The member has been removed from the team."
             },
             "error": {
-              "title": "Error removing member",
-              "description": "Could not remove member. Please try again."
+              "title": "Could not remove member",
+              "description": "Something went wrong. Please try again."
             }
           },
           "updateMember": {
             "success": {
               "title": "Member updated",
-              "description": "Member details updated successfully."
+              "description": "Member details have been updated successfully."
             },
             "error": {
-              "title": "Error updating member",
-              "description": "Could not update member. Please try again."
+              "title": "Could not update member",
+              "description": "Something went wrong. Please try again."
             }
           },
           "updateTeam": {
             "success": {
               "title": "Team updated",
-              "description": "Team information saved successfully."
+              "description": "Your team information has been saved."
             },
             "error": {
-              "title": "Error updating team",
-              "description": "Could not update team. Please try again."
+              "title": "Could not update team",
+              "description": "Something went wrong. Please try again."
             }
           },
           "rejoin": {
             "enterCode": "Please enter a team code",
             "success": {
               "title": "Joined team",
-              "description": "You have joined the team."
+              "description": "You have successfully joined the team."
             },
             "error": {
-              "title": "Error joining team",
-              "description": "Could not join the team. Check the team code and try again."
+              "title": "Could not join team",
+              "description": "Please check the team code and try again."
             }
           },
           "copyTeamCode": {
@@ -606,37 +549,37 @@
           }
         },
         "errors": {
-          "storageNotConfigured": "Firebase Storage is not configured"
+          "storageNotConfigured": "File storage is not configured"
         }
       },
       "profile": {
         "title": "My Profile",
-        "cvLink": "CV Link",
-        "foodPreference": "Food Preference",
-        "foodPlaceholder": "E.g: Vegetarian, Vegan, Gluten-free...",
+        "cvLink": "CV / Resume Link",
+        "foodPreference": "Dietary Preferences",
+        "foodPlaceholder": "e.g. Vegetarian, vegan, gluten-free...",
         "edit": "Edit Profile",
         "cancel": "Cancel",
-        "save": "Save",
+        "save": "Save Changes",
         "saving": "Saving...",
         "toasts": {
           "updated": {
-            "title": "Profile updated",
-            "description": "Your profile has been saved successfully."
+            "title": "Profile saved",
+            "description": "Your profile has been updated successfully."
           },
           "error": {
             "title": "Error",
-            "description": "Could not save profile."
+            "description": "Could not save your profile. Please try again."
           }
         }
       },
       "settings": {
         "title": "Settings",
-        "comingSoon": "Settings page - Coming soon"
+        "comingSoon": "Settings — Coming soon"
       }
     },
     "credits": {
       "title": "Credits",
-      "back": "Back"
+      "back": "Go back"
     },
     "notFound": {
       "title": "Page not found",
@@ -646,20 +589,20 @@
       "title": "Verify Your Email",
       "sentTo": "Verification email sent to:",
       "change": "Change",
-      "newEmailPlaceholder": "New email",
+      "newEmailPlaceholder": "New email address",
       "resend": "Resend",
       "cancel": "Cancel",
       "nextSteps": "Next steps:",
       "step1": "Open your email client",
-      "step2": "Find the verification email",
+      "step2": "Find the verification email from HackITBA",
       "step3": "Click the confirmation link",
       "sending": "Sending...",
       "resendEmail": "Resend Email",
-      "alreadyVerified": "Already verified (reload)",
+      "alreadyVerified": "Already verified — reload",
       "didntReceive": "Didn't receive the email?",
       "errors": {
-        "invalidEmail": "Please enter a valid email",
-        "changeFailed": "Failed to change email. Please try again."
+        "invalidEmail": "Please enter a valid email address",
+        "changeFailed": "Could not update your email. Please try again."
       },
       "messages": {
         "emailSent": "Verification email sent to your new address!"
@@ -667,17 +610,17 @@
     },
     "verifyEmailPage": {
       "loading": "Loading...",
-      "verifying": "Verifying your email...",
+      "verifying": "Verifying your email address...",
       "pageTitle": "Email Verification",
-      "pageSubtitle": "We are verifying your email address",
+      "pageSubtitle": "We're confirming your email address",
       "backToHome": "Back to home",
       "contactSupport": "Contact support",
-      "problems": "Problems?",
-      "redirecting": "Redirecting to dashboard in a few seconds...",
+      "problems": "Having trouble?",
+      "redirecting": "Redirecting to your dashboard in a few seconds...",
       "errors": {
-        "tokenNotFound": "Verification token not found. Please check the email link.",
-        "verificationFailed": "Error verifying email. Please try again.",
-        "serverError": "Error connecting to server. Please try again later."
+        "tokenNotFound": "Verification token not found. Please check the link in your email.",
+        "verificationFailed": "Email verification failed. Please try again.",
+        "serverError": "Could not connect to the server. Please try again later."
       },
       "messages": {
         "success": "Email verified successfully!"
@@ -687,21 +630,21 @@
       "projectSubmissions": {
         "title": "Project Submissions",
         "label": "Project Submissions",
-        "description": "Enable or disable project submissions",
+        "description": "Enable or disable project submissions for all teams",
         "enabled": "Enabled",
         "disabled": "Disabled",
-        "updateError": "Could not update project submissions settings"
+        "updateError": "Could not update project submission settings"
       },
       "signup": {
-        "label": "Registration",
-        "description": "Enable or disable user registration",
+        "label": "Registrations",
+        "description": "Enable or disable participant registration",
         "updateError": "Could not update registration settings"
       },
       "pendingParticipants": {
         "title": "Pending Participants",
         "createTeam": "Create Team",
-        "noParticipants": "No pending participants for approval",
-        "selectTeam": "Select team...",
+        "noParticipants": "No participants pending review",
+        "selectTeam": "Select a team...",
         "selectTeamError": "Please select a team",
         "approveSuccess": "Participant approved and assigned successfully",
         "approveError": "Error approving participant",
@@ -714,11 +657,11 @@
         "teamName": "Team Name",
         "teamNamePlaceholder": "Team name...",
         "category": "Category",
-        "selectCategory": "Select category...",
+        "selectCategory": "Select a category...",
         "cancel": "Cancel",
         "create": "Create Team",
         "nameLengthError": "Name must be at least 3 characters",
-        "categoryRequired": "Must select a category",
+        "categoryRequired": "Please select a category",
         "invalidCategory": "Invalid category",
         "sessionError": "Could not validate session",
         "defaultReason": "Team created by administrator",
@@ -727,7 +670,7 @@
       }
     },
     "judge": {
-      "title": "Jurado Dashboard",
+      "title": "Judge Dashboard",
       "projectsToScore": "Projects to Score",
       "myScores": "My Scores",
       "scoreProject": "Score Project",
@@ -745,13 +688,13 @@
   "es": {
     "nav": {
       "home": "Inicio",
-      "pastEditions": "Ediciones Pasadas",
-      "faqs": "FAQs",
+      "pastEditions": "Ediciones Anteriores",
+      "faqs": "Preguntas Frecuentes",
       "collaborate": "Colaborar",
-      "login": "Iniciar Sesión",
-      "dashboard": "Ir al Panel",
-      "signUp": "Inscribirse",
-      "about": "Sobre Nosotros",
+      "login": "Iniciar sesión",
+      "dashboard": "Ir al panel",
+      "signUp": "Registrarse",
+      "about": "Nosotros",
       "sponsors": "Sponsors",
       "mentors": "Mentores",
       "categories": "Categorías",
@@ -761,7 +704,7 @@
     "hero": {
       "title": "HACKITBA",
       "subtitle": "By Computer Society ITBA",
-      "signupOpen": "¡Están abiertas las inscripciones!",
+      "signupOpen": "¡Las inscripciones están abiertas!",
       "signupClosed": "Las inscripciones están cerradas."
     },
     "stats": {
@@ -771,44 +714,42 @@
     },
     "event": {
       "location": "Parque Patricios, CABA",
-      "dates": "27, 28 y 29 de Marzo",
-      "free": "Sin costo"
+      "dates": "27, 28 y 29 de marzo de 2026",
+      "free": "Gratuito",
+      "description": "HACKITBA CS es un hackathon anual en el ITBA donde 25 a 50 equipos de 3 o 4 personas tienen 36 horas intensas para diseñar, construir y presentar proyectos que mejoren la calidad de vida de las personas en Argentina y en el mundo, con ideas innovadoras y originales.",
+      "date": "27 al 29 de marzo de 2026"
     },
     "timeline": {
-      "title": "Cronograma del Evento",
+      "title": "Cronograma del evento",
       "beginning": {
         "title": "El inicio",
-        "description": "Networking y mentoría desde el minuto uno. Conoce a tu equipo."
+        "description": "Networking y mentoría desde el primer momento. Conocé a tu equipo y preparate para el desafío."
       },
       "challenge": {
         "title": "El desafío",
-        "description": "Desarrollo intenso. 36 horas de programación non-stop."
+        "description": "Desarrollo a fondo. 36 horas de programación sin parar, iterando y construyendo."
       },
       "closing": {
         "title": "El cierre",
-        "description": "Solución desplegada, Pitch final y acceso a premios."
+        "description": "Presentá tu solución, hacé tu pitch final y competí por los premios."
       },
       "future": {
         "title": "El futuro",
-        "description": "Continuidad del proyecto y ofertas laborales de sponsors."
+        "description": "El evento no termina acá. Continuá tu proyecto y conectate con las empresas sponsor."
       }
     },
     "about": {
       "title": "Organización Estudiantil de Ciencias de la Computación",
-      "history": "Nuestra Historia",
-      "historyText": "Una comunidad impulsada por estudiantes que construye puentes entre las ciencias de la computación académicas y la ingeniería de producción a través de eventos técnicos prácticos.",
-      "vision": "Nuestra Visión",
-      "visionText": "Fomentar un ecosistema donde los estudiantes colaboren en sistemas del mundo real, experimenten con tecnologías emergentes y expandan los límites de la informática aplicada.",
-      "objective": "Nuestro Objetivo",
-      "objectiveText": "Equipar a la próxima generación de ingenieros con las habilidades para arquitecturar, implementar y escalar soluciones de software significativas."
-    },
-    "event": {
-      "description": "HACKITBA CS es un hackathon anual que se realiza en el ITBA, en el que 25-50 equipos de 3 o 4 personas viven 36 horas de pura intensidad, programando un proyecto práctico que pueda mejorar la calidad de vida de sus pares en la Argentina y en el mundo, con ideas innovadoras y únicas.",
-      "date": "del 27 al 29 de marzo, 2026"
+      "history": "Nuestra historia",
+      "historyText": "Fundada por estudiantes apasionados por los sistemas, la IA y la ingeniería de software, nuestra organización construye eventos técnicos que conectan la teoría académica con la práctica real.",
+      "vision": "Nuestra visión",
+      "visionText": "Crear un ecosistema colaborativo donde la innovación, la experimentación y las ciencias de la computación aplicadas florezcan junto a quienes serán los próximos ingenieros del país.",
+      "objective": "Nuestro objetivo",
+      "objectiveText": "Empoderar a los estudiantes para que diseñen, construyan y desplieguen soluciones tecnológicas con impacto real en el mundo."
     },
     "location": {
-      "title": "Ubicación",
-      "description": "ITBA — Campus Distrito Tecnológico",
+      "title": "Sede",
+      "description": "ITBA — Sede Distrito Tecnológico",
       "address": "Lavardén 235, Ciudad Autónoma de Buenos Aires, Argentina",
       "coordinates": "-34.633250, -58.451300"
     },
@@ -820,7 +761,7 @@
     "mentors": {
       "title": "Mentores",
       "endpoint": "v2026/mentors",
-      "modalTitle": "Detalles del Mentor",
+      "modalTitle": "Perfil del mentor",
       "role": "Rol",
       "company": "Empresa",
       "categories": {
@@ -828,14 +769,14 @@
         "tech": "Tecnología",
         "oratory": "Oratoria"
       },
-      "noMentors": "No hay mentores disponibles en esta categoría",
-      "errorTitle": "Error al Cargar Mentores",
+      "noMentors": "No hay mentores disponibles en esta categoría.",
+      "errorTitle": "Error al cargar los mentores",
       "comingSoon": "Mentores próximamente"
     },
     "judges": {
       "title": "Jurado",
-      "endpoint": "v2026/judges",
       "subtitle": "Conocé a los expertos que evaluarán tu proyecto",
+      "endpoint": "v2026/judges",
       "modalTitle": "Perfil del jurado",
       "role": "Rol",
       "company": "Empresa",
@@ -849,154 +790,154 @@
       "loading": "Cargando categorías...",
       "web3": "Web3",
       "ia": "IA",
-      "gameDev": "GameDev",
+      "gameDev": "Game Dev",
       "ai": "IA",
-      "healthTech": "HealthTech"
+      "healthTech": "Health Tech"
     },
     "weProvide": {
-      "title": "LO QUE OFRECEMOS ⇄ LO QUE NECESITAS",
+      "title": "LO QUE OFRECEMOS ⇄ LO QUE TRAÉS",
       "subtitle": "Todo lo que proveemos y lo que esperamos de vos",
       "items": [
-        "Talleres técnicos sobre IA, arquitectura cloud y desarrollo moderno",
-        "Mentoría de profesionales de la industria e ingenieros experimentados",
-        "Créditos de infraestructura cloud y herramientas de desarrollo",
-        "Catering completo: comidas, snacks y café ilimitado",
+        "Workshops técnicos sobre IA, arquitectura cloud y desarrollo de software moderno",
+        "Mentoría de profesionales de la industria e ingenieros con experiencia real",
+        "Créditos de infraestructura cloud y acceso a herramientas de desarrollo",
+        "Catering completo: comidas, snacks y café ilimitado durante todo el evento",
         "Networking con más de 500 estudiantes, 20 empresas y 15 speakers expertos",
         "Merchandising exclusivo, remeras y productos del evento",
-        "Premios en efectivo: $5,000 primer lugar, $3,000 segundo lugar"
+        "Premios en efectivo: $5.000 para el primer puesto, $3.000 para el segundo"
       ]
     },
     "youBring": {
-      "title": "Requisitos",
+      "title": "Lo que necesitás",
       "items": [
-        "Curiosidad y ganas de aprender nuevas tecnologías",
-        "Una laptop, completamente cargada y lista para programar",
-        "Espíritu de equipo colaborativo y actitud positiva",
+        "Curiosidad y ganas de aprender tecnologías nuevas",
+        "Una computadora cargada y lista para programar",
+        "Espíritu de equipo y buena onda",
         "Mentalidad abierta para experimentar e innovar",
         "Compromiso de participar durante todo el evento",
-        "Pasión por construir y crear soluciones"
+        "Pasión por construir soluciones que tengan impacto"
       ]
     },
     "signup": {
       "endpoint": "v2026/sign-up",
-      "title": "Inscribite",
-      "participant": "Inscribite",
+      "title": "Inscribirse",
+      "participant": "Inscribirse",
       "sponsor": "Sponsor",
       "mentor": "Mentor"
     },
     "faqs": {
-      "title": "FAQs",
+      "title": "Preguntas Frecuentes",
       "endpoint": "v2026/faqs",
       "list": [
         {
-          "question": "¿Qué es la HackITBA y cómo funciona?",
-          "answer": "Es un evento donde equipos desarrollan soluciones tecnológicas en un tiempo limitado."
+          "question": "¿Qué es HackITBA y cómo funciona?",
+          "answer": "HackITBA es un hackathon anual organizado por Computer Society ITBA donde equipos de 3 a 4 personas tienen 36 horas para idear, construir y presentar un proyecto tecnológico. Los proyectos son evaluados por jueces expertos y los mejores de cada categoría reciben premios. El evento completo incluye networking, workshops y sesiones de mentoría."
         },
         {
-          "question": "¿Qué nivel de programación se requiere?",
-          "answer": "Al menos un integrante del equipo debe tener conocimientos intermedios/avanzados."
+          "question": "¿Qué nivel de programación se necesita para participar?",
+          "answer": "No hay un requisito mínimo estricto, pero recomendamos que al menos uno de los integrantes del equipo tenga conocimientos intermedios o avanzados de programación. El hackathon es también una excelente oportunidad para aprender de tus compañeros y mentores, sea cual sea tu nivel de experiencia."
         },
         {
-          "question": "¿Puedo competir individualmente?",
-          "answer": "No, es en grupos. Sin embargo, podés anotarte solo y te asignamos un equipo."
+          "question": "¿Puedo participar de forma individual?",
+          "answer": "No, HackITBA es un evento por equipos. Sin embargo, si no tenés equipo, podés inscribirte solo y haremos lo posible para conectarte con otros participantes que también buscan equipo. Es una buena forma de conocer gente con intereses similares."
         },
         {
-          "question": "¿Puedo anotarme si no soy de ITBA?",
-          "answer": "¡Sí! Está destinado a estudiantes de cualquier institución de entre 18 y 26 años. Pero recordá que es presencial en ITBA."
+          "question": "¿Puedo inscribirme si no soy de ITBA?",
+          "answer": "¡Claro que sí! HackITBA está abierto a estudiantes de cualquier universidad o institución, siempre que tengas entre 18 y 26 años. Tené en cuenta que el evento es 100% presencial en el campus del ITBA en Buenos Aires."
         },
         {
           "question": "¿Cuánto dura el evento?",
-          "answer": "72 horas, de las cuales 36 son de competencia."
+          "answer": "El evento dura 36 horas en total, del 27 al 29 de marzo. De esas horas, la mayoría están dedicadas a la competencia del hackathon. El resto incluye la ceremonia de apertura, workshops, sesiones de mentoría, comidas y la presentación final de los proyectos."
         },
         {
-          "question": "¿Cuál es la modalidad?",
-          "answer": "100% presencial."
+          "question": "¿El evento es presencial o virtual?",
+          "answer": "HackITBA es 100% presencial. Vas a estar construyendo junto a tu equipo en la Sede Distrito Tecnológico del ITBA. No hay modalidad remota."
         },
         {
-          "question": "¿Tengo que dormir en ITBA?",
-          "answer": "¡Sí! Traé tu bolsa de dormir, almohada, manta, lo que quieras."
+          "question": "¿Tengo que dormir en el ITBA?",
+          "answer": "¡Sí! El evento dura 36 horas, así que vas a quedarte en tu aula designada en el campus. Te recomendamos traer bolsa de dormir, almohada, manta o lo que necesites para descansar entre sesiones de código. Es parte de la experiencia."
         },
         {
           "question": "¿Tengo que llevar mi propia comida?",
-          "answer": "No, nosotros nos encargamos."
+          "answer": "Para nada, nosotros nos encargamos. Proveemos comidas, snacks y café ilimitado durante todo el evento para que puedas concentrarte en construir."
         },
         {
-          "question": "¿Debo abonar la inscripción?",
-          "answer": "El evento es 100% gratuito."
+          "question": "¿Hay que pagar para participar?",
+          "answer": "No, la participación es completamente gratuita. HackITBA es posible gracias al apoyo de nuestros sponsors y al trabajo voluntario del equipo de Computer Society ITBA."
         },
         {
-          "question": "¿Cuántas personas por equipo?",
-          "answer": "Entre 3 y 4 participantes."
+          "question": "¿Cuántas personas puede tener un equipo?",
+          "answer": "Los equipos deben tener entre 3 y 4 integrantes. No podés participar con menos de 3 ni más de 4 personas. Si te inscribís solo, te ayudamos a encontrar compañeros."
         },
         {
           "question": "¿Cómo se evalúan los proyectos?",
-          "answer": "Vamos a contar con los mejores jurados, expertos en el área."
+          "answer": "Los proyectos son evaluados por un panel de jueces expertos, profesionales de la industria y del ámbito académico. Los criterios incluyen innovación, calidad técnica, impacto potencial y presentación. Cada categoría tiene su propio panel de jueces."
         },
         {
           "question": "¿Quiénes son los jueces?",
-          "answer": "Enterate muy pronto 👀"
+          "answer": "Estamos confirmando los jueces y lo anunciaremos muy pronto. Seguinos en nuestras redes para enterarte primero. 👀"
         },
         {
-          "question": "¿Van a haber premios?",
-          "answer": "¡Por supuesto! Se van a premiar a los mejores de cada categoría."
+          "question": "¿Va a haber premios?",
+          "answer": "¡Sí! Los mejores proyectos de cada categoría van a ser premiados. Vamos a anunciar los premios a medida que se acerque la fecha del evento."
         },
         {
           "question": "¿Cuáles son los premios?",
-          "answer": "Enterate el último día de la competencia 💪"
+          "answer": "Los premios se revelan el último día de la competencia. Lo que sí te podemos decir es que vale la pena. 💪"
         },
         {
-          "question": "¿Qué pasa si no se termina el proyecto?",
-          "answer": "Se recomienda presentarlo lo más funcional posible, debe ser usable."
+          "question": "¿Qué pasa si no terminamos el proyecto a tiempo?",
+          "answer": "Es parte del hackathon. Lo importante es presentar lo que construyeron en el estado más funcional posible. Los jueces valoran un demo real, aunque esté incompleto, por sobre una presentación pulida sin prototipo."
         },
         {
-          "question": "¿Hay tecnologías recomendadas?",
-          "answer": "No recomendamos ningún framework específico."
+          "question": "¿Hay tecnologías o frameworks recomendados?",
+          "answer": "No, podés usar el stack que más le convenga a tu equipo. No imponemos ni recomendamos ningún lenguaje, framework ni plataforma específica. Usá las herramientas con las que sean más productivos."
         },
         {
-          "question": "¿Habrá APIs o datasets?",
-          "answer": "No proveemos ninguno, pueden usarse los que el equipo conozca y les sea útil."
+          "question": "¿Se proveen APIs o datasets?",
+          "answer": "No proveemos APIs ni datasets de forma oficial, pero podés usar cualquier recurso público que encuentres útil. Es posible que algunos sponsors compartan herramientas o créditos durante el evento; te avisaremos con anticipación."
         },
         {
           "question": "¿Puedo cambiar de equipo después de inscribirme?",
-          "answer": "No, no hay posibilidad."
+          "answer": "No, los cambios de equipo no están permitidos una vez cerradas las inscripciones. Asegurate de estar cómodo con tu equipo antes de inscribirte, o contactanos con anticipación si tenés una situación particular que consideres que debemos saber."
         }
       ],
       "question": "Pregunta",
-      "answer": "Resumen de la respuesta"
+      "answer": "Respuesta resumida"
     },
     "footer": {
-      "menu": "Nav Menu",
+      "menu": "Navegación",
       "madeWith": "Hecho con 🧡 por Computer Society ITBA",
-      "socials": "Nuestras redes",
+      "socials": "Seguinos",
       "copyright": "© 2026 Computer Society ITBA. Todos los derechos reservados.",
       "credits": "Ver créditos",
-      "collaborate": "¿Te gustaría ser sponsor o mentor? \\nEscribinos un mail y te contestaremos a la brevedad."
+      "collaborate": "¿Querés ser sponsor o mentor?\\nEscribinos un mail y te respondemos a la brevedad."
     },
     "countdown": {
-      "title": "Tiempo Restante",
+      "title": "Tiempo restante",
       "endpoint": "v2026/time-left",
       "days": "Días",
       "hours": "Horas",
       "minutes": "Minutos",
       "seconds": "Segundos",
-      "ended": "Competencia Finalizada"
+      "ended": "Competencia finalizada"
     },
     "auth": {
       "signup": {
-        "endpoint": "POST /api/auth/signup",
-        "title": "Crea tu Cuenta",
-        "sectionTitle": "Configuración de Cuenta",
+        "endpoint": "POST v2026/auth/signup",
+        "title": "Crear cuenta",
+        "sectionTitle": "Configuración de cuenta",
         "fields": {
           "name": "Nombre",
           "surname": "Apellido",
           "email": "Email",
           "password": "Contraseña",
-          "confirmPassword": "Confirmar Contraseña",
-          "emailPlaceholder": "tuemail@gmail.com",
+          "confirmPassword": "Confirmar contraseña",
+          "emailPlaceholder": "vos@email.com",
           "passwordPlaceholder": "••••••••"
         },
         "validation": {
-          "minCharacters": "Mín 6 caracteres",
+          "minCharacters": "Mínimo 6 caracteres",
           "required": "*"
         },
         "buttons": {
@@ -1004,61 +945,85 @@
           "create": "CREAR CUENTA"
         },
         "footer": {
-          "alreadyRegistered": "¿Ya estás registrado?",
-          "login": "Iniciar Sesión"
+          "alreadyRegistered": "¿Ya tenés una cuenta?",
+          "login": "Iniciá sesión"
         },
-        "loading": "Estableciendo Protocolo de Equipo...",
+        "loading": "Iniciando registro...",
         "errors": {
-          "fillAllFields": "Por favor completa todos los campos",
-          "invalidEmail": "Por favor ingresa un email válido",
+          "fillAllFields": "Por favor completá todos los campos",
+          "invalidEmail": "Por favor ingresá un email válido",
           "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
           "passwordMismatch": "Las contraseñas no coinciden",
-          "createFailed": "Fallo al crear la cuenta",
-          "signupDisabled": "La inscripción está deshabilitada."
+          "createFailed": "No se pudo crear la cuenta. Intentá de nuevo.",
+          "signupDisabled": "Las inscripciones están deshabilitadas."
         }
       },
       "login": {
-        "title": "Iniciar Sesión",
-        "endpoint": "POST /auth/login",
+        "title": "Iniciar sesión",
+        "endpoint": "POST v2026/auth/login",
         "fields": {
           "email": "Email",
           "password": "Contraseña",
-          "emailPlaceholder": "tuemail@gmail.com",
+          "emailPlaceholder": "vos@email.com",
           "passwordPlaceholder": "••••••••"
         },
         "buttons": {
           "loggingIn": "Iniciando sesión...",
-          "login": "Iniciar Sesión"
+          "login": "INICIAR SESIÓN"
         },
         "footer": {
-          "noAccount": "¿No tienes cuenta?",
-          "signUp": "Registrarse"
+          "noAccount": "¿No tenés cuenta?",
+          "signUp": "Registrate"
         },
         "errors": {
-          "firebaseNotConfigured": "Firebase Auth no está configurado",
-          "loginFailed": "Fallo al iniciar sesión",
-          "invalidCredentials": "El correo o la contraseña son incorrectos"
+          "firebaseNotConfigured": "La autenticación no está configurada",
+          "loginFailed": "No se pudo iniciar sesión. Intentá de nuevo.",
+          "invalidCredentials": "El email o la contraseña son incorrectos"
         }
       },
+      "verifyEmail": {
+        "endpoint": "POST v2026/auth/verify-email",
+        "title": "Verificá tu email",
+        "verifying": "Verificando tu dirección de email...",
+        "success": "¡Email verificado con éxito!",
+        "error": "La verificación falló",
+        "redirecting": "Redirigiendo a la configuración de tu perfil...",
+        "backToHome": "Volver al inicio"
+      },
+      "verifyEmailRequired": {
+        "endpoint": "POST v2026/auth/verify-email",
+        "title": "Verificá tu email",
+        "subtitle": "Necesitás verificar tu dirección de email para continuar",
+        "sentTo": "Email de verificación enviado a:",
+        "nextSteps": "Próximos pasos:",
+        "step1": "Abrí tu cliente de email",
+        "step2": "Buscá el email de verificación de HackITBA",
+        "step3": "Hacé clic en el enlace de confirmación",
+        "resend": "Reenviar email",
+        "sending": "Enviando...",
+        "alreadyVerified": "Ya verifiqué — recargar",
+        "notReceived": "¿No te llegó el email?",
+        "checkSpam": "Revisá tu carpeta de spam o esperá unos minutos antes de reenviarlo"
+      },
       "eventSignup": {
-        "endpoint": "POST /api/event/signup",
-        "title": "Registro al Evento",
+        "endpoint": "POST v2026/event/signup",
+        "title": "Inscripción al evento",
         "roleTitle": {
           "jurado": "Jurado",
           "participante": "Participante",
           "mentor": "Mentor"
         },
         "loading": "Cargando...",
-        "initializing": "Inicializando Terminal...",
+        "initializing": "Inicializando terminal...",
         "progress": {
           "init": "Inicio",
           "complete": "Listo"
         },
         "steps": {
-          "personalData": "Datos Personales",
-          "professionalData": "Datos Profesionales",
-          "contactSocial": "Contacto y Redes Sociales",
-          "teamStatus": "Estado del Equipo"
+          "personalData": "Datos personales",
+          "professionalData": "Datos profesionales",
+          "contactSocial": "Contacto y redes",
+          "teamStatus": "Estado del equipo"
         },
         "fields": {
           "dni": "DNI",
@@ -1068,81 +1033,81 @@
           "company": "Empresa",
           "professionalRole": "Rol en la empresa",
           "photo": "Foto",
-          "dietaryPreference": "Preferencia Alimenticia (Opcional)",
-          "dietaryPlaceholder": "Vegetariano, Celíaco, etc.",
-          "github": "Github",
+          "dietaryPreference": "Preferencia alimentaria (opcional)",
+          "dietaryPlaceholder": "Vegetariano, celíaco, etc.",
+          "github": "GitHub",
           "linkedin": "LinkedIn",
           "instagram": "Instagram",
-          "twitter": "Twitter",
-          "cvLink": "Link a CV",
+          "twitter": "Twitter / X",
+          "cvLink": "Link al CV",
           "cvPlaceholder": "https://...",
-          "teamCode": "Ingresar código o nombre de equipo",
+          "teamCode": "Código o nombre del equipo",
           "teamCodePlaceholder": "TEAM-XXXX"
         },
         "photo": {
           "choose": "Elegir archivo",
-          "change": "Cambiar Foto",
+          "change": "Cambiar foto",
           "ready": "Listo"
         },
         "warnings": {
-          "agePreference": "Aviso: Prioridad dada a edades de 27 años o menos."
+          "agePreference": "Nota: se da prioridad a participantes de 27 años o menos."
         },
         "team": {
-          "question": "¿Vas con equipo?",
-          "yesHave": "Sí, ya tengo",
-          "noTeam": "No tengo equipo",
-          "howToContinue": "¿Cómo quieres seguir?",
-          "goSolo": "Ir solo",
-          "createTeam": "Crear equipo",
-          "dragToReorder": "Arrastra para reordenar categorías",
-          "redirectNotice": "* Serás redirigido a la creación de equipo al finalizar."
+          "question": "¿Ya tenés equipo?",
+          "yesHave": "Sí, ya tengo uno",
+          "noTeam": "Todavía no tengo equipo",
+          "howToContinue": "¿Cómo querés continuar?",
+          "goSolo": "Participar sin equipo",
+          "createTeam": "Crear un equipo",
+          "dragToReorder": "Arrastrá para reordenar tus preferencias de categoría",
+          "redirectNotice": "* Serás redirigido a la creación de equipo al completar este paso."
         },
         "buttons": {
           "back": "ATRÁS",
           "nextStep": "SIGUIENTE PASO",
-          "finishRegistration": "FINALIZAR REGISTRO",
+          "finishRegistration": "COMPLETAR INSCRIPCIÓN",
           "uploading": "SUBIENDO..."
         },
         "footer": {
-          "needHelp": "¿Necesitas ayuda?",
-          "contactSupport": "Contactar Soporte"
+          "needHelp": "¿Necesitás ayuda?",
+          "contactSupport": "Contactar soporte"
         },
         "validation": {
           "required": "*"
         },
         "errors": {
-          "dniRequired": "El DNI es requerido",
+          "dniRequired": "El DNI es obligatorio",
           "dniNumeric": "El DNI debe ser numérico",
-          "allFieldsRequired": "Todos los campos de datos personales son requeridos",
-          "minAge": "Debes tener al menos 18 años",
-          "companyRequired": "Empresa, Rol y Foto son requeridos",
-          "createFailed": "Fallo al enviar el registro",
-          "signupDisabled": "La inscripción está deshabilitada.",
-          "userNotAuthenticated": "Usuario no autenticado. Por favor regístrate primero.",
-          "storageNotConfigured": "Firebase Storage no está configurado",
-          "noCategoriesAvailable": "No hay categorías disponibles",
-          "teamCodeRequired": "El código del equipo es obligatorio"
+          "allFieldsRequired": "Por favor completá todos los campos obligatorios",
+          "minAge": "Debés tener al menos 18 años para participar",
+          "companyRequired": "Empresa, rol y foto son obligatorios",
+          "createFailed": "No se pudo enviar la inscripción. Intentá de nuevo.",
+          "signupDisabled": "Las inscripciones están deshabilitadas.",
+          "userNotAuthenticated": "No estás autenticado. Por favor creá una cuenta primero.",
+          "storageNotConfigured": "El almacenamiento de archivos no está configurado",
+          "noCategoriesAvailable": "No hay categorías disponibles en este momento",
+          "teamCodeRequired": "Por favor ingresá un código de equipo"
         },
         "messages": {
-          "dataShareConsent": "Al completar este formulario, aceptás compartir tus datos con los organizadores del evento y sponsors."
+          "dataShareConsent": "Al completar este formulario, aceptás compartir tu información con los organizadores del evento y sponsors."
         }
       },
       "createTeam": {
-        "endpoint": "POST /api/teams/create",
-        "title": "Crea tu Equipo",
-        "sectionTitle": "Configuración del Equipo",
-        "teamAdmin": "Administrador del Equipo",
+        "endpoint": "POST v2026/teams/create",
+        "title": "Creá tu equipo",
+        "sectionTitle": "Configuración del equipo",
+        "teamAdmin": "Admin del equipo",
         "fields": {
-          "teamName": "Nombre del Equipo",
+          "teamName": "Nombre del equipo",
           "teamNamePlaceholder": "Los Hackers",
-          "motivation": "Cuéntanos por qué quieres participar",
+          "motivation": "¿Por qué quieren participar?",
           "motivationPlaceholder": "Queremos participar porque..."
         },
         "validation": {
           "required": "*",
-          "minCharacters": "Mín 20 caracteres"
+          "minCharacters": "Mínimo 20 caracteres"
         },
-        "categoryPreference": "Preferencia de Categoría (Arrastra para reordenar)",
+        "categoryPreference": "Preferencia de categoría (arrastrá para reordenar)",
         "buttons": {
           "creating": "CREANDO EQUIPO...",
           "create": "CREAR EQUIPO"
@@ -1151,50 +1116,50 @@
           "changedMind": "¿Cambiaste de opinión?",
           "skipForNow": "Omitir por ahora"
         },
-        "loading": "Estableciendo Protocolo de Equipo...",
+        "loading": "Configurando tu equipo...",
         "errors": {
-          "teamNameRequired": "El nombre del equipo es requerido",
-          "motivationRequired": "Por favor cuéntanos por qué quieres participar",
+          "teamNameRequired": "El nombre del equipo es obligatorio",
+          "motivationRequired": "Por favor contanos por qué querés participar",
           "motivationTooShort": "La motivación debe tener al menos 20 caracteres",
-          "teamNameExists": "El nombre del equipo ya existe. Por favor elige un nombre diferente.",
-          "noSession": "No se encontró una sesión activa",
-          "userNotFound": "No se pudo determinar el usuario",
-          "createFailed": "Fallo al crear el equipo",
-          "signupDisabled": "Las inscripciones están cerradas"
+          "teamNameExists": "Ese nombre de equipo ya está en uso. Por favor elegí otro.",
+          "createFailed": "No se pudo crear el equipo. Intentá de nuevo.",
+          "signupDisabled": "Las inscripciones están deshabilitadas",
+          "noSession": "No se encontró sesión activa. Por favor iniciá sesión de nuevo.",
+          "userNotFound": "No se pudo identificar al usuario actual"
         }
       }
     },
     "dashboard": {
       "participant": {
-        "title": "Panel de Participante",
-        "myTeam": "Mi Equipo",
-        "myProject": "Mi Proyecto",
-        "categoryNotAssigned": "Categoria no asignada",
+        "title": "Panel del participante",
+        "myTeam": "Mi equipo",
+        "myProject": "Mi proyecto",
+        "categoryNotAssigned": "Categoría no asignada aún",
         "teamStatus": {
-          "processTitle": "En Proceso",
+          "processTitle": "Pendiente",
           "inProcess": "⏳ Estado: Esperando asignación de equipo",
-          "inProcessDescription": "Tu solicitud está siendo revisada por el staff. Te asignaremos un equipo pronto. Por favor espera la confirmación.",
-          "noTeam": "⚠️ No tienes equipo aún",
-          "noTeamDescription": "Actualmente estás sin equipo. Puedes crear un nuevo equipo o unirte a uno existente, pide el código."
+          "inProcessDescription": "Tu inscripción está siendo revisada por el staff. Te asignaremos un equipo pronto — volvé a revisar en un rato.",
+          "noTeam": "⚠️ Todavía no tenés equipo",
+          "noTeamDescription": "Actualmente no estás en ningún equipo. Podés crear uno nuevo o unirte a uno existente con un código de equipo."
         },
         "project": {
-          "title": "Título del Proyecto",
+          "title": "Título del proyecto",
           "description": "Descripción",
-          "repoUrl": "URL del Repositorio",
+          "repoUrl": "URL del repositorio",
           "repoPlaceholder": "https://github.com/...",
-          "demoUrl": "URL de Demo",
+          "demoUrl": "URL del demo",
           "demoPlaceholder": "https://...",
-          "uploadImages": "Subir Imágenes",
-          "uploadVideo": "Subir Video",
+          "uploadImages": "Subir imágenes",
+          "uploadVideo": "Subir video",
           "uploading": "Subiendo...",
-          "removeVideo": "Eliminar Video",
-          "submit": "Enviar Proyecto",
-          "edit": "Editar Proyecto",
-          "update": "Actualizar Proyecto",
+          "removeVideo": "Quitar video",
+          "submit": "Enviar proyecto",
+          "edit": "Editar proyecto",
+          "update": "Actualizar proyecto",
           "delete": "Eliminar",
           "cancel": "Cancelar",
           "required": "*",
-          "submissionsDisabled": "La carga de proyectos está deshabilitada por el administrador"
+          "submissionsDisabled": "El envío de proyectos está deshabilitado actualmente"
         },
         "deleteDialog": {
           "title": "¿Estás seguro?",
@@ -1202,45 +1167,100 @@
         },
         "toasts": {
           "submissionsDisabled": {
-            "title": "Carga deshabilitada",
-            "description": "La carga de proyectos está deshabilitada por el administrador."
+            "title": "Envíos deshabilitados",
+            "description": "El envío de proyectos está deshabilitado actualmente por el administrador."
           },
           "missingFields": {
-            "title": "Faltan campos",
-            "description": "Completa los campos obligatorios."
+            "title": "Campos obligatorios incompletos",
+            "description": "Por favor completá todos los campos obligatorios antes de enviar."
           },
           "teamRequired": {
-            "title": "Equipo requerido",
-            "description": "Necesitas un equipo para enviar el proyecto."
+            "title": "Necesitás un equipo",
+            "description": "Tenés que estar en un equipo antes de enviar un proyecto."
+          },
+          "actionNotAllowed": {
+            "title": "Acción no permitida",
+            "description": "Los cambios en el equipo están deshabilitados mientras las inscripciones están cerradas."
+          },
+          "confirmRemoveMember": {
+            "prompt": "¿Estás seguro de que querés eliminar a este miembro del equipo?"
+          },
+          "removeMember": {
+            "success": {
+              "title": "Miembro eliminado",
+              "description": "El miembro fue eliminado del equipo."
+            },
+            "error": {
+              "title": "No se pudo eliminar al miembro",
+              "description": "Algo salió mal. Por favor intentá de nuevo."
+            }
+          },
+          "updateMember": {
+            "success": {
+              "title": "Miembro actualizado",
+              "description": "Los datos del miembro fueron actualizados correctamente."
+            },
+            "error": {
+              "title": "No se pudo actualizar al miembro",
+              "description": "Algo salió mal. Por favor intentá de nuevo."
+            }
+          },
+          "updateTeam": {
+            "success": {
+              "title": "Equipo actualizado",
+              "description": "La información del equipo fue guardada correctamente."
+            },
+            "error": {
+              "title": "No se pudo actualizar el equipo",
+              "description": "Algo salió mal. Por favor intentá de nuevo."
+            }
+          },
+          "rejoin": {
+            "enterCode": "Por favor ingresá un código de equipo",
+            "success": {
+              "title": "Te uniste al equipo",
+              "description": "Te sumaste al equipo correctamente."
+            },
+            "error": {
+              "title": "No se pudo unir al equipo",
+              "description": "Verificá el código e intentá de nuevo."
+            }
+          },
+          "copyTeamCode": {
+            "success": {
+              "title": "Copiado",
+              "description": "Código de equipo copiado al portapapeles."
+            },
+            "button": "Copiar código del equipo"
           }
         },
         "errors": {
-          "storageNotConfigured": "Firebase Storage no está configurado"
+          "storageNotConfigured": "El almacenamiento de archivos no está configurado"
         }
       },
       "profile": {
-        "title": "Mi Perfil",
-        "cvLink": "Link CV",
-        "foodPreference": "Preferencia Alimenticia",
-        "foodPlaceholder": "Ej: Vegetariano, Vegano, Sin gluten...",
-        "edit": "Editar Perfil",
+        "title": "Mi perfil",
+        "cvLink": "Link al CV",
+        "foodPreference": "Preferencia alimentaria",
+        "foodPlaceholder": "Ej: vegetariano, vegano, sin gluten...",
+        "edit": "Editar perfil",
         "cancel": "Cancelar",
-        "save": "Guardar",
+        "save": "Guardar cambios",
         "saving": "Guardando...",
         "toasts": {
           "updated": {
-            "title": "Perfil actualizado",
-            "description": "Tu perfil se ha guardado correctamente."
+            "title": "Perfil guardado",
+            "description": "Tu perfil fue actualizado correctamente."
           },
           "error": {
             "title": "Error",
-            "description": "No se pudo guardar el perfil."
+            "description": "No se pudo guardar el perfil. Intentá de nuevo."
           }
         }
       },
       "settings": {
         "title": "Configuración",
-        "comingSoon": "Página de configuración - Próximamente"
+        "comingSoon": "Configuración — Próximamente"
       }
     },
     "credits": {
@@ -1252,100 +1272,100 @@
       "backToHome": "Volver al inicio"
     },
     "verifyEmail": {
-      "title": "Confirma tu Email",
-      "sentTo": "Email enviado a:",
+      "title": "Verificá tu email",
+      "sentTo": "Email de verificación enviado a:",
       "change": "Cambiar",
       "newEmailPlaceholder": "Nuevo email",
       "resend": "Reenviar",
       "cancel": "Cancelar",
       "nextSteps": "Próximos pasos:",
-      "step1": "Abre tu cliente de email",
-      "step2": "Busca el email de verificación",
-      "step3": "Haz clic en el link de confirmación",
+      "step1": "Abrí tu cliente de email",
+      "step2": "Buscá el email de verificación de HackITBA",
+      "step3": "Hacé clic en el enlace de confirmación",
       "sending": "Enviando...",
-      "resendEmail": "Reenviar Email",
-      "alreadyVerified": "Ya confirmé (recargar)",
-      "didntReceive": "¿No recibiste el email?",
+      "resendEmail": "Reenviar email",
+      "alreadyVerified": "Ya verifiqué — recargar",
+      "didntReceive": "¿No te llegó el email?",
       "errors": {
-        "invalidEmail": "Por favor ingresa un email válido",
-        "changeFailed": "Error al cambiar email"
+        "invalidEmail": "Por favor ingresá un email válido",
+        "changeFailed": "No se pudo actualizar el email. Intentá de nuevo."
       },
       "messages": {
-        "emailSent": "Email de verificación enviado a tu nueva dirección!"
+        "emailSent": "¡Email de verificación enviado a tu nueva dirección!"
       }
     },
     "verifyEmailPage": {
       "loading": "Cargando...",
-      "verifying": "Verificando tu email...",
-      "pageTitle": "Verificación de Email",
-      "pageSubtitle": "Estamos verificando tu dirección de correo",
+      "verifying": "Verificando tu dirección de email...",
+      "pageTitle": "Verificación de email",
+      "pageSubtitle": "Estamos confirmando tu dirección de correo",
       "backToHome": "Volver al inicio",
-      "contactSupport": "Contacta soporte",
-      "problems": "¿Problemas?",
-      "redirecting": "Redirigiendo al dashboard en unos segundos...",
+      "contactSupport": "Contactar soporte",
+      "problems": "¿Tenés problemas?",
+      "redirecting": "Redirigiendo al panel en unos segundos...",
       "errors": {
-        "tokenNotFound": "Token de verificación no encontrado. Por favor, verifica el link del email.",
-        "verificationFailed": "Error al verificar el email. Por favor, intenta de nuevo.",
-        "serverError": "Error al conectar con el servidor. Por favor, intenta de nuevo más tarde."
+        "tokenNotFound": "Token de verificación no encontrado. Por favor revisá el enlace en tu email.",
+        "verificationFailed": "No se pudo verificar el email. Por favor intentá de nuevo.",
+        "serverError": "No se pudo conectar con el servidor. Intentá de nuevo más tarde."
       },
       "messages": {
-        "success": "¡Email verificado exitosamente!"
+        "success": "¡Email verificado con éxito!"
       }
     },
     "admin": {
       "projectSubmissions": {
-        "title": "Project Submissions",
-        "label": "Subida de proyectos",
-        "description": "Habilita o deshabilita el envio de proyectos",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
-        "updateError": "No se pudo actualizar la configuracion de proyectos"
+        "title": "Envío de proyectos",
+        "label": "Envío de proyectos",
+        "description": "Habilitá o deshabilitá el envío de proyectos para todos los equipos",
+        "enabled": "Habilitado",
+        "disabled": "Deshabilitado",
+        "updateError": "No se pudo actualizar la configuración de envío de proyectos"
       },
       "signup": {
-        "label": "Inscripcion",
-        "description": "Habilita o deshabilita el registro de usuarios",
-        "updateError": "No se pudo actualizar la configuracion de inscripcion"
+        "label": "Inscripciones",
+        "description": "Habilitá o deshabilitá el registro de nuevos participantes",
+        "updateError": "No se pudo actualizar la configuración de inscripciones"
       },
       "pendingParticipants": {
-        "title": "Participantes Pendientes",
-        "createTeam": "Crear Equipo",
-        "noParticipants": "No hay participantes pendientes de aprobación",
-        "selectTeam": "Seleccionar equipo...",
-        "selectTeamError": "Por favor selecciona un equipo",
-        "approveSuccess": "Participante aprobado y asignado exitosamente",
-        "approveError": "Error al aprobar participante",
-        "rejectPrompt": "Razón del rechazo (opcional):",
+        "title": "Participantes pendientes",
+        "createTeam": "Crear equipo",
+        "noParticipants": "No hay participantes pendientes de revisión",
+        "selectTeam": "Seleccioná un equipo...",
+        "selectTeamError": "Por favor seleccioná un equipo",
+        "approveSuccess": "Participante aprobado y asignado correctamente",
+        "approveError": "Error al aprobar al participante",
+        "rejectPrompt": "Motivo del rechazo (opcional):",
         "rejectSuccess": "Participante rechazado",
-        "rejectError": "Error al rechazar participante"
+        "rejectError": "Error al rechazar al participante"
       },
       "createTeam": {
-        "modalTitle": "Crear Nuevo Equipo",
-        "teamName": "Nombre del Equipo",
+        "modalTitle": "Crear nuevo equipo",
+        "teamName": "Nombre del equipo",
         "teamNamePlaceholder": "Nombre del equipo...",
         "category": "Categoría",
-        "selectCategory": "Seleccionar categoría...",
+        "selectCategory": "Seleccioná una categoría...",
         "cancel": "Cancelar",
-        "create": "Crear Equipo",
+        "create": "Crear equipo",
         "nameLengthError": "El nombre debe tener al menos 3 caracteres",
-        "categoryRequired": "Debe seleccionar una categoría",
+        "categoryRequired": "Por favor seleccioná una categoría",
         "invalidCategory": "Categoría inválida",
         "sessionError": "No se pudo validar la sesión",
-        "defaultReason": "Equipo creado por administrador",
-        "createSuccess": "creado exitosamente",
-        "createError": "Error al crear equipo"
+        "defaultReason": "Equipo creado por el administrador",
+        "createSuccess": "Equipo creado correctamente",
+        "createError": "Error al crear el equipo"
       }
     },
     "judge": {
-      "title": "Jurado Dashboard",
-      "projectsToScore": "Proyectos a Puntuar",
-      "myScores": "Mis Puntuaciones",
-      "scoreProject": "Puntuar Proyecto",
+      "title": "Panel del jurado",
+      "projectsToScore": "Proyectos para puntuar",
+      "myScores": "Mis puntuaciones",
+      "scoreProject": "Puntuar proyecto",
       "scored": "Puntuado",
-      "viewRepository": "Ver Repositorio →",
-      "updateScore": "Actualizar Puntuación",
+      "viewRepository": "Ver repositorio →",
+      "updateScore": "Actualizar puntuación",
       "comments": "Comentarios",
-      "addFeedback": "Agrega tu feedback...",
-      "submitScore": "Enviar Puntuación",
+      "addFeedback": "Escribí tu feedback...",
+      "submitScore": "Enviar puntuación",
       "cancel": "Cancelar",
       "delete": "Eliminar"
     },
