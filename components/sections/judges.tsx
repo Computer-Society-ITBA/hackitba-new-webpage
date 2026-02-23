@@ -96,7 +96,7 @@ export function Judges({ translations }: JudgesProps) {
                                     <p className="font-pixel text-xs text-brand-yellow text-center group-hover:text-brand-orange transition-colors">
                                         {judge.name}
                                     </p>
-                                    <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>
+                                    {judge.company && <p className="text-xs opacity-60 text-center mt-1">{judge.company}</p>}
                                 </div>
                             </button>
                         ))}
@@ -122,14 +122,18 @@ export function Judges({ translations }: JudgesProps) {
                                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow mb-2">
                                         {selectedJudge.name}
                                     </DialogTitle>
-                                    <p className="text-brand-yellow">
-                                        {t.role}:{" "}
-                                        <span className="text-white">{selectedJudge.position}</span>
-                                    </p>
-                                    <p className="text-brand-yellow">
-                                        {t.company}:{" "}
-                                        <span className="text-white">{selectedJudge.company}</span>
-                                    </p>
+                                    {selectedJudge.position && (
+                                        <p className="text-brand-yellow">
+                                            {t.role}:{" "}
+                                            <span className="text-white">{selectedJudge.position}</span>
+                                        </p>
+                                    )}
+                                    {selectedJudge.company && (
+                                        <p className="text-brand-yellow">
+                                            {t.company}:{" "}
+                                            <span className="text-white">{selectedJudge.company}</span>
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
