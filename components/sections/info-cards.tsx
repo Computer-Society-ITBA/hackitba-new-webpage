@@ -111,7 +111,7 @@ function TerminalWindow({ translations }: TerminalWindowProps) {
 
             <div className="relative w-full h-[300px] rounded-lg overflow-hidden border border-brand-yellow/30 shadow-lg">
               <iframe
-                src="https://maps.google.com/maps?hl=en&q=Lavardén%20235%20CABA%20Argentina+(ITBA%20Sede%20Distrito%20Tecnológico)&z=15&output=embed"
+                src="https://maps.google.com/maps?hl=en&q=Igua%C3%BA%20341%20C1437%20CABA%20Argentina+(ITBA%20Sede%20Distrito%20Tecnol%C3%B3gico)&z=15&output=embed"
                 className="absolute inset-0 w-full h-full border-0"
                 loading="lazy"
               />
