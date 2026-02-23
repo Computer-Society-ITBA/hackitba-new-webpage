@@ -7,6 +7,7 @@ import { Timeline } from "@/components/sections/timeline"
 import { InfoCards } from "@/components/sections/info-cards"
 import { SponsorsCarousel } from "@/components/sections/sponsors-carousel"
 import { Mentors } from "@/components/sections/mentors"
+import { Judges } from "@/components/sections/judges"
 import { Categories } from "@/components/sections/categories"
 import { WhatWeProvide } from "@/components/sections/what-we-provide"
 import { FAQs } from "@/components/sections/faqs"
@@ -38,6 +39,7 @@ export default async function Page({ params }: PageProps) {
         <Stats translations={translations} />
         <InfoCards translations={translations} />
         <SponsorsCarousel translations={translations} />
+        <Judges translations={translations} />
         <Mentors translations={translations} />
         <Categories translations={translations} locale={locale} />
         <WhatWeProvide translations={translations} />
