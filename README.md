@@ -1,6 +1,6 @@
-# HackITBA 2026 - Event Management Platform
+# HackITBA 2026 
 
-A production-ready event management platform built with Next.js 16, TypeScript, Tailwind CSS, and Firebase.
+An event management platform built with Next.js 16, TypeScript, Tailwind CSS, and Firebase.
 
 ## Features
 
@@ -9,7 +9,7 @@ A production-ready event management platform built with Next.js 16, TypeScript, 
 - Animated stats counters
 - Interactive timeline
 - Sponsors carousel
-- Mentors grid with modals
+- Mentors and judges grid with modals
 - Categories with modals
 - FAQ accordion
 - Countdown timer
@@ -39,12 +39,6 @@ A production-ready event management platform built with Next.js 16, TypeScript, 
 - Edit or delete projects before deadline
 - Track submission status
 
-### Automation (Vercel Cron Jobs)
-- Daily onboarding reminders for incomplete profiles
-- Automatic event closure on deadline
-- Submission deadline enforcement
-- Email notifications
-
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
@@ -60,27 +54,12 @@ A production-ready event management platform built with Next.js 16, TypeScript, 
 
 ### Local Development
 
-1. Copy the example file:
-```bash
-cp .env.local.example .env.local
-```
+1. Fill in your Firebase configuration values in `.env.local`
 
-2. Fill in your Firebase configuration values in `.env.local`
-
-3. Verify your configuration:
+2. Verify your configuration:
 ```bash
 npm run check-env
 ```
-
-### Production Deployment (Vercel)
-
-For detailed instructions on configuring environment variables for production deployment, see [docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md).
-
-Quick steps:
-1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
-2. Navigate to **Settings** → **Environment Variables**
-3. Add all variables from `.env.example`
-4. Redeploy your application
 
 ## Installation
 
@@ -118,9 +97,6 @@ npm start
 │   │       ├── admin/page.tsx         # Admin dashboard
 │   │       ├── jurado/page.tsx        # Judge dashboard
 │   │       └── participante/page.tsx  # Participant dashboard
-│   ├── api/
-│   │   └── cron/                      # Cron job endpoints
-│   ├── fonts/                         # Custom fonts
 │   ├── tokens.css                     # Design tokens
 │   └── globals.css                    # Global styles
 ├── components/
@@ -135,7 +111,6 @@ npm start
 │   └── email/                         # Email templates
 ├── public/
 │   └── images/                        # Static images
-├── vercel.json                        # Vercel configuration
 └── proxy.ts                           # Middleware for i18n
 ```
 
@@ -233,37 +208,6 @@ npm start
   updatedAt: Date
 }
 ```
-
-## Deployment
-
-1. Push code to GitHub
-2. Import project to Vercel
-3. Add environment variables
-4. Deploy
-
-Vercel will automatically:
-- Build the Next.js app
-- Set up cron jobs from `vercel.json`
-- Configure edge functions
-- Enable analytics
-
-## Cron Jobs
-
-See [docs/CRON_JOBS.md](docs/CRON_JOBS.md) for detailed documentation.
-
-## Assumptions Made
-
-1. **Authentication**: Email/password only (no OAuth)
-2. **Teams**: Each participant is treated as an individual team (teamId = userId)
-3. **Categories**: Hardcoded categories (Web3, IA, GameDev) with manual categoryId assignment
-4. **Email**: Email sending is mocked in development, requires provider integration for production
-5. **File Uploads**: Firebase Storage is configured but upload UI is not implemented (can be added)
-6. **Deadline**: Event deadline based on event.endDate field
-7. **Scoring**: Average of 5 criteria (innovation, technical, design, presentation, impact) on 0-10 scale
-8. **Onboarding**: 3-step process for participants (profile completion)
-9. **Language**: Default locale is Spanish, supports English
-10. **Timezone**: All cron jobs run in UTC
-
 ## License
 
 MIT
