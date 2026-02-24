@@ -55,11 +55,11 @@
     "about": {
       "title": "ITBA Chapter of the IEEE Computer Society",
       "history": "Our History",
-      "historyText": "With over 30 events held, more than 10,000 participants, and reach across 10+ countries, the organization has grown steadily since its founding. It was established in 2020 with the mission of bringing technology and computer science closer to students through open and free workshops and talks for both ITBA students and external participants. Over time, it expanded its initiatives and introduced new event formats. Its flagship event is HackITBA, the organization’s main hackathon. It also hosts additional initiatives such as the Game Jam and the recently launched QuantumJam, strengthening a community focused on innovation and hands-on learning.",
+      "historyText": "With more than 30 events held, over 10,000 participants, and reach in more than 10 countries, the organization has grown steadily since its creation. Its main event is HackITBA, the organization’s flagship hackathon. In addition, it runs other initiatives such as the Game Jam and the recently launched QuantumJam, consolidating a community focused on innovation and hands-on learning.",
       "vision": "Our Vision",
-      "visionText": "To become a leading student-driven technology community that fosters innovation, collaboration, and continuous learning, empowering the next generation of engineers to create meaningful impact through software and technology.",
+      "visionText": "To be a leading student community that promotes innovation and collaboration, shaping the next generation of developers capable of creating impact through software and technology.",
       "objective": "Our Objective",
-      "objectiveText": "We organize and host talks, workshops, courses, and interactive activities from a modern, technology-focused perspective. Our goal is to deliver knowledge in an engaging and accessible way for today’s students and anyone interested in learning."
+      "objectiveText": "We organize and deliver talks, workshops, courses, and activities focused on technology. Our goal is to share knowledge in a dynamic and accessible way for anyone interested in learning."
     },
     "location": {
       "title": "Location",
@@ -766,11 +766,11 @@
     "about": {
       "title": "Capítulo ITBA de la IEEE Computer Society",
       "history": "Nuestra historia",
-      "historyText": "Con más de 30 eventos realizados, más de 10.000 participantes y alcance en más de 10 países, la organización ha crecido de manera sostenida desde su creación. Nació en 2020 con el objetivo de acercar la tecnología y la informática a estudiantes a través de workshops y charlas abiertas y gratuitas, tanto para alumnos del ITBA como para personas externas. Con el tiempo, amplió sus iniciativas e incorporó nuevos formatos y eventos. Su principal evento es la HackITBA, la hackathon insignia de la organización. Además, realiza otras propuestas como la Game Jam y la recientemente lanzada QuantumJam, consolidando una comunidad enfocada en la innovación y el aprendizaje práctico.",
+      "historyText": "Con más de 30 eventos realizados, más de 10.000 participantes y alcance en más de 10 países, la organización ha crecido de manera sostenida desde su creación. Su principal evento es la HackITBA, la hackathon insignia de la organización. Además, realiza otras propuestas como la Game Jam y la recientemente lanzada QuantumJam, consolidando una comunidad enfocada en la innovación y el aprendizaje práctico.",
       "vision": "Nuestra visión",
-      "visionText": "Ser una comunidad tecnológica estudiantil referente, que impulse la innovación, la colaboración y el aprendizaje continuo, formando a la próxima generación de ingenieros capaces de generar un impacto significativo a través del software y la tecnología.",
+      "visionText": "Ser una comunidad estudiantil referente, que impulse la innovación y la colaboración, formando a la próxima generación de desarrolladores capaces de generar un impacto a través del software y la tecnología.",
       "objective": "Nuestro objetivo",
-      "objectiveText": "Organizamos y dictamos charlas, workshops, cursos y actividades interactivas desde una perspectiva moderna y centrada en la tecnología. Nuestro objetivo es transmitir conocimiento de manera dinámica y accesible para los estudiantes actuales y cualquier persona interesada en aprender."
+      "objectiveText": "Organizamos y dictamos charlas, workshops, cursos y actividades centrados en la tecnología. Nuestro objetivo es transmitir conocimiento de manera dinámica y accesible para cualquier persona interesada en aprender."
     },
     "location": {
       "title": "Sede",
