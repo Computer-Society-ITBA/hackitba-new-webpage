@@ -9,7 +9,8 @@ import Link from "next/link"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { AlertCircle, Mail, Home, ArrowLeft, RotateCw } from "lucide-react"
+import { AlertCircle, Mail, RotateCw } from "lucide-react"
+import { AuthNavigation } from "@/components/auth/auth-navigation"
 import { useAuth } from "@/lib/firebase/auth-context"
 
 export default function VerifyEmailRequiredPage() {
@@ -125,24 +126,9 @@ export default function VerifyEmailRequiredPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4">
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-4">
 
-      <div className="absolute top-8 left-8 z-20 flex gap-2">
-        <button
-          onClick={() => router.back()}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Go back"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <Link
-          href={`/${locale}`}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Home"
-        >
-          <Home size={24} />
-        </Link>
-      </div>
+      <AuthNavigation locale={locale} />
 
       <GlassCard className="w-full max-w-md">
         <div className="p-8">
@@ -151,7 +137,7 @@ export default function VerifyEmailRequiredPage() {
             <div className="flex justify-center mb-4">
               <AlertCircle className="w-12 h-12 text-brand-orange" />
             </div>
-            <h1 className="text-3xl leading-tight font-bold font-pixel mb-2">
+            <h1 className="text-xl leading-tight font-bold font-pixel mb-2">
               {translations.verifyEmail.title}
             </h1>
           </div>

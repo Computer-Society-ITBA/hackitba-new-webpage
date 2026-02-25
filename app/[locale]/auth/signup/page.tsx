@@ -9,7 +9,8 @@ import { GlassCard } from "@/components/ui/glass-card"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ChevronRight, ArrowLeft, Home } from "lucide-react"
+import { ChevronRight } from "lucide-react"
+import { AuthNavigation } from "@/components/auth/auth-navigation"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { NeonGlow } from "@/components/effects/neon-glow"
@@ -202,22 +203,7 @@ function SignupContent() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <CodeBackground />
 
-      <div className="absolute top-4 left-4 z-20 flex gap-2">
-        <button
-          onClick={() => router.back()}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Go back"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <Link
-          href={`/${locale}`}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Home"
-        >
-          <Home size={24} />
-        </Link>
-      </div>
+      <AuthNavigation locale={locale} />
 
       <div className="w-full max-w-md relative z-10 py-8">
         <div className="text-center mb-6">
@@ -290,7 +276,7 @@ function SignupContent() {
             <div className="text-center pt-2 border-t border-brand-cyan/20">
               <p className="text-brand-cyan text-xs">
                 {translations.auth.signup.footer.alreadyRegistered}{" "}
-                <Link href={`/${locale}/auth/login`} className="text-brand-orange hover:neon-glow-orange">
+                <Link href={`/${locale}/auth/login`} className="text-brand-yellow hover:neon-glow-orange">
                   {translations.auth.signup.footer.login}
                 </Link>
               </p>

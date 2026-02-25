@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label"
 import { CodeBackground } from "@/components/effects/code-background"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { ArrowLeft, Home } from "lucide-react"
+import { AuthNavigation } from "@/components/auth/auth-navigation"
 import { toast } from "@/hooks/use-toast"
 import { doc, getDoc } from "firebase/firestore"
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
-  
+
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as Locale
@@ -53,7 +53,7 @@ export default function LoginPage() {
     loadSettings()
   }, [db])
 
-  
+
 
   // Redirect when user is loaded after login
   useEffect(() => {
@@ -119,22 +119,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <CodeBackground />
 
-      <div className="absolute top-4 left-4 z-20 flex gap-2">
-        <button
-          onClick={() => router.back()}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Go back"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <Link
-          href={`/${locale}`}
-          className="p-2 text-brand-cyan hover:text-brand-orange hover:neon-glow-orange transition-colors"
-          title="Home"
-        >
-          <Home size={24} />
-        </Link>
-      </div>
+      <AuthNavigation locale={locale} />
 
       <div className="w-full max-w-md relative z-10 py-8">
         <div className="text-center mb-6">
