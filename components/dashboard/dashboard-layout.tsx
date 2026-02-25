@@ -100,26 +100,46 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </Link>
         )}
 
-        <Link
-          href={`/${locale}/dashboard/evento`}
-          onClick={() => isMobile && setMobileOpen(false)}
-          className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
-          title={locale === "es" ? "Evento" : "Event"}
-        >
-          <CalendarDays size={isMobile ? 18 : 20} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{locale === "es" ? "Evento" : "Event"}</span>}
-        </Link>
-
-        {user?.role === "admin" && (
+        {pathname === `/${locale}/dashboard/evento` ? (
+          <span
+            className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+            title={locale === "es" ? "Evento" : "Event"}
+          >
+            <CalendarDays size={isMobile ? 18 : 20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{locale === "es" ? "Evento" : "Event"}</span>}
+          </span>
+        ) : (
           <Link
-            href={`/${locale}/dashboard/admin/approvals`}
+            href={`/${locale}/dashboard/evento`}
             onClick={() => isMobile && setMobileOpen(false)}
             className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
-            title="Approvals"
+            title={locale === "es" ? "Evento" : "Event"}
           >
-            <CheckSquare size={isMobile ? 18 : 20} className="flex-shrink-0" />
-            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Approvals</span>}
+            <CalendarDays size={isMobile ? 18 : 20} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{locale === "es" ? "Evento" : "Event"}</span>}
           </Link>
+        )}
+
+        {user?.role === "admin" && (
+          pathname === `/${locale}/dashboard/admin/approvals` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Approvals"
+            >
+              <CheckSquare size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Approvals</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/admin/approvals`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Approvals"
+            >
+              <CheckSquare size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Approvals</span>}
+            </Link>
+          )
         )}
       </nav>
 
@@ -128,22 +148,39 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         {(!collapsed || isMobile) && (
           <p className={`${isMobile ? "px-3 pb-2" : "px-2 pb-1"} text-brand-yellow font-pixel ${isMobile ? "text-lg" : "text-xs"}`}>{user?.role.toUpperCase()}</p>
         )}
-        <Link
-          href={`/${locale}/dashboard/profile`}
-          onClick={() => isMobile && setMobileOpen(false)}
-          className={`flex items-center gap-3 ${isMobile ? "px-3 py-2" : "px-2 py-3"} rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
-          title="Profile"
-        >
-          <div className="w-8 h-8 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center flex-shrink-0">
-            <User size={16} className="text-brand-cyan" />
-          </div>
-          {(!collapsed || isMobile) && (
-            <div className="min-w-0">
-              <p className={`text-brand-cyan ${isMobile ? "font-pixel text-lg" : "text-sm"} truncate`}>{user?.name} {user?.surname}</p>
-              <p className="text-brand-cyan/60 text-xs truncate mt-0.5">{user?.email}</p>
+        {pathname === `/${locale}/dashboard/profile` ? (
+          <span
+            className={`flex items-center gap-3 ${isMobile ? "px-3 py-2" : "px-2 py-3"} rounded text-brand-cyan/40 cursor-default select-none mb-2 ${collapsed && !isMobile ? "justify-center" : ""}`}
+            title="Profile"
+          >
+            <div className="w-8 h-8 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center flex-shrink-0">
+              <User size={16} className="text-brand-cyan/50" />
             </div>
-          )}
-        </Link>
+            {(!collapsed || isMobile) && (
+              <div className="min-w-0">
+                <p className={`text-brand-cyan/60 ${isMobile ? "font-pixel text-lg" : "text-sm"} truncate`}>{user?.name} {user?.surname}</p>
+                <p className="text-brand-cyan/40 text-xs truncate mt-0.5">{user?.email}</p>
+              </div>
+            )}
+          </span>
+        ) : (
+          <Link
+            href={`/${locale}/dashboard/profile`}
+            onClick={() => isMobile && setMobileOpen(false)}
+            className={`flex items-center gap-3 ${isMobile ? "px-3 py-2" : "px-2 py-3"} rounded hover:bg-brand-cyan/10 transition-colors mb-2 group ${collapsed && !isMobile ? "justify-center" : ""}`}
+            title="Profile"
+          >
+            <div className="w-8 h-8 rounded-full bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center flex-shrink-0">
+              <User size={16} className="text-brand-cyan" />
+            </div>
+            {(!collapsed || isMobile) && (
+              <div className="min-w-0">
+                <p className={`text-brand-cyan ${isMobile ? "font-pixel text-lg" : "text-sm"} truncate`}>{user?.name} {user?.surname}</p>
+                <p className="text-brand-cyan/60 text-xs truncate mt-0.5">{user?.email}</p>
+              </div>
+            )}
+          </Link>
+        )}
 
         {collapsed && !isMobile ? (
           <button
