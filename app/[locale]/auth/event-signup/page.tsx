@@ -108,7 +108,7 @@ function EventSignupContent() {
     // Initialize priorities when categories load
     useEffect(() => {
         if (categories.length > 0 && formData.priorities.length === 0) {
-            const initialPriorities = categories.slice(0, 3).map(cat => cat.id)
+            const initialPriorities = [...categories].reverse().slice(0, 3).map(cat => cat.id)
             setFormData(prev => ({ ...prev, priorities: initialPriorities }))
         }
     }, [categories])

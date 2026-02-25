@@ -48,7 +48,7 @@ export function useCategories(locale: Locale): UseCategoriesReturn {
                         englishDescription: d.englishDescription || "",
                         spanishDescription: d.spanishDescription || "",
                     } as Category
-                })
+                }).sort((a, b) => Number(a.id) - Number(b.id))
 
                 setCategories(categoriesData)
             } catch (err: any) {

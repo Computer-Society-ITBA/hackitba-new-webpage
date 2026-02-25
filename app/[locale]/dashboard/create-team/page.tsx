@@ -23,7 +23,6 @@ interface Category {
     englishDescription: string
     spanishDescription: string
     iconName: string
-    order: number
 }
 
 
@@ -81,9 +80,9 @@ function CreateTeamContent() {
 
                 const cats: Category[] = categoriesSnapshot.docs
                     .map((d) => ({ id: d.id, ...(d.data() as Omit<Category, "id">) }))
-                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                    .sort((a, b) => Number(a.id) - Number(b.id))
                 setCategories(cats)
-                setFormData((prev) => ({ ...prev, priorities: cats.map((c) => c.id) }))
+                setFormData((prev) => ({ ...prev, priorities: cats.map((c) => c.id).reverse() }))
             } catch (err) {
                 console.error("Error loading initial data:", err)
                 setSignupEnabled(true)
