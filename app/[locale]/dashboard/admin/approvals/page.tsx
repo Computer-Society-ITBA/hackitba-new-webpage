@@ -15,6 +15,7 @@ import { collection, getDocs, query, where } from "firebase/firestore"
 import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Plus, Users as UsersIcon, ArrowLeft } from "lucide-react"
 import * as LucideIcons from "lucide-react"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { toast } from "@/hooks/use-toast"
 import type { Locale } from "@/lib/i18n/config"
@@ -43,6 +44,11 @@ export default function ApprovalsPage() {
   const [selectedParticipant, setSelectedParticipant] = useState<any | null>(null)
   const [selectedParticipantTeamId, setSelectedParticipantTeamId] = useState<string>("")
   const [participantRejectReason, setParticipantRejectReason] = useState<string>("")
+
+  const PARTICIPANTS_PAGE_SIZE = 5
+  const TEAMS_PAGE_SIZE = 5
+  const [participantsPage, setParticipantsPage] = useState(1)
+  const [teamsPage, setTeamsPage] = useState(1)
 
   useEffect(() => {
     if (!auth) return
@@ -89,6 +95,7 @@ export default function ApprovalsPage() {
       if (response.ok) {
         const data = await response.json()
         setPendingParticipants(data.participants || [])
+        setParticipantsPage(1)
       } else {
         const errorData = await response.text()
         console.error("Error response:", errorData)
@@ -119,6 +126,7 @@ export default function ApprovalsPage() {
           .map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((t: any) => !t.is_created_by_admin)
       )
+      setTeamsPage(1)
     } catch (error) {
       console.error("Error loading pending teams:", error)
     }
@@ -390,34 +398,46 @@ export default function ApprovalsPage() {
                   {translations.admin.pendingParticipants.noParticipants}
                 </p>
               </GlassCard>
-            ) : (
-              <div className="space-y-4">
-                {pendingParticipants.map((participant) => (
-                  <GlassCard
-                    key={participant.id}
-                    neonOnHover
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setSelectedParticipant(participant)
-                      setSelectedParticipantTeamId("")
-                      setParticipantRejectReason("")
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-pixel text-brand-yellow">
+            ) : (() => {
+              const totalParticipantPages = Math.ceil(pendingParticipants.length / PARTICIPANTS_PAGE_SIZE)
+              const pagedParticipants = pendingParticipants.slice(
+                (participantsPage - 1) * PARTICIPANTS_PAGE_SIZE,
+                participantsPage * PARTICIPANTS_PAGE_SIZE
+              )
+              return (
+                <GlassCard className="p-4">
+                  <div className="space-y-3">
+                    {pagedParticipants.map((participant) => (
+                      <div
+                        key={participant.id}
+                        className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedParticipant(participant)
+                          setSelectedParticipantTeamId("")
+                          setParticipantRejectReason("")
+                        }}
+                      >
+                        <p className="font-pixel text-brand-yellow text-sm">
                           {participant.name} {participant.surname}
                         </p>
-                        <div className="text-sm text-brand-cyan/80 space-y-1 mt-1">
+                        <div className="text-xs text-brand-cyan/70 space-y-0.5 mt-1">
                           <p>{participant.email}</p>
                           <p>{[participant.university, participant.career].filter(Boolean).join(" - ")}</p>
                         </div>
                       </div>
-                    </div>
-                  </GlassCard>
-                ))}
-              </div>
-            )}
+                    ))}
+                  </div>
+                  <PaginationControls
+                    page={participantsPage}
+                    totalPages={totalParticipantPages}
+                    onPageChange={setParticipantsPage}
+                    totalItems={pendingParticipants.length}
+                    pageSize={PARTICIPANTS_PAGE_SIZE}
+                    locale={locale}
+                  />
+                </GlassCard>
+              )
+            })()}
           </section>
 
           {/* Pending Teams */}
@@ -440,22 +460,37 @@ export default function ApprovalsPage() {
                   {locale === "es" ? "No hay equipos pendientes de aprobación" : "No teams pending approval"}
                 </p>
               </GlassCard>
-            ) : (
-              <div className="space-y-4">
-                {pendingTeams.map((team) => (
-                  <GlassCard key={team.id} neonOnHover className="cursor-pointer" onClick={() => openTeamDetail(team)}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-pixel text-brand-yellow mb-1">{team.name}</p>
-                        <div className="text-sm text-brand-cyan/80 space-y-1">
-                          <p>{team.id}</p>
-                        </div>
+            ) : (() => {
+              const totalTeamPages = Math.ceil(pendingTeams.length / TEAMS_PAGE_SIZE)
+              const pagedTeams = pendingTeams.slice(
+                (teamsPage - 1) * TEAMS_PAGE_SIZE,
+                teamsPage * TEAMS_PAGE_SIZE
+              )
+              return (
+                <GlassCard className="p-4">
+                  <div className="space-y-3">
+                    {pagedTeams.map((team) => (
+                      <div
+                        key={team.id}
+                        className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
+                        onClick={() => openTeamDetail(team)}
+                      >
+                        <p className="font-pixel text-brand-yellow text-sm mb-1">{team.name}</p>
+                        <p className="text-brand-cyan/50 text-xs">{team.id}</p>
                       </div>
-                    </div>
-                  </GlassCard>
-                ))}
-              </div>
-            )}
+                    ))}
+                  </div>
+                  <PaginationControls
+                    page={teamsPage}
+                    totalPages={totalTeamPages}
+                    onPageChange={setTeamsPage}
+                    totalItems={pendingTeams.length}
+                    pageSize={TEAMS_PAGE_SIZE}
+                    locale={locale}
+                  />
+                </GlassCard>
+              )
+            })()}
           </section>
         </div>
 

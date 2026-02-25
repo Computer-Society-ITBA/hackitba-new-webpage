@@ -10,13 +10,17 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { getAuthClient } from "@/lib/firebase/client-config"
 import { AlertCircle, Clock, UserX, RefreshCw } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 import type { Locale } from "@/lib/i18n/config"
+
+const PAGE_SIZE = 5
 
 interface IncompleteUser {
   id: string
   name: string | null
   surname: string | null
   email: string | null
+  emailVerified: boolean
   onboardingStep: number
   createdAt: string | null
 }
@@ -30,6 +34,7 @@ export default function IncompleteUsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     if (!auth) return
@@ -51,14 +56,24 @@ export default function IncompleteUsersPage() {
       if (!idToken) throw new Error("No auth token available")
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/users/incomplete`, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      })
+      const url = `${apiUrl}/users/incomplete`
+      let response: Response
+      try {
+        response = await fetch(url, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        })
+      } catch (networkErr: any) {
+        throw new Error(`Network error reaching ${url}: ${networkErr.message}`)
+      }
 
-      if (!response.ok) throw new Error(`Error ${response.status}: ${await response.text()}`)
+      if (!response.ok) {
+        const body = await response.text().catch(() => "")
+        throw new Error(`HTTP ${response.status} from ${url}: ${body}`)
+      }
 
       const data = await response.json()
       setUsers(data.users || [])
+      setPage(1)
     } catch (err: any) {
       setError(err.message || "Error loading incomplete users")
     } finally {
@@ -66,30 +81,19 @@ export default function IncompleteUsersPage() {
     }
   }
 
-  const stepLabel = (step: number) => {
-    if (step === 0) return locale === "es" ? "Sin iniciar" : "Not started"
-    if (step === 1) return locale === "es" ? "Paso 1 completo" : "Step 1 complete"
-    return `Step ${step}`
-  }
-
-  const stepColor = (step: number) => {
-    if (step === 0) return "text-red-400 bg-red-500/10 border-red-500/20"
-    return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"
-  }
-
   const formatDate = (createdAt: string | null) => {
     if (!createdAt) return "—"
-    try {
-      const d = typeof createdAt === "object" ? (createdAt as any).toDate?.() : new Date(createdAt)
-      return d.toLocaleDateString(locale === "es" ? "es-AR" : "en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    } catch {
-      return "—"
-    }
+    const d = new Date(createdAt)
+    if (isNaN(d.getTime())) return "—"
+    return d.toLocaleDateString(locale === "es" ? "es-AR" : "en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
   }
+
+  const totalPages = Math.ceil(users.length / PAGE_SIZE)
+  const pagedUsers = users.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const title = locale === "es" ? "Inscripciones Incompletas" : "Incomplete Registrations"
 
@@ -170,7 +174,7 @@ export default function IncompleteUsersPage() {
                       </th>
                       <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">Email</th>
                       <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Paso" : "Step"}
+                        {locale === "es" ? "Mail verificado" : "Email verified"}
                       </th>
                       <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
                         {locale === "es" ? "Fecha" : "Date"}
@@ -178,7 +182,7 @@ export default function IncompleteUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {pagedUsers.map((user) => (
                       <tr key={user.id} className="border-b border-brand-cyan/5 hover:bg-brand-cyan/5 transition-colors">
                         <td className="py-3 px-3 text-white">
                           {user.name || user.surname
@@ -187,8 +191,12 @@ export default function IncompleteUsersPage() {
                         </td>
                         <td className="py-3 px-3 text-brand-cyan/80">{user.email ?? "—"}</td>
                         <td className="py-3 px-3">
-                          <span className={`px-2 py-1 rounded text-xs font-pixel border ${stepColor(user.onboardingStep)}`}>
-                            {stepLabel(user.onboardingStep)}
+                          <span className={`px-2 py-1 rounded text-xs font-pixel border ${
+                            user.emailVerified
+                              ? "text-green-400 bg-green-500/10 border-green-500/20"
+                              : "text-red-400 bg-red-500/10 border-red-500/20"
+                          }`}>
+                            {user.emailVerified ? (locale === "es" ? "Sí" : "Yes") : (locale === "es" ? "No" : "No")}
                           </span>
                         </td>
                         <td className="py-3 px-3 text-brand-cyan/60 text-xs">{formatDate(user.createdAt)}</td>
@@ -200,7 +208,7 @@ export default function IncompleteUsersPage() {
 
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
-                {users.map((user) => (
+                {pagedUsers.map((user) => (
                   <div key={user.id} className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-white text-sm font-medium">
@@ -208,8 +216,12 @@ export default function IncompleteUsersPage() {
                           ? `${user.name ?? ""} ${user.surname ?? ""}`.trim()
                           : <span className="text-brand-cyan/30 italic">{locale === "es" ? "Sin nombre" : "No name"}</span>}
                       </p>
-                      <span className={`px-2 py-0.5 rounded text-xs font-pixel border flex-shrink-0 ${stepColor(user.onboardingStep)}`}>
-                        {stepLabel(user.onboardingStep)}
+                      <span className={`px-2 py-0.5 rounded text-xs font-pixel border flex-shrink-0 ${
+                        user.emailVerified
+                          ? "text-green-400 bg-green-500/10 border-green-500/20"
+                          : "text-red-400 bg-red-500/10 border-red-500/20"
+                      }`}>
+                        {user.emailVerified ? (locale === "es" ? "Mail verificado" : "Email verified") : (locale === "es" ? "Mail no verificado" : "Email not verified")}
                       </span>
                     </div>
                     <p className="text-brand-cyan/60 text-xs">{user.email ?? "—"}</p>
@@ -217,7 +229,14 @@ export default function IncompleteUsersPage() {
                   </div>
                 ))}
               </div>
-            </GlassCard>
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                totalItems={users.length}
+                pageSize={PAGE_SIZE}
+                locale={locale}
+              />            </GlassCard>
           )}
         </div>
       </DashboardLayout>
