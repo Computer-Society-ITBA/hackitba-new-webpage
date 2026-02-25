@@ -18,6 +18,7 @@ import { Pencil, Trash2, Plus, Upload } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { toast } from "@/hooks/use-toast"
+import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function AdminDashboard() {
@@ -189,6 +190,13 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
+
+          <section>
+            <div className="mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
+            </div>
+            <AdminDataExporter />
+          </section>
 
           <section>
             <div className="flex items-center justify-between mb-6">
