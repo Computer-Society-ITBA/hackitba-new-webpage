@@ -86,7 +86,7 @@ export default function VerifyEmailRequiredPage() {
       const response = await fetch(`${apiUrl}/users/change-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldEmail: user.email, newEmail: newEmail })
+        body: JSON.stringify({ oldEmail: user?.email, newEmail: newEmail })
       })
 
       if (!response.ok) {

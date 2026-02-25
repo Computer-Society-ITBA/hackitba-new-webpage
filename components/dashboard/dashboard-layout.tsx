@@ -240,7 +240,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         </aside>
       )}
 
-      <main className={`flex-1 min-w-0 p-4 sm:p-6 md:p-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
+      <main className={`flex-1 min-w-0 p-4 sm:p-6 md:pt-6 md:px-8 md:pb-8 transition-all duration-300 ${!isMobile ? (collapsed ? "ml-20" : "ml-64") : ""}`}>
         {/* Mobile header with hamburger */}
         {isMobile && (
           <div className="flex items-center gap-3 mb-4">
@@ -257,8 +257,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         )}
 
         {!isMobile && (
-          <div className="mb-8">
-            <h2 className="font-pixel text-4xl text-brand-yellow">
+          <div className="mb-6">
+            <h2 className="font-pixel text-2xl text-brand-yellow">
               <NeonGlow color="orange">{title}</NeonGlow>
             </h2>
           </div>
