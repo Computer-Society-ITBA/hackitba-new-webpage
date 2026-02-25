@@ -482,25 +482,25 @@ export const getIncompleteUsers = async (req: Request, res: Response) => {
       .filter((doc) => Number(doc.data().onboardingStep ?? 0) < 2)
       .map((doc) => {
         const data = doc.data();
-        const raw = data.createdAt
-        let createdAtStr: string | null = null
+        const raw = data.createdAt;
+        let createdAtStr: string | null = null;
         if (raw) {
           try {
             if (typeof raw.toDate === "function") {
               // Firestore Timestamp instance
-              createdAtStr = raw.toDate().toISOString()
+              createdAtStr = raw.toDate().toISOString();
             } else if (raw._seconds !== undefined) {
               // Plain object { _seconds, _nanoseconds }
-              createdAtStr = new Date(raw._seconds * 1000).toISOString()
+              createdAtStr = new Date(raw._seconds * 1000).toISOString();
             } else if (raw.seconds !== undefined) {
               // Plain object { seconds, nanoseconds }
-              createdAtStr = new Date(raw.seconds * 1000).toISOString()
+              createdAtStr = new Date(raw.seconds * 1000).toISOString();
             } else if (typeof raw === "string" || typeof raw === "number") {
-              const d = new Date(raw)
-              createdAtStr = isNaN(d.getTime()) ? null : d.toISOString()
+              const d = new Date(raw);
+              createdAtStr = isNaN(d.getTime()) ? null : d.toISOString();
             }
           } catch (e) {
-            logger.warn("Could not parse createdAt:", raw)
+            logger.warn("Could not parse createdAt:", raw);
           }
         }
         return {
