@@ -432,7 +432,10 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
     logger.info(`Found ${usersSnapshot.size} pending participants`);
 
     const pendingParticipants = usersSnapshot.docs
-      .filter((doc) => doc.data().participationStatus !== "rejected")
+      .filter((doc) => {
+        const data = doc.data();
+        return data.participationStatus !== "rejected" && Number(data.onboardingStep ?? 0) >= 2;
+      })
       .map((doc) => {
         const data = doc.data();
         logger.info(`Participant: ${doc.id} - ${data.name} ${data.surname}`);

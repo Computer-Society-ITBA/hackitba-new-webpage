@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Linkedin, Github, Briefcase, Code, Mic, AlertCircle, Clock } from "lucide-react"
+import { Linkedin, Github, Instagram, Briefcase, Code, Mic, AlertCircle, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useMentors, type Mentor } from "@/hooks/use-mentors"
 import type { Locale } from "@/lib/i18n/config"
@@ -228,6 +228,11 @@ export function Mentors({ translations, locale }: MentorsProps) {
                 {selectedMentor.github && (
                   <a href={selectedMentor.github} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                     <Github size={24} />
+                  </a>
+                )}
+                {selectedMentor.instagram && (
+                  <a href={selectedMentor.instagram} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
+                    <Instagram size={24} />
                   </a>
                 )}
               </div>

@@ -7,7 +7,7 @@ import {
     DialogContent,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Linkedin, Github, AlertCircle, Clock } from "lucide-react"
+import { Linkedin, Github, Instagram, AlertCircle, Clock } from "lucide-react"
 import { useJudges, type Judge } from "@/hooks/use-judges"
 import type { Locale } from "@/lib/i18n/config"
 
@@ -175,6 +175,11 @@ export function Judges({ translations, locale }: JudgesProps) {
                                 {selectedJudge.github && (
                                     <a href={selectedJudge.github} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
                                         <Github size={24} />
+                                    </a>
+                                )}
+                                {selectedJudge.instagram && (
+                                    <a href={selectedJudge.instagram} target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-orange transition-colors">
+                                        <Instagram size={24} />
                                     </a>
                                 )}
                             </div>
