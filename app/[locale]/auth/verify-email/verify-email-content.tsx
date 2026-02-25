@@ -9,7 +9,8 @@ import Link from "next/link"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { ArrowLeft, Home, CheckCircle, AlertCircle, Loader } from "lucide-react"
+import { ArrowLeft, Home, CheckCircle, AlertCircle } from "lucide-react"
+import { Loading } from "@/components/ui/loading"
 
 export function VerifyEmailContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
@@ -73,10 +74,12 @@ export function VerifyEmailContent() {
           {/* Status Content */}
           <div className="flex flex-col items-center justify-center py-8">
             {status === "loading" && (
-              <>
-                <Loader className="w-12 h-12 animate-spin text-orange-500 mb-4" />
-                <p className="text-gray-300">{translations.verifyEmailPage.verifying}</p>
-              </>
+              <Loading
+                text={translations.verifyEmailPage.verifying}
+                fullPage={false}
+                showBackground={false}
+                className="py-12"
+              />
             )}
 
             {status === "success" && (

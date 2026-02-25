@@ -11,7 +11,8 @@ import { ChevronRight, Users, User } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { getAuthClient, getDbClient } from "@/lib/firebase/client-config"
+import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
+import { Loading } from "@/components/ui/loading"
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"
 import { useAuth } from "@/lib/firebase/auth-context"
 
@@ -382,11 +383,7 @@ function CreateTeamContent() {
 
 export default function CreateTeamPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">Establishing Team Protocol...</p>
-            </div>
-        }>
+        <Suspense fallback={<Loading text="Establishing Team Protocol..." />}>
             <CreateTeamContent />
         </Suspense>
     )

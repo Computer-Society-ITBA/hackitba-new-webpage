@@ -10,6 +10,7 @@ import { NeonGlow } from "@/components/effects/neon-glow"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { AlertCircle, Mail, RotateCw } from "lucide-react"
+import { Loading } from "@/components/ui/loading"
 import { AuthNavigation } from "@/components/auth/auth-navigation"
 import { useAuth } from "@/lib/firebase/auth-context"
 
@@ -105,11 +106,7 @@ export default function VerifyEmailRequiredPage() {
   }
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-brand-cyan font-pixel">{translations.verifyEmailPage.loading}</div>
-      </div>
-    )
+    return <Loading text={translations.verifyEmailPage.loading} />
   }
 
   if (!user) {

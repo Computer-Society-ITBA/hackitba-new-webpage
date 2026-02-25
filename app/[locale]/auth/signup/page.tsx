@@ -15,6 +15,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { toast } from "@/hooks/use-toast"
+import { Loading } from "@/components/ui/loading"
 import { CodeBackground } from "@/components/effects/code-background"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
@@ -192,11 +193,7 @@ function SignupContent() {
   }
 
   if (signupLoading || !signupEnabled) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.auth.signup.loading}</div>
-      </div>
-    )
+    return <Loading text={translations.auth.signup.loading} />
   }
 
   return (
@@ -294,11 +291,7 @@ export default function SignupPage() {
   const translations = getTranslations(locale)
 
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">{translations.auth.signup.loading}</p>
-      </div>
-    }>
+    <Suspense fallback={<Loading text={translations.auth.signup.loading} />}>
       <SignupContent />
     </Suspense>
   )

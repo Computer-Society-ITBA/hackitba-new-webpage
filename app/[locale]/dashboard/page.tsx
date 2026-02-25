@@ -8,6 +8,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { doc, getDoc } from "firebase/firestore"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { Loading } from "@/components/ui/loading"
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -40,13 +41,13 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && user && !hasRedirected) {
       setHasRedirected(true)
-      
+
       // Check onboarding completion
       const onboardingStep = user.onboardingStep || 0
-      
+
       console.log("Dashboard - User onboarding step:", onboardingStep, typeof onboardingStep)
       console.log("Dashboard - User role:", user.role)
-      
+
       if (Number(onboardingStep) < 2) {
         // Redirect to complete event signup only if signup is enabled
         if (signupEnabled) {
@@ -59,7 +60,7 @@ export default function DashboardPage() {
         }
         return
       }
-      
+
       // Redirect to role-specific dashboard
       console.log("Onboarding complete, redirecting to role dashboard")
       if (user.role === "admin") {
@@ -79,12 +80,10 @@ export default function DashboardPage() {
   }, [user, loading, router, locale, hasRedirected, signupEnabled])
 
   const translations = getTranslations(locale)
-  
+
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.redirecting}</div>
-      </div>
+      <Loading text={translations.redirecting} />
     </ProtectedRoute>
   )
 }

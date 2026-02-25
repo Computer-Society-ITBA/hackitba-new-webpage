@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { getAuthClient } from "@/lib/firebase/client-config"
 import { onAuthStateChanged } from "firebase/auth"
 
+import { Loading } from "@/components/ui/loading"
+
 export default function NotFound() {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
@@ -13,9 +15,9 @@ export default function NotFound() {
     // Get browser locale
     const browserLang = navigator.language.toLowerCase()
     const supportedLocales = ["es", "en"]
-    
+
     let locale = "es" // default
-    
+
     // Check if browser language matches supported locales
     if (supportedLocales.includes(browserLang)) {
       locale = browserLang
@@ -26,7 +28,7 @@ export default function NotFound() {
         locale = langPrefix
       }
     }
-    
+
     // Check if user is logged in
     const auth = getAuthClient()
     if (!auth) {
@@ -47,11 +49,5 @@ export default function NotFound() {
     return () => unsubscribe()
   }, [router])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-dark">
-      <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">
-        Redirecting...
-      </p>
-    </div>
-  )
+  return <Loading text="Redirecting..." />
 }

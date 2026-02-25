@@ -16,6 +16,7 @@ import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter
 import * as LucideIcons from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { Loading } from "@/components/ui/loading"
 import { getStorageClient, getDbClient } from "@/lib/firebase/client-config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import { doc, getDoc } from "firebase/firestore"
@@ -657,11 +658,7 @@ function EventSignupContent() {
     }
 
     if (signupLoading || !signupEnabled) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="font-pixel text-2xl text-brand-cyan neon-glow-cyan">{translations.auth.eventSignup.loading}</div>
-            </div>
-        )
+        return <Loading text={translations.auth.eventSignup.loading} />
     }
 
     return (
@@ -759,11 +756,7 @@ export default function EventSignupPage() {
     const translations = getTranslations(locale)
 
     return (
-        <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <p className="text-brand-cyan font-pixel text-xs uppercase animate-pulse">{translations.auth.eventSignup.initializing}</p>
-            </div>
-        }>
+        <Suspense fallback={<Loading text={translations.auth.eventSignup.initializing} />}>
             <EventSignupContent />
         </Suspense>
     )
