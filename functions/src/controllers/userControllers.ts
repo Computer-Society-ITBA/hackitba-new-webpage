@@ -467,6 +467,44 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
   }
 };
 /**
+ * Get users who have not completed registration (onboardingStep < 2)
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const getIncompleteUsers = async (req: Request, res: Response) => {
+  try {
+    logger.info("Getting incomplete users (onboardingStep < 2)...");
+    const db = getHackitbaDb();
+    const usersSnapshot = await db.collection("users").get();
+
+    const incompleteUsers = usersSnapshot.docs
+      .filter((doc) => Number(doc.data().onboardingStep ?? 0) < 2)
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name ?? null,
+          surname: data.surname ?? null,
+          email: data.email ?? null,
+          onboardingStep: data.onboardingStep ?? 0,
+          createdAt: data.createdAt ?? null,
+        };
+      });
+
+    logger.info(`Returning ${incompleteUsers.length} incomplete users`);
+
+    return res.status(200).json({
+      users: incompleteUsers,
+      count: incompleteUsers.length,
+    });
+  } catch (error) {
+    logger.error("Error getting incomplete users:", error);
+    return res.status(500).json({error: "Error getting incomplete users"});
+  }
+};
+
+/**
  * Verify email with token
  * @param {Request} req - Request object
  * @param {Response} res - Response object

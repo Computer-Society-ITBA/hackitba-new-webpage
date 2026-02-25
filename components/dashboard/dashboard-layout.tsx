@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, Menu, X, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 
 interface DashboardLayoutProps {
@@ -100,7 +100,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </Link>
         )}
 
-        {pathname === `/${locale}/dashboard/evento` ? (
+        {user?.role !== "admin" && (pathname === `/${locale}/dashboard/evento` ? (
           <span
             className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
             title={locale === "es" ? "Evento" : "Event"}
@@ -118,7 +118,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             <CalendarDays size={isMobile ? 18 : 20} className="flex-shrink-0" />
             {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{locale === "es" ? "Evento" : "Event"}</span>}
           </Link>
-        )}
+        ))}
 
         {user?.role === "admin" && (
           pathname === `/${locale}/dashboard/admin/approvals` ? (
@@ -138,6 +138,28 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             >
               <CheckSquare size={isMobile ? 18 : 20} className="flex-shrink-0" />
               {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Approvals</span>}
+            </Link>
+          )
+        )}
+
+        {user?.role === "admin" && (
+          pathname === `/${locale}/dashboard/admin/incomplete` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Incomplete"
+            >
+              <UserX size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Incomplete</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/admin/incomplete`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Incomplete"
+            >
+              <UserX size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Incomplete</span>}
             </Link>
           )
         )}

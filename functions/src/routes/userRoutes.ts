@@ -9,6 +9,7 @@ import {
   requestPasswordReset,
   approveParticipantAndAssignTeam,
   getPendingParticipants,
+  getIncompleteUsers,
   verifyEmail,
   resendVerificationEmail,
   changeEmail,
@@ -33,6 +34,9 @@ router.post("/change-email", changeEmail);
 // Admin-only routes (BEFORE dynamic routes)
 // GET /api/users/pending-participants
 router.get("/pending-participants", validateToken, requireAdmin, getPendingParticipants);
+
+// GET /api/users/incomplete
+router.get("/incomplete", validateToken, requireAdmin, getIncompleteUsers);
 
 // GET /api/users/:id
 router.get("/:id", validateToken, getUserById);
