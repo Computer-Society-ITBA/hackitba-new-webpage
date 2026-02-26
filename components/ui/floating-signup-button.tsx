@@ -15,7 +15,7 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
-  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "false" && process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "0"
   const signupLoading = false
   const { user, loading: authLoading } = useAuth()
 

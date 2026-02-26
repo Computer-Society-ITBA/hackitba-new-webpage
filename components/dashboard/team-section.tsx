@@ -52,7 +52,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
   const [copied, setCopied] = useState(false)
-  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "false" && process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "0"
   const db = getDbClient()
   const router = useRouter()
   const params = useParams()
