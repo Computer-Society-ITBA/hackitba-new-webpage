@@ -5,8 +5,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
-import { getDbClient } from "@/lib/firebase/client-config"
-import { doc, getDoc } from "firebase/firestore"
 import { useAuth } from "@/lib/firebase/auth-context"
 
 interface FloatingSignupButtonProps {
@@ -17,41 +15,9 @@ export function FloatingSignupButton({ locale }: FloatingSignupButtonProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
-  const [signupEnabled, setSignupEnabled] = useState(true)
-  const [signupLoading, setSignupLoading] = useState(true)
-  const db = getDbClient()
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
+  const signupLoading = false
   const { user, loading: authLoading } = useAuth()
-
-  useEffect(() => {
-    if (!db) return
-
-    const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
-    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
-      const enabled = envVal === "true" || envVal === "1"
-      setSignupEnabled(enabled)
-      setSignupLoading(false)
-      return
-    }
-
-    const loadSettings = async () => {
-      try {
-        const settingsDoc = await getDoc(doc(db, "settings", "global"))
-        if (settingsDoc.exists()) {
-          const data = settingsDoc.data()
-          setSignupEnabled(data?.signupEnabled !== false)
-        } else {
-          setSignupEnabled(true)
-        }
-      } catch (err) {
-        console.error("Error loading signup setting:", err)
-        setSignupEnabled(true)
-      } finally {
-        setSignupLoading(false)
-      }
-    }
-
-    loadSettings()
-  }, [db])
 
   useEffect(() => {
     const handleScroll = () => {

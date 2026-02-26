@@ -17,8 +17,6 @@ import { NeonGlow } from "@/components/effects/neon-glow"
 import { toast } from "@/hooks/use-toast"
 import { Loading } from "@/components/ui/loading"
 import { CodeBackground } from "@/components/effects/code-background"
-import { getDbClient } from "@/lib/firebase/client-config"
-import { doc, getDoc } from "firebase/firestore"
 
 function SignupContent() {
   const router = useRouter()
@@ -26,10 +24,9 @@ function SignupContent() {
   const locale = params.locale as Locale
   const translations = getTranslations(locale)
   const searchParams = useSearchParams()
-  const db = getDbClient()
 
-  const [signupEnabled, setSignupEnabled] = useState(true)
-  const [signupLoading, setSignupLoading] = useState(true)
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
+  const [signupLoading, setSignupLoading] = useState(false)
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -44,43 +41,10 @@ function SignupContent() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!db) return
-
-    // If the env var NEXT_PUBLIC_SIGNUP_ENABLED is present, use it as an override.
-    // This allows toggling signups without updating Firestore.
-    const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
-    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
-      const enabled = envVal === "true" || envVal === "1"
-      setSignupEnabled(enabled)
-      setSignupLoading(false)
-      return
-    }
-
-    const loadSettings = async () => {
-      try {
-        const settingsDoc = await getDoc(doc(db, "settings", "global"))
-        if (settingsDoc.exists()) {
-          const data = settingsDoc.data()
-          setSignupEnabled(data?.signupEnabled !== false)
-        } else {
-          setSignupEnabled(true)
-        }
-      } catch (err) {
-        console.error("Error loading signup setting:", err)
-        setSignupEnabled(true)
-      } finally {
-        setSignupLoading(false)
-      }
-    }
-
-    loadSettings()
-  }, [db])
-
-  useEffect(() => {
-    if (!signupLoading && !signupEnabled) {
+    if (!signupEnabled) {
       router.replace(`/${locale}`)
     }
-  }, [signupEnabled, signupLoading, router, locale])
+  }, [signupEnabled, router, locale])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target

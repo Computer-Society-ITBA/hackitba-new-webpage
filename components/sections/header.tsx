@@ -7,8 +7,6 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { getDbClient } from "@/lib/firebase/client-config"
-import { doc, getDoc } from "firebase/firestore"
 
 interface HeaderProps {
   translations: any
@@ -19,40 +17,8 @@ export function Header({ translations, locale }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const { user, loading } = useAuth()
-  const [signupEnabled, setSignupEnabled] = useState(true)
-  const [signupLoading, setSignupLoading] = useState(true)
-  const db = getDbClient()
-
-  useEffect(() => {
-    if (!db) return
-
-    const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
-    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
-      const enabled = envVal === "true" || envVal === "1"
-      setSignupEnabled(enabled)
-      setSignupLoading(false)
-      return
-    }
-
-    const loadSettings = async () => {
-      try {
-        const settingsDoc = await getDoc(doc(db, "settings", "global"))
-        if (settingsDoc.exists()) {
-          const data = settingsDoc.data()
-          setSignupEnabled(data?.signupEnabled !== false)
-        } else {
-          setSignupEnabled(true)
-        }
-      } catch (err) {
-        console.error("Error loading signup setting:", err)
-        setSignupEnabled(true)
-      } finally {
-        setSignupLoading(false)
-      }
-    }
-
-    loadSettings()
-  }, [db])
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
+  const signupLoading = false
 
   useEffect(() => {
     const handleScroll = () => {

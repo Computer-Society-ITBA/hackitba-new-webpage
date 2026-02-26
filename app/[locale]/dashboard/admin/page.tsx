@@ -35,7 +35,6 @@ export default function AdminDashboard() {
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [authReady, setAuthReady] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
-  const [signupEnabled, setSignupEnabled] = useState(true)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -77,13 +76,11 @@ export default function AdminDashboard() {
       if (settingsDoc.exists()) {
         const data = settingsDoc.data()
         setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
-        setSignupEnabled(data?.signupEnabled !== false)
       } else {
         setProjectSubmissionsEnabled(true)
-        setSignupEnabled(true)
         await setDoc(
           settingsRef,
-          { projectSubmissionsEnabled: true, signupEnabled: true, updatedAt: new Date() },
+          { projectSubmissionsEnabled: true, updatedAt: new Date() },
           { merge: true }
         )
       }
@@ -106,23 +103,6 @@ export default function AdminDashboard() {
       console.error("Error updating project submissions setting:", error)
       setProjectSubmissionsEnabled(!nextValue)
       toast({ title: translations.admin.projectSubmissions.updateError, variant: 'destructive' })
-    }
-  }
-
-  const toggleSignupEnabled = async () => {
-    if (!db) return
-    const nextValue = !signupEnabled
-    setSignupEnabled(nextValue)
-    try {
-      await setDoc(
-        doc(db, "settings", "global"),
-        { signupEnabled: nextValue, updatedAt: new Date() },
-        { merge: true }
-      )
-    } catch (error) {
-      console.error("Error updating signup setting:", error)
-      setSignupEnabled(!nextValue)
-      toast({ title: translations.admin.signup.updateError, variant: 'destructive' })
     }
   }
 

@@ -52,7 +52,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
   const [copied, setCopied] = useState(false)
-  const [signupEnabled, setSignupEnabled] = useState(true)
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "true" || process.env.NEXT_PUBLIC_SIGNUP_ENABLED === "1"
   const db = getDbClient()
   const router = useRouter()
   const params = useParams()
@@ -121,23 +121,6 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
     }
 
     loadCategories()
-  }, [db])
-
-  useEffect(() => {
-    const loadSignupSettings = async () => {
-      if (!db) return
-      try {
-        const settingsDoc = await getDoc(doc(db, "settings", "global"))
-        if (settingsDoc.exists()) {
-          const data = settingsDoc.data()
-          setSignupEnabled(data?.signupEnabled !== false)
-        }
-      } catch (err) {
-        console.error("Error loading signup setting:", err)
-      }
-    }
-
-    loadSignupSettings()
   }, [db])
 
   // Eliminar miembros deshabilitado
