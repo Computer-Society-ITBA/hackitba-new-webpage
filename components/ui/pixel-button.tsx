@@ -13,7 +13,7 @@ export interface PixelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
 }
 
 const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
-  ({ className, variant = "primary", size = "md", asChild = false, children, arrow, ...props }, ref) => {
+  ({ className, variant = "outline", size = "md", asChild = false, children, arrow, ...props }, ref) => {
 
     // Define icons
     const leftIcon = <ChevronLeft className="w-6 h-6" />
