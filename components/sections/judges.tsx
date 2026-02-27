@@ -26,16 +26,13 @@ function JudgeSkeleton() {
     )
 }
 
-const CARD_W = 172
 const CARD_GAP = 8
-const BRICK_OFFSET = (CARD_W + CARD_GAP) / 2
 
 function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) => void }) {
     const n = items.length
     const splitAt = Math.ceil(n / 2)
     const topRow = n >= 5 ? items.slice(0, splitAt) : items
     const bottomRow = n >= 5 ? items.slice(splitAt) : []
-    const shouldOffset = bottomRow.length > 0 && bottomRow.length < topRow.length
 
     const renderCard = (judge: Judge, index: number) => (
         <button
@@ -64,7 +61,7 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
 
     return (
         <>
-            {/* Desktop: fixed-width cards in two flex rows, brick-offset on bottom when odd total */}
+            {/* Desktop: fixed-width cards in two flex rows, centered */}
             <div className="hidden md:flex flex-col items-center gap-2 max-w-4xl mx-auto">
                 <div className="flex items-start justify-center" style={{ gap: `${CARD_GAP}px` }}>
                     {topRow.map((j, i) => renderCard(j, i))}
@@ -72,10 +69,7 @@ function JudgeGrid({ items, onSelect }: { items: Judge[]; onSelect: (j: Judge) =
                 {bottomRow.length > 0 && (
                     <div
                         className="flex items-start justify-center"
-                        style={{
-                            gap: `${CARD_GAP}px`,
-                            transform: shouldOffset ? `translateX(${BRICK_OFFSET}px)` : undefined,
-                        }}
+                        style={{ gap: `${CARD_GAP}px` }}
                     >
                         {bottomRow.map((j, i) => renderCard(j, topRow.length + i))}
                     </div>
