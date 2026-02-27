@@ -102,7 +102,7 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
 export function Mentors({ translations, locale }: MentorsProps) {
   const { mentors, loading, error } = useMentors()
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
-  const [activeCategory, setActiveCategory] = useState<MentorCategory>("entrepreneurship")
+  const [activeCategory, setActiveCategory] = useState<MentorCategory>("tech")
 
   const filteredMentors = mentors.filter(mentor => mentor.category === activeCategory)
 
