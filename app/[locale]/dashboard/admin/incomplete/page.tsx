@@ -98,7 +98,7 @@ export default function IncompleteUsersPage() {
   const title = locale === "es" ? "Inscripciones Incompletas" : "Incomplete Registrations"
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title={title}>
         <div className="space-y-6">
           {/* Header */}
