@@ -180,3 +180,41 @@ html {
     animation: toast-drain 4s linear forwards;
   }
 }
+
+/* Custom scrollbar for dialog modal content */
+[data-slot="dialog-content"] .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,138,61,0.85) rgba(255,255,255,0.02);
+  scrollbar-gutter: stable;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,138,61,0.95), rgba(1,60,222,0.9));
+  border-radius: 999px;
+  border: 2px solid rgba(2,6,23,0.6);
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.1);
+}
+
+/* cover scrollbar area under the close button so the thumb appears below the X */
+[data-slot="dialog-content"] .overflow-y-auto::before {
+  content: "";
+  position: absolute;
+  right: 48px; /* match close button `right-12` (3rem = 48px) */
+  top: 0;
+  height: 2.5rem; /* same area as close button */
+  width: 28px;
+  background: var(--background);
+  pointer-events: none;
+  border-radius: 999px;
+}
