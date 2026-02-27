@@ -32,6 +32,8 @@ interface Team {
   status?: string
   category?: number | null
   category_1?: number | null
+  admin_id?: string
+  assignedRoom?: string
 }
 
 interface TeamSectionProps {
@@ -493,6 +495,13 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                   <div className="flex items-center gap-2 font-pixel text-xs sm:text-md text-brand-cyan/40 italic"> {/* was text-sm */}
                     <LucideIcons.Clock className="h-4 w-4" />
                     <span>{locale === "es" ? "Categoría pendiente de asignación" : "Category pending assignment"}</span>
+                  </div>
+                )}
+                {(team as any)?.assignedRoom && (
+                  <div className="flex items-center gap-2 px-3 py-1 bg-brand-orange/10 border border-brand-orange/20 rounded flex-row">
+                    <LucideIcons.MapPin className="h-4 w-4 text-brand-orange" />
+                    <span className="text-brand-orange font-pixel text-xs uppercase">{locale === "es" ? "Aula:" : "Room:"}</span>
+                    <span className="text-brand-cyan font-pixel text-xs">{(team as any).assignedRoom}</span>
                   </div>
                 )}
                 <button

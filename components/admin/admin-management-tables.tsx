@@ -1,0 +1,615 @@
+"use client"
+
+import { useState, useEffect, useMemo } from "react"
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { useCategories } from "@/hooks/use-categories"
+import type { Locale } from "@/lib/i18n/config"
+import { GlassCard } from "@/components/ui/glass-card"
+import { Input } from "@/components/ui/input"
+import { PixelButton } from "@/components/ui/pixel-button"
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableHead,
+    TableRow,
+    TableCell,
+} from "@/components/ui/table"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { PaginationControls } from "@/components/ui/pagination-controls"
+
+interface AdminManagementTablesProps {
+    locale: Locale
+    translations: any
+}
+
+type Tab = "participants" | "teams"
+
+export function AdminManagementTables({ locale, translations }: AdminManagementTablesProps) {
+    const [activeTab, setActiveTab] = useState<Tab>("participants")
+    const [users, setUsers] = useState<any[]>([])
+    const [teams, setTeams] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const { categories } = useCategories(locale)
+    const db = getDbClient()
+
+    // Filters and Sorting
+    const [searchTerm, setSearchTerm] = useState("")
+    const [categoryFilter, setCategoryFilter] = useState<string>("all")
+    const [sortField, setSortField] = useState<string>("createdAt")
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
+    // Pagination
+    const [page, setPage] = useState(1)
+    const pageSize = 20
+
+    // Edit Dialog States
+    const [editingItem, setEditingItem] = useState<any | null>(null)
+    const [editType, setEditType] = useState<Tab | null>(null)
+    const [isSaving, setIsSaving] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
+
+    // Team Details Modal (view only members)
+    const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
+
+    const fetchData = async () => {
+        if (!db) return
+        setLoading(true)
+        try {
+            const [usersSnap, teamsSnap] = await Promise.all([
+                getDocs(collection(db, "users")),
+                getDocs(collection(db, "teams"))
+            ])
+
+            const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            const teamsData = teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+
+            setUsers(usersData)
+            setTeams(teamsData)
+        } catch (error) {
+            console.error("Error fetching admin data:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [db])
+
+    const handleUpdate = async () => {
+        if (!db || !editingItem || !editType) return
+        setIsSaving(true)
+        try {
+            const collectionName = editType === "participants" ? "users" : "teams"
+            const docRef = doc(db, collectionName, editingItem.id)
+
+            // Remove id from payload
+            const { id, ...payload } = editingItem
+
+            await updateDoc(docRef, payload)
+
+            // Refresh local data
+            await fetchData()
+
+            setEditingItem(null)
+            setEditType(null)
+            setShowConfirm(false)
+        } catch (error) {
+            console.error("Error updating document:", error)
+            alert("Error updating document. Check console.")
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+        } else {
+            setSortField(field)
+            setSortOrder("asc")
+        }
+    }
+
+    const getCategoryName = (categoryValue: any) => {
+        if (categoryValue === null || categoryValue === undefined) return "-"
+        const index = parseInt(categoryValue)
+        const category = categories[index]
+        if (!category) return "-"
+        return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
+    }
+
+    const filteredAndSortedData = useMemo(() => {
+        let data = activeTab === "participants" ? users.filter(u => u.role !== "admin") : [...teams]
+
+        // Search
+        if (searchTerm) {
+            const lowerSearch = searchTerm.toLowerCase()
+            data = data.filter(item => {
+                const name = `${item.name || ""} ${item.surname || ""}`.toLowerCase()
+                const email = (item.email || "").toLowerCase()
+                return name.includes(lowerSearch) || email.includes(lowerSearch) || item.id.toLowerCase().includes(lowerSearch)
+            })
+        }
+
+        // Category Filter
+        if (categoryFilter !== "all") {
+            const catIdx = parseInt(categoryFilter)
+            data = data.filter(item => {
+                if (activeTab === "participants") {
+                    return item.category_1 === catIdx || item.category_2 === catIdx || item.category_3 === catIdx
+                } else {
+                    return item.category_1 === catIdx
+                }
+            })
+        }
+
+        // Sort
+        data.sort((a, b) => {
+            let valA = a[sortField]
+            let valB = b[sortField]
+
+            // Handle specially for Date
+            if (sortField === "createdAt") {
+                valA = a.createdAt?.seconds || 0
+                valB = b.createdAt?.seconds || 0
+            }
+
+            if (valA < valB) return sortOrder === "asc" ? -1 : 1
+            if (valA > valB) return sortOrder === "asc" ? 1 : -1
+            return 0
+        })
+
+        return data
+    }, [activeTab, users, teams, searchTerm, categoryFilter, sortField, sortOrder])
+
+    const pagedData = useMemo(() => {
+        const start = (page - 1) * pageSize
+        return filteredAndSortedData.slice(start, start + pageSize)
+    }, [filteredAndSortedData, page])
+
+    const totalPages = Math.ceil(filteredAndSortedData.length / pageSize)
+
+    const getTeamMembers = (teamId: string) => {
+        return users.filter(user => user.team === teamId)
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="flex gap-2 p-1 bg-brand-navy/40 border border-brand-cyan/20 rounded-lg">
+                    <button
+                        onClick={() => { setActiveTab("participants"); setPage(1); }}
+                        className={cn(
+                            "px-4 py-2 rounded font-pixel text-xs transition-all",
+                            activeTab === "participants" ? "bg-brand-orange text-brand-navy" : "text-brand-cyan hover:bg-brand-cyan/10"
+                        )}
+                    >
+                        {locale === "es" ? "Participantes" : "Participants"}
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab("teams"); setPage(1); }}
+                        className={cn(
+                            "px-4 py-2 rounded font-pixel text-xs transition-all",
+                            activeTab === "teams" ? "bg-brand-orange text-brand-navy" : "text-brand-cyan hover:bg-brand-cyan/10"
+                        )}
+                    >
+                        {locale === "es" ? "Equipos" : "Teams"}
+                    </button>
+                </div>
+
+                <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/40" />
+                        <Input
+                            placeholder={locale === "es" ? "Buscar..." : "Search..."}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan h-9"
+                        />
+                    </div>
+
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="bg-brand-navy border border-brand-cyan/30 text-brand-cyan text-sm rounded h-9 px-3"
+                    >
+                        <option value="all">{locale === "es" ? "Todas las categorías" : "All Categories"}</option>
+                        {categories.map((cat, idx) => (
+                            <option key={cat.id} value={idx}>
+                                {locale === "es" ? cat.spanishName : cat.englishName}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <GlassCard className="overflow-hidden border-brand-cyan/10">
+                {loading ? (
+                    <div className="p-12 text-center text-brand-cyan animate-pulse font-pixel">Loading data...</div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-brand-navy/60">
+                                <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                                    {activeTab === "participants" ? (
+                                        <>
+                                            <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Email" : "Email"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Escuela/Uni" : "School/Uni"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Carrera" : "Degree"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Equipo" : "Team"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Estado" : "Status"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Edad" : "Age"}</TableHead>
+                                            <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Miembros" : "Members"}</TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Estado" : "Status"}</TableHead>
+                                            <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Aula" : "Room"}</TableHead>
+                                        </>
+                                    )}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {pagedData.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={activeTab === "participants" ? 10 : 6} className="text-center py-8 text-brand-cyan/40">
+                                            {locale === "es" ? "No se encontraron resultados" : "No results found"}
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    pagedData.map((item) => (
+                                        <TableRow key={item.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
+                                            {activeTab === "participants" ? (
+                                                <>
+                                                    <TableCell className="py-1">
+                                                        <button
+                                                            onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
+                                                            className="text-brand-yellow text-[10px] hover:underline flex items-center gap-1.5 group"
+                                                        >
+                                                            {item.name} {item.surname}
+                                                            <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                        </button>
+                                                    </TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
+                                                    <TableCell className="text-brand-orange text-[10px] py-1">
+                                                        {item.team ? (
+                                                            <button onClick={() => {
+                                                                const team = teams.find(t => t.id === item.team)
+                                                                if (team) setSelectedTeam(team)
+                                                            }} className="hover:underline">
+                                                                {teams.find(t => t.id === item.team)?.name || item.team}
+                                                            </button>
+                                                        ) : "-"}
+                                                    </TableCell>
+                                                    <TableCell className="py-1">
+                                                        <span className={cn(
+                                                            "px-1.5 py-0 rounded text-[9px] uppercase",
+                                                            item.status === "accepted" ? "bg-green-500/20 text-green-400" :
+                                                                item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                                                                    "bg-red-500/20 text-red-400"
+                                                        )}>
+                                                            {item.status || "pending"}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(item.category_1)}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                                                        {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                    </TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TableCell className="py-1 text-xs">
+                                                        <button
+                                                            onClick={() => { setEditingItem({ ...item }); setEditType("teams"); }}
+                                                            className="text-brand-yellow hover:underline flex items-center gap-1.5 group"
+                                                        >
+                                                            {item.name}
+                                                            <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                        </button>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <button
+                                                            onClick={() => setSelectedTeam(item)}
+                                                            className="flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 text-brand-cyan text-xs hover:bg-brand-cyan/20 transition-colors"
+                                                        >
+                                                            <Users size={14} />
+                                                            {getTeamMembers(item.id).length}
+                                                        </button>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className={cn(
+                                                            "px-2 py-0.5 rounded text-[10px] uppercase",
+                                                            item.status === "approved" ? "bg-green-500/20 text-green-400" :
+                                                                item.status === "rejected" ? "bg-red-500/20 text-red-400" :
+                                                                    "bg-yellow-500/20 text-yellow-400"
+                                                        )}>
+                                                            {item.status}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(item.category_1)}</TableCell>
+                                                    <TableCell className="text-brand-cyan/60 text-[10px]">
+                                                        {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                    </TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.assignedRoom || "-"}</TableCell>
+                                                </>
+                                            )}
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+
+                <div className="px-4 pb-4">
+                    <PaginationControls
+                        page={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                        totalItems={filteredAndSortedData.length}
+                        pageSize={pageSize}
+                        locale={locale}
+                    />
+                </div>
+            </GlassCard>
+
+            {/* Edit Item Dialog */}
+            <Dialog open={!!editingItem && !showConfirm} onOpenChange={(open) => !open && setEditingItem(null)}>
+                <DialogContent className="glass-effect border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <Edit2 size={18} />
+                            {editType === "participants" ? (locale === "es" ? "Editar Participante" : "Edit Participant") : (locale === "es" ? "Editar Equipo" : "Edit Team")}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {editingItem && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            {editType === "participants" ? (
+                                <>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre" : "Name"}</label>
+                                        <Input
+                                            value={editingItem.name || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Apellido" : "Surname"}</label>
+                                        <Input
+                                            value={editingItem.surname || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, surname: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">Email</label>
+                                        <Input
+                                            value={editingItem.email || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, email: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Universidad" : "University"}</label>
+                                        <Input
+                                            value={editingItem.university || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, university: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Carrera" : "Degree"}</label>
+                                        <Input
+                                            value={editingItem.career || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, career: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Edad" : "Age"}</label>
+                                        <Input
+                                            type="number"
+                                            value={editingItem.age || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, age: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
+                                        <select
+                                            value={editingItem.role || "user"}
+                                            onChange={e => setEditingItem({ ...editingItem, role: e.target.value })}
+                                            className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
+                                        >
+                                            <option value="user">User</option>
+                                            <option value="jury">Jury</option>
+                                            <option value="mentor">Mentor</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <select
+                                            value={editingItem.status || "pending"}
+                                            onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
+                                            className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
+                                        >
+                                            <option value="pending">Pending</option>
+                                            <option value="accepted">Accepted</option>
+                                            <option value="rejected">Rejected</option>
+                                        </select>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="space-y-1 md:col-span-2">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</label>
+                                        <Input
+                                            value={editingItem.name || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Categoría" : "Category"}</label>
+                                        <select
+                                            value={editingItem.category_1 || "0"}
+                                            onChange={e => setEditingItem({ ...editingItem, category_1: parseInt(e.target.value) })}
+                                            className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
+                                        >
+                                            {categories.map((cat, idx) => (
+                                                <option key={cat.id} value={idx}>
+                                                    {locale === "es" ? cat.spanishName : cat.englishName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <select
+                                            value={editingItem.status || "pending"}
+                                            onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
+                                            className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
+                                        >
+                                            <option value="pending">Pending</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1 md:col-span-2">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</label>
+                                        <Input
+                                            value={editingItem.assignedRoom || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, assignedRoom: e.target.value })}
+                                            className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
+                                            placeholder={locale === "es" ? "Ej: Aula 101" : "e.g. Room 101"}
+                                        />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex justify-between mt-8 pt-4 border-t border-brand-cyan/10">
+                        <PixelButton variant="secondary" onClick={() => setEditingItem(null)} size="sm">
+                            <X size={14} className="mr-2" />
+                            {locale === "es" ? "Cancelar" : "Cancel"}
+                        </PixelButton>
+                        <PixelButton onClick={() => setShowConfirm(true)} size="sm">
+                            <Save size={14} className="mr-2" />
+                            {locale === "es" ? "Guardar Cambios" : "Save Changes"}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Confirmation Dialog */}
+            <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <DialogContent className="glass-effect border-brand-orange/30 max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-orange flex items-center gap-2">
+                            <AlertTriangle size={18} />
+                            {locale === "es" ? "Confirmar Cambios" : "Confirm Changes"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-sm text-brand-cyan/80">
+                            {locale === "es"
+                                ? "¿Estás seguro de que deseas guardar estos cambios? Esta acción modificará directamente la base de datos."
+                                : "Are you sure you want to save these changes? This will directly modify the database."}
+                        </p>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => setShowConfirm(false)} size="sm">
+                            {locale === "es" ? "No, volver" : "No, go back"}
+                        </PixelButton>
+                        <PixelButton onClick={handleUpdate} size="sm" disabled={isSaving}>
+                            {isSaving ? (locale === "es" ? "Guardando..." : "Saving...") : (locale === "es" ? "Sí, confirmar" : "Yes, confirm")}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Team Details Dialog */}
+            <Dialog open={!!selectedTeam} onOpenChange={(open) => !open && setSelectedTeam(null)}>
+                <DialogContent className="glass-effect border-brand-cyan/30">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow">
+                            {selectedTeam?.name}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-xs text-brand-cyan/60 uppercase mb-2">{locale === "es" ? "Miembros" : "Members"}</p>
+                            <div className="space-y-2">
+                                {getTeamMembers(selectedTeam?.id).map((member) => (
+                                    <div key={member.id} className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                        <p className="text-brand-yellow text-xs">{member.name} {member.surname}</p>
+                                        <p className="text-brand-cyan/60 text-xs">{member.email}</p>
+                                        {member.university && <p className="text-brand-cyan/60 text-[10px] mt-1">{member.university}</p>}
+                                    </div>
+                                ))}
+                                {getTeamMembers(selectedTeam?.id).length === 0 && (
+                                    <p className="text-brand-cyan/60 text-xs">{locale === "es" ? "No hay miembros en este equipo" : "No members in this team"}</p>
+                                )}
+                            </div>
+                        </div>
+                        {selectedTeam?.assignedRoom && (
+                            <div className="p-3 rounded bg-brand-orange/10 border border-brand-orange/20">
+                                <p className="text-[10px] text-brand-orange uppercase mb-1">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</p>
+                                <p className="text-brand-cyan font-pixel text-sm">{selectedTeam.assignedRoom}</p>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center">
+                            <button
+                                onClick={() => { setEditingItem({ ...selectedTeam }); setEditType("teams"); setSelectedTeam(null); }}
+                                className="text-xs text-brand-cyan hover:text-brand-yellow flex items-center gap-1 transition-colors"
+                            >
+                                <Edit2 size={12} />
+                                {locale === "es" ? "Editar este equipo" : "Edit this team"}
+                            </button>
+                            <PixelButton onClick={() => setSelectedTeam(null)} size="sm">Close</PixelButton>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    )
+}

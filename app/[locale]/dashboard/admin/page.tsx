@@ -19,6 +19,7 @@ import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { toast } from "@/hooks/use-toast"
 import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
+import { AdminManagementTables } from "@/components/admin/admin-management-tables"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function AdminDashboard() {
@@ -176,6 +177,13 @@ export default function AdminDashboard() {
               <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
             </div>
             <AdminDataExporter />
+          </section>
+
+          <section>
+            <div className="mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Participants & Teams</h3>
+            </div>
+            <AdminManagementTables locale={locale} translations={translations} />
           </section>
 
           <section>

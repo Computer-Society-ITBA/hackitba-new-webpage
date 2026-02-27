@@ -86,6 +86,11 @@ export interface Team {
   participantIds: string[] // 1-4 participants
   eventId: string
   project?: TeamProject
+  status?: string
+  category_1?: number
+  category_2?: number
+  category_3?: number
+  assignedRoom?: string
   createdAt: Date
   updatedAt: Date
 }
