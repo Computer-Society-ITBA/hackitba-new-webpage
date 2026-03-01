@@ -155,13 +155,64 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
         // Sort
         data.sort((a, b) => {
-            let valA = a[sortField]
-            let valB = b[sortField]
+            let valA: any = a[sortField]
+            let valB: any = b[sortField]
 
-            // Handle specially for Date
+            // Special cases
             if (sortField === "createdAt") {
                 valA = a.createdAt?.seconds || 0
                 valB = b.createdAt?.seconds || 0
+            } else if (sortField === "name") {
+                valA = `${a.name || ""} ${a.surname || ""}`.toLowerCase()
+                valB = `${b.name || ""} ${b.surname || ""}`.toLowerCase()
+            } else if (sortField === "members") {
+                // For team sorting by members count (when data is teams)
+                const membersA = users.filter(u => u.team === a.id).length
+                const membersB = users.filter(u => u.team === b.id).length
+                valA = membersA
+                valB = membersB
+            } else if (sortField === "status") {
+                // Treat onboardingStep === 1 as a distinct status ('not_registered')
+                const keyA = Number(a.onboardingStep) === 1 ? "not_registered" : ((a.status || "pending").toString().toLowerCase())
+                const keyB = Number(b.onboardingStep) === 1 ? "not_registered" : ((b.status || "pending").toString().toLowerCase())
+
+                const order = ["accepted", "pending", "not_registered", "rejected"]
+                const idxA = order.indexOf(keyA)
+                const idxB = order.indexOf(keyB)
+
+                // If both have explicit order, use that
+                if (idxA !== -1 && idxB !== -1) {
+                    valA = idxA
+                    valB = idxB
+                } else {
+                    valA = keyA
+                    valB = keyB
+                }
+            } else if (sortField === "assignedRoom") {
+                valA = (a.assignedRoom || "").toString().toLowerCase()
+                valB = (b.assignedRoom || "").toString().toLowerCase()
+            } else if (sortField === "team") {
+                const teamA = teams.find(t => t.id === a.team)
+                const teamB = teams.find(t => t.id === b.team)
+                valA = (teamA?.name || a.team || "").toString().toLowerCase()
+                valB = (teamB?.name || b.team || "").toString().toLowerCase()
+            } else if (sortField === "age") {
+                valA = Number(a.age || 0)
+                valB = Number(b.age || 0)
+            } else {
+                // Normalize undefined/null
+                if (valA === undefined || valA === null) valA = ""
+                if (valB === undefined || valB === null) valB = ""
+                // Try numeric compare first
+                const numA = parseFloat(valA)
+                const numB = parseFloat(valB)
+                if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+                    valA = numA
+                    valB = numB
+                } else {
+                    valA = valA.toString().toLowerCase()
+                    valB = valB.toString().toLowerCase()
+                }
             }
 
             if (valA < valB) return sortOrder === "asc" ? -1 : 1
@@ -246,12 +297,24 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Email" : "Email"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Escuela/Uni" : "School/Uni"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Carrera" : "Degree"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Equipo" : "Team"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Estado" : "Status"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Edad" : "Age"}</TableHead>
+                                            <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Email" : "Email"} {sortField === "email" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Escuela/Uni" : "School/Uni"} {sortField === "university" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Edad" : "Age"} {sortField === "age" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
                                             <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
@@ -267,15 +330,21 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Miembros" : "Members"}</TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Estado" : "Status"}</TableHead>
+                                            <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Miembros" : "Members"} {sortField === "members" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
                                             <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
                                             <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Aula" : "Room"}</TableHead>
+                                            <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
                                         </>
                                     )}
                                 </TableRow>
@@ -315,14 +384,38 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         ) : "-"}
                                                     </TableCell>
                                                     <TableCell className="py-1">
-                                                        <span className={cn(
-                                                            "px-1.5 py-0 rounded text-[9px] uppercase",
-                                                            item.status === "accepted" ? "bg-green-500/20 text-green-400" :
-                                                                item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                                                                    "bg-red-500/20 text-red-400"
-                                                        )}>
-                                                            {item.status || "pending"}
-                                                        </span>
+                                                        {(() => {
+                                                            const isOnboarding1 = Number(item.onboardingStep) === 1
+                                                            const displayStatus = isOnboarding1 ? (locale === "es" ? "No inscrito" : "Not registered") : (item.status || "pending")
+                                                            const statusKey = isOnboarding1 ? "not_registered" : (item.status || "pending")
+                                                            const statusClass = isOnboarding1 ? "bg-gray-500/20 text-gray-300" : (
+                                                                item.status === "accepted" ? "bg-green-500/20 text-green-400" :
+                                                                    item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                                                                        "bg-red-500/20 text-red-400"
+                                                            )
+
+                                                            const inlineStyle: any = (() => {
+                                                                const key = statusKey
+                                                                switch (key) {
+                                                                    case "accepted":
+                                                                        return { backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }
+                                                                    case "pending":
+                                                                        return { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }
+                                                                    case "not_registered":
+                                                                        return { backgroundColor: 'rgba(107,114,128,0.12)', color: '#9ca3af' }
+                                                                    case "rejected":
+                                                                        return { backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }
+                                                                    default:
+                                                                        return {}
+                                                                }
+                                                            })()
+
+                                                            return (
+                                                                <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-[9px] uppercase", statusClass)}>
+                                                                    {displayStatus}
+                                                                </span>
+                                                            )
+                                                        })()}
                                                     </TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(item.category_1)}</TableCell>
@@ -352,7 +445,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         </button>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <span className={cn(
+                                                        <span data-status={item.status || "pending"} className={cn(
                                                             "px-2 py-0.5 rounded text-[10px] uppercase",
                                                             item.status === "approved" ? "bg-green-500/20 text-green-400" :
                                                                 item.status === "rejected" ? "bg-red-500/20 text-red-400" :
