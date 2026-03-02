@@ -3,6 +3,7 @@ import * as logger from "firebase-functions/logger";
 import admin from "firebase-admin";
 import * as teamService from "../services/teamService";
 import {sendTeamNotificationEmail} from "../services/emailService";
+import {getHackitbaDb} from "../helpers/getDb";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -399,10 +400,13 @@ export const joinTeam = async (req: Request, res: Response) => {
 /**
  * Get teams pending approval (status == "registered", not created by admin)
  * Supports pagination via ?page=1&pageSize=5 query params.
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
  */
 export const getPendingTeams = async (req: Request, res: Response) => {
   try {
-    const db = admin.firestore();
+    const db = getHackitbaDb();
     const snapshot = await db.collection("teams")
       .where("status", "==", "registered")
       .get();
@@ -426,10 +430,13 @@ export const getPendingTeams = async (req: Request, res: Response) => {
 
 /**
  * Get all teams created by admin (for dropdowns / team assignment)
+ * @param {Request} _req - Request object (unused)
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
  */
-export const getAdminTeams = async (req: Request, res: Response) => {
+export const getAdminTeams = async (_req: Request, res: Response) => {
   try {
-    const db = admin.firestore();
+    const db = getHackitbaDb();
     const snapshot = await db.collection("teams")
       .where("is_created_by_admin", "==", true)
       .get();
