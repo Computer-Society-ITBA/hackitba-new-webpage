@@ -395,3 +395,49 @@ export const joinTeam = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * Get teams pending approval (status == "registered", not created by admin)
+ * Supports pagination via ?page=1&pageSize=5 query params.
+ */
+export const getPendingTeams = async (req: Request, res: Response) => {
+  try {
+    const db = admin.firestore();
+    const snapshot = await db.collection("teams")
+      .where("status", "==", "registered")
+      .get();
+
+    const allTeams = snapshot.docs
+      .map((doc) => ({id: doc.id, ...doc.data()}))
+      .filter((t: any) => !t.is_created_by_admin);
+
+    const total = allTeams.length;
+    const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? "5"), 10));
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(Math.max(1, parseInt(String(req.query.page ?? "1"), 10)), totalPages);
+    const teams = allTeams.slice((page - 1) * pageSize, page * pageSize);
+
+    return res.status(200).json({teams, count: total, page, pageSize, totalPages});
+  } catch (error) {
+    logger.error("Error getting pending teams:", error);
+    return res.status(500).json({error: "Error getting pending teams"});
+  }
+};
+
+/**
+ * Get all teams created by admin (for dropdowns / team assignment)
+ */
+export const getAdminTeams = async (req: Request, res: Response) => {
+  try {
+    const db = admin.firestore();
+    const snapshot = await db.collection("teams")
+      .where("is_created_by_admin", "==", true)
+      .get();
+
+    const teams = snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
+    return res.status(200).json({teams, count: teams.length});
+  } catch (error) {
+    logger.error("Error getting admin teams:", error);
+    return res.status(500).json({error: "Error getting admin teams"});
+  }
+};

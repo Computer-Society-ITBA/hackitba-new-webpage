@@ -431,7 +431,7 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
 
     logger.info(`Found ${usersSnapshot.size} pending participants`);
 
-    const pendingParticipants = usersSnapshot.docs
+    const allParticipants = usersSnapshot.docs
       .filter((doc) => {
         const data = doc.data();
         return data.participationStatus !== "rejected" && Number(data.onboardingStep ?? 0) >= 2;
@@ -455,11 +455,20 @@ export const getPendingParticipants = async (req: Request, res: Response) => {
         };
       });
 
-    logger.info(`Returning ${pendingParticipants.length} participants`);
+    const total = allParticipants.length;
+    const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? "5"), 10));
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(Math.max(1, parseInt(String(req.query.page ?? "1"), 10)), totalPages);
+    const participants = allParticipants.slice((page - 1) * pageSize, page * pageSize);
+
+    logger.info(`Returning page ${page}/${totalPages} (${participants.length}/${total} participants)`);
 
     return res.status(200).json({
-      participants: pendingParticipants,
-      count: pendingParticipants.length,
+      participants,
+      count: total,
+      page,
+      pageSize,
+      totalPages,
     });
   } catch (error) {
     logger.error("Error getting pending participants:", error);
@@ -478,7 +487,7 @@ export const getIncompleteUsers = async (req: Request, res: Response) => {
     const db = getHackitbaDb();
     const usersSnapshot = await db.collection("users").get();
 
-    const incompleteUsers = usersSnapshot.docs
+    const allIncompleteUsers = usersSnapshot.docs
       .filter((doc) => Number(doc.data().onboardingStep ?? 0) < 2)
       .map((doc) => {
         const data = doc.data();
@@ -514,11 +523,20 @@ export const getIncompleteUsers = async (req: Request, res: Response) => {
         };
       });
 
-    logger.info(`Returning ${incompleteUsers.length} incomplete users`);
+    const total = allIncompleteUsers.length;
+    const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? "5"), 10));
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(Math.max(1, parseInt(String(req.query.page ?? "1"), 10)), totalPages);
+    const users = allIncompleteUsers.slice((page - 1) * pageSize, page * pageSize);
+
+    logger.info(`Returning page ${page}/${totalPages} (${users.length}/${total} incomplete users)`);
 
     return res.status(200).json({
-      users: incompleteUsers,
-      count: incompleteUsers.length,
+      users,
+      count: total,
+      page,
+      pageSize,
+      totalPages,
     });
   } catch (error) {
     logger.error("Error getting incomplete users:", error);

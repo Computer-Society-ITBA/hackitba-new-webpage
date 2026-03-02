@@ -14,11 +14,17 @@ router.post("/:label/join", validateToken, teamController.joinTeam);
 // Admin-only: actualizar status del equipo
 router.patch("/:label/status", validateToken, requireAdmin, teamController.updateTeamStatusAdmin);
 
-// Obtener equipo por label
-router.get("/:label", validateToken, teamController.getTeamByLabel);
+// Admin-only: equipos pendientes de aprobación (paginado)
+router.get("/pending", validateToken, requireAdmin, teamController.getPendingTeams);
+
+// Admin-only: equipos creados por admin (para dropdown de asignación)
+router.get("/admin-created", validateToken, requireAdmin, teamController.getAdminTeams);
 
 // Obtener todos los equipos
 router.get("/", validateToken, teamController.getAllTeams);
+
+// Obtener equipo por label
+router.get("/:label", validateToken, teamController.getTeamByLabel);
 
 // Actualizar equipo
 router.patch("/:label", validateToken, teamController.updateTeam);
