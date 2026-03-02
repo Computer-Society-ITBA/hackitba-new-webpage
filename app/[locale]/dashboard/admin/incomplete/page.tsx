@@ -31,6 +31,8 @@ export default function IncompleteUsersPage() {
   const auth = getAuthClient()
 
   const [users, setUsers] = useState<IncompleteUser[]>([])
+  const [totalUsers, setTotalUsers] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -45,10 +47,10 @@ export default function IncompleteUsersPage() {
   }, [auth])
 
   useEffect(() => {
-    if (authReady) loadIncompleteUsers()
+    if (authReady) loadIncompleteUsers(1)
   }, [authReady])
 
-  const loadIncompleteUsers = async () => {
+  const loadIncompleteUsers = async (targetPage: number) => {
     setLoading(true)
     setError(null)
     try {
@@ -56,7 +58,7 @@ export default function IncompleteUsersPage() {
       if (!idToken) throw new Error("No auth token available")
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const url = `${apiUrl}/users/incomplete`
+      const url = `${apiUrl}/users/incomplete?page=${targetPage}&pageSize=${PAGE_SIZE}`
       let response: Response
       try {
         response = await fetch(url, {
@@ -73,7 +75,9 @@ export default function IncompleteUsersPage() {
 
       const data = await response.json()
       setUsers(data.users || [])
-      setPage(1)
+      setTotalUsers(data.count ?? 0)
+      setTotalPages(data.totalPages ?? 1)
+      setPage(data.page ?? targetPage)
     } catch (err: any) {
       setError(err.message || "Error loading incomplete users")
     } finally {
@@ -91,9 +95,6 @@ export default function IncompleteUsersPage() {
       year: "numeric",
     })
   }
-
-  const totalPages = Math.ceil(users.length / PAGE_SIZE)
-  const pagedUsers = users.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const title = locale === "es" ? "Inscripciones Incompletas" : "Incomplete Registrations"
 
@@ -114,7 +115,7 @@ export default function IncompleteUsersPage() {
                 </div>
               </div>
               <button
-                onClick={loadIncompleteUsers}
+                onClick={() => loadIncompleteUsers(1)}
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 rounded border border-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/10 transition-colors font-pixel text-xs disabled:opacity-50"
               >
@@ -144,7 +145,7 @@ export default function IncompleteUsersPage() {
           )}
 
           {/* Empty state */}
-          {!loading && !error && users.length === 0 && (
+          {!loading && !error && totalUsers === 0 && (
             <GlassCard className="p-12">
               <div className="flex flex-col items-center gap-4 text-center">
                 <Clock className="w-10 h-10 text-brand-cyan/30" />
@@ -156,11 +157,11 @@ export default function IncompleteUsersPage() {
           )}
 
           {/* Users table */}
-          {!loading && !error && users.length > 0 && (
+          {!loading && !error && totalUsers > 0 && (
             <GlassCard className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-pixel text-xs text-brand-cyan uppercase tracking-wider">
-                  {users.length} {locale === "es" ? "usuarios" : "users"}
+                  {totalUsers} {locale === "es" ? "usuarios" : "users"}
                 </h3>
               </div>
 
@@ -182,7 +183,7 @@ export default function IncompleteUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pagedUsers.map((user) => (
+                    {users.map((user) => (
                       <tr key={user.id} className="border-b border-brand-cyan/5 hover:bg-brand-cyan/5 transition-colors">
                         <td className="py-3 px-3 text-white">
                           {user.name || user.surname
@@ -208,7 +209,7 @@ export default function IncompleteUsersPage() {
 
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
-                {pagedUsers.map((user) => (
+                {users.map((user) => (
                   <div key={user.id} className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-white text-sm font-medium">
@@ -232,8 +233,8 @@ export default function IncompleteUsersPage() {
               <PaginationControls
                 page={page}
                 totalPages={totalPages}
-                onPageChange={setPage}
-                totalItems={users.length}
+                onPageChange={(p) => loadIncompleteUsers(p)}
+                totalItems={totalUsers}
                 pageSize={PAGE_SIZE}
                 locale={locale}
               />            </GlassCard>

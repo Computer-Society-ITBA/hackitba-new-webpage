@@ -48,7 +48,11 @@ export default function ApprovalsPage() {
   const PARTICIPANTS_PAGE_SIZE = 5
   const TEAMS_PAGE_SIZE = 5
   const [participantsPage, setParticipantsPage] = useState(1)
+  const [totalParticipants, setTotalParticipants] = useState(0)
+  const [totalParticipantPages, setTotalParticipantPages] = useState(1)
   const [teamsPage, setTeamsPage] = useState(1)
+  const [totalTeams, setTotalTeams] = useState(0)
+  const [totalTeamPages, setTotalTeamPages] = useState(1)
 
   useEffect(() => {
     if (!auth) return
@@ -79,7 +83,7 @@ export default function ApprovalsPage() {
     }
   }
 
-  const loadPendingParticipants = async () => {
+  const loadPendingParticipants = async (targetPage = 1) => {
     try {
       const idToken = await auth?.currentUser?.getIdToken()
       if (!idToken) {
@@ -88,14 +92,16 @@ export default function ApprovalsPage() {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/users/pending-participants`, {
+      const response = await fetch(`${apiUrl}/users/pending-participants?page=${targetPage}&pageSize=${PARTICIPANTS_PAGE_SIZE}`, {
         headers: { "Authorization": `Bearer ${idToken}` },
       })
 
       if (response.ok) {
         const data = await response.json()
         setPendingParticipants(data.participants || [])
-        setParticipantsPage(1)
+        setTotalParticipants(data.count ?? 0)
+        setTotalParticipantPages(data.totalPages ?? 1)
+        setParticipantsPage(data.page ?? targetPage)
       } else {
         const errorData = await response.text()
         console.error("Error response:", errorData)
@@ -106,27 +112,41 @@ export default function ApprovalsPage() {
   }
 
   const loadTeams = async () => {
-    if (!db) return
     try {
-      const teamsQuery = query(collection(db, "teams"), where("is_created_by_admin", "==", true))
-      const teamsSnapshot = await getDocs(teamsQuery)
-      setTeams(teamsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+      const idToken = await auth?.currentUser?.getIdToken()
+      if (!idToken) return
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/teams/admin-created`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setTeams(data.teams || [])
+      } else {
+        console.error("Error loading admin teams")
+      }
     } catch (error) {
       console.error("Error loading teams:", error)
     }
   }
 
-  const loadPendingTeams = async () => {
-    if (!db) return
+  const loadPendingTeams = async (targetPage = 1) => {
     try {
-      const teamsQuery = query(collection(db, "teams"), where("status", "==", "registered"))
-      const teamsSnapshot = await getDocs(teamsQuery)
-      setPendingTeams(
-        teamsSnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((t: any) => !t.is_created_by_admin)
-      )
-      setTeamsPage(1)
+      const idToken = await auth?.currentUser?.getIdToken()
+      if (!idToken) return
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/teams/pending?page=${targetPage}&pageSize=${TEAMS_PAGE_SIZE}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setPendingTeams(data.teams || [])
+        setTotalTeams(data.count ?? 0)
+        setTotalTeamPages(data.totalPages ?? 1)
+        setTeamsPage(data.page ?? targetPage)
+      } else {
+        console.error("Error loading pending teams")
+      }
     } catch (error) {
       console.error("Error loading pending teams:", error)
     }
@@ -383,7 +403,7 @@ export default function ApprovalsPage() {
                 <UsersIcon className="w-6 h-6 text-brand-orange" />
                 <h3 className="font-pixel text-2xl text-brand-yellow">{translations.admin.pendingParticipants.title}</h3>
                 <span className="bg-brand-orange/20 text-brand-orange px-3 py-1 rounded-full text-sm font-pixel">
-                  {pendingParticipants.length}
+                  {totalParticipants}
                 </span>
               </div>
               <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
@@ -398,46 +418,39 @@ export default function ApprovalsPage() {
                   {translations.admin.pendingParticipants.noParticipants}
                 </p>
               </GlassCard>
-            ) : (() => {
-              const totalParticipantPages = Math.ceil(pendingParticipants.length / PARTICIPANTS_PAGE_SIZE)
-              const pagedParticipants = pendingParticipants.slice(
-                (participantsPage - 1) * PARTICIPANTS_PAGE_SIZE,
-                participantsPage * PARTICIPANTS_PAGE_SIZE
-              )
-              return (
-                <GlassCard className="p-4">
-                  <div className="space-y-3">
-                    {pagedParticipants.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
-                        onClick={() => {
-                          setSelectedParticipant(participant)
-                          setSelectedParticipantTeamId("")
-                          setParticipantRejectReason("")
-                        }}
-                      >
-                        <p className="font-pixel text-brand-yellow text-sm">
-                          {participant.name} {participant.surname}
-                        </p>
-                        <div className="text-xs text-brand-cyan/70 space-y-0.5 mt-1">
-                          <p>{participant.email}</p>
-                          <p>{[participant.university, participant.career].filter(Boolean).join(" - ")}</p>
-                        </div>
+            ) : (
+              <GlassCard className="p-4">
+                <div className="space-y-3">
+                  {pendingParticipants.map((participant) => (
+                    <div
+                      key={participant.id}
+                      className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setSelectedParticipant(participant)
+                        setSelectedParticipantTeamId("")
+                        setParticipantRejectReason("")
+                      }}
+                    >
+                      <p className="font-pixel text-brand-yellow text-sm">
+                        {participant.name} {participant.surname}
+                      </p>
+                      <div className="text-xs text-brand-cyan/70 space-y-0.5 mt-1">
+                        <p>{participant.email}</p>
+                        <p>{[participant.university, participant.career].filter(Boolean).join(" - ")}</p>
                       </div>
-                    ))}
-                  </div>
-                  <PaginationControls
-                    page={participantsPage}
-                    totalPages={totalParticipantPages}
-                    onPageChange={setParticipantsPage}
-                    totalItems={pendingParticipants.length}
-                    pageSize={PARTICIPANTS_PAGE_SIZE}
-                    locale={locale}
-                  />
-                </GlassCard>
-              )
-            })()}
+                    </div>
+                  ))}
+                </div>
+                <PaginationControls
+                  page={participantsPage}
+                  totalPages={totalParticipantPages}
+                  onPageChange={(p) => loadPendingParticipants(p)}
+                  totalItems={totalParticipants}
+                  pageSize={PARTICIPANTS_PAGE_SIZE}
+                  locale={locale}
+                />
+              </GlassCard>
+            )}
           </section>
 
           {/* Pending Teams */}
@@ -449,7 +462,7 @@ export default function ApprovalsPage() {
                   {locale === "es" ? "Equipos Pendientes de Aprobación" : "Teams Pending Approval"}
                 </h3>
                 <span className="bg-brand-cyan/20 text-brand-cyan px-3 py-1 rounded-full text-sm font-pixel">
-                  {pendingTeams.length}
+                  {totalTeams}
                 </span>
               </div>
             </div>
@@ -460,37 +473,30 @@ export default function ApprovalsPage() {
                   {locale === "es" ? "No hay equipos pendientes de aprobación" : "No teams pending approval"}
                 </p>
               </GlassCard>
-            ) : (() => {
-              const totalTeamPages = Math.ceil(pendingTeams.length / TEAMS_PAGE_SIZE)
-              const pagedTeams = pendingTeams.slice(
-                (teamsPage - 1) * TEAMS_PAGE_SIZE,
-                teamsPage * TEAMS_PAGE_SIZE
-              )
-              return (
-                <GlassCard className="p-4">
-                  <div className="space-y-3">
-                    {pagedTeams.map((team) => (
-                      <div
-                        key={team.id}
-                        className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
-                        onClick={() => openTeamDetail(team)}
-                      >
-                        <p className="font-pixel text-brand-yellow text-sm mb-1">{team.name}</p>
-                        <p className="text-brand-cyan/50 text-xs">{team.id}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <PaginationControls
-                    page={teamsPage}
-                    totalPages={totalTeamPages}
-                    onPageChange={setTeamsPage}
-                    totalItems={pendingTeams.length}
-                    pageSize={TEAMS_PAGE_SIZE}
-                    locale={locale}
-                  />
-                </GlassCard>
-              )
-            })()}
+            ) : (
+              <GlassCard className="p-4">
+                <div className="space-y-3">
+                  {pendingTeams.map((team) => (
+                    <div
+                      key={team.id}
+                      className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
+                      onClick={() => openTeamDetail(team)}
+                    >
+                      <p className="font-pixel text-brand-yellow text-sm mb-1">{team.name}</p>
+                      <p className="text-brand-cyan/50 text-xs">{team.id}</p>
+                    </div>
+                  ))}
+                </div>
+                <PaginationControls
+                  page={teamsPage}
+                  totalPages={totalTeamPages}
+                  onPageChange={(p) => loadPendingTeams(p)}
+                  totalItems={totalTeams}
+                  pageSize={TEAMS_PAGE_SIZE}
+                  locale={locale}
+                />
+              </GlassCard>
+            )}
           </section>
         </div>
 
