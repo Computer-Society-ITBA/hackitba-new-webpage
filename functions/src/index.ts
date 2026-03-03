@@ -7,6 +7,7 @@ import {onRequest} from "firebase-functions/v2/https";
 import admin from "firebase-admin";
 import userRoutes from "./routes/userRoutes";
 import teamRoutes from "./routes/teamRoutes";
+import {sendMailFromQueue} from "./mailSender";
 
 dotenv.config();
 
@@ -48,6 +49,9 @@ app.get("/health", (req: Request, res: Response<HealthResponse>) => {
 
 // Export the Express app as a Cloud Function
 export const api = onRequest(app);
+
+// Export mail sender (Firestore trigger)
+export {sendMailFromQueue};
 
 // Cost control
 setGlobalOptions({maxInstances: 10});

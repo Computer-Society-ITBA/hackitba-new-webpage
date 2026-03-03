@@ -17,6 +17,7 @@ import {
   sendTeamAssignmentAcceptedEmail,
   sendTeamAssignmentRejectedEmail,
   sendEmailVerificationEmail,
+  sendCustomEmail,
 } from "../services/emailService";
 import {
   generateVerificationToken,
@@ -739,5 +740,77 @@ export const changeEmail = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error("Error changing email:", error);
     return res.status(500).json({error: "Error al cambiar email"});
+  }
+};
+
+/**
+ * Admin endpoint para enviar un email personalizado usando el template notification_generic.
+ * @param {Request} req - Express request containing body { email, subject, body, dashboardUrl? }
+ * @param {Response} res - Express response used to return status
+ * @return {Promise<void>} 200 when enqueued or an error status
+ */
+export const sendAdminEmail = async (req: Request, res: Response) => {
+  try {
+    const {email, subject, body, dashboardUrl} = req.body;
+
+    if (!email || !subject) {
+      return res.status(400).json({error: "Email and subject are required"});
+    }
+
+    try {
+      // Try to load and use the notification_generic template
+      const db = admin.firestore();
+      const templateDoc = await db.collection("emailTemplates").doc("notification_generic").get();
+      let finalHtml = body || "";
+      if (templateDoc.exists) {
+        const tData = templateDoc.data()!;
+        const variables: Record<string, string> = {
+          subject: subject || "",
+          body: body || "",
+          dashboardUrl: dashboardUrl || (process.env.APP_URL ? `${process.env.APP_URL}/es/dashboard` : "https://hackitba.com.ar/es/dashboard"),
+        };
+        let html = tData.html || "";
+        Object.entries(variables).forEach(([k, v]) => {
+          html = html.replace(new RegExp(`{{${k}}}`, "g"), v);
+        });
+        finalHtml = html;
+      }
+      await sendCustomEmail(email, subject, finalHtml);
+    } catch (error) {
+      logger.error("Error queueing admin email:", error);
+      return res.status(500).json({error: "Error queueing email"});
+    }
+
+    return res.status(200).json({message: "Email queued"});
+  } catch (error) {
+    logger.error("Error in sendAdminEmail:", error);
+    return res.status(500).json({error: "Internal server error"});
+  }
+};
+
+/**
+ * Admin endpoint to delete a user from Firebase Auth and Firestore.
+ * @param {Request} req - Express request with param uid
+ * @param {Response} res - Express response used to return status
+ * @return {Promise<void>} 200 when deleted or an error status
+ */
+export const deleteUserByAdmin = async (req: Request, res: Response) => {
+  const {uid} = req.params;
+  if (!uid) return res.status(400).json({error: "UID required"});
+  try {
+    try {
+      await admin.auth().deleteUser(uid);
+    } catch (authErr: any) {
+      if (authErr.code !== "auth/user-not-found") {
+        logger.error("Error deleting from Auth:", authErr);
+        return res.status(500).json({error: "Error deleting from Auth"});
+      }
+    }
+    const db = admin.firestore();
+    await db.collection("users").doc(uid).delete();
+    return res.status(200).json({message: "User deleted"});
+  } catch (error) {
+    logger.error("Error in deleteUserByAdmin:", error);
+    return res.status(500).json({error: "Internal server error"});
   }
 };

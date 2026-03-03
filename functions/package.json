@@ -11,6 +11,7 @@
     "logs": "firebase functions:log",
     "init-email-templates": "ts-node src/scripts/initEmailTemplates.ts",
     "test-email-templates": "ts-node src/scripts/testEmailTemplates.ts",
+    "add-notification-template": "GOOGLE_APPLICATION_CREDENTIALS=$PWD/credentials.json GOOGLE_CLOUD_PROJECT=webpage-36e40 ts-node src/scripts/addNotificationTemplate.ts",
     "send-test-email": "ts-node src/scripts/sendTestEmail.ts"
   },
   "engines": {

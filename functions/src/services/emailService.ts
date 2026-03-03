@@ -365,3 +365,30 @@ export const sendTeamAssignmentRejectedEmail = async (
     throw error;
   }
 };
+
+/**
+ * Envía un email personalizado (cola en Firestore)
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} html
+ */
+export const sendCustomEmail = async (
+  to: string,
+  subject: string,
+  html: string
+): Promise<{success: boolean}> => {
+  try {
+    logger.info(`Queuing custom email to ${to}`);
+    await getDb().collection(MAIL_COLLECTION).add({
+      to,
+      message: {
+        subject,
+        html,
+      },
+    });
+    return {success: true};
+  } catch (error) {
+    logger.error("Error queuing custom email:", error);
+    throw error;
+  }
+};

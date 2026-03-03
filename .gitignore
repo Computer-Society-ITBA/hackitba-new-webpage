@@ -37,3 +37,5 @@ firestore-debug.log
 firestore-debug.*.log
 
 service-account-key.json
+
+credentials.json

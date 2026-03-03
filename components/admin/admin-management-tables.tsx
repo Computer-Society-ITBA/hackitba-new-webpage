@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore"
-import { getDbClient } from "@/lib/firebase/client-config"
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore"
+import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
 import { useCategories } from "@/hooks/use-categories"
 import type { Locale } from "@/lib/i18n/config"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Input } from "@/components/ui/input"
 import { PixelButton } from "@/components/ui/pixel-button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
     Table,
     TableHeader,
@@ -22,7 +23,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X } from "lucide-react"
+import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 
@@ -56,6 +58,26 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [editType, setEditType] = useState<Tab | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
+
+    // Delete / Move actions
+    const [showDelete, setShowDelete] = useState(false)
+    const [deleteTarget, setDeleteTarget] = useState<{ item: any, type: Tab } | null>(null)
+    const [moveItem, setMoveItem] = useState<any | null>(null)
+    const [showMove, setShowMove] = useState(false)
+    const [moveTargetTeam, setMoveTargetTeam] = useState<string | null>(null)
+    // Mail action (per-row)
+    const [showMail, setShowMail] = useState(false)
+    const [mailTarget, setMailTarget] = useState<any | null>(null)
+    const [mailSubject, setMailSubject] = useState<string>("")
+    const [mailBody, setMailBody] = useState<string>("")
+    const [isSendingMail, setIsSendingMail] = useState(false)
+
+    // Custom mail (free recipient)
+    const [showCustomMail, setShowCustomMail] = useState(false)
+    const [customMailTo, setCustomMailTo] = useState("")
+    const [customMailSubject, setCustomMailSubject] = useState("")
+    const [customMailBody, setCustomMailBody] = useState("")
+    const [isSendingCustomMail, setIsSendingCustomMail] = useState(false)
 
     // Team Details Modal (view only members)
     const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
@@ -108,6 +130,48 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             alert("Error updating document. Check console.")
         } finally {
             setIsSaving(false)
+        }
+    }
+
+    const handleDeleteConfirm = async () => {
+        if (!db || !deleteTarget) return
+        try {
+            if (deleteTarget.type === "participants") {
+                const auth = getAuthClient()
+                const idToken = await auth?.currentUser?.getIdToken()
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                const res = await fetch(`${apiUrl}/users/${deleteTarget.item.id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${idToken}` }
+                })
+                if (!res.ok) {
+                    const text = await res.text()
+                    throw new Error(text)
+                }
+            } else {
+                await deleteDoc(doc(db, "teams", deleteTarget.item.id))
+            }
+            await fetchData()
+            setShowDelete(false)
+            setDeleteTarget(null)
+        } catch (error) {
+            console.error("Error deleting:", error)
+            alert("Error deleting. Check console.")
+        }
+    }
+
+    const handleMoveConfirm = async () => {
+        if (!db || !moveItem) return
+        try {
+            const docRef = doc(db, "users", moveItem.id)
+            await updateDoc(docRef, { team: moveTargetTeam || null })
+            await fetchData()
+            setShowMove(false)
+            setMoveItem(null)
+            setMoveTargetTeam(null)
+        } catch (error) {
+            console.error("Error moving user to team:", error)
+            alert("Error moving user. Check console.")
         }
     }
 
@@ -259,6 +323,13 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 </div>
 
                 <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                    <button
+                        onClick={() => { setShowCustomMail(true); setCustomMailTo(""); setCustomMailSubject(""); setCustomMailBody(""); }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-700/20 text-blue-300 border border-blue-500/30 rounded text-xs hover:bg-blue-700/30 transition-colors font-pixel"
+                    >
+                        <Mail size={13} />
+                        {locale === "es" ? "Enviar mail" : "Send mail"}
+                    </button>
                     <div className="relative flex-1 md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/40" />
                         <Input
@@ -288,12 +359,14 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 {loading ? (
                     <div className="p-12 text-center text-brand-cyan animate-pulse font-pixel">Loading data...</div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <Table>
+                    <ScrollArea className="overflow-x-auto">
+                        <div className="min-w-full pb-6 md:pb-8">
+                            <Table>
                             <TableHeader className="bg-brand-navy/60">
                                 <TableRow className="border-brand-cyan/20 hover:bg-transparent">
                                     {activeTab === "participants" ? (
                                         <>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
                                             <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
@@ -327,6 +400,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </>
                                     ) : (
                                         <>
+                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                            
                                             <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
@@ -345,14 +420,15 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
+                                            
                                         </>
                                     )}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pagedData.length === 0 ? (
+                                    {pagedData.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={activeTab === "participants" ? 10 : 6} className="text-center py-8 text-brand-cyan/40">
+                                        <TableCell colSpan={activeTab === "participants" ? 11 : 7} className="text-center py-8 text-brand-cyan/40">
                                             {locale === "es" ? "No se encontraron resultados" : "No results found"}
                                         </TableCell>
                                     </TableRow>
@@ -361,6 +437,29 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         <TableRow key={item.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
                                             {activeTab === "participants" ? (
                                                 <>
+                                                    
+                                                    <TableCell className="text-[10px] py-1 flex gap-2">
+                                                        <button
+                                                            onClick={() => { setMailTarget(item); setShowMail(true); setMailSubject(`${locale === "es" ? "Hola" : "Hi"} ${item.name}`); setMailBody(""); }}
+                                                            className="text-sm px-2 py-1 bg-blue-700/10 text-blue-300 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
+                                                        >
+                                                            <Mail size={12} />
+                                                            {locale === "es" ? "Enviar" : "Send"}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setMoveItem(item); setShowMove(true); setMoveTargetTeam(item.team || null); }}
+                                                            className="text-sm px-2 py-1 bg-brand-cyan/10 text-brand-cyan rounded hover:bg-brand-cyan/20 transition-colors"
+                                                        >
+                                                            {locale === "es" ? "Mover" : "Move"}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setDeleteTarget({ item, type: "participants" }); setShowDelete(true); }}
+                                                            className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                            {locale === "es" ? "Eliminar" : "Delete"}
+                                                        </button>
+                                                    </TableCell>
                                                     <TableCell className="py-1">
                                                         <button
                                                             onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
@@ -423,18 +522,28 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                     </TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
+                                                    
                                                 </>
                                             ) : (
                                                 <>
-                                                    <TableCell className="py-1 text-xs">
-                                                        <button
-                                                            onClick={() => { setEditingItem({ ...item }); setEditType("teams"); }}
-                                                            className="text-brand-yellow hover:underline flex items-center gap-1.5 group"
-                                                        >
-                                                            {item.name}
-                                                            <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
-                                                        </button>
-                                                    </TableCell>
+                                                            <TableCell className="text-[10px] py-1 flex gap-2">
+                                                                <button
+                                                                    onClick={() => { setDeleteTarget({ item, type: "teams" }); setShowDelete(true); }}
+                                                                    className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                    {locale === "es" ? "Eliminar" : "Delete"}
+                                                                </button>
+                                                            </TableCell>
+                                                            <TableCell className="py-1 text-xs">
+                                                                <button
+                                                                    onClick={() => { setEditingItem({ ...item }); setEditType("teams"); }}
+                                                                    className="text-brand-yellow hover:underline flex items-center gap-1.5 group"
+                                                                >
+                                                                    {item.name}
+                                                                    <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                                </button>
+                                                            </TableCell>
                                                     <TableCell>
                                                         <button
                                                             onClick={() => setSelectedTeam(item)}
@@ -458,15 +567,16 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                     <TableCell className="text-brand-cyan/60 text-[10px]">
                                                         {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                     </TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.assignedRoom || "-"}</TableCell>
+                                                    
                                                 </>
                                             )}
                                         </TableRow>
                                     ))
                                 )}
                             </TableBody>
-                        </Table>
-                    </div>
+                            </Table>
+                        </div>
+                    </ScrollArea>
                 )}
 
                 <div className="px-4 pb-4">
@@ -480,6 +590,90 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     />
                 </div>
             </GlassCard>
+
+            {/* Custom Mail Dialog (free recipient) */}
+            <Dialog open={showCustomMail} onOpenChange={(open) => { setShowCustomMail(open); }}>
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-sm sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <Mail size={18} />
+                            {locale === "es" ? "Enviar mail" : "Send mail"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-3">
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
+                            <input
+                                type="email"
+                                value={customMailTo}
+                                onChange={(e) => setCustomMailTo(e.target.value)}
+                                placeholder="usuario@ejemplo.com"
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <input
+                                value={customMailSubject}
+                                onChange={(e) => setCustomMailSubject(e.target.value)}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <textarea
+                                value={customMailBody}
+                                onChange={(e) => setCustomMailBody(e.target.value)}
+                                rows={6}
+                                placeholder={locale === "es" ? "Escribí el mensaje aquí..." : "Write your message here..."}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded text-xs px-2 py-2 text-brand-cyan mt-1"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => setShowCustomMail(false)} size="sm">
+                            {locale === "es" ? "Cancelar" : "Cancel"}
+                        </PixelButton>
+                        <PixelButton onClick={async () => {
+                            if (!customMailTo || !customMailSubject) return
+                            setIsSendingCustomMail(true)
+                            try {
+                                const auth = getAuthClient()
+                                const idToken = await auth?.currentUser?.getIdToken()
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                                const res = await fetch(`${apiUrl}/users/send-email`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+                                    body: JSON.stringify({ email: customMailTo, subject: customMailSubject, body: customMailBody, dashboardUrl: `${window.location.origin}/${locale}/dashboard` })
+                                })
+                                const contentType = res.headers.get("content-type") || ""
+                                if (res.ok) {
+                                    toast({ title: locale === "es" ? "Email encolado" : "Email queued" })
+                                    setShowCustomMail(false)
+                                } else {
+                                    let message = "Error"
+                                    try {
+                                        if (contentType.includes("application/json")) {
+                                            const err = await res.json()
+                                            message = err?.error || err?.message || JSON.stringify(err)
+                                        } else {
+                                            message = await res.text()
+                                        }
+                                    } catch (e) { message = res.statusText }
+                                    toast({ title: "Error", description: message, variant: "destructive" })
+                                }
+                            } catch (error) {
+                                toast({ title: "Error", description: "Network error", variant: "destructive" })
+                            } finally {
+                                setIsSendingCustomMail(false)
+                            }
+                        }} size="sm" disabled={isSendingCustomMail || !customMailTo || !customMailSubject}>
+                            {isSendingCustomMail ? (locale === "es" ? "Enviando..." : "Sending...") : (locale === "es" ? "Enviar" : "Send")}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Edit Item Dialog */}
             <Dialog open={!!editingItem && !showConfirm} onOpenChange={(open) => !open && setEditingItem(null)}>
@@ -628,6 +822,156 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                         <PixelButton onClick={() => setShowConfirm(true)} size="sm">
                             <Save size={14} className="mr-2" />
                             {locale === "es" ? "Guardar Cambios" : "Save Changes"}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog (for delete action) */}
+            <Dialog open={showDelete} onOpenChange={setShowDelete}>
+                <DialogContent className="glass-effect border-brand-orange/30 max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-orange flex items-center gap-2">
+                            <AlertTriangle size={18} />
+                            {locale === "es" ? "Confirmar Eliminación" : "Confirm Deletion"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-sm text-brand-cyan/80">
+                            {locale === "es"
+                                ? "¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer."
+                                : "Are you sure you want to delete this item? This action cannot be undone."}
+                        </p>
+                        <p className="mt-2 text-xs text-brand-cyan/60">{deleteTarget?.item?.id}</p>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => setShowDelete(false)} size="sm">
+                            {locale === "es" ? "No, volver" : "No, go back"}
+                        </PixelButton>
+                        <PixelButton onClick={handleDeleteConfirm} size="sm">
+                            {locale === "es" ? "Sí, eliminar" : "Yes, delete"}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Move User Dialog */}
+            <Dialog open={showMove} onOpenChange={(open) => { setShowMove(open); if (!open) setMoveItem(null); }}>
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-sm sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <Users size={18} />
+                            {locale === "es" ? "Mover Participante" : "Move Participant"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-3">
+                        <p className="text-sm text-brand-cyan/80">{moveItem ? `${moveItem.name} ${moveItem.surname}` : ""}</p>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Seleccionar Equipo" : "Select Team"}</label>
+                            <select
+                                value={moveTargetTeam || ""}
+                                onChange={(e) => setMoveTargetTeam(e.target.value || null)}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            >
+                                <option value="">{locale === "es" ? "Sin equipo" : "No team"}</option>
+                                {teams.map(t => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => { setShowMove(false); setMoveItem(null); }} size="sm">
+                            {locale === "es" ? "Cancelar" : "Cancel"}
+                        </PixelButton>
+                        <PixelButton onClick={handleMoveConfirm} size="sm">
+                            {locale === "es" ? "Mover" : "Move"}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Send Mail Dialog */}
+            <Dialog open={showMail} onOpenChange={(open) => { setShowMail(open); if (!open) setMailTarget(null); }}>
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-sm sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <Mail size={18} />
+                            {locale === "es" ? "Enviar Email" : "Send Email"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-3">
+                        <p className="text-sm text-brand-cyan/80">{mailTarget ? `${mailTarget.name} ${mailTarget.surname} — ${mailTarget.email}` : ""}</p>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <input
+                                value={mailSubject}
+                                onChange={(e) => setMailSubject(e.target.value)}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <textarea
+                                value={mailBody}
+                                onChange={(e) => setMailBody(e.target.value)}
+                                rows={6}
+                                placeholder={locale === "es" ? "Escribí el mensaje aquí..." : "Write your message here..."}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded text-xs px-2 py-2 text-brand-cyan mt-1"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => { setShowMail(false); setMailTarget(null); }} size="sm">
+                            {locale === "es" ? "Cancelar" : "Cancel"}
+                        </PixelButton>
+                        <PixelButton onClick={async () => {
+                            if (!mailTarget) return
+                            setIsSendingMail(true)
+                            try {
+                                const auth = getAuthClient()
+                                const idToken = await auth?.currentUser?.getIdToken()
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                                const res = await fetch(`${apiUrl}/users/send-email`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+                                    body: JSON.stringify({ email: mailTarget.email, subject: mailSubject, body: mailBody, dashboardUrl: `${window.location.origin}/${locale}/dashboard` })
+                                })
+                                if (res.ok) {
+                                    toast({ title: locale === "es" ? "Email encolado" : "Email queued" })
+                                    setShowMail(false)
+                                    setMailTarget(null)
+                                } else {
+                                    const contentType = res.headers.get("content-type") || ""
+                                    let message = "Error"
+                                    try {
+                                        if (contentType.includes("application/json")) {
+                                            const err = await res.json()
+                                            message = err?.error || err?.message || JSON.stringify(err)
+                                        } else {
+                                            const text = await res.text()
+                                            message = text || res.statusText || "Error"
+                                        }
+                                    } catch (e) {
+                                        message = res.statusText || "Error"
+                                    }
+
+                                    // If the response is an HTML error from a server that doesn't have the endpoint
+                                    if (typeof message === 'string' && message.includes('Cannot POST') && message.includes('/users/send-email')) {
+                                        toast({ title: "API endpoint not found", description: "Start the Functions emulator or set NEXT_PUBLIC_API_URL to your functions URL (e.g. http://localhost:5001/<project>/us-central1/api)", variant: 'destructive' })
+                                    } else {
+                                        toast({ title: "Error", description: message, variant: 'destructive' })
+                                    }
+                                }
+                            } catch (error) {
+                                console.error(error)
+                                toast({ title: "Error", description: "Network error", variant: 'destructive' })
+                            } finally {
+                                setIsSendingMail(false)
+                            }
+                        }} size="sm" disabled={isSendingMail}>
+                            {isSendingMail ? (locale === "es" ? "Enviando..." : "Sending...") : (locale === "es" ? "Enviar" : "Send")}
                         </PixelButton>
                     </div>
                 </DialogContent>
