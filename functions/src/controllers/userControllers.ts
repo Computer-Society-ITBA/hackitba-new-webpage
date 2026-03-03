@@ -806,7 +806,7 @@ export const deleteUserByAdmin = async (req: Request, res: Response) => {
         return res.status(500).json({error: "Error deleting from Auth"});
       }
     }
-    const db = admin.firestore();
+    const db = getHackitbaDb();
     await db.collection("users").doc(uid).delete();
     return res.status(200).json({message: "User deleted"});
   } catch (error) {

@@ -72,6 +72,13 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [mailBody, setMailBody] = useState<string>("")
     const [isSendingMail, setIsSendingMail] = useState(false)
 
+    // Team mail
+    const [showTeamMail, setShowTeamMail] = useState(false)
+    const [teamMailTarget, setTeamMailTarget] = useState<any | null>(null)
+    const [teamMailSubject, setTeamMailSubject] = useState("")
+    const [teamMailBody, setTeamMailBody] = useState("")
+    const [isSendingTeamMail, setIsSendingTeamMail] = useState(false)
+
     // Custom mail (free recipient)
     const [showCustomMail, setShowCustomMail] = useState(false)
     const [customMailTo, setCustomMailTo] = useState("")
@@ -534,6 +541,13 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                     <Trash2 size={12} />
                                                                     {locale === "es" ? "Eliminar" : "Delete"}
                                                                 </button>
+                                                                <button
+                                                                    onClick={() => { setTeamMailTarget(item); setTeamMailSubject(""); setTeamMailBody(""); setShowTeamMail(true); }}
+                                                                    className="text-sm px-2 py-1 bg-blue-700/10 text-blue-400 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
+                                                                >
+                                                                    <Mail size={12} />
+                                                                    {locale === "es" ? "Mail equipo" : "Team mail"}
+                                                                </button>
                                                             </TableCell>
                                                             <TableCell className="py-1 text-xs">
                                                                 <button
@@ -892,6 +906,92 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             </Dialog>
 
             {/* Send Mail Dialog */}
+            {/* Team Mail Dialog */}
+            <Dialog open={showTeamMail} onOpenChange={(open) => { setShowTeamMail(open); if (!open) setTeamMailTarget(null); }}>
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-sm sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <Mail size={18} />
+                            {locale === "es" ? "Mail al equipo" : "Mail to team"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-3">
+                        {teamMailTarget && (() => {
+                            const members = getTeamMembers(teamMailTarget.id)
+                            return (
+                                <p className="text-sm text-brand-cyan/80">
+                                    <span className="text-brand-yellow font-semibold">{teamMailTarget.name}</span>
+                                    {" — "}{members.length} {locale === "es" ? "integrante(s)" : "member(s)"}
+                                    {members.length > 0 && <span className="block text-[10px] text-brand-cyan/50 mt-1">{members.map((m: any) => m.email).join(", ")}</span>}
+                                </p>
+                            )
+                        })()}
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <input
+                                value={teamMailSubject}
+                                onChange={(e) => setTeamMailSubject(e.target.value)}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <textarea
+                                value={teamMailBody}
+                                onChange={(e) => setTeamMailBody(e.target.value)}
+                                rows={6}
+                                placeholder={locale === "es" ? "Escribí el mensaje aquí..." : "Write your message here..."}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded text-xs px-2 py-2 text-brand-cyan mt-1"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex justify-between">
+                        <PixelButton variant="secondary" onClick={() => { setShowTeamMail(false); setTeamMailTarget(null); }} size="sm">
+                            {locale === "es" ? "Cancelar" : "Cancel"}
+                        </PixelButton>
+                        <PixelButton onClick={async () => {
+                            if (!teamMailTarget || !teamMailSubject) return
+                            const members = getTeamMembers(teamMailTarget.id)
+                            if (members.length === 0) {
+                                toast({ title: locale === "es" ? "Sin integrantes" : "No members", variant: "destructive" })
+                                return
+                            }
+                            setIsSendingTeamMail(true)
+                            try {
+                                const auth = getAuthClient()
+                                const idToken = await auth?.currentUser?.getIdToken()
+                                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                                const dashboardUrl = `${window.location.origin}/${locale}/dashboard`
+                                const results = await Promise.allSettled(
+                                    members.map((member: any) =>
+                                        fetch(`${apiUrl}/users/send-email`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+                                            body: JSON.stringify({ email: member.email, subject: teamMailSubject, body: teamMailBody, dashboardUrl })
+                                        })
+                                    )
+                                )
+                                const failed = results.filter(r => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok)).length
+                                if (failed === 0) {
+                                    toast({ title: locale === "es" ? `${members.length} emails encolados` : `${members.length} emails queued` })
+                                } else {
+                                    toast({ title: locale === "es" ? `${members.length - failed} enviados, ${failed} fallaron` : `${members.length - failed} sent, ${failed} failed`, variant: "destructive" })
+                                }
+                                setShowTeamMail(false)
+                                setTeamMailTarget(null)
+                            } catch (error) {
+                                toast({ title: "Error", description: "Network error", variant: "destructive" })
+                            } finally {
+                                setIsSendingTeamMail(false)
+                            }
+                        }} size="sm" disabled={isSendingTeamMail || !teamMailSubject}>
+                            {isSendingTeamMail ? (locale === "es" ? "Enviando..." : "Sending...") : (locale === "es" ? `Enviar a ${teamMailTarget ? getTeamMembers(teamMailTarget.id).length : 0}` : `Send to ${teamMailTarget ? getTeamMembers(teamMailTarget.id).length : 0}`)}
+                        </PixelButton>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <Dialog open={showMail} onOpenChange={(open) => { setShowMail(open); if (!open) setMailTarget(null); }}>
                 <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-sm sm:max-w-md">
                     <DialogHeader>
