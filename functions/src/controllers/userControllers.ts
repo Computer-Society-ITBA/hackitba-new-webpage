@@ -18,6 +18,7 @@ import {
   sendTeamAssignmentRejectedEmail,
   sendEmailVerificationEmail,
   sendCustomEmail,
+  sendIncompleteRegistrationEmail,
 } from "../services/emailService";
 import {
   generateVerificationToken,
@@ -513,6 +514,20 @@ export const getIncompleteUsers = async (req: Request, res: Response) => {
             logger.warn("Could not parse createdAt:", raw);
           }
         }
+        // Parse incompleteMailLastSent the same way as createdAt
+        const rawMailSent = data.incompleteMailLastSent;
+        let incompleteMailLastSentStr: string | null = null;
+        if (rawMailSent) {
+          try {
+            if (typeof rawMailSent.toDate === "function") {
+              incompleteMailLastSentStr = rawMailSent.toDate().toISOString();
+            } else if (rawMailSent._seconds !== undefined) {
+              incompleteMailLastSentStr = new Date(rawMailSent._seconds * 1000).toISOString();
+            } else if (rawMailSent.seconds !== undefined) {
+              incompleteMailLastSentStr = new Date(rawMailSent.seconds * 1000).toISOString();
+            }
+          } catch (e) {/* ignore */}
+        }
         return {
           id: doc.id,
           name: data.name ?? null,
@@ -521,6 +536,8 @@ export const getIncompleteUsers = async (req: Request, res: Response) => {
           emailVerified: data.emailVerified ?? false,
           onboardingStep: data.onboardingStep ?? 0,
           createdAt: createdAtStr,
+          incompleteMailCount: data.incompleteMailCount ?? 0,
+          incompleteMailLastSent: incompleteMailLastSentStr,
         };
       });
 
@@ -749,6 +766,128 @@ export const changeEmail = async (req: Request, res: Response) => {
  * @param {Response} res - Express response used to return status
  * @return {Promise<void>} 200 when enqueued or an error status
  */
+/**
+ * Get the bulk incomplete-mail log from adminConfig/incompleteMailLog
+ * @param {Request} req - Express request
+ * @param {Response} res - Express response
+ * @return {Promise<Response>} Response with lastSentAt and lastSentCount
+ */
+export const getIncompleteMailLog = async (req: Request, res: Response) => {
+  try {
+    const db = getHackitbaDb();
+    const logDoc = await db.collection("adminConfig").doc("incompleteMailLog").get();
+    if (!logDoc.exists) {
+      return res.status(200).json({lastSentAt: null, lastSentCount: 0});
+    }
+    const data = logDoc.data()!;
+    const raw = data.lastSentAt;
+    let lastSentAtStr: string | null = null;
+    if (raw) {
+      try {
+        if (typeof raw.toDate === "function") {
+          lastSentAtStr = raw.toDate().toISOString();
+        } else if (raw._seconds !== undefined) {
+          lastSentAtStr = new Date(raw._seconds * 1000).toISOString();
+        } else if (raw.seconds !== undefined) {
+          lastSentAtStr = new Date(raw.seconds * 1000).toISOString();
+        }
+      } catch (e) {/* ignore */}
+    }
+    return res.status(200).json({
+      lastSentAt: lastSentAtStr,
+      lastSentCount: data.lastSentCount ?? 0,
+    });
+  } catch (error) {
+    logger.error("Error getting incomplete mail log:", error);
+    return res.status(500).json({error: "Internal server error"});
+  }
+};
+
+/**
+ * Send incomplete-registration reminder to ALL incomplete users
+ * @param {Request} req - Express request
+ * @param {Response} res - Express response
+ * @return {Promise<Response>} Response with sent and failed counts
+ */
+export const sendIncompleteReminderAll = async (req: Request, res: Response) => {
+  try {
+    const db = getHackitbaDb();
+    const usersSnapshot = await db.collection("users").get();
+    const incompleteUsers = usersSnapshot.docs
+      .filter((doc) => Number(doc.data().onboardingStep ?? 0) < 2)
+      .map((doc) => ({id: doc.id, ...doc.data()} as {id: string; email?: string; name?: string; incompleteMailCount?: number}));
+
+    if (incompleteUsers.length === 0) {
+      return res.status(200).json({message: "No incomplete users", sent: 0, failed: 0});
+    }
+
+    let sent = 0;
+    let failed = 0;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+
+    for (const user of incompleteUsers) {
+      if (!user.email) continue;
+      try {
+        await sendIncompleteRegistrationEmail(user.email, user.name ?? null);
+        const currentCount = Number(user.incompleteMailCount ?? 0);
+        await db.collection("users").doc(user.id).update({
+          incompleteMailCount: currentCount + 1,
+          incompleteMailLastSent: now,
+        });
+        sent++;
+      } catch (e) {
+        logger.error(`Failed to send incomplete reminder to ${user.email}:`, e);
+        failed++;
+      }
+    }
+
+    // Update bulk log
+    await db.collection("adminConfig").doc("incompleteMailLog").set({
+      lastSentAt: now,
+      lastSentCount: sent,
+    }, {merge: true});
+
+    logger.info(`Incomplete reminder bulk send: ${sent} sent, ${failed} failed`);
+    return res.status(200).json({message: "Emails queued", sent, failed});
+  } catch (error) {
+    logger.error("Error in sendIncompleteReminderAll:", error);
+    return res.status(500).json({error: "Internal server error"});
+  }
+};
+
+/**
+ * Send incomplete-registration reminder to a single user by userId
+ * @param {Request} req - Express request with param userId
+ * @param {Response} res - Express response
+ * @return {Promise<Response>} Response with updated mail count
+ */
+export const sendIncompleteReminderOne = async (req: Request, res: Response) => {
+  try {
+    const {userId} = req.params;
+    if (!userId) return res.status(400).json({error: "userId required"});
+
+    const db = getHackitbaDb();
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) return res.status(404).json({error: "User not found"});
+
+    const userData = userDoc.data()!;
+    if (!userData.email) return res.status(400).json({error: "User has no email"});
+
+    await sendIncompleteRegistrationEmail(userData.email as string, (userData.name as string) ?? null);
+
+    const currentCount = Number(userData.incompleteMailCount ?? 0);
+    await db.collection("users").doc(userId).update({
+      incompleteMailCount: currentCount + 1,
+      incompleteMailLastSent: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return res.status(200).json({message: "Email queued", count: currentCount + 1});
+  } catch (error) {
+    logger.error("Error in sendIncompleteReminderOne:", error);
+    return res.status(500).json({error: "Internal server error"});
+  }
+};
+
 export const sendAdminEmail = async (req: Request, res: Response) => {
   try {
     const {email, subject, body, dashboardUrl} = req.body;

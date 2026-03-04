@@ -15,6 +15,9 @@ import {
   changeEmail,
   sendAdminEmail,
   deleteUserByAdmin,
+  getIncompleteMailLog,
+  sendIncompleteReminderAll,
+  sendIncompleteReminderOne,
 } from "../controllers/userControllers";
 import {validateToken, requireAdmin} from "../middleware/authMiddleware";
 
@@ -42,6 +45,15 @@ router.get("/pending-participants", validateToken, requireAdmin, getPendingParti
 
 // GET /api/users/incomplete
 router.get("/incomplete", validateToken, requireAdmin, getIncompleteUsers);
+
+// GET /api/users/incomplete-mail-log
+router.get("/incomplete-mail-log", validateToken, requireAdmin, getIncompleteMailLog);
+
+// POST /api/users/send-incomplete-reminder-all
+router.post("/send-incomplete-reminder-all", validateToken, requireAdmin, sendIncompleteReminderAll);
+
+// POST /api/users/send-incomplete-reminder/:userId
+router.post("/send-incomplete-reminder/:userId", validateToken, requireAdmin, sendIncompleteReminderOne);
 
 // GET /api/users/:id
 router.get("/:id", validateToken, getUserById);
