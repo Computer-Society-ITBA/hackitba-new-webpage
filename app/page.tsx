@@ -4,11 +4,8 @@ export function generateStaticParams() {
 
 export default function RootPage() {
   return (
-    <html>
-      <head>
-        <meta httpEquiv="refresh" content="0; url=/en" />
-      </head>
-      <body></body>
-    </html>
+    <head>
+      <meta httpEquiv="refresh" content="0; url=/en" />
+    </head>
   )
 }
