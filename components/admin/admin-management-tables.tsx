@@ -369,225 +369,225 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     <ScrollArea className="overflow-x-auto">
                         <div className="min-w-full pb-6 md:pb-8">
                             <Table>
-                            <TableHeader className="bg-brand-navy/60">
-                                <TableRow className="border-brand-cyan/20 hover:bg-transparent">
-                                    {activeTab === "participants" ? (
-                                        <>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
-                                            <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Email" : "Email"} {sortField === "email" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Escuela/Uni" : "School/Uni"} {sortField === "university" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Edad" : "Age"} {sortField === "age" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
-                                            
-                                            <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Miembros" : "Members"} {sortField === "members" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
-                                                {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                            </TableHead>
-                                            
-                                        </>
-                                    )}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                    {pagedData.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={activeTab === "participants" ? 11 : 7} className="text-center py-8 text-brand-cyan/40">
-                                            {locale === "es" ? "No se encontraron resultados" : "No results found"}
-                                        </TableCell>
+                                <TableHeader className="bg-brand-navy/60">
+                                    <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                                        {activeTab === "participants" ? (
+                                            <>
+                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Email" : "Email"} {sortField === "email" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Escuela/Uni" : "School/Uni"} {sortField === "university" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Edad" : "Age"} {sortField === "age" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Miembros" : "Members"} {sortField === "members" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+                                                <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                    {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                                </TableHead>
+
+                                            </>
+                                        )}
                                     </TableRow>
-                                ) : (
-                                    pagedData.map((item) => (
-                                        <TableRow key={item.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
-                                            {activeTab === "participants" ? (
-                                                <>
-                                                    
-                                                    <TableCell className="text-[10px] py-1 flex gap-2">
-                                                        <button
-                                                            onClick={() => { setMailTarget(item); setShowMail(true); setMailSubject(`${locale === "es" ? "Hola" : "Hi"} ${item.name}`); setMailBody(""); }}
-                                                            className="text-sm px-2 py-1 bg-blue-700/10 text-blue-300 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
-                                                        >
-                                                            <Mail size={12} />
-                                                            {locale === "es" ? "Enviar" : "Send"}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setMoveItem(item); setShowMove(true); setMoveTargetTeam(item.team || null); }}
-                                                            className="text-sm px-2 py-1 bg-brand-cyan/10 text-brand-cyan rounded hover:bg-brand-cyan/20 transition-colors"
-                                                        >
-                                                            {locale === "es" ? "Mover" : "Move"}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setDeleteTarget({ item, type: "participants" }); setShowDelete(true); }}
-                                                            className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
-                                                        >
-                                                            <Trash2 size={12} />
-                                                            {locale === "es" ? "Eliminar" : "Delete"}
-                                                        </button>
-                                                    </TableCell>
-                                                    <TableCell className="py-1">
-                                                        <button
-                                                            onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
-                                                            className="text-brand-yellow text-[10px] hover:underline flex items-center gap-1.5 group"
-                                                        >
-                                                            {item.name} {item.surname}
-                                                            <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
-                                                        </button>
-                                                    </TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
-                                                    <TableCell className="text-brand-orange text-[10px] py-1">
-                                                        {item.team ? (
-                                                            <button onClick={() => {
-                                                                const team = teams.find(t => t.id === item.team)
-                                                                if (team) setSelectedTeam(team)
-                                                            }} className="hover:underline">
-                                                                {teams.find(t => t.id === item.team)?.name || item.team}
-                                                            </button>
-                                                        ) : "-"}
-                                                    </TableCell>
-                                                    <TableCell className="py-1">
-                                                        {(() => {
-                                                            const isOnboarding1 = Number(item.onboardingStep) === 1
-                                                            const displayStatus = isOnboarding1 ? (locale === "es" ? "No inscrito" : "Not registered") : (item.status || "pending")
-                                                            const statusKey = isOnboarding1 ? "not_registered" : (item.status || "pending")
-                                                            const statusClass = isOnboarding1 ? "bg-gray-500/20 text-gray-300" : (
-                                                                item.status === "accepted" ? "bg-green-500/20 text-green-400" :
-                                                                    item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                                                                        "bg-red-500/20 text-red-400"
-                                                            )
-
-                                                            const inlineStyle: any = (() => {
-                                                                const key = statusKey
-                                                                switch (key) {
-                                                                    case "accepted":
-                                                                        return { backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }
-                                                                    case "pending":
-                                                                        return { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }
-                                                                    case "not_registered":
-                                                                        return { backgroundColor: 'rgba(107,114,128,0.12)', color: '#9ca3af' }
-                                                                    case "rejected":
-                                                                        return { backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }
-                                                                    default:
-                                                                        return {}
-                                                                }
-                                                            })()
-
-                                                            return (
-                                                                <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-[9px] uppercase", statusClass)}>
-                                                                    {displayStatus}
-                                                                </span>
-                                                            )
-                                                        })()}
-                                                    </TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(item.category_1)}</TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">
-                                                        {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
-                                                    </TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
-                                                    
-                                                </>
-                                            ) : (
-                                                <>
-                                                            <TableCell className="text-[10px] py-1 flex gap-2">
-                                                                <button
-                                                                    onClick={() => { setDeleteTarget({ item, type: "teams" }); setShowDelete(true); }}
-                                                                    className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                    {locale === "es" ? "Eliminar" : "Delete"}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => { setTeamMailTarget(item); setTeamMailSubject(""); setTeamMailBody(""); setShowTeamMail(true); }}
-                                                                    className="text-sm px-2 py-1 bg-blue-700/10 text-blue-400 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
-                                                                >
-                                                                    <Mail size={12} />
-                                                                    {locale === "es" ? "Mail equipo" : "Team mail"}
-                                                                </button>
-                                                            </TableCell>
-                                                            <TableCell className="py-1 text-xs">
-                                                                <button
-                                                                    onClick={() => { setEditingItem({ ...item }); setEditType("teams"); }}
-                                                                    className="text-brand-yellow hover:underline flex items-center gap-1.5 group"
-                                                                >
-                                                                    {item.name}
-                                                                    <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
-                                                                </button>
-                                                            </TableCell>
-                                                    <TableCell>
-                                                        <button
-                                                            onClick={() => setSelectedTeam(item)}
-                                                            className="flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 text-brand-cyan text-xs hover:bg-brand-cyan/20 transition-colors"
-                                                        >
-                                                            <Users size={14} />
-                                                            {getTeamMembers(item.id).length}
-                                                        </button>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span data-status={item.status || "pending"} className={cn(
-                                                            "px-2 py-0.5 rounded text-[10px] uppercase",
-                                                            item.status === "approved" ? "bg-green-500/20 text-green-400" :
-                                                                item.status === "rejected" ? "bg-red-500/20 text-red-400" :
-                                                                    "bg-yellow-500/20 text-yellow-400"
-                                                        )}>
-                                                            {item.status}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(item.category_1)}</TableCell>
-                                                    <TableCell className="text-brand-cyan/60 text-[10px]">
-                                                        {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
-                                                    </TableCell>
-                                                    
-                                                </>
-                                            )}
+                                </TableHeader>
+                                <TableBody>
+                                    {pagedData.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={activeTab === "participants" ? 11 : 7} className="text-center py-8 text-brand-cyan/40">
+                                                {locale === "es" ? "No se encontraron resultados" : "No results found"}
+                                            </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
+                                    ) : (
+                                        pagedData.map((item) => (
+                                            <TableRow key={item.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
+                                                {activeTab === "participants" ? (
+                                                    <>
+
+                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                            <button
+                                                                onClick={() => { setMailTarget(item); setShowMail(true); setMailSubject(`${locale === "es" ? "Hola" : "Hi"} ${item.name}`); setMailBody(""); }}
+                                                                className="text-sm px-2 py-1 bg-blue-700/10 text-blue-300 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Mail size={12} />
+                                                                {locale === "es" ? "Enviar" : "Send"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { setMoveItem(item); setShowMove(true); setMoveTargetTeam(item.team || null); }}
+                                                                className="text-sm px-2 py-1 bg-brand-cyan/10 text-brand-cyan rounded hover:bg-brand-cyan/20 transition-colors"
+                                                            >
+                                                                {locale === "es" ? "Mover" : "Move"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { setDeleteTarget({ item, type: "participants" }); setShowDelete(true); }}
+                                                                className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                                {locale === "es" ? "Eliminar" : "Delete"}
+                                                            </button>
+                                                        </TableCell>
+                                                        <TableCell className="py-1">
+                                                            <button
+                                                                onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
+                                                                className="text-brand-yellow text-[10px] hover:underline flex items-center gap-1.5 group"
+                                                            >
+                                                                {item.name} {item.surname}
+                                                                <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                            </button>
+                                                        </TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
+                                                        <TableCell className="text-brand-orange text-[10px] py-1">
+                                                            {item.team ? (
+                                                                <button onClick={() => {
+                                                                    const team = teams.find(t => t.id === item.team)
+                                                                    if (team) setSelectedTeam(team)
+                                                                }} className="hover:underline">
+                                                                    {teams.find(t => t.id === item.team)?.name || item.team}
+                                                                </button>
+                                                            ) : "-"}
+                                                        </TableCell>
+                                                        <TableCell className="py-1">
+                                                            {(() => {
+                                                                const isOnboarding1 = Number(item.onboardingStep) === 1
+                                                                const displayStatus = isOnboarding1 ? (locale === "es" ? "No inscrito" : "Not registered") : (item.status || "pending")
+                                                                const statusKey = isOnboarding1 ? "not_registered" : (item.status || "pending")
+                                                                const statusClass = isOnboarding1 ? "bg-gray-500/20 text-gray-300" : (
+                                                                    item.status === "accepted" ? "bg-green-500/20 text-green-400" :
+                                                                        item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                                                                            "bg-red-500/20 text-red-400"
+                                                                )
+
+                                                                const inlineStyle: any = (() => {
+                                                                    const key = statusKey
+                                                                    switch (key) {
+                                                                        case "accepted":
+                                                                            return { backgroundColor: 'rgba(34,197,94,0.12)', color: '#16a34a' }
+                                                                        case "pending":
+                                                                            return { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }
+                                                                        case "not_registered":
+                                                                            return { backgroundColor: 'rgba(107,114,128,0.12)', color: '#9ca3af' }
+                                                                        case "rejected":
+                                                                            return { backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }
+                                                                        default:
+                                                                            return {}
+                                                                    }
+                                                                })()
+
+                                                                return (
+                                                                    <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-[9px] uppercase", statusClass)}>
+                                                                        {displayStatus}
+                                                                    </span>
+                                                                )
+                                                            })()}
+                                                        </TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(item.category_1)}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                        </TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
+
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                            <button
+                                                                onClick={() => { setDeleteTarget({ item, type: "teams" }); setShowDelete(true); }}
+                                                                className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                                {locale === "es" ? "Eliminar" : "Delete"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => { setTeamMailTarget(item); setTeamMailSubject(""); setTeamMailBody(""); setShowTeamMail(true); }}
+                                                                className="text-sm px-2 py-1 bg-blue-700/10 text-blue-400 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
+                                                            >
+                                                                <Mail size={12} />
+                                                                {locale === "es" ? "Mail equipo" : "Team mail"}
+                                                            </button>
+                                                        </TableCell>
+                                                        <TableCell className="py-1 text-xs">
+                                                            <button
+                                                                onClick={() => { setEditingItem({ ...item }); setEditType("teams"); }}
+                                                                className="text-brand-yellow hover:underline flex items-center gap-1.5 group"
+                                                            >
+                                                                {item.name}
+                                                                <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                                            </button>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <button
+                                                                onClick={() => setSelectedTeam(item)}
+                                                                className="flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 text-brand-cyan text-xs hover:bg-brand-cyan/20 transition-colors"
+                                                            >
+                                                                <Users size={14} />
+                                                                {getTeamMembers(item.id).length}
+                                                            </button>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <span data-status={item.status || "pending"} className={cn(
+                                                                "px-2 py-0.5 rounded text-[10px] uppercase",
+                                                                item.status === "approved" ? "bg-green-500/20 text-green-400" :
+                                                                    item.status === "rejected" ? "bg-red-500/20 text-red-400" :
+                                                                        "bg-yellow-500/20 text-yellow-400"
+                                                            )}>
+                                                                {item.status}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(item.category_1)}</TableCell>
+                                                        <TableCell className="text-brand-cyan/60 text-[10px]">
+                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                        </TableCell>
+
+                                                    </>
+                                                )}
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
                             </Table>
                         </div>
                     </ScrollArea>
@@ -821,6 +821,15 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             onChange={e => setEditingItem({ ...editingItem, assignedRoom: e.target.value })}
                                             className="bg-black/40 border-brand-cyan/20 h-8 text-xs"
                                             placeholder={locale === "es" ? "Ej: Aula 101" : "e.g. Room 101"}
+                                        />
+                                    </div>
+                                    <div className="space-y-1 md:col-span-2">
+                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "¿Por qué participas en el hackathon?" : "Why are you participating in the hackathon?"}</label>
+                                        <textarea
+                                            value={editingItem.tell_why || ""}
+                                            onChange={e => setEditingItem({ ...editingItem, tell_why: e.target.value })}
+                                            className="w-full bg-black/40 border border-brand-cyan/20 rounded p-2 text-xs text-brand-cyan min-h-[80px] focus:outline-none focus:border-brand-cyan/50 transition-colors"
+                                            placeholder={locale === "es" ? "Motivación del equipo..." : "Team motivation..."}
                                         />
                                     </div>
                                 </>
@@ -1129,9 +1138,15 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             </div>
                         </div>
                         {selectedTeam?.assignedRoom && (
-                            <div className="p-3 rounded bg-brand-orange/10 border border-brand-orange/20">
-                                <p className="text-[10px] text-brand-orange uppercase mb-1">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</p>
-                                <p className="text-brand-cyan font-pixel text-sm">{selectedTeam.assignedRoom}</p>
+                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</p>
+                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.assignedRoom}</p>
+                            </div>
+                        )}
+                        {selectedTeam?.tell_why && (
+                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Motivation" : "Motivation"}</p>
+                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.tell_why}</p>
                             </div>
                         )}
                         <div className="flex justify-between items-center">
