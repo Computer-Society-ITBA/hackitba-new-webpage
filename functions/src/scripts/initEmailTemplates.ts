@@ -1043,6 +1043,12 @@ const templates = {
                     </table>
                   </td>
                 </tr>
+                <tr>
+                  <td style="padding-top: 24px; font-family: 'Helvetica neue', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; color: #626f86; text-align: center;">
+                    Si el botón no funciona, copiá y pegá este link en tu navegador:<br />
+                    <a href="{{resetLink}}" style="color: #fad399; word-break: break-all; text-decoration: none;">{{resetLink}}</a>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>

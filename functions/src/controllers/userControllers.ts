@@ -24,6 +24,12 @@ import {
   generateVerificationToken,
   saveVerificationToken,
 } from "../services/emailVerificationService";
+import {
+  generatePasswordResetToken,
+  savePasswordResetToken,
+  verifyPasswordResetToken,
+  consumePasswordResetToken,
+} from "../services/passwordResetService";
 
 interface RegisterRequestBody {
   email: string;
@@ -289,35 +295,69 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     const {email} = req.body;
 
     if (!email) {
-      return res.status(400).json({error: "Email is required"});
+      return res.status(400).json({error: "El email es obligatorio"});
     }
 
-    // Get user by email
-    const users = await getAllUsers();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const user = users.find((u: any) => u.email === email);
-
-    if (!user) {
-      // Don't reveal if email exists for security
-      return res.status(200).json({message: "If email exists, password reset link has been sent"});
+    // Buscar usuario por email en Firebase Auth
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUserByEmail(email);
+    } catch {
+      // No revelar si el email existe — siempre responder con 200
+      return res.status(200).json({message: "Si el email está registrado, recibirás un link para resetear tu contraseña"});
     }
 
-    // In production, generate a real reset token and store it
-    // For now, we'll use a simple approach
-    const resetToken = Buffer.from(`${user.id}:${Date.now()}`).toString("base64");
-    const resetLink = `${process.env.APP_URL || "https://hackitba.com"}/reset-password?token=${resetToken}`;
+    const token = generatePasswordResetToken();
+    const appUrl = process.env.APP_URL || "https://hackitba.com.ar";
+    // El link apunta a la página frontend de reset-password
+    const resetLink = `${appUrl}/es/auth/reset-password?token=${token}`;
+
+    await savePasswordResetToken(userRecord.uid, email, token);
 
     try {
       await sendPasswordResetEmail(email, resetLink);
     } catch (emailError) {
       logger.error("Error sending password reset email:", emailError);
-      return res.status(500).json({error: "Error sending password reset email"});
+      return res.status(500).json({error: "Error al enviar el email de reseteo"});
     }
 
-    return res.status(200).json({message: "Password reset link sent to email"});
+    return res.status(200).json({message: "Si el email está registrado, recibirás un link para resetear tu contraseña"});
   } catch (error) {
     logger.error("Password reset error:", error);
-    return res.status(500).json({error: "Error processing password reset"});
+    return res.status(500).json({error: "Error al procesar el reseteo de contraseña"});
+  }
+};
+
+export const confirmPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const {token, newPassword} = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({error: "Token y nueva contraseña son obligatorios"});
+    }
+
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
+      return res.status(400).json({error: "La contraseña debe tener al menos 6 caracteres"});
+    }
+
+    const tokenData = await verifyPasswordResetToken(token);
+
+    if (!tokenData) {
+      // 410 Gone — token expirado o no encontrado
+      return res.status(410).json({error: "El link de reseteo es inválido o expiró. Solicitá uno nuevo."});
+    }
+
+    // Actualizar contraseña en Firebase Auth
+    await admin.auth().updateUser(tokenData.userId, {password: newPassword});
+
+    // Consumir token para que no pueda usarse de nuevo
+    await consumePasswordResetToken(token);
+
+    logger.info(`Password reset successful for user ${tokenData.userId}`);
+    return res.status(200).json({message: "Contraseña actualizada exitosamente"});
+  } catch (error) {
+    logger.error("Confirm password reset error:", error);
+    return res.status(500).json({error: "Error al actualizar la contraseña"});
   }
 };
 

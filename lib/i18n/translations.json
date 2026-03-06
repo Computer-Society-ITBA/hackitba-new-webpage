@@ -291,6 +291,60 @@
           "firebaseNotConfigured": "Authentication is not configured",
           "loginFailed": "Failed to log in. Please try again.",
           "invalidCredentials": "Incorrect email or password"
+        },
+        "forgotPassword": "Forgot your password?"
+      },
+      "forgotPassword": {
+        "title": "Forgot Password",
+        "endpoint": "POST v2026/auth/forgot-password",
+        "subtitle": "Enter your email and we'll send you a reset link",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "you@email.com"
+        },
+        "buttons": {
+          "sending": "SENDING...",
+          "send": "SEND RESET LINK"
+        },
+        "success": {
+          "title": "Email Sent!",
+          "message": "If that email is registered, you'll receive a reset link shortly. Check your inbox and spam folder."
+        },
+        "footer": {
+          "backToLogin": "Back to login"
+        },
+        "errors": {
+          "invalidEmail": "Please enter a valid email address",
+          "sendFailed": "Failed to send reset email. Please try again."
+        }
+      },
+      "resetPassword": {
+        "title": "Reset Password",
+        "endpoint": "POST v2026/auth/reset-password",
+        "subtitle": "Enter your new password",
+        "fields": {
+          "password": "New Password",
+          "confirmPassword": "Confirm Password",
+          "passwordPlaceholder": "••••••••"
+        },
+        "buttons": {
+          "resetting": "RESETTING...",
+          "reset": "RESET PASSWORD"
+        },
+        "success": {
+          "title": "Password Updated!",
+          "message": "Your password has been changed successfully. You can now log in with your new password.",
+          "goToLogin": "Go to Login"
+        },
+        "footer": {
+          "backToLogin": "Back to login"
+        },
+        "errors": {
+          "tokenMissing": "Invalid or missing reset token.",
+          "tokenExpired": "This reset link has expired. Please request a new one.",
+          "passwordTooShort": "Password must be at least 6 characters",
+          "passwordMismatch": "Passwords do not match",
+          "resetFailed": "Failed to reset password. Please try again."
         }
       },
       "verifyEmail": {
@@ -1002,6 +1056,60 @@
           "firebaseNotConfigured": "La autenticación no está configurada",
           "loginFailed": "No se pudo iniciar sesión. Intentá de nuevo.",
           "invalidCredentials": "El email o la contraseña son incorrectos"
+        },
+        "forgotPassword": "¿Olvidaste tu contraseña?"
+      },
+      "forgotPassword": {
+        "title": "Olvidé mi contraseña",
+        "endpoint": "POST v2026/auth/forgot-password",
+        "subtitle": "Ingresá tu email y te enviamos un link para resetearla",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "vos@email.com"
+        },
+        "buttons": {
+          "sending": "ENVIANDO...",
+          "send": "ENVIAR LINK"
+        },
+        "success": {
+          "title": "¡Email enviado!",
+          "message": "Si ese email está registrado, recibirás un link para resetear tu contraseña. Revisá tu bandeja de entrada y carpeta de spam."
+        },
+        "footer": {
+          "backToLogin": "Volver al login"
+        },
+        "errors": {
+          "invalidEmail": "Por favor ingresá un email válido",
+          "sendFailed": "No se pudo enviar el email. Intentá de nuevo."
+        }
+      },
+      "resetPassword": {
+        "title": "Resetear contraseña",
+        "endpoint": "POST v2026/auth/reset-password",
+        "subtitle": "Ingresá tu nueva contraseña",
+        "fields": {
+          "password": "Nueva contraseña",
+          "confirmPassword": "Confirmar contraseña",
+          "passwordPlaceholder": "••••••••"
+        },
+        "buttons": {
+          "resetting": "RESETEANDO...",
+          "reset": "RESETEAR CONTRASEÑA"
+        },
+        "success": {
+          "title": "¡Contraseña actualizada!",
+          "message": "Tu contraseña fue cambiada con éxito. Ya podés iniciar sesión con tu nueva contraseña.",
+          "goToLogin": "Ir al login"
+        },
+        "footer": {
+          "backToLogin": "Volver al login"
+        },
+        "errors": {
+          "tokenMissing": "Token inválido o faltante.",
+          "tokenExpired": "Este link de reseteo expiró. Pedí uno nuevo.",
+          "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+          "passwordMismatch": "Las contraseñas no coinciden",
+          "resetFailed": "No se pudo resetear la contraseña. Intentá de nuevo."
         }
       },
       "verifyEmail": {
