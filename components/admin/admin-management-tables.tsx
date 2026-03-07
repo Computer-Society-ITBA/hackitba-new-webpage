@@ -524,7 +524,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         })()}
                                                     </TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
-                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(item.category_1)}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName((item.team ? teams.find(t => t.id === item.team)?.category_1 : null) ?? item.category_1)}</TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1">
                                                         {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                     </TableCell>
