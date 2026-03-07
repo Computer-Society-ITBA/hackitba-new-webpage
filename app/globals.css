@@ -206,15 +206,4 @@ html {
   filter: brightness(1.1);
 }
 
-/* cover scrollbar area under the close button so the thumb appears below the X */
-[data-slot="dialog-content"] .overflow-y-auto::before {
-  content: "";
-  position: absolute;
-  right: 48px; /* match close button `right-12` (3rem = 48px) */
-  top: 0;
-  height: 2.5rem; /* same area as close button */
-  width: 28px;
-  background: var(--background);
-  pointer-events: none;
-  border-radius: 999px;
-}
+
