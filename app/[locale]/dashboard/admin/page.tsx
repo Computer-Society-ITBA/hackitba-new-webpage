@@ -11,7 +11,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore"
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
@@ -36,6 +36,8 @@ export default function AdminDashboard() {
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [authReady, setAuthReady] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [completeStats, setCompleteStats] = useState<{ complete: number; withTeam: number; withoutTeam: number } | null>(null)
+  const [loadingStats, setLoadingStats] = useState(false)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -66,8 +68,26 @@ export default function AdminDashboard() {
     if (authReady) {
       loadData()
       loadSettings()
+      loadCompleteStats()
     }
   }, [authReady])
+
+  const loadCompleteStats = async () => {
+    if (!db) return
+    setLoadingStats(true)
+    try {
+      const [completeSnap, withTeamSnap, withoutTeamSnap] = await Promise.all([
+        getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))),
+        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true))),
+        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", false))),
+      ])
+      setCompleteStats({ complete: completeSnap.size, withTeam: withTeamSnap.size, withoutTeam: withoutTeamSnap.size })
+    } catch (error) {
+      console.error("Error loading complete stats:", error)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
 
   const loadSettings = async () => {
     if (!db) return
@@ -180,8 +200,28 @@ export default function AdminDashboard() {
           </section>
 
           <section>
-            <div className="mb-6">
+            <div className="flex items-center gap-3 mb-6 flex-wrap">
               <h3 className="font-pixel text-2xl text-brand-yellow">Participants & Teams</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="flex items-center gap-1.5 bg-brand-cyan/10 border border-brand-cyan/20 px-3 py-1 rounded-full text-xs font-pixel text-brand-cyan/70">
+                  {locale === "es" ? "Insc. completa" : "Complete"}
+                  <span className="text-brand-cyan font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.complete ?? "—"}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-xs font-pixel text-green-400/70">
+                  {locale === "es" ? "Con equipo" : "With team"}
+                  <span className="text-green-400 font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.withTeam ?? "—"}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full text-xs font-pixel text-red-400/70">
+                  {locale === "es" ? "Sin equipo" : "Without team"}
+                  <span className="text-red-400 font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.withoutTeam ?? "—"}
+                  </span>
+                </span>
+              </div>
             </div>
             <AdminManagementTables locale={locale} translations={translations} />
           </section>

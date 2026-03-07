@@ -33,6 +33,7 @@ export default function ApprovalsPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [processing, setProcessing] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [withTeamCount, setWithTeamCount] = useState<number | null>(null)
 
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
   const [pendingParticipantId, setPendingParticipantId] = useState<string | null>(null)
@@ -70,6 +71,7 @@ export default function ApprovalsPage() {
       loadTeams()
       loadPendingTeams()
       loadCategories()
+      loadWithTeamCount()
     }
   }, [authReady])
 
@@ -80,6 +82,16 @@ export default function ApprovalsPage() {
       setCategories(categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
     } catch (error) {
       console.error("Error loading categories:", error)
+    }
+  }
+
+  const loadWithTeamCount = async () => {
+    if (!db) return
+    try {
+      const snap = await getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true)))
+      setWithTeamCount(snap.size)
+    } catch (error) {
+      console.error("Error loading withTeam count:", error)
     }
   }
 
@@ -456,13 +468,19 @@ export default function ApprovalsPage() {
           {/* Pending Teams */}
           <section>
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <UsersIcon className="w-6 h-6 text-brand-cyan" />
                 <h3 className="font-pixel text-2xl text-brand-yellow">
                   {locale === "es" ? "Equipos Pendientes de Aprobación" : "Teams Pending Approval"}
                 </h3>
                 <span className="bg-brand-cyan/20 text-brand-cyan px-3 py-1 rounded-full text-sm font-pixel">
                   {totalTeams}
+                </span>
+                <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-xs font-pixel text-green-400/70">
+                  {locale === "es" ? "Participantes" : "Participants"}:
+                  <span className="text-green-400 font-bold text-sm">
+                    {withTeamCount ?? "—"}
+                  </span>
                 </span>
               </div>
             </div>
