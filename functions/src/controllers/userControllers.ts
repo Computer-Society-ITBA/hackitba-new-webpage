@@ -130,6 +130,10 @@ export const registerEvent = async (req: Request, res: Response) => {
       position,
       photo,
       wantsToCreateTeam,
+      neighborhood,
+      careerYear,
+      career_year,
+      grad_year,
     } = req.body;
 
     logger.info(`RegisterEvent called with userId: ${userId}`);
@@ -156,7 +160,9 @@ export const registerEvent = async (req: Request, res: Response) => {
       company ?? null,
       position ?? null,
       photo ?? null,
-      typeof wantsToCreateTeam === "boolean" ? wantsToCreateTeam : !!wantsToCreateTeam
+      typeof wantsToCreateTeam === "boolean" ? wantsToCreateTeam : !!wantsToCreateTeam,
+      (neighborhood as string | null) ?? null,
+      (careerYear as number | null) ?? (career_year as number | null) ?? (grad_year as number | null) ?? null
     );
 
     // Get user to send welcome email
