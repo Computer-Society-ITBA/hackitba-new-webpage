@@ -12,6 +12,8 @@ import { PixelButton } from "@/components/ui/pixel-button"
 interface UserDoc {
     age?: string | number
     career?: string
+    grad_year?: number | string
+    neighborhood?: string
     category_1?: number
     category_2?: number
     category_3?: number
@@ -239,6 +241,7 @@ function buildParticipantsSheet(
 ) {
     const FIELDS = [
         "name", "surname", "email", "role", "career", "university",
+        "grad_year", "neighborhood",
         "age", "dni", "food_preference",
         "category_1", "category_2", "category_3",
         "team", "hasTeam", "onboardingStep",
@@ -250,6 +253,7 @@ function buildParticipantsSheet(
     addHeaders(ws, FIELDS, 3)
     setColumnWidths(ws, FIELDS, {
         name: 20, surname: 20, email: 32, career: 22, university: 28,
+        grad_year: 14, neighborhood: 24,
         github: 28, linkedin: 28, link_cv: 28, food_preference: 20,
     })
 
@@ -261,6 +265,8 @@ function buildParticipantsSheet(
             role: u.role ?? "",
             career: u.career ?? "",
             university: u.university ?? "",
+            grad_year: u.grad_year ?? "",
+            neighborhood: u.neighborhood ?? "",
             age: u.age ?? "",
             dni: u.dni ?? "",
             food_preference: u.food_preference ?? "",
@@ -302,6 +308,7 @@ function buildParticipantsSheet(
                 const rowData: Record<string, unknown> = {
                     name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
                     role: u.role ?? "", career: u.career ?? "", university: u.university ?? "",
+                    grad_year: u.grad_year ?? "", neighborhood: u.neighborhood ?? "",
                     age: u.age ?? "", dni: u.dni ?? "", food_preference: u.food_preference ?? "",
                     category_1: catName(u.category_1), category_2: catName(u.category_2), category_3: catName(u.category_3),
                     team: u.team ?? "", hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",

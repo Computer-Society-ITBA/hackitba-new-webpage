@@ -386,6 +386,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
+                                            <TableHead onClick={() => handleSort("grad_year")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Año egreso" : "Grad. Year"} {sortField === "grad_year" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
+                                            <TableHead onClick={() => handleSort("neighborhood")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                {locale === "es" ? "Barrio/Localidad" : "Neighborhood"} {sortField === "neighborhood" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
+                                            </TableHead>
                                             <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
                                                 {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                             </TableHead>
@@ -435,7 +441,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             <TableBody>
                                     {pagedData.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={activeTab === "participants" ? 11 : 7} className="text-center py-8 text-brand-cyan/40">
+                                        <TableCell colSpan={activeTab === "participants" ? 13 : 7} className="text-center py-8 text-brand-cyan/40">
                                             {locale === "es" ? "No se encontraron resultados" : "No results found"}
                                         </TableCell>
                                     </TableRow>
@@ -479,6 +485,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
                                                     <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.grad_year || "-"}</TableCell>
+                                                    <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
                                                     <TableCell className="text-brand-orange text-[10px] py-1">
                                                         {item.team ? (
                                                             <button onClick={() => {
