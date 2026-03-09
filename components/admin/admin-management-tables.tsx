@@ -217,9 +217,14 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             const catIdx = parseInt(categoryFilter)
             data = data.filter(item => {
                 if (activeTab === "participants") {
-                    return item.category_1 === catIdx || item.category_2 === catIdx || item.category_3 === catIdx
+                    // Match by the displayed category (team's category_1 if in a team, else participant's category_1)
+                    if (item.team) {
+                        const team = teams.find(t => t.id === item.team)
+                        return parseInt(team?.category_1) === catIdx
+                    }
+                    return parseInt(item.category_1) === catIdx
                 } else {
-                    return item.category_1 === catIdx
+                    return parseInt(item.category_1) === catIdx
                 }
             })
         }
