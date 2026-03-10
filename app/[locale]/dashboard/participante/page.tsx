@@ -293,36 +293,30 @@ export default function ParticipanteDashboard() {
             ) : !hasTeam ? (
               <GlassCard className="mb-6 rounded-lg">
                 <p className="text-brand-yellow text-md font-pixel mb-2">
-                  {locale === "es" ? "Sin equipo asignado" : "No team assigned"}
+                  {t.dashboard.participant.status.soloTitle}
                 </p>
                 <p className="text-brand-cyan text-sm mb-4">
-                  {locale === "es"
-                    ? "Se te asignará un equipo próximamente. ¡Estate atento!"
-                    : "You will be assigned a team soon. Stay tuned!"}
+                  {t.dashboard.participant.status.soloReady}
                 </p>
               </GlassCard>
             ) : null}
             {team?.status === "registered" && (
               <GlassCard className="mb-6 p-6 rounded-lg">
                 <p className="text-md text-brand-yellow font-pixel mb-2">
-                  {locale === "es" ? "Tu equipo está siendo revisado" : "Your team is under review"}
+                  {t.dashboard.participant.status.underReview}
                 </p>
                 <p className="text-brand-cyan/70 text-md">
-                  {locale === "es"
-                    ? "El equipo está pendiente de aprobación. Te notificaremos cuando sea revisado."
-                    : "Your team is pending approval. We will notify you once it has been reviewed."}
+                  {t.dashboard.participant.status.pendingApproval}
                 </p>
               </GlassCard>
             )}
             {team?.status === "rejected" && (
               <GlassCard className="mb-6 p-6 rounded-lg">
                 <p className="text-md text-brand-yellow font-pixel mb-2">
-                  {locale === "es" ? "Tu equipo está siendo revisado" : "Your team is under review"}
+                  {t.dashboard.participant.status.underReview}
                 </p>
                 <p className="text-brand-cyan/70 text-md">
-                  {locale === "es"
-                    ? "Lamentablemente tu equipo no fue aceptado para participar. Contactanos en computersociety@itba.edu.ar"
-                    : "Unfortunately your team was not accepted to participate. Contact us at computersociety@itba.edu.ar"}
+                  {t.dashboard.participant.status.rejected}
                 </p>
               </GlassCard>
             )}
@@ -552,9 +546,7 @@ export default function ParticipanteDashboard() {
           {showWinners && (
             <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
-                {locale === "es"
-                  ? "Reviví el momento de la victoria"
-                  : "Relive the moment of victory"}
+                {t.dashboard.participant.winners.relive}
               </h3>
               <GlassCard className="p-8 border-brand-yellow/30 bg-brand-yellow/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity translate-x-1/4 -translate-y-1/4 pointer-events-none">
@@ -566,11 +558,11 @@ export default function ParticipanteDashboard() {
                   </div>
                   <div>
                     <h4 className="font-pixel text-2xl text-white mb-3 tracking-wider">
-                      {locale === "es" ? "¡LOS GANADORES YA ESTÁN AQUÍ!" : "THE WINNERS ARE HERE!"}
+                      {t.dashboard.participant.winners.here}
                     </h4>
                   </div>
                   <PixelButton onClick={() => router.push(`/${locale}/dashboard/winners-reveal`)}>
-                    {locale === "es" ? "VER GANADORES" : "VIEW WINNERS"}
+                    {t.dashboard.participant.winners.view}
                   </PixelButton>
                 </div>
               </GlassCard>

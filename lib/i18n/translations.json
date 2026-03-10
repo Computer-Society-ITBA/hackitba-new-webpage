@@ -625,9 +625,33 @@
             "button": "Copy team code"
           }
         },
+        "winners": {
+          "relive": "Relive the moment of victory",
+          "here": "THE WINNERS ARE HERE!",
+          "view": "VIEW WINNERS"
+        },
         "errors": {
           "storageNotConfigured": "File storage is not configured"
+        },
+        "status": {
+          "soloTitle": "No team assigned",
+          "soloReady": "You will be assigned a team soon. Stay tuned!",
+          "underReview": "Your team is under review",
+          "pendingApproval": "Your team is pending approval. We will notify you once it has been reviewed.",
+          "rejected": "Unfortunately your team was not accepted to participate. Contact us at computersociety@itba.edu.ar"
         }
+      },
+      "sidebar": {
+        "back": "Back",
+        "dashboard": "Dashboard",
+        "event": "Event",
+        "approvals": "Approvals",
+        "incomplete": "Incomplete",
+        "winners": "Winners",
+        "profile": "Profile",
+        "signOut": "Sign Out",
+        "expand": "Expand sidebar",
+        "collapse": "Collapse sidebar"
       },
       "profile": {
         "title": "My Profile",
@@ -774,6 +798,22 @@
       "submitScore": "Submit Score",
       "cancel": "Cancel",
       "delete": "Delete"
+    },
+    "winnersReveal": {
+      "firstPlace": "1ST PLACE",
+      "secondPlace": "2ND PLACE",
+      "thirdPlace": "3RD PLACE",
+      "category": "CATEGORY",
+      "unspecified": "UNSPECIFIED",
+      "second": "SECOND",
+      "champion": "CHAMPION",
+      "third": "THIRD",
+      "loadingData": "LOADING DATA...",
+      "showWinners": "SHOW WINNERS"
+    },
+    "loading": {
+      "synchronizing": "SYNCHRONIZING...",
+      "default": "Loading..."
     },
     "redirecting": "Redirecting..."
   },
@@ -1403,9 +1443,33 @@
             "button": "Copiar código del equipo"
           }
         },
+        "winners": {
+          "relive": "Reviví el momento de la victoria",
+          "here": "¡LOS GANADORES YA ESTÁN AQUÍ!",
+          "view": "VER GANADORES"
+        },
         "errors": {
           "storageNotConfigured": "El almacenamiento de archivos no está configurado"
+        },
+        "status": {
+          "soloTitle": "Sin equipo asignado",
+          "soloReady": "Se te asignará un equipo próximamente. ¡Estate atento!",
+          "underReview": "Tu equipo está siendo revisado",
+          "pendingApproval": "El equipo está pendiente de aprobación. Te notificaremos cuando sea revisado.",
+          "rejected": "Lamentablemente tu equipo no fue aceptado para participar. Contactanos en computersociety@itba.edu.ar"
         }
+      },
+      "sidebar": {
+        "back": "Atrás",
+        "dashboard": "Dashboard",
+        "event": "Evento",
+        "approvals": "Aprobaciones",
+        "incomplete": "Incompletos",
+        "winners": "Ganadores",
+        "profile": "Perfil",
+        "signOut": "Cerrar sesión",
+        "expand": "Expandir lateral",
+        "collapse": "Contraer lateral"
       },
       "profile": {
         "title": "Mi perfil",
@@ -1552,6 +1616,22 @@
       "submitScore": "Enviar puntuación",
       "cancel": "Cancelar",
       "delete": "Eliminar"
+    },
+    "winnersReveal": {
+      "firstPlace": "1ER PUESTO",
+      "secondPlace": "2DO PUESTO",
+      "thirdPlace": "3ER PUESTO",
+      "category": "CATEGORÍA",
+      "unspecified": "SIN ESPECIFICAR",
+      "second": "SEGUNDO",
+      "champion": "CAMPEÓN",
+      "third": "TERCERO",
+      "loadingData": "CARGANDO DATOS...",
+      "showWinners": "VER GANADORES"
+    },
+    "loading": {
+      "synchronizing": "SINCRONIZANDO...",
+      "default": "Cargando..."
     },
     "redirecting": "Redirigiendo..."
   }

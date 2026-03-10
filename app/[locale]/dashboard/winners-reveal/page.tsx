@@ -8,6 +8,7 @@ import { WinnersReveal } from "@/components/admin/winners-reveal"
 import { doc, getDoc } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { Loading } from "@/components/ui/loading"
+import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function WinnersPage() {
@@ -17,6 +18,7 @@ export default function WinnersPage() {
     const locale = (params.locale as Locale) || "es"
     const [showWinners, setShowWinners] = useState<boolean | null>(null)
     const [settingsLoading, setSettingsLoading] = useState(true)
+    const t = getTranslations(locale)
 
     useEffect(() => {
         const db = getDbClient()
@@ -53,7 +55,7 @@ export default function WinnersPage() {
         }
     }, [user, authLoading, settingsLoading, showWinners, router, locale])
 
-    if (authLoading || settingsLoading) return <Loading text="SYNCHRONIZING..." />
+    if (authLoading || settingsLoading) return <Loading text={t.loading.synchronizing} />
 
     return (
         <ProtectedRoute allowedRoles={["admin", "participant"]}>

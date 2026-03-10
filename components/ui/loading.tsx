@@ -1,6 +1,9 @@
 "use client"
 
 import { CodeBackground } from "@/components/effects/code-background"
+import { useParams } from "next/navigation"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
 
 interface LoadingProps {
@@ -20,8 +23,12 @@ export function Loading({
     className,
     showBackground = true
 }: LoadingProps) {
+    const params = useParams()
+    const locale = (params?.locale as Locale) || "es"
+    const t = getTranslations(locale)
+
     // Use a default text if none provided
-    const displayText = text || "Loading..."
+    const displayText = text || t.loading.default
 
     return (
         <div className={cn(

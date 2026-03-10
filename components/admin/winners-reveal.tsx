@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils"
 import Confetti from "confetti-react"
 import { PixelButton } from "../ui/pixel-button"
 import Link from "next/link"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
@@ -23,12 +25,6 @@ const COLORS = {
     black: "#02040a",
     navy: "#050a18",
 }
-
-const PLACEMENTS = {
-    1: { label: "1ER PUESTO", color: COLORS.yellow, rgb: "250,211,153", icon: LucideIcons.Trophy },
-    2: { label: "2DO PUESTO", color: COLORS.orange, rgb: "239,128,47", icon: LucideIcons.Medal },
-    3: { label: "3ER PUESTO", color: COLORS.cyan, rgb: "110,182,249", icon: LucideIcons.Star },
-} as const
 
 type Place = 1 | 2 | 3
 type Stage = 0 | 1 | 2 | 3 | 4 | 5
@@ -180,7 +176,12 @@ function AmbientWires({ width, height }: { width: number, height: number }) {
     )
 }
 
-function WinnerCard({ winner, category, revealed, scale = 1, glow = true }: any) {
+function WinnerCard({ winner, category, revealed, scale = 1, glow = true, t }: any) {
+    const PLACEMENTS = {
+        1: { label: t.winnersReveal.firstPlace, color: COLORS.yellow, rgb: "250,211,153", icon: LucideIcons.Trophy },
+        2: { label: t.winnersReveal.secondPlace, color: COLORS.orange, rgb: "239,128,47", icon: LucideIcons.Medal },
+        3: { label: t.winnersReveal.thirdPlace, color: COLORS.cyan, rgb: "110,182,249", icon: LucideIcons.Star },
+    } as const
     const pk = PLACEMENTS[winner.place as Place]
     const CatIcon = category ? (LucideIcons as any)[category.iconName] || LucideIcons.Code : LucideIcons.Code
     const RankIcon = pk.icon
@@ -227,7 +228,7 @@ function WinnerCard({ winner, category, revealed, scale = 1, glow = true }: any)
                         <div className="flex items-center gap-4 px-8 py-4 border-2 rounded-xl mt-4" style={{ borderColor: pk.color + "33", background: pk.color + "11" }}>
                             <CatIcon size={36} color={pk.color} />
                             <span className="font-pixel text-xl" style={{ color: revealed ? pk.color : "#333" }}>
-                                <ScrambleText text={(category?.name || "CATEGORY").toUpperCase()} active={revealed} delay={900} />
+                                <ScrambleText text={(category?.name || t.winnersReveal.category).toUpperCase()} active={revealed} delay={900} />
                             </span>
                         </div>
                     </NeonGlow>
@@ -245,11 +246,15 @@ function WinnerCard({ winner, category, revealed, scale = 1, glow = true }: any)
     )
 }
 
-function PodiumCard({ winner, category, isChampion = false }: any) {
+function PodiumCard({ winner, category, isChampion = false, t }: any) {
     if (!winner) return null
+    const PLACEMENTS = {
+        1: { label: t.winnersReveal.firstPlace, color: COLORS.yellow, rgb: "250,211,153", icon: LucideIcons.Trophy },
+        2: { label: t.winnersReveal.secondPlace, color: COLORS.orange, rgb: "239,128,47", icon: LucideIcons.Medal },
+        3: { label: t.winnersReveal.thirdPlace, color: COLORS.cyan, rgb: "110,182,249", icon: LucideIcons.Star },
+    } as const
     const pk = PLACEMENTS[winner.place as Place]
     const CatIcon = category ? (LucideIcons as any)[category.iconName] || LucideIcons.Code : LucideIcons.Code
-    const RankIcon = pk.icon
 
     return (
         <div className={cn(
@@ -278,7 +283,7 @@ function PodiumCard({ winner, category, isChampion = false }: any) {
                 )}>
                     <CatIcon size={10} />
                     <span className="font-pixel text-[8px] uppercase tracking-tighter leading-none">
-                        {category?.name || "UNSPECIFIED"}
+                        {category?.name || t.winnersReveal.unspecified}
                     </span>
                 </div>
             </div>
@@ -290,7 +295,15 @@ function PodiumCard({ winner, category, isChampion = false }: any) {
 
 export function WinnersReveal() {
     const params = useParams()
-    const locale = params.locale
+    const locale = params.locale as Locale
+    const t = getTranslations(locale)
+
+    const PLACEMENTS = {
+        1: { label: t.winnersReveal.firstPlace, color: COLORS.yellow, rgb: "250,211,153", icon: LucideIcons.Trophy },
+        2: { label: t.winnersReveal.secondPlace, color: COLORS.orange, rgb: "239,128,47", icon: LucideIcons.Medal },
+        3: { label: t.winnersReveal.thirdPlace, color: COLORS.cyan, rgb: "110,182,249", icon: LucideIcons.Star },
+    } as const
+
     const [stage, setStage] = useState<Stage>(0)
     const [isTravelling, setIsTravelling] = useState(false)
     const [locked, setLocked] = useState(false)
@@ -474,6 +487,7 @@ export function WinnersReveal() {
                             winner={w}
                             category={cats.find(c => c.id === w.category)}
                             revealed={revealed[w.place as Place]}
+                            t={t}
                         />
                     </div>
                 ))}
@@ -502,34 +516,34 @@ export function WinnersReveal() {
                         {/* 2nd Place */}
                         <div className="order-2 md:order-1 flex flex-col items-center animate-in slide-in-from-bottom-24 duration-1000 delay-300 w-full max-w-[260px] md:max-w-none md:flex-1">
                             <div className="w-full mb-3 transform hover:scale-105 transition-transform duration-500">
-                                <PodiumCard winner={winners.find(w => w.place === 2)} category={cats.find(c => c.id === winners.find(w => w.place === 2)?.category)} />
+                                <PodiumCard winner={winners.find(w => w.place === 2)} category={cats.find(c => c.id === winners.find(w => w.place === 2)?.category)} t={t} />
                             </div>
                             <div className="w-full h-20 md:h-28 bg-gradient-to-b from-brand-orange/30 to-brand-orange/5 border-t-2 border-brand-orange/50 rounded-t-xl flex flex-col items-center justify-center py-2 px-4">
                                 <span className="font-pixel text-brand-orange text-xl md:text-2xl">02</span>
-                                <span className="font-pixel text-brand-orange/60 text-[8px] tracking-widest uppercase">SECOND</span>
+                                <span className="font-pixel text-brand-orange/60 text-[8px] tracking-widest uppercase">{t.winnersReveal.second}</span>
                             </div>
                         </div>
 
                         {/* 1st Place - Champion */}
                         <div className="order-1 md:order-2 flex flex-col items-center animate-in slide-in-from-bottom-32 duration-1200 delay-100 w-full max-w-[300px] md:max-w-none md:flex-[1.1] z-20" style={{ animation: "podiumFloat 4s ease-in-out infinite" }}>
                             <div className="w-full mb-4 transform hover:scale-105 transition-transform duration-500 shadow-[0_0_40px_rgba(250,211,153,0.1)]">
-                                <PodiumCard isChampion winner={winners.find(w => w.place === 1)} category={cats.find(c => c.id === winners.find(w => w.place === 1)?.category)} />
+                                <PodiumCard isChampion winner={winners.find(w => w.place === 1)} category={cats.find(c => c.id === winners.find(w => w.place === 1)?.category)} t={t} />
                             </div>
                             <div className="w-full h-28 md:h-44 bg-gradient-to-b from-brand-yellow/40 to-brand-yellow/5 border-t-4 border-brand-yellow/60 rounded-t-xl flex flex-col items-center justify-center py-4 px-6 shadow-[0_-15px_30px_rgba(250,211,153,0.1)]">
                                 <Trophy className="text-brand-yellow mb-1 md:mb-2 w-8 h-8 md:w-10 md:h-10" />
                                 <span className="font-pixel text-brand-yellow text-3xl md:text-4xl">01</span>
-                                <span className="font-pixel text-brand-yellow/80 text-[10px] tracking-widest uppercase mb-1">CHAMPION</span>
+                                <span className="font-pixel text-brand-yellow/80 text-[10px] tracking-widest uppercase mb-1">{t.winnersReveal.champion}</span>
                             </div>
                         </div>
 
                         {/* 3rd Place */}
                         <div className="order-3 flex flex-col items-center animate-in slide-in-from-bottom-16 duration-1000 delay-500 w-full max-w-[240px] md:max-w-none md:flex-1">
                             <div className="w-full mb-2 transform hover:scale-105 transition-transform duration-500">
-                                <PodiumCard winner={winners.find(w => w.place === 3)} category={cats.find(c => c.id === winners.find(w => w.place === 3)?.category)} />
+                                <PodiumCard winner={winners.find(w => w.place === 3)} category={cats.find(c => c.id === winners.find(w => w.place === 3)?.category)} t={t} />
                             </div>
                             <div className="w-full h-16 md:h-20 bg-gradient-to-b from-brand-cyan/30 to-brand-cyan/5 border-t-2 border-brand-cyan/50 rounded-t-xl flex flex-col items-center justify-center py-2 px-4">
                                 <span className="font-pixel text-brand-cyan text-lg md:text-xl">03</span>
-                                <span className="font-pixel text-brand-cyan/60 text-[8px] tracking-widest uppercase">THIRD</span>
+                                <span className="font-pixel text-brand-cyan/60 text-[8px] tracking-widest uppercase">{t.winnersReveal.third}</span>
                             </div>
                         </div>
 
@@ -549,7 +563,7 @@ export function WinnersReveal() {
                         className={cn("scale-110 relative z-10 transition-opacity", isLoading ? "opacity-50 cursor-not-allowed" : "opacity-100")}
                         disabled={isLoading}
                     >
-                        {isLoading ? "LOADING DATA..." : "SHOW WINNERS"}
+                        {isLoading ? t.winnersReveal.loadingData : t.winnersReveal.showWinners}
                     </PixelButton>
                 </div>
             )}

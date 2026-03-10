@@ -9,8 +9,11 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import { doc, onSnapshot } from "firebase/firestore"
+import { getDbClient } from "@/lib/firebase/client-config"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -23,6 +26,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const params = useParams()
   const pathname = usePathname()
   const locale = (params.locale as Locale) || "es"
+  const t = getTranslations(locale)
   const dashboardHomeRoutes = [
     `/${locale}/dashboard`,
     `/${locale}/dashboard/participante`,
@@ -34,6 +38,20 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [showWinners, setShowWinners] = useState(false)
+
+  useEffect(() => {
+    const db = getDbClient()
+    if (!db) return
+
+    const unsub = onSnapshot(doc(db, "settings", "global"), (snap) => {
+      if (snap.exists()) {
+        setShowWinners(!!snap.data()?.showWinners)
+      }
+    })
+
+    return () => unsub()
+  }, [])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -74,7 +92,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           <div className={`relative ${isMobile ? "w-6 h-6" : "-translate-x-2 w-8 h-8"} rotate-90 flex-shrink-0`}>
             <Image src="/images/flecha-abajo.png" alt="Arrow" fill className="object-contain" />
           </div>
-          {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Back</span>}
+          {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.back}</span>}
         </button>
       </div>
 
