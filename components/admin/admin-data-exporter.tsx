@@ -12,6 +12,8 @@ import { PixelButton } from "@/components/ui/pixel-button"
 interface UserDoc {
     age?: string | number
     career?: string
+    grad_year?: number | string
+    neighborhood?: string
     category_1?: number
     category_2?: number
     category_3?: number
@@ -239,6 +241,7 @@ function buildParticipantsSheet(
 ) {
     const FIELDS = [
         "name", "surname", "email", "role", "career", "university",
+        "grad_year", "neighborhood",
         "age", "dni", "food_preference",
         "category_1", "category_2", "category_3",
         "team", "hasTeam", "onboardingStep",
@@ -250,6 +253,7 @@ function buildParticipantsSheet(
     addHeaders(ws, FIELDS, 3)
     setColumnWidths(ws, FIELDS, {
         name: 20, surname: 20, email: 32, career: 22, university: 28,
+        grad_year: 14, neighborhood: 24,
         github: 28, linkedin: 28, link_cv: 28, food_preference: 20,
     })
 
@@ -261,6 +265,8 @@ function buildParticipantsSheet(
             role: u.role ?? "",
             career: u.career ?? "",
             university: u.university ?? "",
+            grad_year: u.grad_year ?? "",
+            neighborhood: u.neighborhood ?? "",
             age: u.age ?? "",
             dni: u.dni ?? "",
             food_preference: u.food_preference ?? "",
@@ -302,6 +308,7 @@ function buildParticipantsSheet(
                 const rowData: Record<string, unknown> = {
                     name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
                     role: u.role ?? "", career: u.career ?? "", university: u.university ?? "",
+                    grad_year: u.grad_year ?? "", neighborhood: u.neighborhood ?? "",
                     age: u.age ?? "", dni: u.dni ?? "", food_preference: u.food_preference ?? "",
                     category_1: catName(u.category_1), category_2: catName(u.category_2), category_3: catName(u.category_3),
                     team: u.team ?? "", hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
@@ -504,6 +511,75 @@ function buildSummarySheet(
     ws.views = [{ state: "frozen", ySplit: 4, xSplit: 0 }]
 }
 
+function buildSponsorsSheet(
+    ws: Worksheet,
+    participants: (UserDoc & { id: string })[],
+) {
+    const FIELDS = [
+        "name", "surname", "email",
+        "career", "university", "grad_year", "neighborhood",
+        "age", "dni",
+        "github", "linkedin", "link_cv",
+    ]
+
+    addSheetTitle(ws, "Info para Sponsors", FIELDS.length)
+    addHeaders(ws, FIELDS, 3)
+    setColumnWidths(ws, FIELDS, {
+        name: 20, surname: 20, email: 32,
+        career: 22, university: 28, grad_year: 14, neighborhood: 24,
+        age: 10, dni: 16,
+        github: 28, linkedin: 28, link_cv: 28,
+    })
+
+    participants.forEach((u, idx) => {
+        const rowData: Record<string, unknown> = {
+            name: u.name ?? "",
+            surname: u.surname ?? "",
+            email: u.email ?? "",
+            career: u.career ?? "",
+            university: u.university ?? "",
+            grad_year: u.grad_year ?? "",
+            neighborhood: u.neighborhood ?? "",
+            age: u.age ?? "",
+            dni: u.dni ?? "",
+            github: u.github ?? "",
+            linkedin: u.linkedin ?? "",
+            link_cv: u.link_cv ?? "",
+        }
+
+        const row = ws.addRow(FIELDS.map((f) => rowData[f]))
+        row.height = 20
+
+        FIELDS.forEach((field, colIdx) => {
+            const cell = row.getCell(colIdx + 1)
+            styleBodyCell(cell, idx)
+            const chip = resolveChip(toLabel(field), rowData[field])
+            if (chip && rowData[field] !== "") styleChip(cell, chip)
+        })
+    })
+
+    if (participants.length > 0) {
+        ws.addTable({
+            name: "TableSponsors",
+            ref: `A3`,
+            headerRow: true,
+            totalsRow: false,
+            style: { theme: "TableStyleMedium6", showRowStripes: true },
+            columns: FIELDS.map((f) => ({ name: toLabel(f), filterButton: true })),
+            rows: participants.map((u) => {
+                const rowData: Record<string, unknown> = {
+                    name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
+                    career: u.career ?? "", university: u.university ?? "",
+                    grad_year: u.grad_year ?? "", neighborhood: u.neighborhood ?? "",
+                    age: u.age ?? "", dni: u.dni ?? "",
+                    github: u.github ?? "", linkedin: u.linkedin ?? "", link_cv: u.link_cv ?? "",
+                }
+                return FIELDS.map((f) => rowData[f])
+            }),
+        })
+    }
+}
+
 // ─── Main export function ─────────────────────────────────────────────────────
 
 async function generateExcel() {
@@ -525,15 +601,18 @@ async function generateExcel() {
     const allUsers = usersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as UserDoc) }))
     const allTeams = teamsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as TeamDoc) }))
     const participants = allUsers.filter((u) => u.role === "participant")
+    const registeredParticipants = participants.filter((u) => Number(u.onboardingStep) >= 2)
 
     // Sheet tab colours use the accent
     const wsP = wb.addWorksheet("Participantes", { properties: { tabColor: { argb: `FF0EA5E9` } } })
     const wsT = wb.addWorksheet("Equipos", { properties: { tabColor: { argb: `FF6366F1` } } })
     const wsS = wb.addWorksheet("Categorías", { properties: { tabColor: { argb: `FF10B981` } } })
+    const wsSp = wb.addWorksheet("Sponsors", { properties: { tabColor: { argb: `FFFBBF24` } } })
 
     buildParticipantsSheet(wsP, participants)
     buildTeamsSheet(wsT, allTeams, participants)
     buildSummarySheet(wsS, participants, allTeams)
+    buildSponsorsSheet(wsSp, registeredParticipants)
 
     // Download
     const buffer = await wb.xlsx.writeBuffer()

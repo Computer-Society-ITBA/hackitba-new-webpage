@@ -159,6 +159,14 @@ export default function LoginPage() {
                 className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan focus:border-brand-cyan"
                 placeholder={translations.auth.login.fields.passwordPlaceholder}
               />
+              <div className="text-right">
+                <Link
+                  href={`/${locale}/auth/forgot-password`}
+                  className="text-brand-cyan/60 hover:text-brand-cyan text-xs transition-colors"
+                >
+                  {translations.auth.login.forgotPassword}
+                </Link>
+              </div>
             </div>
 
             {/* Errors are shown via toast notifications */}

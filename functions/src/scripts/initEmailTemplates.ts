@@ -1043,6 +1043,7 @@ const templates = {
                     </table>
                   </td>
                 </tr>
+                <!-- fallback link removed -->
               </table>
             </td>
           </tr>

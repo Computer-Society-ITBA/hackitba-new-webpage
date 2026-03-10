@@ -79,7 +79,9 @@ export const eventRegistration = async (
   company: string|null = null,
   position: string|null = null,
   photo: string|null = null,
-  wantsToCreateTeam = false): Promise<void> => {
+  wantsToCreateTeam = false,
+  neighborhood: string|null = null,
+  careerYear: number|null = null): Promise<void> => {
   try {
     const db = getHackitbaDb();
     const userRef = db.collection("users").doc(userId);
@@ -141,6 +143,8 @@ export const eventRegistration = async (
         hasTeam: hasTeam,
         wantsToCreateTeam: wantsToCreateTeam || false,
         food_preference: food_preference,
+        neighborhood: neighborhood,
+        grad_year: careerYear,
         category_1: category_1 !== null ? category_1 : category_1,
         category_2: category_2 !== null ? category_2 : category_2,
         category_3: category_3 !== null ? category_3 : category_3,

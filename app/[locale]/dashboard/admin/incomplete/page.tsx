@@ -2,13 +2,13 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { getAuthClient } from "@/lib/firebase/client-config"
-import { AlertCircle, Clock, UserX, RefreshCw, Mail, SendHorizonal, RotateCcw } from "lucide-react"
+import { AlertCircle, Clock, UserX, RefreshCw, Mail, SendHorizonal, RotateCcw, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { toast } from "@/hooks/use-toast"
 import type { Locale } from "@/lib/i18n/config"
@@ -52,6 +52,51 @@ export default function IncompleteUsersPage() {
 
   // Per-user send state
   const [sendingUser, setSendingUser] = useState<Record<string, boolean>>({})
+
+  // Sorting
+  type SortKey = "name" | "email" | "emailVerified" | "createdAt" | "incompleteMailCount" | "incompleteMailLastSent"
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+    } else {
+      setSortKey(key)
+      setSortDir(key === "createdAt" || key === "incompleteMailLastSent" || key === "incompleteMailCount" ? "desc" : "asc")
+    }
+  }
+
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      let aVal: string | number | boolean | null
+      let bVal: string | number | boolean | null
+      if (sortKey === "name") {
+        aVal = `${a.name ?? ""} ${a.surname ?? ""}`.trim().toLowerCase()
+        bVal = `${b.name ?? ""} ${b.surname ?? ""}`.trim().toLowerCase()
+      } else if (sortKey === "email") {
+        aVal = (a.email ?? "").toLowerCase()
+        bVal = (b.email ?? "").toLowerCase()
+      } else if (sortKey === "emailVerified") {
+        aVal = a.emailVerified ? 1 : 0
+        bVal = b.emailVerified ? 1 : 0
+      } else if (sortKey === "createdAt") {
+        aVal = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        bVal = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      } else if (sortKey === "incompleteMailCount") {
+        aVal = a.incompleteMailCount
+        bVal = b.incompleteMailCount
+      } else {
+        aVal = a.incompleteMailLastSent ? new Date(a.incompleteMailLastSent).getTime() : 0
+        bVal = b.incompleteMailLastSent ? new Date(b.incompleteMailLastSent).getTime() : 0
+      }
+      if (aVal === null || aVal === undefined) aVal = ""
+      if (bVal === null || bVal === undefined) bVal = ""
+      if (aVal < bVal) return sortDir === "asc" ? -1 : 1
+      if (aVal > bVal) return sortDir === "asc" ? 1 : -1
+      return 0
+    })
+  }, [users, sortKey, sortDir])
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
 
@@ -328,29 +373,40 @@ export default function IncompleteUsersPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-brand-cyan/10">
-                      <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Nombre" : "Name"}
-                      </th>
-                      <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">Email</th>
-                      <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Mail verificado" : "Email verified"}
-                      </th>
-                      <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Registro" : "Date"}
-                      </th>
-                      <th className="text-center py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Mails env." : "Mails sent"}
-                      </th>
-                      <th className="text-left py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
-                        {locale === "es" ? "Último mail" : "Last mail"}
-                      </th>
+                      {([
+                        { key: "name" as const, label: locale === "es" ? "Nombre" : "Name", align: "left" },
+                        { key: "email" as const, label: "Email", align: "left" },
+                        { key: "emailVerified" as const, label: locale === "es" ? "Mail verificado" : "Email verified", align: "left" },
+                        { key: "createdAt" as const, label: locale === "es" ? "Registro" : "Date", align: "left" },
+                        { key: "incompleteMailCount" as const, label: locale === "es" ? "Mails env." : "Mails sent", align: "center" },
+                        { key: "incompleteMailLastSent" as const, label: locale === "es" ? "Último mail" : "Last mail", align: "left" },
+                      ] as { key: "name" | "email" | "emailVerified" | "createdAt" | "incompleteMailCount" | "incompleteMailLastSent"; label: string; align: string }[]).map(({ key, label, align }) => (
+                        <th
+                          key={key}
+                          onClick={() => handleSort(key)}
+                          className={cn(
+                            "py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase cursor-pointer select-none",
+                            "hover:text-brand-cyan transition-colors group",
+                            align === "center" ? "text-center" : "text-left"
+                          )}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            {label}
+                            {sortKey === key
+                              ? sortDir === "asc"
+                                ? <ChevronUp size={11} className="text-brand-cyan" />
+                                : <ChevronDown size={11} className="text-brand-cyan" />
+                              : <ChevronsUpDown size={11} className="text-brand-cyan/20 group-hover:text-brand-cyan/50" />}
+                          </span>
+                        </th>
+                      ))}
                       <th className="text-center py-2 px-3 font-pixel text-xs text-brand-cyan/60 uppercase">
                         {locale === "es" ? "Acción" : "Action"}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {sortedUsers.map((user) => (
                       <tr key={user.id} className="border-b border-brand-cyan/5 hover:bg-brand-cyan/5 transition-colors">
                         <td className="py-3 px-3 text-white">
                           {user.name || user.surname
@@ -409,7 +465,7 @@ export default function IncompleteUsersPage() {
 
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
-                {users.map((user) => (
+                {sortedUsers.map((user) => (
                   <div key={user.id} className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-white text-sm font-medium">

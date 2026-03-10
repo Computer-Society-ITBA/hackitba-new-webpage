@@ -7,6 +7,7 @@ import {
   getUserById,
   updateUser,
   requestPasswordReset,
+  confirmPasswordReset,
   approveParticipantAndAssignTeam,
   getPendingParticipants,
   getIncompleteUsers,
@@ -66,6 +67,7 @@ router.post("/register", register);
 router.post("/register-event", validateToken, registerEvent);
 router.post("/login", login);
 router.post("/request-password-reset", requestPasswordReset);
+router.post("/reset-password", confirmPasswordReset);
 
 // POST /api/users/approve-and-assign-team
 router.post("/approve-and-assign-team", validateToken, requireAdmin, approveParticipantAndAssignTeam);

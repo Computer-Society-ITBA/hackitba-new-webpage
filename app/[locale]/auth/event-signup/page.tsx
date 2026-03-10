@@ -83,6 +83,8 @@ function EventSignupContent() {
         dni: "",
         university: "",
         career: "",
+        careerYear: "",
+        neighborhood: "",
         age: "",
         company: "",
         professionalRole: "",
@@ -366,6 +368,8 @@ function EventSignupContent() {
                 dni: formData.dni,
                 university: formData.university,
                 career: formData.career,
+                careerYear: formData.careerYear ? parseInt(formData.careerYear) : null,
+                neighborhood: formData.neighborhood || null,
                 age: parseInt(formData.age),
                 link_cv: formData.cvLink || null,
                 linkedin: formData.linkedin || null,
@@ -432,47 +436,68 @@ function EventSignupContent() {
         switch (currentStep) {
             case 1:
                 return (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="mb-6">
+                    <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
                             <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{role === "participant" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                            <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
                         </div>
 
                         {role === "participant" ? (
                             <>
-                                <div className="space-y-2">
-                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university}</Label>
-                                    <Input id="university" value={formData.university} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career}</Label>
-                                        <Input id="career" value={formData.career} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.dniPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1">
                                         <Label htmlFor="age" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.age} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                        <Input id="age" type="number" value={formData.age} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                                        <Input id="age" type="number" value={formData.age} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.agePlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
                                         {formData.age && parseInt(formData.age) > 27 && (
                                             <p className="text-xs text-yellow-500 leading-none font-pixel">{translations.auth.eventSignup.warnings.agePreference}</p>
                                         )}
                                     </div>
                                 </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university}</Label>
+                                    <Input id="university" value={formData.university} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.universityPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                </div>
+                                <div className="grid gap-3 items-end" style={{ gridTemplateColumns: "2fr 1fr" }}>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career}</Label>
+                                        <Input id="career" value={formData.career} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.careerPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="careerYear" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.careerYear}</Label>
+                                        <Input id="careerYear" type="number" min="2020" max="2040" placeholder="2027" value={formData.careerYear} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="neighborhood" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.neighborhood}</Label>
+                                        <Input id="neighborhood" value={formData.neighborhood} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.neighborhoodPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
+                                        <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
+                                    </div>
+                                </div>
                             </>
                         ) : (
                             <>
-                                <div className="space-y-2">
-                                    <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.company} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <Input id="company" value={formData.company} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                                <div className="space-y-1">
+                                    <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.dniPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.professionalRole} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.company} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="company" value={formData.company} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.companyPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.professionalRole} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.professionalRolePlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.photo} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <input
                                         type="file"
@@ -483,23 +508,21 @@ function EventSignupContent() {
                                     />
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-brand-cyan/20 rounded-lg cursor-pointer hover:border-brand-cyan/40 transition-colors bg-brand-black/20 overflow-hidden relative aspect-square w-full mx-auto flex items-center justify-center p-0"
+                                        className="border-2 border-dashed border-brand-cyan/20 rounded-lg cursor-pointer hover:border-brand-cyan/40 transition-colors bg-brand-black/20 overflow-hidden relative h-24 md:h-16 w-full flex items-center justify-center p-0"
                                     >
                                         {photoPreview ? (
-                                            <div className="w-full h-full relative group">
+                                            <div className="w-full h-full relative group flex items-center gap-3 px-4">
                                                 <img
                                                     src={photoPreview}
                                                     alt="Preview"
-                                                    className="w-full h-full object-cover"
+                                                    className="h-12 w-12 object-cover rounded"
                                                 />
-                                                <div className="absolute inset-0 bg-brand-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                    <p className="font-pixel text-[8px] text-brand-cyan uppercase leading-none">{translations.auth.eventSignup.photo.change}</p>
-                                                </div>
+                                                <p className="font-pixel text-[8px] text-brand-cyan uppercase leading-none">{translations.auth.eventSignup.photo.change}</p>
                                             </div>
                                         ) : (
-                                            <div className="p-8 flex flex-col items-center justify-center">
-                                                <Upload className="w-6 h-6 text-brand-cyan/40 mb-2" />
-                                                <p className="text-[10px] text-brand-cyan/60 uppercase text-center">
+                                            <div className="flex items-center gap-2 p-4">
+                                                <Upload className="w-4 h-4 text-brand-cyan/40" />
+                                                <p className="text-[10px] text-brand-cyan/60 uppercase">
                                                     {translations.auth.eventSignup.photo.choose}
                                                 </p>
                                             </div>
@@ -511,66 +534,65 @@ function EventSignupContent() {
                                         </p>
                                     )}
                                 </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
+                                    <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
+                                </div>
                             </>
                         )}
-
-                        <div className="space-y-2 pt-2 border-t border-brand-cyan/10">
-                            <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
-                            <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
-                        </div>
                     </div>
                 )
             case 2:
                 return (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="mb-6">
+                    <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
                             <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none text-balance">{translations.auth.eventSignup.steps.contactSocial}</h2>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
                                 <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> {translations.auth.eventSignup.fields.github}</Label>
-                                <Input id="github" value={formData.github} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
+                                <Input id="github" value={formData.github} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.githubPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> {translations.auth.eventSignup.fields.linkedin}</Label>
-                                <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
+                                <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.linkedinPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
                                 <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> {translations.auth.eventSignup.fields.instagram}</Label>
-                                <Input id="instagram" value={formData.instagram} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
+                                <Input id="instagram" value={formData.instagram} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.instagramPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> {translations.auth.eventSignup.fields.twitter}</Label>
-                                <Input id="twitter" value={formData.twitter} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" />
+                                <Input id="twitter" value={formData.twitter} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.twitterPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
                             </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <Label htmlFor="cvLink" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><ExternalLink className="w-3 h-3" /> {translations.auth.eventSignup.fields.cvLink}</Label>
-                            <Input id="cvLink" value={formData.cvLink} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs" placeholder={translations.auth.eventSignup.fields.cvPlaceholder} />
+                            <Input id="cvLink" value={formData.cvLink} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.cvPlaceholder} />
                         </div>
                     </div>
                 )
             case 3:
                 return (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <div className="mb-6">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
                             <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{translations.auth.eventSignup.steps.teamStatus}</h2>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "yes" }))}
-                                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
-                                    <Users className="w-6 h-6 text-brand-orange" />
+                                    <Users className="w-5 h-5 text-brand-orange" />
                                     <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.yesHave}</span>
                                 </button>
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
-                                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
                                     <UserPlus className="w-6 h-6 text-brand-cyan" />
                                     <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
@@ -580,28 +602,28 @@ function EventSignupContent() {
 
                         {formData.hasTeam === "yes" ? (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.teamCode} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
+                                    <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                                <div className="space-y-3">
+                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-2">
                                     <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.howToContinue} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3">
                                         <button
                                             onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "solo" }))}
-                                            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                         >
-                                            <UserPlus className="w-6 h-6 text-brand-orange" />
+                                            <UserPlus className="w-5 h-5 text-brand-orange" />
                                             <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
                                         </button>
                                         <button
                                             onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "create" }))}
-                                            className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                         >
-                                            <Users className="w-6 h-6 text-brand-cyan" />
+                                            <Users className="w-5 h-5 text-brand-cyan" />
                                             <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
                                         </button>
                                     </div>
@@ -662,12 +684,12 @@ function EventSignupContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-8 overflow-hidden relative">
+        <div className="min-h-screen flex items-center justify-center px-4 py-4 overflow-hidden relative">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-            <div className="w-full max-w-lg relative z-10 flex flex-col gap-8">
+            <div className="w-full max-w-lg md:max-w-2xl relative z-10 flex flex-col gap-4">
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2">
@@ -692,8 +714,8 @@ function EventSignupContent() {
                 </div>
 
                 {/* Main Card */}
-                <GlassCard className="p-8">
-                    <div className="min-h-[320px] flex flex-col">
+                <GlassCard className="p-5 md:p-7">
+                    <div className="flex flex-col">
                         {renderStep()}
 
                         {!signupLoading && !signupEnabled && (
@@ -710,13 +732,13 @@ function EventSignupContent() {
                             </div>
                         )}
 
-                        <div className="mt-4 px-8 p-3 rounded bg-brand-cyan/5 border border-brand-cyan/20">
-                            <p className="text-brand-cyan/70 text-xs">
+                        <div className="mt-3 p-2 rounded bg-brand-cyan/5 border border-brand-cyan/20">
+                            <p className="text-brand-cyan/70 text-[10px]">
                                 {translations.auth.eventSignup.messages.dataShareConsent}
                             </p>
                         </div>
 
-                        <div className="mt-auto pt-8 flex gap-4">
+                        <div className="mt-auto pt-4 flex gap-4">
                             {currentStep > 1 && (
                                 <PixelButton
                                     variant="outline"
