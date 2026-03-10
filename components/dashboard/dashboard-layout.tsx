@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 
 interface DashboardLayoutProps {
@@ -79,7 +79,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {isDashboardHome ? (
           <span
             className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -160,6 +160,28 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             >
               <UserX size={isMobile ? 18 : 20} className="flex-shrink-0" />
               {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Incomplete</span>}
+            </Link>
+          )
+        )}
+
+        {user?.role === "admin" && (
+          pathname === `/${locale}/dashboard/winners-reveal` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Winners"
+            >
+              <Trophy size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Winners</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/winners-reveal`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Winners"
+            >
+              <Trophy size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Winners</span>}
             </Link>
           )
         )}

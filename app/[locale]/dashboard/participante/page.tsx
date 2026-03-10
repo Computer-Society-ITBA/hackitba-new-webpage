@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -34,6 +34,7 @@ import type { Locale } from "@/lib/i18n/config"
 
 export default function ParticipanteDashboard() {
   const params = useParams()
+  const router = useRouter()
   const locale = (params?.locale as Locale) || "en"
   const t = getTranslations(locale)
   const db = getDbClient()
@@ -297,8 +298,8 @@ export default function ParticipanteDashboard() {
                 </p>
               </div>
             ) : !hasTeam ? (
-              <div className="mb-6 p-4 border-2 border-brand-orange rounded-lg bg-brand-orange/5">
-                <p className="text-brand-orange font-pixel font-bold mb-2">
+              <GlassCard className="mb-6 rounded-lg">
+                <p className="text-brand-yellow text-md font-pixel mb-2">
                   {locale === "es" ? "Sin equipo asignado" : "No team assigned"}
                 </p>
                 <p className="text-brand-cyan text-sm mb-4">
@@ -306,7 +307,7 @@ export default function ParticipanteDashboard() {
                     ? "Se te asignará un equipo próximamente. ¡Estate atento!"
                     : "You will be assigned a team soon. Stay tuned!"}
                 </p>
-              </div>
+              </GlassCard>
             ) : null}
             {team?.status === "registered" && (
               <GlassCard className="mb-6 p-6 rounded-lg">
@@ -549,6 +550,35 @@ export default function ParticipanteDashboard() {
                       </PixelButton>
                     </div>
                   ) : null}
+                </div>
+              </GlassCard>
+            </section>
+          )}
+
+          {/* Winners Section - Feature Flagged */}
+          {process.env.NEXT_PUBLIC_SHOW_WINNERS === "true" && (
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
+                {locale === "es"
+                  ? "Reviví el momento de la victoria"
+                  : "Relive the moment of victory"}
+              </h3>
+              <GlassCard className="p-8 border-brand-yellow/30 bg-brand-yellow/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity translate-x-1/4 -translate-y-1/4 pointer-events-none">
+                  <LucideIcons.Trophy size={160} />
+                </div>
+                <div className="flex flex-col items-center text-center gap-6 relative z-10">
+                  <div className="p-4 bg-brand-yellow/20 rounded-full border border-brand-yellow/40">
+                    <LucideIcons.Trophy size={48} className="text-brand-yellow" />
+                  </div>
+                  <div>
+                    <h4 className="font-pixel text-2xl text-white mb-3 tracking-wider">
+                      {locale === "es" ? "¡LOS GANADORES YA ESTÁN AQUÍ!" : "THE WINNERS ARE HERE!"}
+                    </h4>
+                  </div>
+                  <PixelButton onClick={() => router.push(`/${locale}/dashboard/winners-reveal`)}>
+                    {locale === "es" ? "VER GANADORES" : "VIEW WINNERS"}
+                  </PixelButton>
                 </div>
               </GlassCard>
             </section>
