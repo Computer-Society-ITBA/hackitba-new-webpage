@@ -570,7 +570,10 @@ export function WinnersReveal() {
 
             {/* ── Floating Controls ── */}
             {stage >= 1 && (
-                <div className="fixed bottom-12 right-12 z-[300] flex items-center gap-8">
+                <div className={cn(
+                    "fixed bottom-12 right-12 flex items-center gap-8 transition-all duration-1000",
+                    stage === 5 ? "z-[600] scale-75 opacity-50 hover:opacity-100" : "z-[300]"
+                )}>
                     <div className="hidden md:flex flex-col items-end gap-2">
                         <div className="flex gap-2">
                             {[1, 2, 3, 4, 5].map(s => (
@@ -583,7 +586,8 @@ export function WinnersReveal() {
                         disabled={locked}
                         className={cn(
                             "h-20 w-20 rounded-full border-4 border-brand-cyan flex items-center justify-center transition-all bg-black/80 backdrop-blur-md",
-                            locked ? "opacity-20 translate-y-2 grayscale" : "hover:scale-110 active:scale-90 shadow-[0_0_40px_rgba(110,182,249,0.4)]"
+                            locked ? "opacity-20 translate-y-2 grayscale" : "hover:scale-110 active:scale-90",
+                            stage !== 5 && !locked && "shadow-[0_0_40px_rgba(110,182,249,0.4)]"
                         )}
                     >
                         {stage === 5 ? <RotateCcw color={COLORS.cyan} size={32} /> : <ArrowRight color={COLORS.cyan} size={48} />}
