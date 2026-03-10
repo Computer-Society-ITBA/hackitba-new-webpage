@@ -215,12 +215,12 @@ function WinnerCard({ winner, category, revealed, scale = 1, glow = true }: any)
                 <div className="w-full px-12 mt-8 z-10 flex flex-col items-center gap-6">
                     <NeonGlow color={winner.place === 1 ? "yellow" : winner.place === 2 ? "orange" : "cyan"} flickering>
                         <h2 className="font-pixel text-7xl leading-tight" style={{ color: pk.color, textShadow: `0 0 30px ${pk.color}66` }}>
-                            <ScrambleText text={winner.team.toUpperCase()} active={revealed} delay={200} />
+                            <ScrambleText text={(winner.teamName || "").toUpperCase()} active={revealed} delay={200} />
                         </h2>
                     </NeonGlow>
 
                     <p className="font-montserrat text-3xl font-bold text-white/80 line-clamp-2 min-h-[4rem]">
-                        <ScrambleText text={winner.project} active={revealed} delay={600} />
+                        <ScrambleText text={winner.projectName || ""} active={revealed} delay={600} />
                     </p>
 
                     <NeonGlow color={winner.place === 1 ? "yellow" : winner.place === 2 ? "orange" : "cyan"} flickering>
@@ -265,11 +265,11 @@ function PodiumCard({ winner, category, isChampion = false }: any) {
                     "font-pixel tracking-widest leading-tight mb-1",
                     isChampion ? "text-lg md:text-xl text-brand-yellow" : "text-sm md:text-base text-white"
                 )}>
-                    {winner.team.toUpperCase()}
+                    {(winner.teamName || "").toUpperCase()}
                 </h3>
 
                 <p className="font-montserrat font-bold text-white/90 text-[10px] md:text-xs line-clamp-2 mb-3 h-8 flex items-center justify-center italic">
-                    {winner.project}
+                    {winner.projectName}
                 </p>
 
                 <div className={cn(
@@ -294,12 +294,9 @@ export function WinnersReveal() {
     const [stage, setStage] = useState<Stage>(0)
     const [isTravelling, setIsTravelling] = useState(false)
     const [locked, setLocked] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const [revealed, setRevealed] = useState<Record<Place, boolean>>({ 1: false, 2: false, 3: false })
-    const [winners, setWinners] = useState<any[]>([
-        { place: 1, team: "NeuralForge", project: "Sistema de Diagnóstico Médico con IA", catId: "ia-salud" },
-        { place: 2, team: "ByteStorm", project: "Protocolo de Encriptación Cuántica", catId: "ciberseguridad" },
-        { place: 3, team: "DataWave", project: "Modelado Climático en Tiempo Real", catId: "datos" },
-    ])
+    const [winners, setWinners] = useState<any[]>([])
     const [cats, setCats] = useState<any[]>([])
     const [viewport, setViewport] = useState({ w: 0, h: 0 })
     const [showConfetti, setShowConfetti] = useState(false)
@@ -308,9 +305,48 @@ export function WinnersReveal() {
     useEffect(() => {
         const db = getDbClient()
         if (!db) return
-        getDocs(collection(db, "categories")).then(s => setCats(s.docs.map(d => ({ id: d.id, ...d.data(), name: d.data().spanishName || d.data().name || d.id }))))
-        getDocs(query(collection(db, "winners"), orderBy("place", "asc"))).then(s => { if (!s.empty) setWinners(s.docs.map(d => ({ ...d.data(), place: d.data().place as Place }))) })
-    }, [])
+
+        setIsLoading(true)
+
+        const fetchData = async () => {
+            try {
+                // Fetch Categories - handles IDs like "0", "1", "2"
+                const catsSnap = await getDocs(collection(db, "categories"))
+                const catsData = catsSnap.docs.map(d => {
+                    const data = d.data() as any
+                    return {
+                        id: d.id,
+                        ...data,
+                        name: locale === "es" ? (data.spanishName || data.name) : (data.englishName || data.name || data.spanishName)
+                    }
+                })
+                setCats(catsData)
+
+                // Fetch Winners from the new collection
+                const winnersSnap = await getDocs(collection(db, "winners"))
+                const winnersData = winnersSnap.docs.map(d => {
+                    const data = d.data() as any
+                    return {
+                        ...data,
+                        place: Number(data.place) as Place,
+                        // The user specified category is the ID "0", "1", etc.
+                        category: String(data.category)
+                    }
+                })
+
+                if (winnersData.length > 0) {
+                    const validWinners = winnersData.filter(w => [1, 2, 3].includes(w.place))
+                    setWinners(validWinners)
+                }
+            } catch (err) {
+                console.error("Error fetching winners data:", err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [locale])
 
     useEffect(() => {
         const up = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
@@ -436,7 +472,7 @@ export function WinnersReveal() {
                     }}>
                         <WinnerCard
                             winner={w}
-                            category={cats.find(c => c.id === w.catId)}
+                            category={cats.find(c => c.id === w.category)}
                             revealed={revealed[w.place as Place]}
                         />
                     </div>
@@ -466,7 +502,7 @@ export function WinnersReveal() {
                         {/* 2nd Place */}
                         <div className="order-2 md:order-1 flex flex-col items-center animate-in slide-in-from-bottom-24 duration-1000 delay-300 w-full max-w-[260px] md:max-w-none md:flex-1">
                             <div className="w-full mb-3 transform hover:scale-105 transition-transform duration-500">
-                                <PodiumCard winner={winners.find(w => w.place === 2)} category={cats.find(c => c.id === winners.find(w => w.place === 2)?.catId)} />
+                                <PodiumCard winner={winners.find(w => w.place === 2)} category={cats.find(c => c.id === winners.find(w => w.place === 2)?.category)} />
                             </div>
                             <div className="w-full h-20 md:h-28 bg-gradient-to-b from-brand-orange/30 to-brand-orange/5 border-t-2 border-brand-orange/50 rounded-t-xl flex flex-col items-center justify-center py-2 px-4">
                                 <span className="font-pixel text-brand-orange text-xl md:text-2xl">02</span>
@@ -477,7 +513,7 @@ export function WinnersReveal() {
                         {/* 1st Place - Champion */}
                         <div className="order-1 md:order-2 flex flex-col items-center animate-in slide-in-from-bottom-32 duration-1200 delay-100 w-full max-w-[300px] md:max-w-none md:flex-[1.1] z-20" style={{ animation: "podiumFloat 4s ease-in-out infinite" }}>
                             <div className="w-full mb-4 transform hover:scale-105 transition-transform duration-500 shadow-[0_0_40px_rgba(250,211,153,0.1)]">
-                                <PodiumCard isChampion winner={winners.find(w => w.place === 1)} category={cats.find(c => c.id === winners.find(w => w.place === 1)?.catId)} />
+                                <PodiumCard isChampion winner={winners.find(w => w.place === 1)} category={cats.find(c => c.id === winners.find(w => w.place === 1)?.category)} />
                             </div>
                             <div className="w-full h-28 md:h-44 bg-gradient-to-b from-brand-yellow/40 to-brand-yellow/5 border-t-4 border-brand-yellow/60 rounded-t-xl flex flex-col items-center justify-center py-4 px-6 shadow-[0_-15px_30px_rgba(250,211,153,0.1)]">
                                 <Trophy className="text-brand-yellow mb-1 md:mb-2 w-8 h-8 md:w-10 md:h-10" />
@@ -489,7 +525,7 @@ export function WinnersReveal() {
                         {/* 3rd Place */}
                         <div className="order-3 flex flex-col items-center animate-in slide-in-from-bottom-16 duration-1000 delay-500 w-full max-w-[240px] md:max-w-none md:flex-1">
                             <div className="w-full mb-2 transform hover:scale-105 transition-transform duration-500">
-                                <PodiumCard winner={winners.find(w => w.place === 3)} category={cats.find(c => c.id === winners.find(w => w.place === 3)?.catId)} />
+                                <PodiumCard winner={winners.find(w => w.place === 3)} category={cats.find(c => c.id === winners.find(w => w.place === 3)?.category)} />
                             </div>
                             <div className="w-full h-16 md:h-20 bg-gradient-to-b from-brand-cyan/30 to-brand-cyan/5 border-t-2 border-brand-cyan/50 rounded-t-xl flex flex-col items-center justify-center py-2 px-4">
                                 <span className="font-pixel text-brand-cyan text-lg md:text-xl">03</span>
@@ -508,8 +544,12 @@ export function WinnersReveal() {
                     <div className="w-[60vw] max-w-[600px] mb-8 relative z-10">
                         <img src="/images/hackitba-alt-logo.png" alt="" />
                     </div>
-                    <PixelButton onClick={next} className="scale-110 relative z-10">
-                        SHOW WINNERS
+                    <PixelButton
+                        onClick={next}
+                        className={cn("scale-110 relative z-10 transition-opacity", isLoading ? "opacity-50 cursor-not-allowed" : "opacity-100")}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "LOADING DATA..." : "SHOW WINNERS"}
                     </PixelButton>
                 </div>
             )}

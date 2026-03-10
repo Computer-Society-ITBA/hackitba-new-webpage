@@ -50,6 +50,7 @@ export default function ParticipanteDashboard() {
   const [uploadedVideo, setUploadedVideo] = useState<string>("")
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
+  const [showWinners, setShowWinners] = useState(false)
   const hasProjectContent = !!project || uploadedImages.length > 0 || !!uploadedVideo
 
   const [projectForm, setProjectForm] = useState({
@@ -152,33 +153,25 @@ export default function ParticipanteDashboard() {
   useEffect(() => {
     if (!db) return
 
-    // If the env var NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED is present, use it as an override.
-    // This allows toggling submissions without updating Firestore.
-    const envVal = process.env.NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED
-    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
-      const enabled = envVal === "true" || envVal === "1"
-      setProjectSubmissionsEnabled(enabled)
-      setProjectSubmissionsLoading(false)
-      return
-    }
-
-    const loadProjectSettings = async () => {
+    const loadGlobalSettings = async () => {
       try {
         const settingsDoc = await getDoc(doc(db, "settings", "global"))
         if (settingsDoc.exists()) {
           const data = settingsDoc.data()
           setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+          setShowWinners(!!data?.showWinners)
         } else {
           setProjectSubmissionsEnabled(true)
+          setShowWinners(false)
         }
       } catch (error) {
-        console.error("Error loading project submissions setting:", error)
+        console.error("Error loading global settings:", error)
       } finally {
         setProjectSubmissionsLoading(false)
       }
     }
 
-    loadProjectSettings()
+    loadGlobalSettings()
   }, [db])
 
   useEffect(() => {
@@ -556,7 +549,7 @@ export default function ParticipanteDashboard() {
           )}
 
           {/* Winners Section - Feature Flagged */}
-          {process.env.NEXT_PUBLIC_SHOW_WINNERS === "true" && (
+          {showWinners && (
             <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
                 {locale === "es"

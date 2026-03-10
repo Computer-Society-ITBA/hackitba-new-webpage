@@ -1,23 +1,47 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { useRouter, useParams } from "next/navigation"
-import { useEffect } from "react"
 import { WinnersReveal } from "@/components/admin/winners-reveal"
+import { doc, getDoc } from "firebase/firestore"
+import { getDbClient } from "@/lib/firebase/client-config"
+import { Loading } from "@/components/ui/loading"
 import type { Locale } from "@/lib/i18n/config"
 
 export default function WinnersPage() {
-    const { user, loading } = useAuth()
+    const { user, loading: authLoading } = useAuth()
     const router = useRouter()
     const params = useParams()
     const locale = (params.locale as Locale) || "es"
-
-    // Check feature flag
-    const showWinners = process.env.NEXT_PUBLIC_SHOW_WINNERS === "true"
+    const [showWinners, setShowWinners] = useState<boolean | null>(null)
+    const [settingsLoading, setSettingsLoading] = useState(true)
 
     useEffect(() => {
-        if (!loading && user) {
+        const db = getDbClient()
+        if (!db) return
+
+        const checkSettings = async () => {
+            try {
+                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                if (settingsDoc.exists()) {
+                    setShowWinners(!!settingsDoc.data()?.showWinners)
+                } else {
+                    setShowWinners(false)
+                }
+            } catch (err) {
+                console.error("Error checking winners settings:", err)
+                setShowWinners(false)
+            } finally {
+                setSettingsLoading(false)
+            }
+        }
+        checkSettings()
+    }, [])
+
+    useEffect(() => {
+        if (!authLoading && !settingsLoading && user && showWinners !== null) {
             // Admins always have access
             if (user.role === "admin") return
 
@@ -27,9 +51,9 @@ export default function WinnersPage() {
             // Otherwise redirect
             router.replace(`/${locale}/dashboard`)
         }
-    }, [user, loading, showWinners, router, locale])
+    }, [user, authLoading, settingsLoading, showWinners, router, locale])
 
-    if (loading) return null
+    if (authLoading || settingsLoading) return <Loading text="SYNCHRONIZING..." />
 
     return (
         <ProtectedRoute allowedRoles={["admin", "participant"]}>
