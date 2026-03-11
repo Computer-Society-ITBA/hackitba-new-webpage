@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { collection, getDocs, query, where } from "firebase/firestore"
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { GanttChart, Star, ClipboardCheck } from "lucide-react"
@@ -24,18 +24,27 @@ export default function JuradoDashboard() {
   const [stats, setStats] = useState({ total: 0, scored: 0 })
 
   useEffect(() => {
-    if (!db) return
-    const fetchStats = async () => {
-      try {
-        const q = query(collection(db, "projects"), where("status", "==", "submitted"))
-        const snap = await getDocs(q)
-        setStats({ total: snap.size, scored: 0 }) // TODO: Integrate with actual scores later
-      } catch (e) {
-        console.error(e)
-      }
+    if (!db || !user?.id) return
+
+    // Listen to total finalists
+    const totalQuery = query(collection(db, "projects"), where("isFinalist", "==", true))
+    const unsubTotal = onSnapshot(totalQuery, (snap) => {
+      setStats(prev => ({ ...prev, total: snap.size }))
+    })
+
+    // Listen to projects scored by this judge
+    const scoredQuery = query(collection(db, "projectReviews"), where("reviewerId", "==", user.id))
+    const unsubScored = onSnapshot(scoredQuery, (snap) => {
+      // We want to count unique projects reviewed by this judge
+      const uniqueProjects = new Set(snap.docs.map(doc => doc.data().projectId))
+      setStats(prev => ({ ...prev, scored: uniqueProjects.size }))
+    })
+
+    return () => {
+      unsubTotal()
+      unsubScored()
     }
-    fetchStats()
-  }, [db])
+  }, [db, user?.id])
 
   return (
     <ProtectedRoute allowedRoles={["judge"]}>
@@ -66,7 +75,7 @@ export default function JuradoDashboard() {
                 </div>
               </GlassCard>
 
-              <GlassCard className="p-6 space-y-4 opacity-50">
+              <GlassCard className="p-6 space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange">
                     <Star size={24} />
@@ -78,8 +87,18 @@ export default function JuradoDashboard() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t border-brand-cyan/10 font-pixel text-brand-cyan/40">
-                  <span className="font-pixel text-sm">0 {locale === "es" ? "Evaluados" : "Scored"}</span>
+                <div className="flex items-center justify-between pt-4 border-t border-brand-cyan/10 font-pixel text-brand-cyan">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-pixel">{stats.scored} {locale === "es" ? "Evaluados" : "Scored"}</span>
+                    {stats.scored > 0 && (
+                      <span className="text-xs font-pixel text-green-400">
+                        {Math.round((stats.scored / (stats.total || 1)) * 100)}% COMPLETE
+                      </span>
+                    )}
+                  </div>
+                  <PixelButton onClick={() => router.push(`/${locale}/dashboard/jurado/puntajes`)} size="sm">
+                    {locale === "es" ? "VER PUNTAJES" : "GO TO SCORES"}
+                  </PixelButton>
                 </div>
               </GlassCard>
             </div>

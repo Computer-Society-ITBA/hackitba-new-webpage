@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc } from "firebase/firestore"
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc, onSnapshot, where } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -34,7 +34,7 @@ export default function JuradoProyectosPage() {
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "submitted" | "reviewed" | "disqualified">("submitted")
+  const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "submitted" | "reviewed" | "disqualified">("all")
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -43,15 +43,43 @@ export default function JuradoProyectosPage() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const [confirmAction, setConfirmAction] = useState<"review" | null>(null)
   const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
+  const [myReviews, setMyReviews] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!db) return
-    const fetchProjects = async () => {
-      try {
-        const projectsQuery = query(collection(db, "projects"), orderBy("updatedAt", "desc"))
-        const projectsSnapshot = await getDocs(projectsQuery)
-        setProjects(projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
 
+    setLoading(true)
+
+    // Listen to projects in real-time
+    const projectsQuery = query(collection(db, "projects"), orderBy("updatedAt", "desc"))
+    const unsubProjects = onSnapshot(projectsQuery, (snapshot) => {
+      setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+      setLoading(false)
+    }, (error) => {
+      console.error("Error listening to projects:", error)
+      setLoading(false)
+    })
+
+    // Listen to global settings for judgingStage
+    const unsubSettings = onSnapshot(doc(db, "settings", "global"), (snap) => {
+      if (snap.exists()) {
+        setJudgingStage(snap.data().judgingStage || "admin")
+      }
+    })
+
+    // Listen to my reviews
+    let unsubReviews = () => { }
+    if (user?.id) {
+      const reviewsQuery = query(collection(db, "projectReviews"), where("reviewerId", "==", user.id))
+      unsubReviews = onSnapshot(reviewsQuery, (snapshot) => {
+        const reviewedIds = new Set(snapshot.docs.map(doc => doc.data().projectId))
+        setMyReviews(reviewedIds)
+      })
+    }
+
+    // Fetch criteria once
+    const fetchCriteria = async () => {
+      try {
         const criteriaQuery = query(collection(db, "scoringCriteria"))
         const criteriaSnapshot = await getDocs(criteriaQuery)
         const criteria = criteriaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
@@ -60,19 +88,18 @@ export default function JuradoProyectosPage() {
         const initialScores: Record<string, number> = {}
         criteria.forEach(c => { initialScores[c.id] = 10 })
         setReviewScores(initialScores)
-
-        const settingsDoc = await getDoc(doc(db, "settings", "global"))
-        if (settingsDoc.exists()) {
-          setJudgingStage(settingsDoc.data().judgingStage || "admin")
-        }
       } catch (error) {
-        console.error("Error fetching projects for judge:", error)
-      } finally {
-        setLoading(false)
+        console.error("Error fetching criteria:", error)
       }
     }
-    fetchProjects()
-  }, [db])
+    fetchCriteria()
+
+    return () => {
+      unsubProjects()
+      unsubSettings()
+      unsubReviews()
+    }
+  }, [db, user?.id])
 
   const handleReview = async () => {
     if (!db || !selectedProject || !user) return
@@ -104,18 +131,35 @@ export default function JuradoProyectosPage() {
       }
       await addDoc(collection(db, "projectReviews"), reviewData)
 
-      // Projects keep the latest score from a judge/admin review, 
-      // or we could accumulate them. For simplicity, we'll update the project.
+      // Calculate new averages specifically from judge reviews
+      const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", selectedProject.id)))
+      const allReviews = reviewsSnap.docs.map(d => d.data())
+
+      // Judges only contribute to the judge score pool
+      const judgeReviews = allReviews.filter(r => r.reviewerRole === "judge" && !r.disqualified)
+
+      let avgTotal = 0
+      let avgScores: Record<string, number> = {}
+
+      if (judgeReviews.length > 0) {
+        avgTotal = judgeReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / judgeReviews.length
+
+        scoringCriteria.forEach(c => {
+          const sum = judgeReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          avgScores[c.id] = sum / judgeReviews.length
+        })
+      }
+
       await updateDoc(doc(db, "projects", selectedProject.id), {
         status: "reviewed",
-        scores: scoresWithWeights,
-        rawScores: reviewScores,
-        totalScore: totalWeightedScore,
-        reviewComment: reviewData.comment
+        scores: avgScores,
+        totalScore: avgTotal,
+        reviewComment: reviewData.comment,
+        reviewCount: judgeReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: "reviewed", scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: "reviewed", scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: judgeReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: judgeReviews.length }))
       setShowDetails(false)
       setReviewComment("")
       toast({ title: locale === "es" ? "Evaluación enviada" : "Evaluation submitted" })
@@ -134,12 +178,17 @@ export default function JuradoProyectosPage() {
       // Judges only evaluate finalists
       if (!p.isFinalist) return false
 
+      const isReviewedByMe = myReviews.has(p.id)
       const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === "all" || p.status === statusFilter
-      return matchesSearch && matchesStatus
+
+      const statusMatch = statusFilter === "all" ||
+        (statusFilter === "reviewed" && isReviewedByMe) ||
+        (statusFilter === "submitted" && !isReviewedByMe)
+
+      return matchesSearch && statusMatch
     })
-  }, [projects, searchTerm, statusFilter, judgingStage])
+  }, [projects, searchTerm, statusFilter, judgingStage, myReviews])
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
@@ -194,31 +243,31 @@ export default function JuradoProyectosPage() {
               <GlassCard className="p-8 text-center"><p className="text-xs font-pixel text-brand-cyan/60">No projects found.</p></GlassCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProjects.map((project) => (
-                  <GlassCard key={project.id} className="flex flex-col h-full hover:border-brand-cyan/40 transition-colors cursor-pointer" onClick={() => { setSelectedProject(project); setShowDetails(true); }}>
-                    <div className="p-6 flex-1 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <span className={cn(
-                          "text-xs px-2 py-0.5 rounded uppercase font-pixel",
-                          project.status === "submitted" ? "bg-green-500/10 text-green-400" :
-                            project.status === "reviewed" ? "bg-blue-500/10 text-blue-400" :
-                              project.status === "disqualified" ? "bg-red-500/10 text-red-500" :
-                                "bg-yellow-500/10 text-yellow-400"
-                        )}>
-                          {project.status}
-                        </span>
-                        <span className="text-[10px] font-pixel text-brand-orange bg-brand-orange/10 px-2 py-1 rounded">{getCategoryName(project.categoryId)}</span>
+                {filteredProjects.map((project) => {
+                  const isReviewedByMe = myReviews.has(project.id)
+                  return (
+                    <GlassCard key={project.id} className="flex flex-col h-full hover:border-brand-cyan/40 transition-colors cursor-pointer" onClick={() => { setSelectedProject(project); setShowDetails(true); }}>
+                      <div className="p-2 flex-1 space-y-4">
+                        <div className="flex flex-col gap-2 justify-between items-start">
+                          <span className={cn(
+                            "text-xs px-2 py-0.5 rounded uppercase",
+                            isReviewedByMe ? "bg-blue-500/10 text-blue-400" : "bg-green-500/10 text-green-400"
+                          )}>
+                            {isReviewedByMe ? (locale === "es" ? "Evaluado" : "Reviewed") : (locale === "es" ? "Pendiente" : "To Review")}
+                          </span>
+                          <span className="text-xs text-brand-cyan px-2 py-1 rounded">{getCategoryName(project.categoryId)}</span>
+                        </div>
+                        <h4 className="font-pixel text-lg text-brand-yellow line-clamp-1">{project.title}</h4>
+                        <p className="text-xs text-brand-cyan/60">Team: {project.teamName}</p>
+                        <p className="text-sm text-brand-cyan/80 line-clamp-3 h-12">{project.description}</p>
                       </div>
-                      <h4 className="font-pixel text-lg text-brand-yellow line-clamp-1">{project.title}</h4>
-                      <p className="text-xs text-brand-cyan/60">Team: {project.teamName}</p>
-                      <p className="text-sm text-brand-cyan/80 line-clamp-3 h-12">{project.description}</p>
-                    </div>
-                    <div className="p-4 border-t border-brand-cyan/10 mt-auto bg-black/20 flex justify-between items-center text-[10px] text-brand-cyan/40 font-pixel">
-                      <span>{project.images?.length || 0} Images</span>
-                      <span>{project.videos?.length || 0} Videos</span>
-                    </div>
-                  </GlassCard>
-                ))}
+                      <div className="p-4 border-t border-brand-cyan/10 mt-auto bg-black/20 flex justify-between items-center text-xs text-brand-cyan/40 font-pixel">
+                        <span>{project.images?.length || 0} Images</span>
+                        <span>{project.videos?.length || 0} Videos</span>
+                      </div>
+                    </GlassCard>
+                  )
+                })}
               </div>
             )}
           </section>
@@ -229,13 +278,6 @@ export default function JuradoProyectosPage() {
             <DialogHeader>
               <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
                 <div className="flex items-center gap-2"><FileText size={18} /> {selectedProject?.title}</div>
-                <span className={cn(
-                  "text-[10px] px-2 py-0.5 rounded uppercase",
-                  selectedProject?.status === "submitted" ? "bg-green-500/20 text-green-400" :
-                    selectedProject?.status === "reviewed" ? "bg-blue-500/20 text-blue-400" :
-                      selectedProject?.status === "disqualified" ? "bg-red-500/20 text-red-500" :
-                        "bg-yellow-500/20 text-yellow-400"
-                )}>{selectedProject?.status}</span>
               </DialogTitle>
             </DialogHeader>
             {selectedProject && (
@@ -277,13 +319,13 @@ export default function JuradoProyectosPage() {
                   </div>
                 )}
 
-                {selectedProject.status !== "reviewed" && selectedProject.status !== "disqualified" && (
+                {!myReviews.has(selectedProject.id) && selectedProject.status !== "disqualified" ? (
                   <div className="mt-8 pt-6 border-t border-brand-cyan/20">
                     <h3 className="font-pixel text-lg text-brand-yellow mb-4">Project Review</h3>
                     <div className="space-y-4">
                       {scoringCriteria.map(criteria => (
                         <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
-                          <Label className="col-span-3 text-sm text-brand-cyan flex flex-col">
+                          <Label className="items-start col-span-3 text-sm text-brand-cyan flex flex-col">
                             <span>{criteria.name}</span>
                             <span className="text-[10px] text-brand-cyan/60 font-normal">{criteria.description} (Scale 1-10)</span>
                           </Label>
@@ -321,6 +363,17 @@ export default function JuradoProyectosPage() {
                           Submit Evaluation
                         </Button>
                       </div>
+                    </div>
+                  </div>
+                ) : selectedProject.status === "disqualified" ? (
+                  <div className="mt-8 pt-6 border-t border-red-500/20 text-center">
+                    <p className="text-red-500 font-pixel text-sm uppercase">This project has been disqualified.</p>
+                  </div>
+                ) : (
+                  <div className="mt-8 pt-6 border-t border-brand-cyan/20 text-center">
+                    <div className="flex flex-col items-center gap-2 text-brand-cyan/60">
+                      <CheckCircle className="w-8 h-8 text-green-400" />
+                      <p className="font-pixel text-sm uppercase">{locale === "es" ? "Ya has evaluado este proyecto" : "You have already evaluated this project"}</p>
                     </div>
                   </div>
                 )}

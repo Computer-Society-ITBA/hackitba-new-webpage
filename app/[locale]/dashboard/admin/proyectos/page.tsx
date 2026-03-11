@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc } from "firebase/firestore"
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc, where, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -106,17 +106,44 @@ export default function AdminProyectosPage() {
       }
       await addDoc(collection(db, "projectReviews"), reviewData)
 
+      // Calculate new averages
+      const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", selectedProject.id)))
+      const allReviews = reviewsSnap.docs.map(d => d.data())
+
       const newStatus = disqualify ? "disqualified" : "reviewed"
+      const isFinalist = selectedProject.isFinalist
+
+      // Filter reviews based on pool (admin pool for non-finalists, judge pool for finalists)
+      const relevantReviews = allReviews.filter(r =>
+        (isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin") && !r.disqualified
+      )
+
+      let avgTotal = 0
+      let avgScores: Record<string, number> = {}
+
+      if (relevantReviews.length > 0) {
+        avgTotal = relevantReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / relevantReviews.length
+
+        scoringCriteria.forEach(c => {
+          const sum = relevantReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          avgScores[c.id] = sum / relevantReviews.length
+        })
+      } else {
+        // Fallback if no relevant reviews yet but we are submitting one now
+        avgTotal = totalWeightedScore
+        avgScores = scoresWithWeights
+      }
+
       await updateDoc(doc(db, "projects", selectedProject.id), {
         status: newStatus,
-        scores: scoresWithWeights,
-        rawScores: reviewScores,
-        totalScore: totalWeightedScore,
-        reviewComment: reviewData.comment
+        scores: avgScores,
+        totalScore: avgTotal,
+        reviewComment: reviewData.comment, // Keep the last comment as summary
+        reviewCount: relevantReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: relevantReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: relevantReviews.length }))
       setShowDetails(false)
       setReviewComment("")
     } catch (error) {
@@ -129,12 +156,34 @@ export default function AdminProyectosPage() {
   const markAsFinalist = async () => {
     if (!db || !selectedProject) return
     try {
+      // When marking as finalist, the score pool switches to judges.
+      // We should recalculate immediate average from judge reviews (if any exist)
+      const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", selectedProject.id)))
+      const allReviews = reviewsSnap.docs.map(d => d.data())
+
+      const judgeReviews = allReviews.filter(r => r.reviewerRole === "judge" && !r.disqualified)
+
+      let avgTotal = 0
+      let avgScores: Record<string, number> = {}
+
+      if (judgeReviews.length > 0) {
+        avgTotal = judgeReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / judgeReviews.length
+        scoringCriteria.forEach(c => {
+          const sum = judgeReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          avgScores[c.id] = sum / judgeReviews.length
+        })
+      }
+
       await updateDoc(doc(db, "projects", selectedProject.id), {
         isFinalist: true,
-        status: "reviewed"
+        status: "reviewed",
+        scores: avgScores,
+        totalScore: avgTotal,
+        reviewCount: judgeReviews.length
       })
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, status: "reviewed" } : p))
-      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, status: "reviewed" }))
+
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewCount: judgeReviews.length }))
       setShowDetails(false)
       toast({ title: locale === "es" ? "Marcado como finalista" : "Marked as finalist" })
     } catch (error) {
@@ -272,6 +321,7 @@ export default function AdminProyectosPage() {
                                 </TableHead>
                               ))}
                               <TableHead className="text-brand-orange text-right">Points</TableHead>
+                              <TableHead className="text-brand-cyan/60 text-right text-xs">Reviews</TableHead>
                               <TableHead className="text-brand-yellow text-right">Finalist</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -290,6 +340,9 @@ export default function AdminProyectosPage() {
                                 ))}
                                 <TableCell className="text-right font-bold text-brand-orange">
                                   {Math.round(p.totalScore || 0)}
+                                </TableCell>
+                                <TableCell className="text-right text-xs text-brand-cyan/40 italic">
+                                  {p.reviewCount || 0}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   {p.isFinalist ? <Trophy size={14} className="ml-auto text-brand-yellow" /> : "-"}
