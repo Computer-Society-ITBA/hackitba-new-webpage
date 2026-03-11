@@ -38,7 +38,7 @@ export default function JuradoDashboard() {
   }, [db])
 
   return (
-    <ProtectedRoute allowedRoles={["jury"]}>
+    <ProtectedRoute allowedRoles={["judge"]}>
       <DashboardLayout title={t.judge.title}>
         <div className="space-y-8">
           <section>
@@ -74,13 +74,12 @@ export default function JuradoDashboard() {
                   <div>
                     <h4 className="font-pixel text-lg text-white">{t.judge.myScores}</h4>
                     <p className="text-xs text-brand-cyan/60">
-                      {locale === "es" ? "Próximamente: Revisá y editá tus puntuaciones." : "Coming soon: Review and edit your scores."}
+                      {locale === "es" ? "Revisá y editá tus puntuaciones." : "Review and edit your scores."}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-4 border-t border-brand-cyan/10 font-pixel text-brand-cyan/40">
-                  <span className="text-sm">0 {locale === "es" ? "Evaluados" : "Scored"}</span>
-                  <span className="text-[10px] uppercase">COMING SOON</span>
+                  <span className="font-pixel text-sm">0 {locale === "es" ? "Evaluados" : "Scored"}</span>
                 </div>
               </GlassCard>
             </div>

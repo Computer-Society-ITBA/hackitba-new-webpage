@@ -6,9 +6,9 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc } from "firebase/firestore"
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban } from "lucide-react"
+import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { toast } from "@/hooks/use-toast"
 
 export default function AdminProyectosPage() {
   const params = useParams()
@@ -42,7 +43,8 @@ export default function AdminProyectosPage() {
   const [reviewComment, setReviewComment] = useState("")
   const [reviewScores, setReviewScores] = useState<Record<string, number>>({})
   const [submittingReview, setSubmittingReview] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<"review" | "disqualify" | null>(null)
+  const [confirmAction, setConfirmAction] = useState<"review" | "disqualify" | "mark_finalist" | null>(null)
+  const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
 
   useEffect(() => {
     if (!db) return
@@ -58,8 +60,13 @@ export default function AdminProyectosPage() {
         setScoringCriteria(criteria)
 
         const initialScores: Record<string, number> = {}
-        criteria.forEach(c => { initialScores[c.id] = c.maxScore || 10 })
+        criteria.forEach(c => { initialScores[c.id] = 10 })
         setReviewScores(initialScores)
+
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          setJudgingStage(settingsDoc.data().judgingStage || "admin")
+        }
       } catch (error) {
         console.error("Error fetching admin data:", error)
       } finally {
@@ -73,12 +80,26 @@ export default function AdminProyectosPage() {
     if (!db || !selectedProject || !user) return
     setSubmittingReview(true)
     try {
+      const scoresWithWeights: Record<string, number> = {}
+      let totalWeightedScore = 0
+
+      scoringCriteria.forEach(c => {
+        const score = reviewScores[c.id] || 0
+        const weight = c.weight || 1
+        const maxScore = c.maxScore || 10
+        // (1-10 / 10) * maxPointsAtWeight
+        const weighted = (score / 10) * (maxScore * weight)
+        scoresWithWeights[c.id] = weighted
+        totalWeightedScore += weighted
+      })
+
       const reviewData = {
         projectId: selectedProject.id,
         reviewerId: user.id || "admin",
         reviewerRole: "admin",
-        scores: reviewScores,
-        totalScore: Object.values(reviewScores).reduce((a, b) => a + b, 0),
+        rawScores: reviewScores,
+        calculatedScores: scoresWithWeights,
+        totalScore: totalWeightedScore,
         comment: reviewComment,
         disqualified: disqualify,
         createdAt: new Date().toISOString()
@@ -88,19 +109,36 @@ export default function AdminProyectosPage() {
       const newStatus = disqualify ? "disqualified" : "reviewed"
       await updateDoc(doc(db, "projects", selectedProject.id), {
         status: newStatus,
-        scores: reviewScores,
-        totalScore: reviewData.totalScore,
+        scores: scoresWithWeights,
+        rawScores: reviewScores,
+        totalScore: totalWeightedScore,
         reviewComment: reviewData.comment
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: reviewScores, totalScore: reviewData.totalScore, reviewComment: reviewData.comment } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: reviewScores, totalScore: reviewData.totalScore, reviewComment: reviewData.comment }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment }))
       setShowDetails(false)
       setReviewComment("")
     } catch (error) {
       console.error("Error submitting review:", error)
     } finally {
       setSubmittingReview(false)
+    }
+  }
+
+  const markAsFinalist = async () => {
+    if (!db || !selectedProject) return
+    try {
+      await updateDoc(doc(db, "projects", selectedProject.id), {
+        isFinalist: true,
+        status: "reviewed"
+      })
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, status: "reviewed" } : p))
+      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, status: "reviewed" }))
+      setShowDetails(false)
+      toast({ title: locale === "es" ? "Marcado como finalista" : "Marked as finalist" })
+    } catch (error) {
+      console.error("Error marking finalist:", error)
     }
   }
 
@@ -193,6 +231,9 @@ export default function AdminProyectosPage() {
                           )}>
                             {project.status}
                           </span>
+                          {project.isFinalist && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-brand-yellow/20 text-brand-yellow font-pixel">FINALIST</span>
+                          )}
                           <span className="text-xs font-pixel text-brand-cyan/40">{getCategoryName(project.categoryId)}</span>
                         </div>
                         <h4 className="font-pixel text-lg text-brand-yellow line-clamp-1">{project.title || "Untitled Project"}</h4>
@@ -226,11 +267,12 @@ export default function AdminProyectosPage() {
                               <TableHead className="text-brand-cyan">Project</TableHead>
                               <TableHead className="text-brand-cyan">Team</TableHead>
                               {scoringCriteria.map(c => (
-                                <TableHead key={c.id} className="text-brand-cyan">
-                                  {c.name} (0 - {c.maxScore})
+                                <TableHead key={c.id} className="text-brand-cyan text-[10px]">
+                                  {c.name}
                                 </TableHead>
                               ))}
-                              <TableHead className="text-brand-orange text-right">Total Score</TableHead>
+                              <TableHead className="text-brand-orange text-right">Points</TableHead>
+                              <TableHead className="text-brand-yellow text-right">Finalist</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -243,11 +285,14 @@ export default function AdminProyectosPage() {
                                 <TableCell className="text-brand-cyan/80">{p.teamName}</TableCell>
                                 {scoringCriteria.map(c => (
                                   <TableCell key={c.id} className="text-brand-cyan/80">
-                                    {(p.scores && p.scores[c.id]) !== undefined ? p.scores[c.id] : "-"}
+                                    {(p.scores && p.scores[c.id]) !== undefined ? Math.round(p.scores[c.id]) : "-"}
                                   </TableCell>
                                 ))}
-                                <TableCell className="text-right font-bold text-brand-yellow">
-                                  {p.totalScore || 0}
+                                <TableCell className="text-right font-bold text-brand-orange">
+                                  {Math.round(p.totalScore || 0)}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {p.isFinalist ? <Trophy size={14} className="ml-auto text-brand-yellow" /> : "-"}
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -265,7 +310,10 @@ export default function AdminProyectosPage() {
             <DialogContent className="glass-effect border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
-                  <div className="flex items-center gap-2"><FileText size={18} /><p className="text-regular font-pixel ">{selectedProject?.title}</p></div>
+                  <div className="flex items-center gap-2">
+                    <FileText size={18} />
+                    <p className="text-regular font-pixel ">{selectedProject?.title}</p>
+                  </div>
                   <span className={cn(
                     "text-sm px-2 py-0.5 rounded uppercase",
                     selectedProject?.status === "submitted" ? "bg-green-500/20 text-green-400" :
@@ -322,15 +370,15 @@ export default function AdminProyectosPage() {
                           <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
                             <Label className="col-span-3 text-sm text-brand-cyan flex flex-col">
                               <span>{criteria.name}</span>
-                              <span className="text-xs text-brand-cyan/60 font-normal">{criteria.description} (Max: {criteria.maxScore})</span>
+                              <span className="text-[10px] text-brand-cyan/60 font-normal">{criteria.description} (Scale 1-10)</span>
                             </Label>
                             <Input
                               type="number"
                               min="0"
-                              max={criteria.maxScore || 10}
+                              max="10"
                               value={reviewScores[criteria.id] || 0}
                               onChange={(e) => {
-                                const val = Math.min(Math.max(0, Number(e.target.value) || 0), criteria.maxScore || 10)
+                                const val = Math.min(Math.max(0, Number(e.target.value) || 0), 10)
                                 setReviewScores(prev => ({ ...prev, [criteria.id]: val }))
                               }}
                               className="bg-brand-navy border-brand-cyan/30 text-brand-cyan"
@@ -348,15 +396,25 @@ export default function AdminProyectosPage() {
                           />
                         </div>
 
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex flex-wrap gap-4 pt-4">
                           <Button
                             className="flex-1 bg-green-500/20 text-green-400 hover:bg-green-500/40 border-green-500/50"
                             onClick={() => setConfirmAction("review")}
                             disabled={submittingReview}
                           >
                             <CheckCircle className="mr-2 w-4 h-4" />
-                            Mark as Reviewed
+                            Submit Review
                           </Button>
+                          {!selectedProject.isFinalist && (
+                            <Button
+                              className="flex-1 bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
+                              onClick={() => markAsFinalist()}
+                              disabled={submittingReview}
+                            >
+                              <Trophy className="mr-2 w-4 h-4" />
+                              Mark as Finalist
+                            </Button>
+                          )}
                           <Button
                             className="flex-1 bg-red-500/20 text-red-500 hover:bg-red-500/40 border-red-500/50"
                             onClick={() => setConfirmAction("disqualify")}
@@ -367,6 +425,18 @@ export default function AdminProyectosPage() {
                           </Button>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {selectedProject.status === "reviewed" && !selectedProject.isFinalist && (
+                    <div className="pt-4 mt-4 border-t border-brand-cyan/10">
+                      <Button
+                        className="w-full bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
+                        onClick={() => markAsFinalist()}
+                      >
+                        <Trophy className="mr-2 w-4 h-4" />
+                        Mark as Finalist
+                      </Button>
                     </div>
                   )}
                 </div>

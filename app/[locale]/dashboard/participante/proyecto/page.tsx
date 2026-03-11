@@ -43,8 +43,11 @@ export default function ParticipanteProyectoPage() {
   const [uploading, setUploading] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
+  const [showScoresToTeams, setShowScoresToTeams] = useState(false)
   const [isAutoSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [loadingProject, setLoadingProject] = useState(true)
+  const router = useRouter()
 
   const [projectForm, setProjectForm] = useState({
     title: "",
@@ -78,6 +81,8 @@ export default function ParticipanteProyectoPage() {
     const teamsSnapshot = await getDocs(teamsQuery)
     if (teamsSnapshot.docs.length > 0) {
       setTeam({ id: teamsSnapshot.docs[0].id, ...teamsSnapshot.docs[0].data() })
+    } else {
+      setLoadingProject(false)
     }
   }, [db, user])
 
@@ -99,30 +104,49 @@ export default function ParticipanteProyectoPage() {
         status: data.status || "submitted"
       })
     } else {
-      // Check migration from team doc
-      const teamDoc = await getDoc(doc(db, "teams", team.id))
-      const teamData = teamDoc.data() as any
-      if (teamData?.project) {
-        const p = teamData.project
-        const migratedData = {
-          title: p.title || "",
-          description: p.description || "",
-          githubRepoUrl: p.repoUrl || "",
-          demoUrl: p.demoUrl || "",
-          images: p.images || [],
-          videos: p.videoUrl ? [p.videoUrl] : [],
-          status: "submitted",
-          teamId: team.id,
-          teamName: team.name || team.id,
-          categoryId: team.category_1?.toString() || "",
-          createdAt: p.submittedAt || serverTimestamp(),
-          updatedAt: serverTimestamp()
+      // Fallback 1: Try querying by teamId field
+      const q = query(collection(db, "projects"), where("teamId", "==", team.id))
+      const qSnap = await getDocs(q)
+      if (!qSnap.empty) {
+        const pDoc = qSnap.docs[0]
+        const data = pDoc.data()
+        setProject({ id: pDoc.id, ...data })
+        setProjectForm({
+          title: data.title || "",
+          description: data.description || "",
+          githubRepoUrl: data.githubRepoUrl || data.repoUrl || "",
+          demoUrl: data.demoUrl || "",
+          images: data.images || [],
+          videos: data.videos || (data.videoUrl ? [data.videoUrl] : []),
+          status: data.status || "submitted"
+        })
+      } else {
+        // Fallback 2: Check migration from team doc
+        const teamDoc = await getDoc(doc(db, "teams", team.id))
+        const teamData = teamDoc.data() as any
+        if (teamData?.project) {
+          const p = teamData.project
+          const migratedData = {
+            title: p.title || "",
+            description: p.description || "",
+            githubRepoUrl: p.repoUrl || "",
+            demoUrl: p.demoUrl || "",
+            images: p.images || [],
+            videos: p.videoUrl ? [p.videoUrl] : [],
+            status: "submitted",
+            teamId: team.id,
+            teamName: team.name || team.id,
+            categoryId: team.category_1?.toString() || "",
+            createdAt: p.submittedAt || serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }
+          setProject({ id: team.id, ...migratedData })
+          setProjectForm({ ...migratedData, status: "submitted" })
+          await setDoc(doc(db, "projects", team.id), migratedData)
         }
-        setProject({ id: team.id, ...migratedData })
-        setProjectForm({ ...migratedData, status: "submitted" })
-        await setDoc(doc(db, "projects", team.id), migratedData)
       }
     }
+    setLoadingProject(false)
   }, [db, team?.id])
 
   useEffect(() => {
@@ -131,7 +155,9 @@ export default function ParticipanteProyectoPage() {
       try {
         const settingsDoc = await getDoc(doc(db, "settings", "global"))
         if (settingsDoc.exists()) {
-          setProjectSubmissionsEnabled(settingsDoc.data()?.projectSubmissionsEnabled !== false)
+          const data = settingsDoc.data()
+          setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+          setShowScoresToTeams(!!data?.showScoresToTeams)
         }
       } finally {
         setProjectSubmissionsLoading(false)
@@ -149,40 +175,80 @@ export default function ParticipanteProyectoPage() {
   }, [team?.id, db, loadProject])
 
   const saveProject = useCallback(async (statusOverride?: "draft" | "submitted") => {
-    if (!db || !team?.id || !canEdit) return
+    // We allow saving if we're overriding status (submitting), even if canEdit might be false for other reasons.
+    const isSubmitting = statusOverride === "submitted"
+    if (!db || !team?.id || (!canEdit && !isSubmitting) || loadingProject) return false
 
     setIsSaving(true)
     try {
       const status = statusOverride || projectFormRef.current.status
-      const payload = {
-        ...projectFormRef.current,
-        status,
+      const currentForm = projectFormRef.current
+
+      // Crucial: Only include fields that are NOT empty to prevent overwriting 
+      // with an initial empty state if the project hasn't finished loading.
+      const payload: any = {
+        updatedAt: serverTimestamp(),
         teamId: team.id,
         teamName: team.name || team.id,
         categoryId: team.category_1?.toString() || "",
-        updatedAt: serverTimestamp(),
-        createdAt: project?.createdAt || serverTimestamp(),
+        status
+      }
+
+      if (currentForm.title.trim()) payload.title = currentForm.title
+      if (currentForm.description.trim()) payload.description = currentForm.description
+      if (currentForm.githubRepoUrl.trim()) payload.githubRepoUrl = currentForm.githubRepoUrl
+      if (currentForm.demoUrl.trim()) payload.demoUrl = currentForm.demoUrl
+      if (currentForm.images.length > 0) payload.images = currentForm.images
+      if (currentForm.videos.length > 0) payload.videos = currentForm.videos
+
+      if (project?.createdAt) {
+        payload.createdAt = project.createdAt
+      } else {
+        payload.createdAt = serverTimestamp()
       }
 
       await setDoc(doc(db, "projects", team.id), payload, { merge: true })
-      setLastSaved(new Date())
-      if (statusOverride) {
-        setProjectForm(prev => ({ ...prev, status }))
+
+      // Update local state ONLY if something meaningful changed or we submitted
+      if (statusOverride || project?.status !== status) {
         setProject((prev: any) => ({ ...prev, ...payload, status }))
       }
+
+      setProjectForm(prev => {
+        if (prev.status === status) return prev
+        return { ...prev, status }
+      })
+
+      setLastSaved(new Date())
+      return true
+    } catch (err) {
+      console.error("Error saving project:", err)
+      return false
     } finally {
       setIsSaving(false)
     }
-  }, [db, team, projectSubmissionsEnabled, project?.createdAt])
+  }, [db, team, projectSubmissionsEnabled, project?.createdAt, canEdit, loadingProject])
 
   // Auto-save logic
   useEffect(() => {
-    if (!canEdit || !team?.id) return
+    if (!canEdit || !team?.id || loadingProject) return
+
+    // Stringify only the local current values that trigger an auto-save
+    const formContent = JSON.stringify({
+      t: projectForm.title,
+      d: projectForm.description,
+      g: projectForm.githubRepoUrl,
+      m: projectForm.demoUrl,
+      i: projectForm.images,
+      v: projectForm.videos
+    })
+
     const timer = setTimeout(() => {
       if (projectForm.status === "draft") saveProject()
     }, 3000)
+
     return () => clearTimeout(timer)
-  }, [projectForm, projectSubmissionsEnabled, team?.id, saveProject])
+  }, [projectForm.title, projectForm.description, projectForm.githubRepoUrl, projectForm.demoUrl, projectForm.images, projectForm.videos, projectSubmissionsEnabled, team?.id, saveProject, loadingProject])
 
   // Save on unmount
   useEffect(() => {
@@ -213,11 +279,19 @@ export default function ParticipanteProyectoPage() {
       })
       return
     }
-    await saveProject("submitted")
-    toast({
-      title: locale === "es" ? "¡Proyecto enviado!" : "Project submitted!",
-      description: locale === "es" ? "El jurado ya puede ver tu trabajo." : "Judges can now see your work.",
-    })
+    const success = await saveProject("submitted")
+    if (success) {
+      toast({
+        title: locale === "es" ? "¡Proyecto enviado!" : "Project submitted!",
+        description: locale === "es" ? "El jurado ya puede ver tu trabajo." : "Judges can now see your work.",
+      })
+    } else {
+      toast({
+        title: locale === "es" ? "Error al enviar" : "Submission failed",
+        description: locale === "es" ? "No se pudo actualizar el estado. Intentá de nuevo." : "Could not update project status. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   const deleteProject = async () => {
@@ -226,6 +300,25 @@ export default function ParticipanteProyectoPage() {
     setProject(null)
     setProjectForm({ title: "", description: "", githubRepoUrl: "", demoUrl: "", images: [], videos: [], status: "draft" })
     toast({ title: locale === "es" ? "Proyecto eliminado" : "Project deleted" })
+  }
+
+  if (projectSubmissionsLoading || loadingProject) {
+    return (
+      <ProtectedRoute allowedRoles={["participant"]}>
+        <DashboardLayout title={t.dashboard.sidebar.myProject}>
+          <div className="flex justify-center p-12">
+            <div className="animate-pulse font-pixel text-brand-cyan">
+              {locale === "es" ? "CARGANDO PROYECTO..." : "LOADING PROJECT..."}
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!projectSubmissionsEnabled && !project) {
+    router.replace(`/${locale}/dashboard/participante`)
+    return null
   }
 
   if (!user?.team) {
@@ -272,13 +365,35 @@ export default function ParticipanteProyectoPage() {
             )}
           </div>
 
-          {(project?.reviewComment) && (
+          {(project?.reviewComment && showScoresToTeams) && (
             <GlassCard className="border-brand-cyan/20 bg-brand-cyan/5">
               <div className="flex gap-3">
                 <MessageSquare className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="font-pixel text-xs text-brand-cyan uppercase">Reviewer Feedback</p>
                   <p className="text-sm text-brand-cyan/80 whitespace-pre-wrap">{project.reviewComment}</p>
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
+          {(project?.scores && showScoresToTeams) && (
+            <GlassCard className="border-brand-yellow/20 bg-brand-yellow/5">
+              <div className="space-y-4">
+                <h4 className="font-pixel text-sm text-brand-yellow uppercase flex items-center gap-2">
+                  <Trophy size={16} /> Scores
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {Object.entries(project.scores).map(([cid, score]: [string, any]) => (
+                    <div key={cid} className="flex justify-between items-center bg-black/20 p-2 rounded">
+                      <span className="text-xs text-brand-cyan/60">Criteria ID: {cid}</span>
+                      <span className="text-sm font-bold text-brand-yellow">{Math.round(score)}</span>
+                    </div>
+                  ))}
+                  <div className="col-span-full border-t border-brand-yellow/20 pt-2 flex justify-between items-center">
+                    <span className="text-sm font-pixel text-brand-yellow">Total Score</span>
+                    <span className="text-xl font-bold text-brand-yellow">{Math.round(project.totalScore || 0)}</span>
+                  </div>
                 </div>
               </div>
             </GlassCard>
@@ -405,14 +520,14 @@ export default function ParticipanteProyectoPage() {
                           {projectForm.status === "submitted" ? t.dashboard.participant.project.update : t.dashboard.participant.project.submit}
                         </PixelButton>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+                      <AlertDialogContent className="bg-brand-navy flex flex-col items-center justify-center border-brand-cyan/30 text-brand-cyan">
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="font-pixel text-brand-yellow">{t.dashboard.participant.project.confirmSubmitTitle}</AlertDialogTitle>
-                          <AlertDialogDescription className="text-brand-cyan/80">{t.dashboard.participant.project.confirmSubmitDescription}</AlertDialogDescription>
+                          <AlertDialogTitle className="text-center font-pixel text-brand-yellow">{t.dashboard.participant.project.confirmSubmitTitle}</AlertDialogTitle>
+                          <AlertDialogDescription className="text-center text-brand-cyan/80">{t.dashboard.participant.project.confirmSubmitDescription}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel asChild><PixelButton variant="outline" size="sm">{t.dashboard.participant.project.cancel}</PixelButton></AlertDialogCancel>
-                          <AlertDialogAction asChild><PixelButton onClick={submitProject} size="sm">{t.dashboard.participant.project.submitConfirmation}</PixelButton></AlertDialogAction>
+                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitProject} size="sm">{t.dashboard.participant.project.submitConfirmation}</PixelButton></AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

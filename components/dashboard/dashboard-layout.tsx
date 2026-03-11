@@ -39,19 +39,33 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [showWinners, setShowWinners] = useState(false)
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [hasProject, setHasProject] = useState(false)
 
   useEffect(() => {
     const db = getDbClient()
     if (!db) return
 
-    const unsub = onSnapshot(doc(db, "settings", "global"), (snap) => {
+    const unsubSettings = onSnapshot(doc(db, "settings", "global"), (snap) => {
       if (snap.exists()) {
-        setShowWinners(!!snap.data()?.showWinners)
+        const data = snap.data()
+        setShowWinners(!!data?.showWinners)
+        setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
       }
     })
 
-    return () => unsub()
-  }, [])
+    let unsubProject = () => { }
+    if (user?.role === "participant" && user.team) {
+      unsubProject = onSnapshot(doc(db, "projects", user.team), (snap) => {
+        setHasProject(snap.exists())
+      })
+    }
+
+    return () => {
+      unsubSettings()
+      unsubProject()
+    }
+  }, [user?.role, user?.team])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -118,7 +132,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           </Link>
         )}
 
-        {user?.role === "participant" && (
+        {user?.role === "participant" && (projectSubmissionsEnabled || hasProject) && (
           pathname === `/${locale}/dashboard/participante/proyecto` ? (
             <span
               className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -140,7 +154,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           )
         )}
 
-        {user?.role === "jury" && (
+        {user?.role === "judge" && (
           pathname === `/${locale}/dashboard/jurado/proyectos` ? (
             <span
               className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}

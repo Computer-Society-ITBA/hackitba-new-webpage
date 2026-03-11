@@ -563,8 +563,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                 }}
                                                                 className={cn(
                                                                     "text-sm px-2 py-1 rounded transition-colors flex items-center gap-1",
-                                                                    projects.some(p => p.teamId === item.id) 
-                                                                        ? "bg-brand-orange/20 text-brand-orange hover:bg-brand-orange/30" 
+                                                                    projects.some(p => p.teamId === item.id)
+                                                                        ? "bg-brand-orange/20 text-brand-orange hover:bg-brand-orange/30"
                                                                         : "bg-gray-700/20 text-gray-400 hover:bg-gray-700/30"
                                                                 )}
                                                             >
@@ -796,7 +796,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                             className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
                                         >
                                             <option value="user">User</option>
-                                            <option value="jury">Jury</option>
+                                            <option value="judge">Judge</option>
                                             <option value="mentor">Mentor</option>
                                             <option value="admin">Admin</option>
                                         </select>
@@ -1166,9 +1166,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             {selectedProject?.status && (
                                 <span className={cn(
                                     "text-[10px] px-2 py-0.5 rounded uppercase ml-4",
-                                    selectedProject.status === "submitted" ? "bg-green-500/20 text-green-400" : 
-                                    selectedProject.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
-                                    "bg-gray-500/20 text-gray-400"
+                                    selectedProject.status === "submitted" ? "bg-green-500/20 text-green-400" :
+                                        selectedProject.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
+                                            "bg-gray-500/20 text-gray-400"
                                 )}>
                                     {selectedProject.status}
                                 </span>

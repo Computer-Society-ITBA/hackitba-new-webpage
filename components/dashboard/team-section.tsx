@@ -34,6 +34,7 @@ interface Team {
   category_1?: number | null
   admin_id?: string
   assignedRoom?: string
+  participantIds?: string[]
 }
 
 interface TeamSectionProps {
@@ -80,23 +81,42 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
             status: teamData.status,
             category: teamData.category,
             category_1: teamData.category_1,
+            participantIds: teamData.participantIds,
           })
 
-          // Get all team members
-          const usersQuery = query(
-            collection(db, "users"),
-            where("team", "==", userTeamLabel)
-          )
-          const usersSnapshot = await getDocs(usersQuery)
-          const teamMembers: TeamMember[] = usersSnapshot.docs.map((doc) => {
-            const data = doc.data() as User
-            return {
-              id: doc.id,
-              name: data.name || "",
-              surname: data.surname || "",
-              email: data.email || "",
-            }
-          })
+          // Get all team members using participantIds if available, fallback to query
+          let teamMembers: TeamMember[] = []
+          if (teamData.participantIds && teamData.participantIds.length > 0) {
+            const memberDocs = await Promise.all(
+              teamData.participantIds.map(id => getDoc(doc(db, "users", id)))
+            )
+            teamMembers = memberDocs
+              .filter(d => d.exists())
+              .map(d => {
+                const data = d.data() as User
+                return {
+                  id: d.id,
+                  name: data.name || "",
+                  surname: data.surname || "",
+                  email: data.email || "",
+                }
+              })
+          } else {
+            const usersQuery = query(
+              collection(db, "users"),
+              where("team", "==", userTeamLabel)
+            )
+            const usersSnapshot = await getDocs(usersQuery)
+            teamMembers = usersSnapshot.docs.map((doc) => {
+              const data = doc.data() as User
+              return {
+                id: doc.id,
+                name: data.name || "",
+                surname: data.surname || "",
+                email: data.email || "",
+              }
+            })
+          }
 
           // Sort alphabetically
           teamMembers.sort((a, b) => a.name.localeCompare(b.name))

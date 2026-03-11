@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
-import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc } from "firebase/firestore"
+import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { cn } from "@/lib/utils"
+import { toast } from "@/hooks/use-toast"
 
 export default function JuradoProyectosPage() {
   const params = useParams()
@@ -40,7 +41,8 @@ export default function JuradoProyectosPage() {
   const [reviewComment, setReviewComment] = useState("")
   const [reviewScores, setReviewScores] = useState<Record<string, number>>({})
   const [submittingReview, setSubmittingReview] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<"review" | "disqualify" | null>(null)
+  const [confirmAction, setConfirmAction] = useState<"review" | null>(null)
+  const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
 
   useEffect(() => {
     if (!db) return
@@ -56,8 +58,13 @@ export default function JuradoProyectosPage() {
         setScoringCriteria(criteria)
 
         const initialScores: Record<string, number> = {}
-        criteria.forEach(c => { initialScores[c.id] = c.maxScore || 10 })
+        criteria.forEach(c => { initialScores[c.id] = 10 })
         setReviewScores(initialScores)
+
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          setJudgingStage(settingsDoc.data().judgingStage || "admin")
+        }
       } catch (error) {
         console.error("Error fetching projects for judge:", error)
       } finally {
@@ -67,34 +74,51 @@ export default function JuradoProyectosPage() {
     fetchProjects()
   }, [db])
 
-  const handleReview = async (disqualify: boolean) => {
+  const handleReview = async () => {
     if (!db || !selectedProject || !user) return
     setSubmittingReview(true)
     try {
+      const scoresWithWeights: Record<string, number> = {}
+      let totalWeightedScore = 0
+
+      scoringCriteria.forEach(c => {
+        const score = reviewScores[c.id] || 0
+        const weight = c.weight || 1
+        const maxScore = c.maxScore || 10
+        // (1-10 / 10) * maxPointsAtWeight
+        const weighted = (score / 10) * (maxScore * weight)
+        scoresWithWeights[c.id] = weighted
+        totalWeightedScore += weighted
+      })
+
       const reviewData = {
         projectId: selectedProject.id,
         reviewerId: user.id || "judge",
         reviewerRole: "judge",
-        scores: reviewScores,
-        totalScore: Object.values(reviewScores).reduce((a, b) => a + b, 0),
+        rawScores: reviewScores,
+        calculatedScores: scoresWithWeights,
+        totalScore: totalWeightedScore,
         comment: reviewComment,
-        disqualified: disqualify,
+        disqualified: false,
         createdAt: new Date().toISOString()
       }
       await addDoc(collection(db, "projectReviews"), reviewData)
 
-      const newStatus = disqualify ? "disqualified" : "reviewed"
+      // Projects keep the latest score from a judge/admin review, 
+      // or we could accumulate them. For simplicity, we'll update the project.
       await updateDoc(doc(db, "projects", selectedProject.id), {
-        status: newStatus,
-        scores: reviewScores,
-        totalScore: reviewData.totalScore,
+        status: "reviewed",
+        scores: scoresWithWeights,
+        rawScores: reviewScores,
+        totalScore: totalWeightedScore,
         reviewComment: reviewData.comment
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: reviewScores, totalScore: reviewData.totalScore, reviewComment: reviewData.comment } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: reviewScores, totalScore: reviewData.totalScore, reviewComment: reviewData.comment }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: "reviewed", scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: "reviewed", scores: scoresWithWeights, totalScore: totalWeightedScore, reviewComment: reviewData.comment }))
       setShowDetails(false)
       setReviewComment("")
+      toast({ title: locale === "es" ? "Evaluación enviada" : "Evaluation submitted" })
     } catch (error) {
       console.error("Error submitting review:", error)
     } finally {
@@ -103,13 +127,19 @@ export default function JuradoProyectosPage() {
   }
 
   const filteredProjects = useMemo(() => {
+    // Judges don't see anything during admin screening phase
+    if (judgingStage === "admin") return []
+
     return projects.filter(p => {
+      // Judges only evaluate finalists
+      if (!p.isFinalist) return false
+
       const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || p.status === statusFilter
       return matchesSearch && matchesStatus
     })
-  }, [projects, searchTerm, statusFilter])
+  }, [projects, searchTerm, statusFilter, judgingStage])
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
@@ -149,12 +179,19 @@ export default function JuradoProyectosPage() {
           </div>
 
           <section>
-            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.judge.projectsToScore}</h3>
+            <div className="flex flex-col gap-2 mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow font-pixel">{t.judge.projectsToScore}</h3>
+              {judgingStage === "admin" && (
+                <div className="p-3 text-center rounded-md bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-xs font-pixel">
+                  WAITING FOR ADMINS TO SELECT FINALISTS...
+                </div>
+              )}
+            </div>
 
             {loading ? (
-              <div className="flex justify-center p-12"><div className="animate-pulse font-pixel text-brand-cyan">LOADING PROJECTS...</div></div>
+              <div className="flex justify-center p-12"><div className="animate-pulse text-xs font-pixel text-brand-cyan">LOADING PROJECTS...</div></div>
             ) : filteredProjects.length === 0 ? (
-              <GlassCard className="p-8 text-center"><p className="text-brand-cyan/60 font-pixel">No projects found.</p></GlassCard>
+              <GlassCard className="p-8 text-center"><p className="text-xs font-pixel text-brand-cyan/60">No projects found.</p></GlassCard>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProjects.map((project) => (
@@ -248,15 +285,15 @@ export default function JuradoProyectosPage() {
                         <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
                           <Label className="col-span-3 text-sm text-brand-cyan flex flex-col">
                             <span>{criteria.name}</span>
-                            <span className="text-xs text-brand-cyan/60 font-normal">{criteria.description} (Max: {criteria.maxScore})</span>
+                            <span className="text-[10px] text-brand-cyan/60 font-normal">{criteria.description} (Scale 1-10)</span>
                           </Label>
                           <Input
                             type="number"
                             min="0"
-                            max={criteria.maxScore || 10}
+                            max="10"
                             value={reviewScores[criteria.id] || 0}
                             onChange={(e) => {
-                              const val = Math.min(Math.max(0, Number(e.target.value) || 0), criteria.maxScore || 10)
+                              const val = Math.min(Math.max(0, Number(e.target.value) || 0), 10)
                               setReviewScores(prev => ({ ...prev, [criteria.id]: val }))
                             }}
                             className="bg-brand-navy border-brand-cyan/30 text-brand-cyan"
@@ -276,20 +313,12 @@ export default function JuradoProyectosPage() {
 
                       <div className="flex gap-4 pt-4">
                         <Button
-                          className="flex-1 bg-green-500/20 text-green-400 hover:bg-green-500/40 border-green-500/50"
+                          className="w-full bg-green-500/20 text-green-400 hover:bg-green-500/40 border-green-500/50"
                           onClick={() => setConfirmAction("review")}
                           disabled={submittingReview}
                         >
                           <CheckCircle className="mr-2 w-4 h-4" />
-                          Mark as Reviewed
-                        </Button>
-                        <Button
-                          className="flex-1 bg-red-500/20 text-red-500 hover:bg-red-500/40 border-red-500/50"
-                          onClick={() => setConfirmAction("disqualify")}
-                          disabled={submittingReview}
-                        >
-                          <Ban className="mr-2 w-4 h-4" />
-                          Disqualify
+                          Submit Evaluation
                         </Button>
                       </div>
                     </div>
@@ -305,18 +334,15 @@ export default function JuradoProyectosPage() {
             <AlertDialogHeader className="mb-2">
               <AlertDialogTitle className="font-pixel text-brand-yellow">Confirm Action</AlertDialogTitle>
               <AlertDialogDescription className="text-brand-cyan/80">
-                {confirmAction === "disqualify"
-                  ? "Are you sure you want to disqualify this project? This decision will be recorded."
-                  : "Are you sure you want to submit this review? Ensure your scores and comments are finalized."}
+                Are you sure you want to submit this evaluation? Ensure your scores and comments are finalized.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="bg-transparent border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/10">Cancel</AlertDialogCancel>
               <Button
-                className={confirmAction === "disqualify" ? "bg-red-500/20 text-red-500 hover:bg-red-500/40 border-red-500/50" : "bg-green-500/20 text-green-400 hover:bg-green-500/40 border-green-500/50"}
+                className="bg-green-500/20 text-green-400 hover:bg-green-500/40 border-green-500/50"
                 onClick={() => {
-                  if (confirmAction === "disqualify") handleReview(true)
-                  else if (confirmAction === "review") handleReview(false)
+                  handleReview()
                   setConfirmAction(null)
                 }}
               >

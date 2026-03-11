@@ -28,18 +28,75 @@ export default function ParticipanteDashboard() {
   const [showWinners, setShowWinners] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
+  const [showScoresToTeams, setShowScoresToTeams] = useState(false)
+  const [resolvedTeamId, setResolvedTeamId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!db || !user?.team) return
-    const unsub = onSnapshot(doc(db, "projects", user.team), (snap) => {
+    if (!db || !user?.id) return
+
+    const resolveTeam = async () => {
+      if (user.team) {
+        setResolvedTeamId(user.team)
+        return
+      }
+
+      // Fallback: find team by participantIds if user.team is missing
+      try {
+        const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
+        const snapshot = await getDocs(teamsQuery)
+        if (!snapshot.empty) {
+          setResolvedTeamId(snapshot.docs[0].id)
+        } else {
+          setResolvedTeamId(null)
+        }
+      } catch (err) {
+        console.error("Error finding team:", err)
+      }
+    }
+
+    resolveTeam()
+  }, [db, user?.id, user?.team])
+
+  useEffect(() => {
+    if (!db || !resolvedTeamId) {
+      if (!resolvedTeamId) setProjectStatus("none")
+      return
+    }
+
+    const unsub = onSnapshot(doc(db, "projects", resolvedTeamId), async (snap) => {
       if (snap.exists()) {
         setProjectStatus(snap.data().status || "submitted")
       } else {
-        setProjectStatus("none")
+        // Fallback 1: Try querying by teamId field (in case ID doesn't match)
+        try {
+          const q = query(collection(db, "projects"), where("teamId", "==", resolvedTeamId))
+          const qSnap = await getDocs(q)
+          if (!qSnap.empty) {
+            setProjectStatus(qSnap.docs[0].data().status || "submitted")
+            return
+          }
+        } catch (err) {
+          console.error("Error querying project by teamId:", err)
+        }
+
+        // Fallback 2: check if project exists within the team document (legacy)
+        try {
+          const teamDoc = await getDoc(doc(db, "teams", resolvedTeamId))
+          if (teamDoc.exists() && teamDoc.data().project) {
+            setProjectStatus("submitted")
+          } else {
+            setProjectStatus("none")
+          }
+        } catch (err) {
+          console.error("Error checking legacy project:", err)
+          setProjectStatus("none")
+        }
       }
+    }, (error) => {
+      console.error("Error listening to project:", error)
     })
     return () => unsub()
-  }, [db, user?.team])
+  }, [db, resolvedTeamId])
 
   useEffect(() => {
     // Allow an explicit env override for development/testing convenience.
@@ -65,6 +122,7 @@ export default function ParticipanteDashboard() {
           const data = settingsDoc.data()
           setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
           setShowWinners(!!data?.showWinners)
+          setShowScoresToTeams(!!data?.showScoresToTeams)
         } else {
           setProjectSubmissionsEnabled(true)
           setShowWinners(false)
@@ -79,14 +137,14 @@ export default function ParticipanteDashboard() {
     loadGlobalSettings()
   }, [db])
 
-  const hasTeam = user?.hasTeam === true && user?.team
+  const hasTeam = !!resolvedTeamId
 
   return (
     <ProtectedRoute allowedRoles={["participant"]}>
       <DashboardLayout title={t.dashboard.participant.title}>
         <div className="space-y-8">
           {/* Project Status Summary */}
-          {hasTeam && (
+          {hasTeam && (projectSubmissionsEnabled || projectStatus !== "none") && (
             <section>
               <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myProject}</h3>
               <GlassCard className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
@@ -122,7 +180,7 @@ export default function ParticipanteDashboard() {
                 </div>
                 <PixelButton onClick={() => router.push(`/${locale}/dashboard/participante/proyecto`)}>
                   {projectStatus === "none" ? t.dashboard.participant.project.submit :
-                    (projectStatus === "reviewed" || projectStatus === "disqualified") ? (locale === "es" ? "Ver Detalles" : "View Details") :
+                    (!projectSubmissionsEnabled || projectStatus === "reviewed" || projectStatus === "disqualified") ? (locale === "es" ? "Ver Detalles" : "View Details") :
                       t.dashboard.participant.project.edit}
                 </PixelButton>
               </GlassCard>
@@ -155,7 +213,7 @@ export default function ParticipanteDashboard() {
             ) : null}
             <TeamSection
               userId={user?.id || ""}
-              userTeamLabel={user?.team || null}
+              userTeamLabel={resolvedTeamId}
             />
           </section>
 
