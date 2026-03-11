@@ -1,13 +1,35 @@
-export type UserRole = "admin" | "jurado" | "participante"
+export type UserRole = "admin" | "judge" | "participant" | "mentor"
 
 export interface User {
   id: string
   email: string
+  name: string
+  surname?: string
   role: UserRole
-  onboardingStep: number
+  onboardingStep?: number
   teamId?: string
-  profile: {
-    name: string
+  dni?: string
+  university?: string
+  career?: string
+  age?: number
+  github?: string
+  linkedin?: string
+  instagram?: string
+  twitter?: string
+  link_cv?: string
+  food_preference?: string
+  category_1?: number
+  category_2?: number
+  category_3?: number
+  team?: string | null
+  hasTeam?: boolean // true if participant has a team, false if without team, undefined if not applicable
+  wantsToCreateTeam?: boolean // true if participant chose to create a team during signup
+  participationStatus?: "rejected" | null // only set when admin explicitly rejects a teamless participant
+  company?: string
+  position?: string
+  photo?: string
+  profile?: {
+    name?: string
     bio?: string
     avatar?: string
     company?: string
@@ -15,8 +37,9 @@ export interface User {
     github?: string
     twitter?: string
   }
-  createdAt: Date
-  updatedAt: Date
+  createdAt?: Date
+  updatedAt?: Date
+  emailVerified?: boolean
 }
 
 export interface Event {
@@ -62,7 +85,24 @@ export interface Team {
   name: string
   participantIds: string[] // 1-4 participants
   eventId: string
+  project?: TeamProject
+  status?: string
+  category_1?: number
+  category_2?: number
+  category_3?: number
+  assignedRoom?: string
   createdAt: Date
+  updatedAt: Date
+}
+
+export interface TeamProject {
+  title: string
+  description: string
+  repoUrl: string
+  demoUrl?: string
+  images: string[]
+  videoUrl?: string
+  submittedAt: Date
   updatedAt: Date
 }
 

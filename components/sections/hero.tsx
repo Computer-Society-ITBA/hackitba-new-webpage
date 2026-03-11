@@ -1,17 +1,22 @@
 "use client"
 
-import { TypingEffect } from "@/components/effects/typing-effect"
+import { CodeBackground } from "@/components/effects/code-background"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { FloatingArrow } from "@/components/effects/floating-arrow"
-import { LoremIpsum } from "lorem-ipsum"
+import { useAuth } from "@/lib/firebase/auth-context"
+import type { Locale } from "@/lib/i18n/config"
+import Link from "next/link"
+
 
 interface HeroProps {
-  translations: any
+  translations: any,
+  locale: Locale
 }
 
-const lorem = new LoremIpsum()
+export function Hero({ translations, locale }: HeroProps) {
+  const { user, loading } = useAuth()
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "false" && process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "0"
 
-export function Hero({ translations }: HeroProps) {
   const scrollToNext = () => {
     const nextSection = document.getElementById("stats")
     nextSection?.scrollIntoView({ behavior: "smooth" })
@@ -19,13 +24,7 @@ export function Hero({ translations }: HeroProps) {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
-      <div className="[mask-image:linear-gradient(to_bottom,transparent,black,transparent)] absolute inset-4 opacity-10 font-pixel text-s text-brand-cyan leading-relaxed overflow-hidden pointer-events-none">
-        <TypingEffect
-          text={lorem.generateParagraphs(35)}
-          speed="fast"
-          direction="vertical"
-        />
-      </div>
+      <CodeBackground />
 
       <div className="relative z-10 text-center space-y-8 max-w-4xl flex flex-col items-center">
         <div>
@@ -40,6 +39,17 @@ export function Hero({ translations }: HeroProps) {
             </NeonGlow>
           </h1>
           <p className="font-pixel text-lg md:text-xl text-brand-yellow">{translations.hero.subtitle}</p>
+          {!loading && !user && (
+            signupEnabled ? (
+              <Link href={`/${locale}/auth/signup`} className="duration-200 ease-in-out transition-colors hover:text-brand-orange hover:border-brand-orange hover:bg-brand-orange/10 mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-navy/60 px-4 py-2 font-pixel text-sm md:text-sm text-brand-cyan">
+                {translations.hero.signupOpen}
+              </Link>
+            ) : (
+              <span className="duration-200 ease-in-out mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-navy/60 px-4 py-2 font-pixel text-xs md:text-sm text-brand-cyan opacity-60">
+                {translations.hero.signupClosed}
+              </span>
+            )
+          )}
         </div>
       </div>
 

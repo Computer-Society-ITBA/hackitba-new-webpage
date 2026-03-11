@@ -1,6 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { AuthProvider } from "@/lib/firebase/auth-context"
+import { locales } from "@/lib/i18n/config"
+import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: "HackITBA 2026 | Computer Society ITBA",
@@ -14,7 +16,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }))
+}
+
+export default function LocaleLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -22,6 +28,7 @@ export default function RootLayout({
   return (
     <AuthProvider>
       {children}
+      <Toaster />
     </AuthProvider>
   )
 }

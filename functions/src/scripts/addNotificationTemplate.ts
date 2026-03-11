@@ -1,0 +1,177 @@
+import admin from 'firebase-admin';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Initialize admin if not already
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
+
+async function addTemplate() {
+  const id = 'notification_generic';
+  const subject = 'Notificación HackITBA';
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!--<![endif]-->
+  <title>HackITBA - Notificación</title>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    img, a img { border: 0; height: auto; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 auto !important; padding: 0; width: 100% !important; }
+    img { -ms-interpolation-mode: bicubic; }
+    #outlook a { padding: 0; }
+    table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass { width: 100%; }
+    p, a, td { mso-line-height-rule: exactly; }
+    p, a, td, body, table { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height: 100%; }
+    a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+    @media screen and (max-width: 480px) {
+      .mw100 { max-width: 100% !important; }
+      .w100 { width: 100% !important; }
+      .w96 { width: 96% !important; }
+    }
+  </style>
+  <!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG /><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff">
+  <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin: 0 auto; background-color: #ffffff">
+    <tr>
+      <td style="font-size: 0"></td>
+      <td align="center" valign="top" style="width: 580px">
+        <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%" class="w96">
+          <!-- logo -->
+          <tr>
+            <td align="center">
+              <table align="center" cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <tr>
+                  <td align="center" style="padding: 40px 0; border-bottom: 1px solid #cccccc">
+                    <a href="https://hackitba.com.ar" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #fad399; text-decoration: none;">
+                      <center>
+                        <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" align="center" alt="HackITBA" title="HackITBA" border="0" width="300" style="outline: 0; padding: 0; border: 0; width: 300px; height: auto; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #0052cc;" />
+                      </center>
+                    </a>
+                  </td>
+                </tr>
+                <tr><td height="20" style="height: 20px; line-height: 20px; font-size: 0"></td></tr>
+              </table>
+            </td>
+          </tr>
+          <!-- end logo -->
+
+          <!-- content -->
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" border="0" style="width: 100%">
+                <!-- headline -->
+                <tr>
+                  <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" style="width: 75%" class="w100">
+                      <tr>
+                        <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-weight: bold; font-size: 24px; line-height: 35px; color: #101214; text-align: center;">
+                          {{subject}}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <!-- end headline -->
+
+                <!-- body -->
+                <tr>
+                  <td style="padding-top: 20px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; line-height: 22px; color: #101214; text-align: left;">
+                    {{body}}
+                  </td>
+                </tr>
+
+                <!-- cta -->
+                <tr>
+                  <td align="center" style="padding-top: 40px">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="border-radius: 3px; background-color: #fad399;">
+                          <a href="{{dashboardUrl}}" target="_blank" style="display: inline-block; border: 1px solid #fad399; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 3px; padding: 15px 40px;">
+                            Ir a mi Dashboard
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <!-- end cta -->
+              </table>
+            </td>
+          </tr>
+          <!-- end content -->
+
+          <!-- footer -->
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0" width="100%" role="presentation" style="min-width: 100%">
+                <tr>
+                  <td style="padding-top: 40px; padding-bottom: 40px" align="center">
+                    <table style="width: 100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="border-top: 1px solid #cccccc; padding-top: 15px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;">
+                          <a href="https://github.com/Computer-Society-ITBA" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #fad399; text-decoration: none;">
+                            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" title="GitHub" style="line-height: 0px; outline: 0; padding: 0; border: 0; width: 25px; height: auto;" width="25" border="0" align="middle" />
+                          </a>
+                          &nbsp;
+                          <a href="https://x.com/cs_itba" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #a5adba; text-decoration: none;">
+                            <img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/X-Socials.png" alt="X" title="X" style="outline: 0; padding: 0; border: 0; width: 25px; height: auto;" width="25" border="0" align="middle" />
+                          </a>
+                          &nbsp;
+                          <a href="https://www.linkedin.com/company/itba-computer-society/" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #fad399; text-decoration: none;">
+                            <img src="https://image.e.atlassian.com/lib/fe4011727164047d751070/m/1/LinkedIn-2025.png" alt="LinkedIn" title="LinkedIn" style="outline: 0; padding: 0; border: 0; width: 25px; height: auto;" width="25" border="0" align="middle" />
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 10px; font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 13px; line-height: 19px; color: #626f86; text-align: center;" align="center">
+                          © 2026 Computer Society ITBA. All rights reserved.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 20px" align="center">
+                          <a href="https://hackitba.com.ar" style="font-family: &quot;Helvetica neue&quot;, Helvetica, Arial, Verdana, sans-serif; font-size: 16px; color: #fad399; text-decoration: none;">
+                            <img src="https://hackitba.com.ar/images/hackitba-alt-logo.png" alt="HackITBA" title="HackITBA" style="display: block; outline: 0; padding: 0; border: 0; width: 116px; height: auto;" width="116" border="0" />
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- end footer -->
+        </table>
+      </td>
+      <td style="font-size: 0"></td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `{{body}}\n\nIr al dashboard: {{dashboardUrl}}\n\n— HackITBA`;
+
+  try {
+    await db.collection('emailTemplates').doc(id).set({ subject, html, text, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    console.log(`Template '${id}' written to emailTemplates collection.`);
+    process.exit(0);
+  } catch (err) {
+    console.error('Error writing template:', err);
+    process.exit(1);
+  }
+}
+
+addTemplate();

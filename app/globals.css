@@ -3,9 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* Base */
-  --color-dark: #14192d;
+  --color-dark: #020617;
   --color-white: #ffffff;
 
   /* Orange */
@@ -13,8 +17,8 @@
   --orange: #ff8a3d;
 
   /* Cyan */
-  --cyan-light: #c9f3f5;
-  --cyan: #2ecbd3;
+  --cyan-light: #6eb6f9;
+  --cyan: #013cde;
 
   /* Semantic */
   --error: #ef4444;
@@ -57,7 +61,6 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-
 }
 
 /* ---------- Base styles ---------- */
@@ -70,16 +73,137 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font-montserrat), sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 }
 
 @layer utilities {
-  .font-pixel {
-    font-family: var(--font-pixel);
-    letter-spacing: -2px;
+  @layer utilities {
+    .font-pixel {
+      font-family: var(--font-pixel);
+      letter-spacing: 0.08em;
+    }
   }
 
-  .font-inter {
-    font-family: var(--font-inter);
+  .font-pixel.text-xs {
+    font-size: calc(0.75rem * 2);
+  }
+
+  .font-pixel.text-sm {
+    font-size: calc(0.875rem * 2);
+  }
+
+  .font-pixel.text-md {
+    font-size: calc(1rem * 2);
+  }
+
+  .font-pixel.text-lg {
+    font-size: calc(1.125rem * 2);
+  }
+
+  .font-pixel.text-xl {
+    font-size: calc(1.25rem * 2);
+  }
+
+  .font-pixel.text-2xl {
+    font-size: calc(1.5rem * 2);
+  }
+
+  .font-pixel.text-3xl {
+    font-size: calc(1.875rem * 2);
+  }
+
+  .font-pixel.text-4xl {
+    font-size: calc(2.25rem * 2);
+  }
+
+  .font-pixel.text-5xl {
+    font-size: calc(2.75rem * 2);
+  }
+
+  .font-pixel.text-6xl {
+    font-size: calc(3rem * 2);
+  }
+
+  /* Responsive fixes for mobile: reduce the doubled pixel font sizes and tighten spacing
+     to avoid text overlap and clipping on small screens. */
+  @media (max-width: 640px) {
+    .font-pixel {
+      line-height: 1.25em;
+      letter-spacing: 0.04em;
+    }
+
+    /* Hide icon children inside buttons on small screens and center text */
+    [data-slot="button"] {
+      gap: 0 !important;
+      justify-content: center !important;
+    }
+
+    [data-slot="button"]>svg,
+    [data-slot="button"]>img {
+      display: none !important;
+    }
+  }
+
+  .font-montserrat {
+    font-family: var(--font-montserrat);
+  }
+
+  .pixel-select {
+    font-family: var(--font-pixel);
+  }
+
+  .pixel-select option {
+    background-color: #0b1230;
+    color: var(--color-brand-cyan);
+  }
+
+  @keyframes toast-drain {
+    from {
+      transform: scaleX(1);
+    }
+
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  .toast-progress {
+    transform-origin: left;
+    animation: toast-drain 4s linear forwards;
   }
 }
+
+/* Custom scrollbar for dialog modal content */
+[data-slot="dialog-content"] .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,138,61,0.85) rgba(255,255,255,0.02);
+  scrollbar-gutter: stable;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,138,61,0.95), rgba(1,60,222,0.9));
+  border-radius: 999px;
+  border: 2px solid rgba(2,6,23,0.6);
+}
+
+[data-slot="dialog-content"] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.1);
+}
+
+

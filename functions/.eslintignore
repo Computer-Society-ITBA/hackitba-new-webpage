@@ -1,0 +1,12 @@
+# Ignore local scripts used for maintenance / template tooling
+src/scripts/
+scripts/
+
+# Ignore compiled scripts
+lib/scripts/
+lib/**/scripts/
+
+# Other common ignores
+node_modules/
+.env
+.env.local

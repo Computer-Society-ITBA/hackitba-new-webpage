@@ -66,7 +66,7 @@ export function Countdown({ translations }: CountdownProps) {
     if (!isClient) return null
 
     return (
-        <section className="py-20 px-4 flex flex-col items-center gap-8">
+        <section className="py-20 px-4 flex flex-col items-center gap-8 w-auto mx-4">
             {timeLeft ? (
                 <div className="flex flex-col items-center mb-12">
                     <div>
@@ -78,7 +78,7 @@ export function Countdown({ translations }: CountdownProps) {
                 <h3 className="text-brand-yellow font-pixel text-2xl">{translations.countdown.ended}</h3>
             )}
 
-            <div ref={wrapperRef} className="flex justify-center gap-8 md:gap-12 px-4 origin-center scale-[0.8] sm:scale-[0.9] md:scale-100 transition-transform">
+            <div ref={wrapperRef} className="flex justify-center gap-4 sm:gap-8 md:gap-12 px-4 transition-transform">
                 {!timeLeft && (
                     <Confetti
                         height={height}
@@ -92,39 +92,39 @@ export function Countdown({ translations }: CountdownProps) {
                 )}
 
                 <div className="text-center">
-                    <p className="font-pixel text-4xl md:text-6xl text-brand-yellow transition-all duration-300">
+                    <p className="font-pixel text-4xl sm:text-5xl md:text-6xl text-brand-yellow transition-all duration-300">
                         <NeonGlow flickering color="orange">
                             {timeLeft ? timeLeft.days : "0"}
                         </NeonGlow>
                     </p>
-                    <p className="text-brand-yellow text-lg md:text-xl font-pixel mt-2">{translations.countdown.days}</p>
+                    <p className="text-brand-yellow text-xs sm:text-sm md:text-xl font-pixel mt-2">{translations.countdown.days}</p>
                 </div>
 
                 <div className="text-center">
-                    <p className="font-pixel text-4xl md:text-6xl text-brand-yellow transition-colors duration-300">
+                    <p className="font-pixel text-4xl sm:text-5xl md:text-6xl text-brand-yellow transition-colors duration-300">
                         <NeonGlow flickering color="orange">
                             {timeLeft ? timeLeft.hours : "0"}
                         </NeonGlow>
                     </p>
-                    <p className="text-brand-yellow text-lg md:text-xl font-pixel mt-2">{translations.countdown.hours}</p>
+                    <p className="text-brand-yellow text-xs sm:text-sm md:text-xl font-pixel mt-2">{translations.countdown.hours}</p>
                 </div>
 
                 <div className="text-center">
-                    <p className="font-pixel text-4xl md:text-6xl text-brand-yellow transition-colors duration-300">
+                    <p className="font-pixel text-4xl sm:text-5xl md:text-6xl text-brand-yellow transition-colors duration-300">
                         <NeonGlow flickering color="orange">
                             {timeLeft ? timeLeft.minutes : "0"}
                         </NeonGlow>
                     </p>
-                    <p className="text-brand-yellow text-lg md:text-xl font-pixel mt-2">{translations.countdown.minutes}</p>
+                    <p className="text-brand-yellow text-xs sm:text-sm md:text-xl font-pixel mt-2">{translations.countdown.minutes}</p>
                 </div>
 
                 <div className="text-center">
-                    <p className="font-pixel text-4xl md:text-6xl text-brand-yellow transition-colors duration-300">
+                    <p className="font-pixel text-4xl sm:text-5xl md:text-6xl text-brand-yellow transition-colors duration-300">
                         <NeonGlow flickering color="orange">
                             {timeLeft ? timeLeft.seconds : "0"}
                         </NeonGlow>
                     </p>
-                    <p className="text-brand-yellow text-lg md:text-xl font-pixel mt-2">{translations.countdown.seconds}</p>
+                    <p className="text-brand-yellow text-xs sm:text-sm md:text-xl font-pixel mt-2">{translations.countdown.seconds}</p>
                 </div>
             </div>
         </section>

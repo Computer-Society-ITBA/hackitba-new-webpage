@@ -1,6 +1,9 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -8,17 +11,33 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/client-config"
+import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+import * as LucideIcons from "lucide-react"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import { toast } from "@/hooks/use-toast"
+import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
+import { AdminManagementTables } from "@/components/admin/admin-management-tables"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function AdminDashboard() {
+  const params = useParams()
+  const locale = (params?.locale as Locale) || "en"
+  const translations = getTranslations(locale)
+  const db = getDbClient()
+  const storage = getStorageClient()
+  const auth = getAuthClient()
   const [events, setEvents] = useState<any[]>([])
   const [sponsors, setSponsors] = useState<any[]>([])
   const [speakers, setSpeakers] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
+  const [authReady, setAuthReady] = useState(false)
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [completeStats, setCompleteStats] = useState<{ complete: number; withTeam: number; withoutTeam: number } | null>(null)
+  const [loadingStats, setLoadingStats] = useState(false)
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -26,42 +45,6 @@ export default function AdminDashboard() {
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [showScoringForm, setShowScoringForm] = useState(false)
   const [uploading, setUploading] = useState(false)
-
-  const [eventForm, setEventForm] = useState({
-    title: "",
-    description: "",
-    startDate: "",
-    endDate: "",
-    submissionDeadline: "",
-    location: "",
-    status: "draft",
-  })
-
-  const [sponsorForm, setSponsorForm] = useState({
-    name: "",
-    logo: "",
-    website: "",
-    tier: "bronze",
-    order: 0,
-  })
-
-  const [speakerForm, setSpeakerForm] = useState({
-    name: "",
-    title: "",
-    company: "",
-    bio: "",
-    avatar: "",
-    linkedin: "",
-    order: 0,
-  })
-
-  const [categoryForm, setCategoryForm] = useState({
-    name: "",
-    description: "",
-    icon: "",
-    details: "",
-    order: 0,
-  })
 
   const [scoringForm, setScoringForm] = useState({
     name: "",
@@ -71,10 +54,84 @@ export default function AdminDashboard() {
   })
 
   useEffect(() => {
-    loadData()
-  }, [])
+    if (!auth) return
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log("Auth ready, user:", user.uid)
+        setAuthReady(true)
+      }
+    })
+    return () => unsubscribe()
+  }, [auth])
+
+  useEffect(() => {
+    if (authReady) {
+      loadData()
+      loadSettings()
+      loadCompleteStats()
+    }
+  }, [authReady])
+
+  const loadCompleteStats = async () => {
+    if (!db) return
+    setLoadingStats(true)
+    try {
+      const [completeSnap, withTeamSnap, withoutTeamSnap] = await Promise.all([
+        getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))),
+        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true))),
+        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", false))),
+      ])
+      setCompleteStats({ complete: completeSnap.size, withTeam: withTeamSnap.size, withoutTeam: withoutTeamSnap.size })
+    } catch (error) {
+      console.error("Error loading complete stats:", error)
+    } finally {
+      setLoadingStats(false)
+    }
+  }
+
+  const loadSettings = async () => {
+    if (!db) return
+    try {
+      const settingsRef = doc(db, "settings", "global")
+      const settingsDoc = await getDoc(settingsRef)
+      if (settingsDoc.exists()) {
+        const data = settingsDoc.data()
+        setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+      } else {
+        setProjectSubmissionsEnabled(true)
+        await setDoc(
+          settingsRef,
+          { projectSubmissionsEnabled: true, updatedAt: new Date() },
+          { merge: true }
+        )
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error)
+    }
+  }
+
+  const toggleProjectSubmissions = async () => {
+    if (!db) return
+    const nextValue = !projectSubmissionsEnabled
+    setProjectSubmissionsEnabled(nextValue)
+    try {
+      await setDoc(
+        doc(db, "settings", "global"),
+        { projectSubmissionsEnabled: nextValue, updatedAt: new Date() },
+        { merge: true }
+      )
+    } catch (error) {
+      console.error("Error updating project submissions setting:", error)
+      setProjectSubmissionsEnabled(!nextValue)
+      toast({ title: translations.admin.projectSubmissions.updateError, variant: 'destructive' })
+    }
+  }
 
   const loadData = async () => {
+    if (!db) {
+      return
+    }
+
     const eventsSnapshot = await getDocs(collection(db, "events"))
     setEvents(eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
 
@@ -92,6 +149,10 @@ export default function AdminDashboard() {
   }
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
+    if (!storage) {
+      throw new Error("Firebase Storage is not configured")
+    }
+
     setUploading(true)
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`)
@@ -103,59 +164,11 @@ export default function AdminDashboard() {
     }
   }
 
-  const createEvent = async () => {
-    await addDoc(collection(db, "events"), {
-      ...eventForm,
-      startDate: new Date(eventForm.startDate),
-      endDate: new Date(eventForm.endDate),
-      submissionDeadline: new Date(eventForm.submissionDeadline),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    setShowEventForm(false)
-    setEventForm({
-      title: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      submissionDeadline: "",
-      location: "",
-      status: "draft",
-    })
-    loadData()
-  }
-
-  const createSponsor = async () => {
-    await addDoc(collection(db, "sponsors"), {
-      ...sponsorForm,
-      createdAt: new Date(),
-    })
-    setShowSponsorForm(false)
-    setSponsorForm({ name: "", logo: "", website: "", tier: "bronze", order: 0 })
-    loadData()
-  }
-
-  const createSpeaker = async () => {
-    await addDoc(collection(db, "speakers"), {
-      ...speakerForm,
-      createdAt: new Date(),
-    })
-    setShowSpeakerForm(false)
-    setSpeakerForm({ name: "", title: "", company: "", bio: "", avatar: "", linkedin: "", order: 0 })
-    loadData()
-  }
-
-  const createCategory = async () => {
-    await addDoc(collection(db, "categories"), {
-      ...categoryForm,
-      createdAt: new Date(),
-    })
-    setShowCategoryForm(false)
-    setCategoryForm({ name: "", description: "", icon: "", details: "", order: 0 })
-    loadData()
-  }
-
   const createScoring = async () => {
+    if (!db) {
+      return
+    }
+
     await addDoc(collection(db, "scoringCriteria"), {
       ...scoringForm,
       createdAt: new Date(),
@@ -165,27 +178,11 @@ export default function AdminDashboard() {
     loadData()
   }
 
-  const deleteEvent = async (id: string) => {
-    await deleteDoc(doc(db, "events", id))
-    loadData()
-  }
-
-  const deleteSponsor = async (id: string) => {
-    await deleteDoc(doc(db, "sponsors", id))
-    loadData()
-  }
-
-  const deleteSpeaker = async (id: string) => {
-    await deleteDoc(doc(db, "speakers", id))
-    loadData()
-  }
-
-  const deleteCategory = async (id: string) => {
-    await deleteDoc(doc(db, "categories", id))
-    loadData()
-  }
-
   const deleteScoring = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "scoringCriteria", id))
     loadData()
   }
@@ -194,193 +191,39 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
+
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Events</h3>
-              <PixelButton onClick={() => setShowEventForm(!showEventForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Event
-              </PixelButton>
+            <div className="mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
             </div>
-
-            {showEventForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Title</Label>
-                    <Input
-                      value={eventForm.title}
-                      onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
-                    <Textarea
-                      value={eventForm.description}
-                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-brand-cyan">Start Date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={eventForm.startDate}
-                        onChange={(e) => setEventForm({ ...eventForm, startDate: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-brand-cyan">End Date</Label>
-                      <Input
-                        type="datetime-local"
-                        value={eventForm.endDate}
-                        onChange={(e) => setEventForm({ ...eventForm, endDate: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Submission Deadline</Label>
-                    <Input
-                      type="datetime-local"
-                      value={eventForm.submissionDeadline}
-                      onChange={(e) => setEventForm({ ...eventForm, submissionDeadline: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Location</Label>
-                    <Input
-                      value={eventForm.location}
-                      onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createEvent} disabled={uploading}>
-                    Create Event
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid gap-4">
-              {events.map((event) => (
-                <GlassCard key={event.id} neonOnHover>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-pixel text-lg text-brand-yellow mb-2">{event.title}</h4>
-                      <p className="text-brand-cyan text-sm mb-2">{event.description}</p>
-                      <p className="text-brand-cyan/60 text-xs">
-                        {event.location} • {event.status}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button className="text-brand-cyan hover:text-brand-orange transition-colors">
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => deleteEvent(event.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
+            <AdminDataExporter />
           </section>
 
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Categories</h3>
-              <PixelButton onClick={() => setShowCategoryForm(!showCategoryForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Category
-              </PixelButton>
+            <div className="flex items-center gap-3 mb-6 flex-wrap">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Participants & Teams</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="flex items-center gap-1.5 bg-brand-cyan/10 border border-brand-cyan/20 px-3 py-1 rounded-full text-xs font-pixel text-brand-cyan/70">
+                  {locale === "es" ? "Insc. completa" : "Complete"}
+                  <span className="text-brand-cyan font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.complete ?? "—"}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-xs font-pixel text-green-400/70">
+                  {locale === "es" ? "Con equipo" : "With team"}
+                  <span className="text-green-400 font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.withTeam ?? "—"}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full text-xs font-pixel text-red-400/70">
+                  {locale === "es" ? "Sin equipo" : "Without team"}
+                  <span className="text-red-400 font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.withoutTeam ?? "—"}
+                  </span>
+                </span>
+              </div>
             </div>
-
-            {showCategoryForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={categoryForm.name}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
-                    <Input
-                      value={categoryForm.description}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Details</Label>
-                    <Textarea
-                      value={categoryForm.details}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, details: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Icon (lucide icon name, e.g. "Globe")</Label>
-                    <Input
-                      value={categoryForm.icon}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Order</Label>
-                    <Input
-                      type="number"
-                      value={categoryForm.order}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, order: Number(e.target.value) })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createCategory}>Create Category</PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <GlassCard key={category.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{category.name}</p>
-                    <p className="text-brand-cyan/60 text-xs">{category.description}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteCategory(category.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
+            <AdminManagementTables locale={locale} translations={translations} />
           </section>
 
           <section>
@@ -458,199 +301,8 @@ export default function AdminDashboard() {
               ))}
             </div>
           </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Sponsors</h3>
-              <PixelButton onClick={() => setShowSponsorForm(!showSponsorForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Sponsor
-              </PixelButton>
-            </div>
-
-            {showSponsorForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={sponsorForm.name}
-                      onChange={(e) => setSponsorForm({ ...sponsorForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Logo URL or Upload</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={sponsorForm.logo}
-                        onChange={(e) => setSponsorForm({ ...sponsorForm, logo: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                        placeholder="https://... or upload file"
-                      />
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = await handleFileUpload(file, "sponsors")
-                              setSponsorForm({ ...sponsorForm, logo: url })
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} />
-                          </span>
-                        </PixelButton>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Website</Label>
-                    <Input
-                      value={sponsorForm.website}
-                      onChange={(e) => setSponsorForm({ ...sponsorForm, website: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <PixelButton onClick={createSponsor} disabled={uploading}>
-                    {uploading ? "Uploading..." : "Create Sponsor"}
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {sponsors.map((sponsor) => (
-                <GlassCard key={sponsor.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{sponsor.name}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteSponsor(sponsor.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">Speakers / Mentors</h3>
-              <PixelButton onClick={() => setShowSpeakerForm(!showSpeakerForm)} size="sm">
-                <Plus size={16} className="mr-2" />
-                New Speaker
-              </PixelButton>
-            </div>
-
-            {showSpeakerForm && (
-              <GlassCard className="mb-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Name</Label>
-                    <Input
-                      value={speakerForm.name}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, name: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Title</Label>
-                    <Input
-                      value={speakerForm.title}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Company</Label>
-                    <Input
-                      value={speakerForm.company}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, company: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Bio</Label>
-                    <Textarea
-                      value={speakerForm.bio}
-                      onChange={(e) => setSpeakerForm({ ...speakerForm, bio: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Avatar URL or Upload</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={speakerForm.avatar}
-                        onChange={(e) => setSpeakerForm({ ...speakerForm, avatar: e.target.value })}
-                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan flex-1"
-                      />
-                      <label className="cursor-pointer">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              const url = await handleFileUpload(file, "speakers")
-                              setSpeakerForm({ ...speakerForm, avatar: url })
-                            }
-                          }}
-                        />
-                        <PixelButton asChild size="sm" disabled={uploading}>
-                          <span>
-                            <Upload size={16} />
-                          </span>
-                        </PixelButton>
-                      </label>
-                    </div>
-                  </div>
-
-                  <PixelButton onClick={createSpeaker} disabled={uploading}>
-                    {uploading ? "Uploading..." : "Create Speaker"}
-                  </PixelButton>
-                </div>
-              </GlassCard>
-            )}
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {speakers.map((speaker) => (
-                <GlassCard key={speaker.id} neonOnHover>
-                  <div className="space-y-2">
-                    <p className="font-pixel text-brand-yellow text-sm">{speaker.name}</p>
-                    <p className="text-brand-cyan/60 text-xs">{speaker.company}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => deleteSpeaker(speaker.id)}
-                        className="text-brand-cyan hover:text-red-500 transition-colors text-xs"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </section>
         </div>
+
       </DashboardLayout>
     </ProtectedRoute>
   )

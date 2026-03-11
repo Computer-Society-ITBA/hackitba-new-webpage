@@ -1,0 +1,785 @@
+"use client"
+
+import type React from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
+import { useRouter, useSearchParams, useParams } from "next/navigation"
+import { getAuth } from "firebase/auth"
+import { PixelButton } from "@/components/ui/pixel-button"
+import { GlassCard } from "@/components/ui/glass-card"
+import Link from "next/link"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Progress } from "@/components/ui/progress"
+import type { UserRole } from "@/lib/firebase/types"
+import { ChevronRight, ChevronLeft, Upload, Github, Linkedin, Instagram, Twitter, ExternalLink, Users, UserPlus } from "lucide-react"
+import * as LucideIcons from "lucide-react"
+import type { Locale } from "@/lib/i18n/config"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import { Loading } from "@/components/ui/loading"
+import { getStorageClient, getDbClient } from "@/lib/firebase/client-config"
+import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
+import { doc, getDoc } from "firebase/firestore"
+import { set } from "date-fns"
+import { useAuth } from "@/lib/firebase/auth-context"
+import { useCategories } from "@/hooks/use-categories"
+
+
+function EventSignupContent() {
+    const router = useRouter()
+    const params = useParams()
+    const locale = params.locale as Locale
+    const translations = getTranslations(locale)
+    const searchParams = useSearchParams()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const { user: authUser, loading: authLoading, refreshUser } = useAuth()
+    const { categories, loading: categoriesLoading, error: categoriesError } = useCategories(locale)
+    const db = getDbClient()
+    const [signupEnabled, setSignupEnabled] = useState(true)
+    const [signupLoading, setSignupLoading] = useState(true)
+
+
+    // Step management
+    const [currentStep, setCurrentStep] = useState(1)
+    const [role, setRole] = useState<UserRole | null>(null)
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+    const [photoFile, setPhotoFile] = useState<File | null>(null)
+
+    // Refresh user data when component mounts
+    useEffect(() => {
+        if (!authLoading && authUser) {
+            console.log("Refreshing user data at event signup page...")
+            refreshUser()
+        }
+    }, []) // Empty dependency array - only run once on mount
+
+    // Check email verification and onboarding status
+    useEffect(() => {
+        if (!authLoading && authUser) {
+            console.log("Event signup - User:", authUser?.email)
+            console.log("Event signup - Email verified:", authUser?.emailVerified)
+            console.log("Event signup - Onboarding step:", authUser?.onboardingStep)
+
+            // Check if email is verified
+            if (!authUser.emailVerified) {
+                console.log("Email not verified, redirecting to verification page")
+                router.replace(`/${locale}/auth/verify-email-required`)
+                return
+            }
+
+            const onboardingStep = authUser.onboardingStep || 0
+            console.log("Event signup - User onboarding step:", onboardingStep, "User:", authUser?.email)
+            if (onboardingStep >= 2) {
+                // Already completed event signup, redirect to dashboard
+                console.log("User already completed event signup, redirecting to dashboard")
+                router.replace(`/${locale}/dashboard`)
+            }
+        }
+    }, [authUser, authLoading, router, locale])
+
+    // Form Data
+    const [formData, setFormData] = useState({
+        // Step 1
+        dni: "",
+        university: "",
+        career: "",
+        careerYear: "",
+        neighborhood: "",
+        age: "",
+        company: "",
+        professionalRole: "",
+        photo: "",
+        dietaryPreference: "",
+        // Step 2
+        github: "",
+        linkedin: "",
+        instagram: "",
+        twitter: "",
+        cvLink: "",
+        // Step 3 (Participante only)
+        hasTeam: "no",
+        noTeamOption: "solo" as "solo" | "create",
+        teamName: "",
+        teamCode: "",
+        priorities: [] as string[],
+    })
+
+    const [error, setError] = useState("")
+    const [loading, setLoading] = useState(false)
+
+    // Initialize priorities when categories load
+    useEffect(() => {
+        if (categories.length > 0 && formData.priorities.length === 0) {
+            const initialPriorities = [...categories].reverse().slice(0, 3).map(cat => cat.id)
+            setFormData(prev => ({ ...prev, priorities: initialPriorities }))
+        }
+    }, [categories])
+
+    useEffect(() => {
+        if (!db) return
+
+        const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
+        if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+            const enabled = envVal === "true" || envVal === "1"
+            setSignupEnabled(enabled)
+            setSignupLoading(false)
+            return
+        }
+
+        const loadSettings = async () => {
+            try {
+                const settingsDoc = await getDoc(doc(db, "settings", "global"))
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data()
+                    setSignupEnabled(data?.signupEnabled !== false)
+                } else {
+                    setSignupEnabled(true)
+                }
+            } catch (err) {
+                console.error("Error loading signup setting:", err)
+                setSignupEnabled(true)
+            } finally {
+                setSignupLoading(false)
+            }
+        }
+
+        loadSettings()
+    }, [db])
+
+    useEffect(() => {
+        if (!signupLoading && !signupEnabled) {
+            router.replace(`/${locale}`)
+        }
+    }, [signupEnabled, signupLoading, router, locale])
+
+    // Redirect to signup if user is not authenticated
+    useEffect(() => {
+        if (!authLoading && !authUser) {
+            router.replace(`/${locale}/auth/signup`)
+        }
+    }, [authLoading, authUser, router, locale])
+
+    useEffect(() => {
+        // Fetch user's assigned role from authUser if available
+        const fetchUserRole = async () => {
+            // Wait for auth to finish loading
+            if (authLoading) {
+                return
+            }
+
+            // If we have authUser from context, use it directly
+            if (authUser) {
+                console.log("Using role from authUser context:", authUser.role)
+                setRole(authUser.role)
+                return
+            }
+
+            // Fallback: try localStorage and API
+            try {
+                const uid = typeof window !== 'undefined' ? localStorage.getItem('userUid') : null
+
+                if (!uid) {
+                    console.error("No user ID found. Please register first.")
+                    setRole("participant")
+                    return
+                }
+
+                // Get current user token from Firebase
+                const auth = getAuth()
+                const currentUser = auth.currentUser
+
+                if (!currentUser) {
+                    console.error("No Firebase user authenticated")
+                    setRole("participant")
+                    return
+                }
+
+                const idToken = await currentUser.getIdToken()
+
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+                const response = await fetch(`${apiUrl}/users/${uid}`, {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                })
+
+                if (response.ok) {
+                    const data = await response.json()
+                    setRole(data.role || "participant")
+                } else {
+                    console.error(`Failed to fetch user role: ${response.status} ${response.statusText}`)
+                    setRole("participant") // Default
+                }
+            } catch (err) {
+                console.error("Failed to fetch user role", err)
+                setRole("participant")
+            }
+        }
+
+        fetchUserRole()
+    }, [authUser, authLoading, router, locale])
+
+    const totalSteps = role === "participant" ? 3 : 2
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target
+        setFormData((prev) => ({ ...prev, [id]: value }))
+    }
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setPhotoFile(file)
+            setFormData((prev) => ({ ...prev, photo: file.name }))
+
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const uploadPhotoToStorage = async (file: File) => {
+        const storage = getStorageClient()
+        if (!storage) {
+            throw new Error(translations.auth.eventSignup.errors.storageNotConfigured)
+        }
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+        const path = `event-photos/${Date.now()}-${safeName}`
+        const fileRef = storageRef(storage, path)
+
+        await uploadBytes(fileRef, file, {
+            contentType: file.type,
+        })
+
+        return getDownloadURL(fileRef)
+    }
+
+    const handleNext = () => {
+        setError("")
+
+        if (!signupEnabled) {
+            setError(translations.auth.eventSignup.errors.signupDisabled)
+            return
+        }
+
+        // Validation for Step 1
+        if (currentStep === 1) {
+            if (!formData.dni) {
+                setError(translations.auth.eventSignup.errors.dniRequired)
+                return
+            }
+            if (!/^\d+$/.test(formData.dni)) {
+                setError(translations.auth.eventSignup.errors.dniNumeric)
+                return
+            }
+
+            if (role === "participant") {
+                if (!formData.age) {
+                    setError(translations.auth.eventSignup.errors.allFieldsRequired)
+                    return
+                }
+                const age = parseInt(formData.age)
+                if (isNaN(age) || age < 18) {
+                    setError(translations.auth.eventSignup.errors.minAge)
+                    return
+                }
+            } else {
+                if (!formData.company || !formData.professionalRole || !formData.photo) {
+                    setError(translations.auth.eventSignup.errors.companyRequired)
+                    return
+                }
+            }
+        }
+
+        // Validation for Step 3 (Team selection)
+        if (currentStep === 3) {
+            if (formData.hasTeam === "yes" && !formData.teamCode.trim()) {
+                setError(translations.auth.eventSignup.errors.teamCodeRequired)
+                return
+            }
+        }
+
+        if (currentStep < totalSteps) {
+            setCurrentStep(currentStep + 1)
+        } else {
+            handleSubmit()
+        }
+    }
+
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1)
+            setError("")
+        }
+    }
+
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+        e.dataTransfer.setData("draggedIndex", index.toString())
+    }
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+    }
+
+    const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault()
+        const draggedIndex = parseInt(e.dataTransfer.getData("draggedIndex"))
+        if (draggedIndex === dropIndex) return
+
+        const newPriorities = [...formData.priorities]
+        const [draggedItem] = newPriorities.splice(draggedIndex, 1)
+        newPriorities.splice(dropIndex, 0, draggedItem)
+
+        setFormData(prev => ({ ...prev, priorities: newPriorities }))
+    }
+
+    const handleSubmit = async () => {
+        if (!signupEnabled) {
+            setError(translations.auth.eventSignup.errors.signupDisabled)
+            return
+        }
+        setLoading(true)
+        try {
+            if (!authUser?.id) {
+                throw new Error(translations.auth.eventSignup.errors.userNotAuthenticated)
+            }
+
+            const uid = authUser.id
+
+            // Get current user token from Firebase
+            const auth = getAuth()
+            const idToken = await auth.currentUser?.getIdToken()
+
+            const photoUrl = photoFile ? await uploadPhotoToStorage(photoFile) : ""
+
+            // Map category IDs to indices
+            let category_1 = 0, category_2 = 1, category_3 = 2
+            if (formData.priorities.length >= 3) {
+                category_1 = categories.findIndex(cat => cat.id === formData.priorities[0])
+                category_2 = categories.findIndex(cat => cat.id === formData.priorities[1])
+                category_3 = categories.findIndex(cat => cat.id === formData.priorities[2])
+            }
+
+            const payload = {
+                userId: uid,
+                dni: formData.dni,
+                university: formData.university,
+                career: formData.career,
+                careerYear: formData.careerYear ? parseInt(formData.careerYear) : null,
+                neighborhood: formData.neighborhood || null,
+                age: parseInt(formData.age),
+                link_cv: formData.cvLink || null,
+                linkedin: formData.linkedin || null,
+                instagram: formData.instagram || null,
+                twitter: formData.twitter || null,
+                github: formData.github || null,
+                team: formData.hasTeam === "yes" ? formData.teamCode : null,
+                hasTeam: formData.hasTeam === "yes",
+                wantsToCreateTeam: formData.hasTeam === "no" && formData.noTeamOption === "create",
+                food_preference: formData.dietaryPreference,
+                category_1: category_1,
+                category_2: category_2,
+                category_3: category_3,
+                company: formData.company || null,
+                position: formData.professionalRole || null,
+                photo: photoUrl || formData.photo,
+            }
+            console.log("Sending event registration data...", payload)
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/users/register-event`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify(payload)
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.error || translations.auth.eventSignup.errors.createFailed)
+            }
+
+            // Refresh user data to get updated onboardingStep
+            console.log("Event registration successful, refreshing user data...")
+            await refreshUser()
+
+            // Wait a bit for Firestore to fully update
+            await new Promise(resolve => setTimeout(resolve, 500))
+
+            // Success - redirect based on team choice
+            if (role === "participant" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
+                router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
+            } else {
+                router.push(`/${locale}/dashboard`)
+            }
+        } catch (err: any) {
+            setError(err.message || translations.auth.eventSignup.errors.createFailed)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const renderStep = () => {
+        if (!role) {
+            return (
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <p className="text-brand-cyan font-pixel text-xs uppercase">{translations.auth.eventSignup.loading}</p>
+                </div>
+            )
+        }
+
+        switch (currentStep) {
+            case 1:
+                return (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{role === "participant" ? translations.auth.eventSignup.steps.personalData : translations.auth.eventSignup.steps.professionalData}</h2>
+                        </div>
+
+                        {role === "participant" ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.dniPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="age" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.age} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="age" type="number" value={formData.age} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.agePlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                        {formData.age && parseInt(formData.age) > 27 && (
+                                            <p className="text-xs text-yellow-500 leading-none font-pixel">{translations.auth.eventSignup.warnings.agePreference}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="university" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.university}</Label>
+                                    <Input id="university" value={formData.university} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.universityPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                </div>
+                                <div className="grid gap-3 items-end" style={{ gridTemplateColumns: "2fr 1fr" }}>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="career" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.career}</Label>
+                                        <Input id="career" value={formData.career} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.careerPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="careerYear" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.careerYear}</Label>
+                                        <Input id="careerYear" type="number" min="2020" max="2040" placeholder="2027" value={formData.careerYear} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="neighborhood" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.neighborhood}</Label>
+                                        <Input id="neighborhood" value={formData.neighborhood} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.neighborhoodPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
+                                        <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="space-y-1">
+                                    <Label htmlFor="dni" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dni} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <Input id="dni" type="number" value={formData.dni} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.dniPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.company} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="company" value={formData.company} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.companyPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.professionalRole} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                        <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.professionalRolePlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.photo} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="border-2 border-dashed border-brand-cyan/20 rounded-lg cursor-pointer hover:border-brand-cyan/40 transition-colors bg-brand-black/20 overflow-hidden relative h-24 md:h-16 w-full flex items-center justify-center p-0"
+                                    >
+                                        {photoPreview ? (
+                                            <div className="w-full h-full relative group flex items-center gap-3 px-4">
+                                                <img
+                                                    src={photoPreview}
+                                                    alt="Preview"
+                                                    className="h-12 w-12 object-cover rounded"
+                                                />
+                                                <p className="font-pixel text-[8px] text-brand-cyan uppercase leading-none">{translations.auth.eventSignup.photo.change}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 p-4">
+                                                <Upload className="w-4 h-4 text-brand-cyan/40" />
+                                                <p className="text-[10px] text-brand-cyan/60 uppercase">
+                                                    {translations.auth.eventSignup.photo.choose}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {formData.photo && !photoPreview && (
+                                        <p className="text-[6px] text-brand-orange mt-1 uppercase font-pixel tracking-tighter w-full text-center">
+                                            {translations.auth.eventSignup.photo.ready}: {formData.photo}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="dietaryPreference" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.dietaryPreference}</Label>
+                                    <Input id="dietaryPreference" value={formData.dietaryPreference} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/10 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.dietaryPlaceholder} />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )
+            case 2:
+                return (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none text-balance">{translations.auth.eventSignup.steps.contactSocial}</h2>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> {translations.auth.eventSignup.fields.github}</Label>
+                                <Input id="github" value={formData.github} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.githubPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> {translations.auth.eventSignup.fields.linkedin}</Label>
+                                <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.linkedinPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> {translations.auth.eventSignup.fields.instagram}</Label>
+                                <Input id="instagram" value={formData.instagram} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.instagramPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> {translations.auth.eventSignup.fields.twitter}</Label>
+                                <Input id="twitter" value={formData.twitter} onChange={handleInputChange} placeholder={translations.auth.eventSignup.fields.twitterPlaceholder} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="cvLink" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><ExternalLink className="w-3 h-3" /> {translations.auth.eventSignup.fields.cvLink}</Label>
+                            <Input id="cvLink" value={formData.cvLink} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" placeholder={translations.auth.eventSignup.fields.cvPlaceholder} />
+                        </div>
+                    </div>
+                )
+            case 3:
+                return (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="mb-3">
+                            <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{translations.auth.eventSignup.steps.teamStatus}</h2>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "yes" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                >
+                                    <Users className="w-5 h-5 text-brand-orange" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.yesHave}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                >
+                                    <UserPlus className="w-6 h-6 text-brand-cyan" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {formData.hasTeam === "yes" ? (
+                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-1">
+                                    <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.teamCode} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-2">
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.howToContinue} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "solo" }))}
+                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                        >
+                                            <UserPlus className="w-5 h-5 text-brand-orange" />
+                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "create" }))}
+                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                        >
+                                            <Users className="w-5 h-5 text-brand-cyan" />
+                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {formData.noTeamOption === "solo" ? (
+                                    <div className="space-y-4 animate-in fade-in duration-300">
+                                        <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                        {categoriesLoading ? (
+                                            <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                        ) : formData.priorities.length > 0 ? (
+                                            <div className="space-y-2">
+                                                {formData.priorities.map((catId, i) => {
+                                                    const category = categories.find(c => c.id === catId)
+                                                    return (
+                                                        <div
+                                                            key={catId}
+                                                            draggable
+                                                            onDragStart={(e) => handleDragStart(e, i)}
+                                                            onDragOver={handleDragOver}
+                                                            onDrop={(e) => handleDrop(e, i)}
+                                                            className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
+                                                        >
+                                                            <div className="flex items-center gap-3 pointer-events-none">
+                                                                <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
+                                                                {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                                <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
+                                                            </div>
+                                                            <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
+                                                                <Users className="w-4 h-4" />
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
+                                        <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
+                                            {translations.auth.eventSignup.team.redirectNotice}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )
+            default:
+                return null
+        }
+    }
+
+    if (signupLoading || !signupEnabled) {
+        return <Loading text={translations.auth.eventSignup.loading} />
+    }
+
+    return (
+        <div className="min-h-screen flex items-center justify-center px-4 py-4 overflow-hidden relative">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-orange/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+            <div className="w-full max-w-lg md:max-w-2xl relative z-10 flex flex-col gap-4">
+                {/* Header */}
+                <div className="text-center space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                        <h1 className="leading-none font-pixel text-lg">{translations.auth.eventSignup.endpoint}</h1>
+                    </div>
+                    {role && (
+                        <p className="text-brand-cyan/60 text-xs font-pixel uppercase tracking-wider">
+                            {role in translations.auth.eventSignup.roleTitle
+                                ? `${translations.auth.eventSignup.title} - ${translations.auth.eventSignup.roleTitle[role as keyof typeof translations.auth.eventSignup.roleTitle]}`
+                                : translations.auth.eventSignup.title}
+                        </p>
+                    )}
+                </div>
+
+                {/* Progress */}
+                <div className="space-y-2 px-2">
+                    <div className="flex justify-between text-xs font-pixel uppercase text-brand-cyan/40 px-1">
+                        <span>{translations.auth.eventSignup.progress.init}</span>
+                        <span>{translations.auth.eventSignup.progress.complete}</span>
+                    </div>
+                    <Progress value={(currentStep / totalSteps) * 100} className="h-1 bg-brand-black border border-brand-cyan/10" />
+                </div>
+
+                {/* Main Card */}
+                <GlassCard className="p-5 md:p-7">
+                    <div className="flex flex-col">
+                        {renderStep()}
+
+                        {!signupLoading && !signupEnabled && (
+                            <div className="mt-4 px-8 p-2 rounded bg-brand-orange/10 border border-brand-orange/30 animate-in zoom-in-95 duration-200">
+                                <p className="text-xs text-brand-orange font-pixel">
+                                    {translations.auth.eventSignup.errors.signupDisabled}
+                                </p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="mt-4 px-8 p-2 rounded bg-red-500/10 border border-red-500/30 animate-in zoom-in-95 duration-200">
+                                <p className="text-xs text-red-400 font-pixel">{error}</p>
+                            </div>
+                        )}
+
+                        <div className="mt-3 p-2 rounded bg-brand-cyan/5 border border-brand-cyan/20">
+                            <p className="text-brand-cyan/70 text-[10px]">
+                                {translations.auth.eventSignup.messages.dataShareConsent}
+                            </p>
+                        </div>
+
+                        <div className="mt-auto pt-4 flex gap-4">
+                            {currentStep > 1 && (
+                                <PixelButton
+                                    variant="outline"
+                                    arrow="left"
+                                    onClick={handleBack}
+                                    className="w-[35%] leading-none text-xs flex flex-row justify-between items-center p-4"
+                                    disabled={loading || !signupEnabled}
+                                >
+                                    {translations.auth.eventSignup.buttons.back}
+                                </PixelButton>
+                            )}
+                            <PixelButton
+                                onClick={handleNext}
+                                disabled={loading || !signupEnabled}
+                                size="sm"
+                                className="w-full text-xs leading-none flex flex-row justify-between items-center"
+                            >
+                                {loading ? (
+                                    translations.auth.eventSignup.buttons.uploading
+                                ) : currentStep === totalSteps ? (
+                                    <>{translations.auth.eventSignup.buttons.finishRegistration} <ChevronRight className="w-6 h-6 ml-2" /></>
+                                ) : (
+                                    <>{translations.auth.eventSignup.buttons.nextStep} <ChevronRight className="w-6 h-6 ml-2" /></>
+                                )}
+                            </PixelButton>
+                        </div>
+                    </div>
+                </GlassCard>
+            </div>
+        </div>
+    )
+}
+
+export default function EventSignupPage() {
+    const params = useParams()
+    const locale = params.locale as Locale
+    const translations = getTranslations(locale)
+
+    return (
+        <Suspense fallback={<Loading text={translations.auth.eventSignup.initializing} />}>
+            <EventSignupContent />
+        </Suspense>
+    )
+}

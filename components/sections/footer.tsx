@@ -17,23 +17,21 @@ export function Footer({ translations, locale }: FooterProps) {
         { href: `/${locale}#categories`, label: translations.nav.categories },
         { href: `/${locale}#faqs`, label: translations.nav.faqs },]
     },
-    { href: `/${locale}/auth/signup?role=participant`, label: translations.nav.signUp },
-    { href: `/${locale}/auth/signup?role=mentor`, label: translations.nav.beAMentor },
-    { href: `/${locale}/auth/signup?role=sponsor`, label: translations.nav.beASponsor },
+    { href: `/${locale}/auth/signup`, label: translations.nav.signUp },
   ]
 
   const socials = [
-    { icon: Github, href: "https://github.com" },
-    { icon: Twitter, href: "https://twitter.com" },
-    { icon: Linkedin, href: "https://linkedin.com" },
-    { icon: Instagram, href: "https://instagram.com" },
+    { icon: Github, href: "https://github.com/Computer-Society-ITBA" },
+    { icon: Twitter, href: "https://x.com/cs_itba" },
+    { icon: Linkedin, href: "https://www.linkedin.com/company/itba-computer-society/" },
+    { icon: Instagram, href: "https://www.instagram.com/computer.society.itba/" },
   ]
 
   return (
-    <footer className="bg-brand-black border-t border-brand-cyan/20 py-12 px-4">
+    <footer className="bg-brand-black border-t border-brand-cyan/20 py-12 px-8">
       <div className="container mx-auto max-w-4xl">
-        <div className="grid grid-cols-2 gap-12 mb-8">
-          <div className="justify-self-end">
+        <div className="grid grid-cols-[35%_1fr] md:grid-cols-2 gap-8 md:gap-12 mb-8">
+          <div className="md:justify-self-end">
             <h3 className="font-pixel text-xs text-brand-cyan mb-4">{translations.footer.menu}</h3>
             <div className="space-y-2">
               {navLinks.map((link, index) => (
@@ -63,13 +61,40 @@ export function Footer({ translations, locale }: FooterProps) {
           </div>
 
           <div className="space-y-6">
-            <p className="font-pixel text-xs text-brand-cyan text-center md:text-left">{translations.footer.madeWith}</p>
+            <p className="font-pixel text-xs text-brand-cyan md:text-left">
+              {(() => {
+                const madeWith: string = translations.footer.madeWith || ''
+                const heart = '🧡'
+                if (madeWith.includes(heart)) {
+                  const parts = madeWith.split(heart)
+                  return (
+                    <>
+                      {parts[0]}
+                      <Link href={`/${locale}/credits`} className="hover:scale-125 inline-block transition-transform">
+                        {heart}
+                      </Link>
+                      {parts[1]}
+                    </>
+                  )
+                }
+                // Fallback: render original string
+                return madeWith
+              })()}
+            </p>
+
+            <p>
+              <Link href={"mailto:computersociety@itba.edu.ar"} className="flex flex-col text-sm hover:text-brand-orange transition-colors">
+                {translations.footer.collaborate.split("\\n").map((line: string, index: number) => (
+                  <span key={index}>{line}</span>
+                ))}
+              </Link>
+            </p>
 
             <div>
-              <h3 className="font-pixel text-xs text-brand-cyan mb-4 text-center md:text-left">
+              <h3 className="font-pixel text-xs text-brand-cyan mb-4 md:text-left">
                 {translations.footer.socials}
               </h3>
-              <div className="flex gap-4 justify-center md:justify-start">
+              <div className="flex gap-4 md:justify-start">
                 {socials.map((social, index) => {
                   const Icon = social.icon
                   return (
@@ -86,11 +111,15 @@ export function Footer({ translations, locale }: FooterProps) {
                 })}
               </div>
             </div>
+
           </div>
         </div>
 
-        <div className="text-center opacity-60 text-sm pt-8 border-t border-brand-cyan/10">
+        <div className="text-center opacity-60 text-sm pt-8 border-t border-brand-cyan/10 flex flex-col gap-2">
           {translations.footer.copyright}
+          <Link href={`/${locale}/credits`} className="hover:scale-115 transition-transform">
+            {translations.footer.credits}
+          </Link>
         </div>
       </div>
     </footer>

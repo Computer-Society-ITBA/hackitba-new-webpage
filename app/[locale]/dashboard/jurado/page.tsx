@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -8,11 +9,17 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { collection, getDocs, addDoc, query, where, deleteDoc, doc } from "firebase/firestore"
-import { db } from "@/lib/firebase/client-config"
+import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Slider } from "@/components/ui/slider"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function JuradoDashboard() {
+  const params = useParams()
+  const locale = (params?.locale as Locale) || "en"
+  const translations = getTranslations(locale)
+  const db = getDbClient()
   const { user } = useAuth()
   const [projects, setProjects] = useState<any[]>([])
   const [selectedProject, setSelectedProject] = useState<any>(null)
@@ -28,6 +35,10 @@ export default function JuradoDashboard() {
   }, [user])
 
   const loadScoringCriteria = async () => {
+    if (!db) {
+      return
+    }
+
     const criteriaSnapshot = await getDocs(collection(db, "scoringCriteria"))
     const criteria = criteriaSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
     criteria.sort((a, b) => a.order - b.order)
@@ -41,19 +52,33 @@ export default function JuradoDashboard() {
   }
 
   const loadProjects = async () => {
-    const projectsSnapshot = await getDocs(collection(db, "projects"))
-    setProjects(projectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+    if (!db) {
+      return
+    }
+
+    const teamsSnapshot = await getDocs(collection(db, "teams"))
+    const teamProjects = teamsSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((team: any) => team.project)
+      .map((team: any) => ({
+        id: team.id,
+        teamId: team.id,
+        teamName: team.name || team.id,
+        ...team.project,
+      }))
+
+    setProjects(teamProjects)
   }
 
   const loadScores = async () => {
-    if (!user) return
+    if (!db || !user) return
     const scoresQuery = query(collection(db, "scores"), where("juradoId", "==", user.id))
     const scoresSnapshot = await getDocs(scoresQuery)
     setScores(scoresSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
   }
 
   const submitScore = async () => {
-    if (!selectedProject || !user || scoringCriteria.length === 0) return
+    if (!db || !selectedProject || !user || scoringCriteria.length === 0) return
 
     const criteriaScores = Object.entries(scoreForm).reduce(
       (acc, [criteriaId, score]) => {
@@ -89,6 +114,10 @@ export default function JuradoDashboard() {
   }
 
   const deleteScore = async (id: string) => {
+    if (!db) {
+      return
+    }
+
     await deleteDoc(doc(db, "scores", id))
     loadScores()
   }
@@ -98,11 +127,11 @@ export default function JuradoDashboard() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["jurado"]}>
-      <DashboardLayout title="Jurado Dashboard">
+    <ProtectedRoute allowedRoles={["judge"]}>
+      <DashboardLayout title={translations.judge.title}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>
-            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">Projects to Score</h3>
+            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{translations.judge.projectsToScore}</h3>
             <div className="space-y-4">
               {projects.map((project) => {
                 const hasScored = scores.some((s) => s.projectId === project.id)
@@ -112,11 +141,11 @@ export default function JuradoDashboard() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h4 className="font-pixel text-lg text-brand-yellow">{project.title}</h4>
-                          <p className="text-brand-cyan/60 text-xs">{project.teamId}</p>
+                          <p className="text-brand-cyan/60 text-xs">{project.teamName || project.teamId}</p>
                         </div>
                         {hasScored && (
                           <span className="text-xs font-pixel text-green-400 border border-green-400/30 px-2 py-1 rounded">
-                            Scored
+                            {translations.judge.scored}
                           </span>
                         )}
                       </div>
@@ -128,14 +157,14 @@ export default function JuradoDashboard() {
                           href={project.repoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-brand-orange hover:neon-glow-orange text-sm"
+                          className="text-brand-yellow hover:neon-glow-orange text-sm"
                         >
-                          View Repository →
+                          {translations.judge.viewRepository}
                         </a>
                       )}
 
                       <PixelButton onClick={() => setSelectedProject(project)} size="sm" className="w-full">
-                        {hasScored ? "Update Score" : "Score Project"}
+                        {hasScored ? translations.judge.updateScore : translations.judge.scoreProject}
                       </PixelButton>
                     </div>
                   </GlassCard>
@@ -146,7 +175,7 @@ export default function JuradoDashboard() {
 
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
-              {selectedProject ? "Score Project" : "My Scores"}
+              {selectedProject ? translations.judge.scoreProject : translations.judge.myScores}
             </h3>
 
             {selectedProject ? (
@@ -176,22 +205,22 @@ export default function JuradoDashboard() {
                     ))}
 
                     <div>
-                      <Label className="text-brand-cyan mb-2 block">Comments</Label>
+                      <Label className="text-brand-cyan mb-2 block">{translations.judge.comments}</Label>
                       <Textarea
                         value={comments}
                         onChange={(e) => setComments(e.target.value)}
                         className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                        placeholder="Add your feedback..."
+                        placeholder={translations.judge.addFeedback}
                       />
                     </div>
                   </div>
 
                   <div className="flex gap-3">
                     <PixelButton onClick={submitScore} className="flex-1">
-                      Submit Score
+                      {translations.judge.submitScore}
                     </PixelButton>
                     <PixelButton onClick={() => setSelectedProject(null)} variant="outline">
-                      Cancel
+                      {translations.judge.cancel}
                     </PixelButton>
                   </div>
                 </div>
@@ -214,7 +243,7 @@ export default function JuradoDashboard() {
                             onClick={() => deleteScore(score.id)}
                             className="text-brand-cyan hover:text-red-500 transition-colors"
                           >
-                            Delete
+                            {translations.judge.delete}
                           </button>
                         </div>
 

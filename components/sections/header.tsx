@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { cn } from "@/lib/utils"
 import type { Locale } from "@/lib/i18n/config"
+import { useAuth } from "@/lib/firebase/auth-context"
 
 interface HeaderProps {
   translations: any
@@ -15,6 +16,9 @@ interface HeaderProps {
 export function Header({ translations, locale }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const { user, loading } = useAuth()
+  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "false" && process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "0"
+  const signupLoading = false
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,9 +30,9 @@ export function Header({ translations, locale }: HeaderProps) {
   }, [])
 
   const navLinks = [
-    { href: `/${locale}#past-editions`, label: translations.nav.pastEditions },
+    { href: `/${locale}#about`, label: translations.nav.about },
+    { href: `/${locale}#categories`, label: translations.nav.categories },
     { href: `/${locale}#faqs`, label: translations.nav.faqs },
-    { href: `/${locale}#collaborate`, label: translations.nav.collaborate },
   ]
 
   return (
@@ -41,7 +45,7 @@ export function Header({ translations, locale }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <span className="font-pixel text-2xl md:text-3xl text-brand-orange neon-glow-orange">
+            <span className="font-pixel text-2xl md:text-3xl text-brand-yellow neon-glow-orange">
               <img className="hover:neon-glow-orange" src="/images/hackitba-icon.png" alt="" />
             </span>
           </Link>
@@ -56,10 +60,31 @@ export function Header({ translations, locale }: HeaderProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="hidden md:block">
-              <PixelButton asChild variant="outline" size="md">
-                <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
-              </PixelButton>
+            <div className="hidden md:flex gap-3">
+              {!loading && user ? (
+                <PixelButton asChild variant="outline" size="md">
+                  <Link href={`/${locale}/dashboard`}>{translations.nav.dashboard}</Link>
+                </PixelButton>
+              ) : (
+                <>
+                  <PixelButton asChild variant="outline" size="md">
+                    <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
+                  </PixelButton>
+                  <PixelButton
+                    asChild={signupEnabled && !signupLoading}
+                    variant="outline"
+                    size="md"
+                    disabled={signupLoading || !signupEnabled}
+                    className={cn(signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
+                  >
+                    {signupEnabled && !signupLoading ? (
+                      <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                    ) : (
+                      <span>{translations.nav.signUp}</span>
+                    )}
+                  </PixelButton>
+                </>
+              )}
             </div>
           </nav>
 
@@ -82,10 +107,31 @@ export function Header({ translations, locale }: HeaderProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="px-4 pt-2">
-              <PixelButton asChild variant="outline" size="md" className="w-full">
-                <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
-              </PixelButton>
+            <div className="px-4 pt-2 space-y-2">
+              {!loading && user ? (
+                <PixelButton asChild variant="outline" size="md" className="w-full">
+                  <Link href={`/${locale}/dashboard`}>{translations.nav.dashboard}</Link>
+                </PixelButton>
+              ) : (
+                <>
+                  <PixelButton asChild variant="outline" size="md" className="w-full">
+                    <Link href={`/${locale}/auth/login`}>{translations.nav.login}</Link>
+                  </PixelButton>
+                  <PixelButton
+                    asChild={signupEnabled && !signupLoading}
+                    variant="outline"
+                    size="md"
+                    className={cn("w-full", signupLoading || !signupEnabled ? "opacity-50 cursor-not-allowed" : "")}
+                    disabled={signupLoading || !signupEnabled}
+                  >
+                    {signupEnabled && !signupLoading ? (
+                      <Link href={`/${locale}/auth/signup`}>{translations.nav.signUp}</Link>
+                    ) : (
+                      <span>{translations.nav.signUp}</span>
+                    )}
+                  </PixelButton>
+                </>
+              )}
             </div>
           </div>
         )}

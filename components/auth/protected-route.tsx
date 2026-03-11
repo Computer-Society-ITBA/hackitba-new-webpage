@@ -3,9 +3,10 @@
 import type React from "react"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { useAuth } from "@/lib/firebase/auth-context"
 import type { UserRole } from "@/lib/firebase/types"
+import type { Locale } from "@/lib/i18n/config"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -15,16 +16,21 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const params = useParams()
+  const locale = (params.locale as Locale) || "es"
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/auth/login")
+    if (loading) return // Don't redirect while loading
+
+    if (!user) {
+      router.replace(`/${locale}/auth/login`)
+      return
     }
 
-    if (!loading && user && allowedRoles && !allowedRoles.includes(user.role)) {
-      router.push("/dashboard")
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+      router.replace(`/${locale}/dashboard`)
     }
-  }, [user, loading, router, allowedRoles])
+  }, [user, loading, router, allowedRoles, locale])
 
   if (loading) {
     return (

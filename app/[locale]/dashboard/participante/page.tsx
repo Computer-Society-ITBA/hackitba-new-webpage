@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -8,15 +9,36 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { collection, addDoc, getDocs, query, where, updateDoc, doc, deleteDoc } from "firebase/firestore"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { collection, getDocs, query, where, updateDoc, doc, getDoc, deleteField } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
-import { db, storage } from "@/lib/firebase/client-config"
+import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Progress } from "@/components/ui/progress"
 import { Upload, X } from "lucide-react"
+import * as LucideIcons from "lucide-react"
+import { TeamSection } from "@/components/dashboard/team-section"
+import { toast } from "@/hooks/use-toast"
+import { getTranslations } from "@/lib/i18n/get-translations"
+import type { Locale } from "@/lib/i18n/config"
 
 export default function ParticipanteDashboard() {
+  const params = useParams()
+  const router = useRouter()
+  const locale = (params?.locale as Locale) || "en"
+  const t = getTranslations(locale)
+  const db = getDbClient()
+  const storage = getStorageClient()
   const { user } = useAuth()
   const [onboardingStep, setOnboardingStep] = useState(0)
   const [project, setProject] = useState<any>(null)
@@ -26,81 +48,151 @@ export default function ParticipanteDashboard() {
   const [uploading, setUploading] = useState(false)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploadedVideo, setUploadedVideo] = useState<string>("")
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
+  const [showWinners, setShowWinners] = useState(false)
+  const hasProjectContent = !!project || uploadedImages.length > 0 || !!uploadedVideo
 
   const [projectForm, setProjectForm] = useState({
     title: "",
     description: "",
     repoUrl: "",
     demoUrl: "",
-    categoryId: "",
   })
 
-  const [profileForm, setProfileForm] = useState({
-    company: "",
-    bio: "",
-    linkedin: "",
-    github: "",
-    twitter: "",
-  })
-
-  useEffect(() => {
-    if (user) {
-      setOnboardingStep(user.onboardingStep)
-      setProfileForm({
-        company: user.profile.company || "",
-        bio: user.profile.bio || "",
-        linkedin: user.profile.linkedin || "",
-        github: user.profile.github || "",
-        twitter: user.profile.twitter || "",
-      })
-      loadCategories()
-      loadTeam()
-      loadProject()
+  const loadCategories = useCallback(async () => {
+    if (!db) {
+      return
     }
-  }, [user])
 
-  const loadCategories = async () => {
     const categoriesSnapshot = await getDocs(collection(db, "categories"))
-    const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-    cats.sort((a, b) => a.order - b.order)
+    const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as any[]
+    cats.sort((a, b) => (a.order || 0) - (b.order || 0))
     setCategories(cats)
-  }
+  }, [db])
 
-  const loadTeam = async () => {
-    if (!user) return
+  const loadTeam = useCallback(async () => {
+    if (!db || !user) return
+    if (user.team) {
+      const teamDoc = await getDoc(doc(db, "teams", user.team))
+      if (teamDoc.exists()) {
+        setTeam({ id: teamDoc.id, ...teamDoc.data() })
+      }
+      return
+    }
+
     const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
     const teamsSnapshot = await getDocs(teamsQuery)
     if (teamsSnapshot.docs.length > 0) {
       setTeam({ id: teamsSnapshot.docs[0].id, ...teamsSnapshot.docs[0].data() })
     }
-  }
+  }, [db, user])
 
-  const loadProject = async () => {
-    if (!user) return
-    let projectsQuery
-    if (team) {
-      projectsQuery = query(collection(db, "projects"), where("teamId", "==", team.id))
-    } else {
-      projectsQuery = query(collection(db, "projects"), where("teamId", "==", user.id))
+  const loadProject = useCallback(async () => {
+    if (!db || !team?.id) return
+    const teamDoc = await getDoc(doc(db, "teams", team.id))
+    if (!teamDoc.exists()) return
+
+    const teamData = teamDoc.data() as any
+
+    const projectData = teamData.project
+    if (!projectData) {
+      setProject(null)
+      setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "" })
+      setUploadedImages([])
+      setUploadedVideo("")
+      return
     }
 
-    const projectsSnapshot = await getDocs(projectsQuery)
-    if (projectsSnapshot.docs.length > 0) {
-      const projectData = projectsSnapshot.docs[0].data()
-      setProject({ id: projectsSnapshot.docs[0].id, ...projectData })
-      setProjectForm({
-        title: projectData.title || "",
-        description: projectData.description || "",
-        repoUrl: projectData.repoUrl || "",
-        demoUrl: projectData.demoUrl || "",
-        categoryId: projectData.categoryId || "",
-      })
-      setUploadedImages(projectData.images || [])
-      setUploadedVideo(projectData.videoUrl || "")
+    setProject({ id: teamDoc.id, ...projectData })
+    setProjectForm({
+      title: projectData.title || "",
+      description: projectData.description || "",
+      repoUrl: projectData.repoUrl || "",
+      demoUrl: projectData.demoUrl || "",
+    })
+    setUploadedImages(projectData.images || [])
+    setUploadedVideo(projectData.videoUrl || "")
+  }, [db, team?.id])
+
+  const teamCategoryId = useMemo(() => {
+    console.log("Calculating team category ID with team data:", team)
+    if (!team) return ""
+    if (typeof team.category === "number" && team.category >= 0) {
+      console.log("Team category from team document:", team.category)
+      const category = categories[team.category]
+      return category?.id || ""
     }
-  }
+    return team.categoryId || ""
+  }, [team, categories])
+
+  const teamCategoryLabel = useMemo(() => {
+    const fallbackLabel = t.dashboard.participant.categoryNotAssigned
+    if (!teamCategoryId) return fallbackLabel
+    const category = categories.find((item) => item.id === teamCategoryId)
+    if (!category) return fallbackLabel
+    if (locale === "es") {
+      return category.spanishName || category.englishName || category.name || fallbackLabel
+    }
+    return category.englishName || category.spanishName || category.name || fallbackLabel
+  }, [categories, teamCategoryId, t])
+
+  const teamCategoryIconName = useMemo(() => {
+    if (!teamCategoryId) return ""
+    const category = categories.find((item) => item.id === teamCategoryId)
+    return category?.iconName || ""
+  }, [categories, teamCategoryId])
+
+  const deleteTitle = t.dashboard.participant.deleteDialog.title
+  const deleteDescription = t.dashboard.participant.deleteDialog.description
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
+
+  useEffect(() => {
+    if (!db) return
+
+    const loadGlobalSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+          setShowWinners(!!data?.showWinners)
+        } else {
+          setProjectSubmissionsEnabled(true)
+          setShowWinners(false)
+        }
+      } catch (error) {
+        console.error("Error loading global settings:", error)
+      } finally {
+        setProjectSubmissionsLoading(false)
+      }
+    }
+
+    loadGlobalSettings()
+  }, [db])
+
+  useEffect(() => {
+    if (user && db) {
+      loadTeam()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, db])
+
+  useEffect(() => {
+    if (team?.id && db) {
+      loadProject()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team?.id, db])
 
   const handleFileUpload = async (file: File, path: string): Promise<string> => {
+    if (!storage) {
+      throw new Error(t.dashboard.participant.errors.storageNotConfigured)
+    }
+
     setUploading(true)
     try {
       const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`)
@@ -112,52 +204,64 @@ export default function ParticipanteDashboard() {
     }
   }
 
-  const completeOnboarding = async () => {
-    if (!user) return
-
-    await updateDoc(doc(db, "users", user.id), {
-      onboardingStep: 3,
-      profile: {
-        ...user.profile,
-        ...profileForm,
-      },
-      updatedAt: new Date(),
-    })
-
-    setOnboardingStep(3)
-  }
-
   const submitProject = async () => {
-    if (!user) return
-    const teamId = team?.id || user.id
-
-    if (project) {
-      await updateDoc(doc(db, "projects", project.id), {
-        ...projectForm,
-        images: uploadedImages,
-        videoUrl: uploadedVideo,
-        updatedAt: new Date(),
+    if (!db || !user) return
+    if (!projectSubmissionsEnabled) {
+      const { dismiss } = toast({
+        title: t.dashboard.participant.toasts.submissionsDisabled.title,
+        description: t.dashboard.participant.toasts.submissionsDisabled.description,
+        variant: "destructive",
       })
-    } else {
-      await addDoc(collection(db, "projects"), {
-        teamId,
-        ...projectForm,
-        images: uploadedImages,
-        videoUrl: uploadedVideo,
-        submittedAt: new Date(),
-        updatedAt: new Date(),
-      })
+      setTimeout(dismiss, 4000)
+      return
     }
+    const requiredMissing =
+      !projectForm.title.trim() || !projectForm.description.trim() || !projectForm.repoUrl.trim()
+    if (requiredMissing) {
+      const { dismiss } = toast({
+        title: t.dashboard.participant.toasts.missingFields.title,
+        description: t.dashboard.participant.toasts.missingFields.description,
+        variant: "destructive",
+      })
+      setTimeout(dismiss, 4000)
+      return
+    }
+    if (!team?.id) {
+      const { dismiss } = toast({
+        title: t.dashboard.participant.toasts.teamRequired.title,
+        description: t.dashboard.participant.toasts.teamRequired.description,
+        variant: "destructive",
+      })
+      setTimeout(dismiss, 4000)
+      return
+    }
+
+    const now = new Date()
+    const submittedAt = project?.submittedAt || team?.project?.submittedAt || now
+
+    await updateDoc(doc(db, "teams", team.id), {
+      project: {
+        ...projectForm,
+        images: uploadedImages,
+        videoUrl: uploadedVideo,
+        submittedAt,
+        updatedAt: now,
+      },
+      updatedAt: now,
+    })
 
     setShowProjectForm(false)
     loadProject()
   }
 
   const deleteProject = async () => {
-    if (!project) return
-    await deleteDoc(doc(db, "projects", project.id))
+    if (!db || !team?.id) return
+    await updateDoc(doc(db, "teams", team.id), {
+      project: deleteField(),
+      updatedAt: new Date(),
+    })
     setProject(null)
-    setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "", categoryId: "" })
+    setProjectForm({ title: "", description: "", repoUrl: "", demoUrl: "" })
     setUploadedImages([])
     setUploadedVideo("")
   }
@@ -166,188 +270,172 @@ export default function ParticipanteDashboard() {
     setUploadedImages(uploadedImages.filter((_, i) => i !== index))
   }
 
-  if (onboardingStep < 3) {
-    return (
-      <ProtectedRoute allowedRoles={["participante"]}>
-        <DashboardLayout title="Welcome!">
-          <div className="max-w-2xl mx-auto">
-            <GlassCard>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-pixel text-2xl text-brand-yellow mb-4">Complete Your Profile</h3>
-                  <Progress value={(onboardingStep / 3) * 100} className="mb-4" />
-                  <p className="text-brand-cyan text-sm">Step {onboardingStep + 1} of 3</p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-brand-cyan">Company/University</Label>
-                    <Input
-                      value={profileForm.company}
-                      onChange={(e) => setProfileForm({ ...profileForm, company: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Bio</Label>
-                    <Textarea
-                      value={profileForm.bio}
-                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">LinkedIn</Label>
-                    <Input
-                      value={profileForm.linkedin}
-                      onChange={(e) => setProfileForm({ ...profileForm, linkedin: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://linkedin.com/in/..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">GitHub</Label>
-                    <Input
-                      value={profileForm.github}
-                      onChange={(e) => setProfileForm({ ...profileForm, github: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://github.com/..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Twitter</Label>
-                    <Input
-                      value={profileForm.twitter}
-                      onChange={(e) => setProfileForm({ ...profileForm, twitter: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://twitter.com/..."
-                    />
-                  </div>
-                </div>
-
-                <PixelButton onClick={completeOnboarding} className="w-full">
-                  Complete Onboarding
-                </PixelButton>
-              </div>
-            </GlassCard>
-          </div>
-        </DashboardLayout>
-      </ProtectedRoute>
-    )
-  }
+  const hasTeam = user?.hasTeam === true && user?.team
 
   return (
-    <ProtectedRoute allowedRoles={["participante"]}>
-      <DashboardLayout title="Participant Dashboard">
+    <ProtectedRoute allowedRoles={["participant"]}>
+      <DashboardLayout title={t.dashboard.participant.title}>
         <div className="space-y-8">
+          {/* Team Section */}
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-pixel text-2xl text-brand-yellow">My Project</h3>
-              {!project && (
-                <PixelButton onClick={() => setShowProjectForm(true)} size="sm">
-                  Submit Project
-                </PixelButton>
-              )}
-            </div>
+            <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myTeam}</h3>
+            {user?.participationStatus === "rejected" ? (
+              <div className="mb-6 p-4 border-2 border-red-500/60 rounded-lg bg-red-500/5">
+                <p className="text-red-400 font-pixel font-bold mb-2">
+                  {locale === "es" ? "Tu solicitud no fue aceptada" : "Your application was not accepted"}
+                </p>
+                <p className="text-brand-cyan/80 text-sm">
+                  {locale === "es"
+                    ? "Lamentablemente tu solicitud de participación fue rechazada. Si tenés alguna consulta contactanos en computersociety@itba.edu.ar"
+                    : "Unfortunately your participation request was rejected. If you have any questions, contact us at computersociety@itba.edu.ar"}
+                </p>
+              </div>
+            ) : !hasTeam ? (
+              <GlassCard className="mb-6 rounded-lg">
+                <p className="text-brand-yellow text-md font-pixel mb-2">
+                  {t.dashboard.participant.status.soloTitle}
+                </p>
+                <p className="text-brand-cyan text-sm mb-4">
+                  {t.dashboard.participant.status.soloReady}
+                </p>
+              </GlassCard>
+            ) : null}
+            {team?.status === "registered" && (
+              <GlassCard className="mb-6 p-6 rounded-lg">
+                <p className="text-md text-brand-yellow font-pixel mb-2">
+                  {t.dashboard.participant.status.underReview}
+                </p>
+                <p className="text-brand-cyan/70 text-md">
+                  {t.dashboard.participant.status.pendingApproval}
+                </p>
+              </GlassCard>
+            )}
+            {team?.status === "rejected" && (
+              <GlassCard className="mb-6 p-6 rounded-lg">
+                <p className="text-md text-brand-yellow font-pixel mb-2">
+                  {t.dashboard.participant.status.underReview}
+                </p>
+                <p className="text-brand-cyan/70 text-md">
+                  {t.dashboard.participant.status.rejected}
+                </p>
+              </GlassCard>
+            )}
+            <TeamSection
+              userId={user?.id || ""}
+              userTeamLabel={user?.team || null}
+            />
+          </section>
 
-            {showProjectForm || project ? (
+          {(projectSubmissionsEnabled || hasProjectContent) && (
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-pixel text-2xl text-brand-yellow">{t.dashboard.participant.myProject}</h3>
+              </div>
               <GlassCard>
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-brand-cyan">Project Title</Label>
+                    <Label className="text-brand-cyan">
+                      {t.dashboard.participant.project.title} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
+                    </Label>
                     <Input
                       value={projectForm.title}
                       onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      disabled={!!project && !showProjectForm}
+                      className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      required
+                      disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                     />
                   </div>
 
                   <div>
-                    <Label className="text-brand-cyan">Category</Label>
-                    <Select
-                      value={projectForm.categoryId}
-                      onValueChange={(value) => setProjectForm({ ...projectForm, categoryId: value })}
-                      disabled={!!project && !showProjectForm}
-                    >
-                      <SelectTrigger className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Description</Label>
+                    <Label className="text-brand-cyan">
+                      {t.dashboard.participant.project.description} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
+                    </Label>
                     <Textarea
                       value={projectForm.description}
                       onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      disabled={!!project && !showProjectForm}
+                      className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      required
+                      disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                     />
                   </div>
 
                   <div>
-                    <Label className="text-brand-cyan">Repository URL</Label>
+                    <Label className="text-brand-cyan">
+                      {t.dashboard.participant.project.repoUrl} <span className="text-red-500">{t.dashboard.participant.project.required}</span>
+                    </Label>
                     <Input
                       value={projectForm.repoUrl}
                       onChange={(e) => setProjectForm({ ...projectForm, repoUrl: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://github.com/..."
-                      disabled={!!project && !showProjectForm}
+                      className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      placeholder={t.dashboard.participant.project.repoPlaceholder}
+                      required
+                      disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                     />
                   </div>
 
                   <div>
-                    <Label className="text-brand-cyan">Demo URL (Optional)</Label>
+                    <Label className="text-brand-cyan">{t.dashboard.participant.project.demoUrl}</Label>
                     <Input
                       value={projectForm.demoUrl}
                       onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                      placeholder="https://..."
-                      disabled={!!project && !showProjectForm}
+                      className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      placeholder={t.dashboard.participant.project.demoPlaceholder}
+                      disabled={!projectSubmissionsEnabled || (!!project && !showProjectForm)}
                     />
                   </div>
 
-                  <div>
-                    <Label className="text-brand-cyan">Project Images</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {uploadedImages.map((url, index) => (
-                        <div key={index} className="relative w-24 h-24">
-                          <img
-                            src={url || "/placeholder.svg"}
-                            alt={`Project ${index + 1}`}
-                            className="w-full h-full object-cover rounded"
-                          />
-                          {(showProjectForm || !project) && (
-                            <button
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                            >
-                              <X size={12} />
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {uploadedImages.map((url, index) => (
+                          <div key={index} className="relative w-24 h-24">
+                            <img
+                              src={url || "/placeholder.svg"}
+                              alt={`Project ${index + 1}`}
+                              className="w-full h-full object-cover rounded"
+                            />
+                            {projectSubmissionsEnabled && (showProjectForm || !project) && (
+                              <button
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      {uploadedVideo && (
+                        <div className="mb-2">
+                          <video src={uploadedVideo} controls className="w-full max-h-64 rounded" />
+                          {projectSubmissionsEnabled && (showProjectForm || !project) && (
+                            <button onClick={() => setUploadedVideo("")} className="text-red-500 text-sm mt-2">
+                              {t.dashboard.participant.project.removeVideo}
                             </button>
                           )}
                         </div>
-                      ))}
+                      )}
                     </div>
-                    {(showProjectForm || !project) && (
-                      <label className="cursor-pointer">
+                  </div>
+
+                  {!projectSubmissionsEnabled && (
+                    <p className="text-brand-orange text-xs font-pixel">
+                      {t.dashboard.participant.project.submissionsDisabled}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {projectSubmissionsEnabled && (showProjectForm || !project) && (
+                      <label className="cursor-pointer inline-block">
                         <Input
                           type="file"
                           accept="image/*"
                           multiple
                           className="hidden"
+                          disabled={!projectSubmissionsEnabled}
                           onChange={async (e) => {
                             const files = Array.from(e.target.files || [])
                             for (const file of files) {
@@ -356,34 +444,21 @@ export default function ParticipanteDashboard() {
                             }
                           }}
                         />
-                        <PixelButton asChild size="sm" disabled={uploading}>
+                        <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                           <span>
                             <Upload size={16} className="mr-2" />
-                            {uploading ? "Uploading..." : "Upload Images"}
+                            {uploading ? t.dashboard.participant.project.uploading : t.dashboard.participant.project.uploadImages}
                           </span>
                         </PixelButton>
                       </label>
                     )}
-                  </div>
-
-                  <div>
-                    <Label className="text-brand-cyan">Project Video (Optional)</Label>
-                    {uploadedVideo && (
-                      <div className="mb-2">
-                        <video src={uploadedVideo} controls className="w-full max-h-64 rounded" />
-                        {(showProjectForm || !project) && (
-                          <button onClick={() => setUploadedVideo("")} className="text-red-500 text-sm mt-2">
-                            Remove Video
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    {!uploadedVideo && (showProjectForm || !project) && (
-                      <label className="cursor-pointer">
+                    {projectSubmissionsEnabled && !uploadedVideo && (showProjectForm || !project) && (
+                      <label className="cursor-pointer inline-block">
                         <Input
                           type="file"
                           accept="video/*"
                           className="hidden"
+                          disabled={!projectSubmissionsEnabled}
                           onChange={async (e) => {
                             const file = e.target.files?.[0]
                             if (file) {
@@ -392,47 +467,107 @@ export default function ParticipanteDashboard() {
                             }
                           }}
                         />
-                        <PixelButton asChild size="sm" disabled={uploading}>
+                        <PixelButton asChild size="sm" disabled={uploading || !projectSubmissionsEnabled}>
                           <span>
                             <Upload size={16} className="mr-2" />
-                            {uploading ? "Uploading..." : "Upload Video"}
+                            {uploading ? t.dashboard.participant.project.uploading : t.dashboard.participant.project.uploadVideo}
                           </span>
                         </PixelButton>
                       </label>
                     )}
+                    {!project && (
+                      <PixelButton
+                        onClick={submitProject}
+                        className="ml-auto px-6"
+                        disabled={uploading || projectSubmissionsLoading || !projectSubmissionsEnabled}
+                      >
+                        {t.dashboard.participant.project.submit}
+                      </PixelButton>
+                    )}
                   </div>
 
-                  {project && !showProjectForm ? (
-                    <div className="flex gap-3">
-                      <PixelButton onClick={() => setShowProjectForm(true)} className="flex-1">
-                        Edit Project
+                  {projectSubmissionsEnabled && project && !showProjectForm ? (
+                    <div className="flex w-full justify-end gap-3">
+                      <PixelButton onClick={() => setShowProjectForm(true)} className="min-w-[140px] px-4">
+                        {t.dashboard.participant.project.edit}
                       </PixelButton>
-                      <PixelButton onClick={deleteProject} variant="outline" className="text-red-500">
-                        Delete
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <PixelButton variant="outline" className="min-w-[120px] px-4 text-red-500">
+                            {t.dashboard.participant.project.delete}
+                          </PixelButton>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="font-pixel text-brand-yellow">
+                              {deleteTitle}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-brand-cyan/80">
+                              {deleteDescription}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter className="gap-3 items-center justify-center sm:flex-row">
+                            <AlertDialogCancel asChild>
+                              <PixelButton variant="outline" size="sm">
+                                {t.dashboard.participant.project.cancel}
+                              </PixelButton>
+                            </AlertDialogCancel>
+                            <AlertDialogAction asChild>
+                              <PixelButton onClick={deleteProject} size="sm" className="bg-red-600 text-white">
+                                {t.dashboard.participant.project.delete}
+                              </PixelButton>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  ) : null}
+
+                  {projectSubmissionsEnabled && project && showProjectForm ? (
+                    <div className="flex gap-3">
+                      <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
+                        {t.dashboard.participant.project.cancel}
+                      </PixelButton>
+                      <PixelButton
+                        onClick={submitProject}
+                        className="px-6"
+                        disabled={uploading || projectSubmissionsLoading}
+                      >
+                        {t.dashboard.participant.project.update}
                       </PixelButton>
                     </div>
-                  ) : (
-                    <div className="flex gap-3">
-                      <PixelButton onClick={submitProject} className="flex-1" disabled={uploading}>
-                        {project ? "Update Project" : "Submit Project"}
-                      </PixelButton>
-                      {project && (
-                        <PixelButton onClick={() => setShowProjectForm(false)} variant="outline">
-                          Cancel
-                        </PixelButton>
-                      )}
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               </GlassCard>
-            ) : (
-              <GlassCard>
-                <p className="text-brand-cyan text-center py-8">
-                  You haven't submitted a project yet. Click the button above to get started!
-                </p>
+            </section>
+          )}
+
+          {/* Winners Section - Feature Flagged */}
+          {showWinners && (
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <h3 className="font-pixel text-2xl text-brand-yellow mb-6">
+                {t.dashboard.participant.winners.relive}
+              </h3>
+              <GlassCard className="p-8 border-brand-yellow/30 bg-brand-yellow/5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity translate-x-1/4 -translate-y-1/4 pointer-events-none">
+                  <LucideIcons.Trophy size={160} />
+                </div>
+                <div className="flex flex-col items-center text-center gap-6 relative z-10">
+                  <div className="p-4 bg-brand-yellow/20 rounded-full border border-brand-yellow/40">
+                    <LucideIcons.Trophy size={48} className="text-brand-yellow" />
+                  </div>
+                  <div>
+                    <h4 className="font-pixel text-2xl text-white mb-3 tracking-wider">
+                      {t.dashboard.participant.winners.here}
+                    </h4>
+                  </div>
+                  <PixelButton onClick={() => router.push(`/${locale}/dashboard/winners-reveal`)}>
+                    {t.dashboard.participant.winners.view}
+                  </PixelButton>
+                </div>
               </GlassCard>
-            )}
-          </section>
+            </section>
+          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

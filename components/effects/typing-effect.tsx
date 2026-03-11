@@ -21,7 +21,7 @@ export function TypingEffect({
   const [displayText, setDisplayText] = useState("")
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const typingSpeed = speed === "slow" ? 100 : 0.001
+  const typingSpeed = speed === "slow" ? 100 : 0.01
 
   useEffect(() => {
     if (currentIndex < text.length) {
@@ -44,7 +44,7 @@ export function TypingEffect({
   if (direction === "vertical") {
     return (
       <div className={cn(
-        "overflow-hidden leading-[1.2rem]",
+        "text-wrap leading-[1.2rem]",
         className
       )}
       >
@@ -58,7 +58,7 @@ export function TypingEffect({
   }
 
   return (
-    <span className={cn("inline-block", className)}>
+    <span className={cn("inline-block break-all", className)}>
       {displayText}
       <span className="animate-pulse">|</span>
     </span>

@@ -20,7 +20,7 @@ export function Stats({ translations }: StatsProps) {
   const stats: StatItem[] = [
     { value: 3, label: translations.stats.categories },
     { value: 36, label: translations.stats.hoursOfCoding },
-    { value: 100, label: translations.stats.participants },
+    { value: 200, label: translations.stats.participants },
   ]
 
   useEffect(() => {
@@ -75,30 +75,30 @@ export function Stats({ translations }: StatsProps) {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-3xl mx-auto">
           <div className="text-center">
-            <div className="font-pixel text-6xl md:text-7xl text-brand-yellow neon-glow-orange mb-4">
+            <div className="font-pixel text-6xl md:text-6xl text-brand-yellow neon-glow-orange mb-4">
               <NeonGlow flickering color="orange">
                 {counts.categories}
               </NeonGlow>
             </div>
-            <p className="font-pixel text-lg text-brand-yellow whitespace-pre-line">{translations.stats.categories}</p>
+            <p className="font-pixel text-md text-brand-yellow whitespace-pre-line">{translations.stats.categories}</p>
           </div>
 
           <div className="text-center">
-            <div className="font-pixel text-6xl md:text-7xl text-brand-yellow neon-glow-orange mb-4">
+            <div className="font-pixel text-6xl md:text-6xl text-brand-yellow neon-glow-orange mb-4">
               <NeonGlow flickering color="orange">
                 {counts.hours}
               </NeonGlow>
             </div>
-            <p className="font-pixel text-lg text-brand-yellow whitespace-pre-line">{translations.stats.hoursOfCoding}</p>
+            <p className="font-pixel text-md text-brand-yellow whitespace-pre-line leading-tight">{translations.stats.hoursOfCoding}</p>
           </div>
 
           <div className="text-center">
-            <div className="font-pixel text-6xl md:text-7xl text-brand-yellow neon-glow-orange mb-4">
+            <div className="font-pixel text-6xl md:text-6xl text-brand-yellow neon-glow-orange mb-4">
               <NeonGlow flickering color="orange">
                 {counts.participants}
               </NeonGlow>
             </div>
-            <p className="font-pixel text-lg text-brand-yellow whitespace-pre-line">{translations.stats.participants}</p>
+            <p className="font-pixel text-md text-brand-yellow whitespace-pre-line">{translations.stats.participants}</p>
           </div>
         </div>
 
