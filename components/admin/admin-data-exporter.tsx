@@ -258,14 +258,14 @@ function buildParticipantsSheet(
     })
 
     participants.forEach((u, idx) => {
-        const rowData: Record<string, unknown> = {
+            const rowData: Record<string, unknown> = {
             name: u.name ?? "",
             surname: u.surname ?? "",
             email: u.email ?? "",
             role: u.role ?? "",
             career: u.career ?? "",
             university: u.university ?? "",
-            grad_year: u.grad_year ?? "",
+            grad_year: u.grad_year ?? u.career_year ?? u.careerYear ?? "",
             neighborhood: u.neighborhood ?? "",
             age: u.age ?? "",
             dni: u.dni ?? "",
@@ -308,7 +308,7 @@ function buildParticipantsSheet(
                 const rowData: Record<string, unknown> = {
                     name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
                     role: u.role ?? "", career: u.career ?? "", university: u.university ?? "",
-                    grad_year: u.grad_year ?? "", neighborhood: u.neighborhood ?? "",
+                    grad_year: u.grad_year ?? u.career_year ?? u.careerYear ?? "", neighborhood: u.neighborhood ?? "",
                     age: u.age ?? "", dni: u.dni ?? "", food_preference: u.food_preference ?? "",
                     category_1: catName(u.category_1), category_2: catName(u.category_2), category_3: catName(u.category_3),
                     team: u.team ?? "", hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
@@ -538,7 +538,7 @@ function buildSponsorsSheet(
             email: u.email ?? "",
             career: u.career ?? "",
             university: u.university ?? "",
-            grad_year: u.grad_year ?? "",
+            grad_year: u.grad_year ?? u.career_year ?? u.careerYear ?? "",
             neighborhood: u.neighborhood ?? "",
             age: u.age ?? "",
             dni: u.dni ?? "",
@@ -570,7 +570,7 @@ function buildSponsorsSheet(
                 const rowData: Record<string, unknown> = {
                     name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
                     career: u.career ?? "", university: u.university ?? "",
-                    grad_year: u.grad_year ?? "", neighborhood: u.neighborhood ?? "",
+                    grad_year: u.grad_year ?? u.career_year ?? u.careerYear ?? "", neighborhood: u.neighborhood ?? "",
                     age: u.age ?? "", dni: u.dni ?? "",
                     github: u.github ?? "", linkedin: u.linkedin ?? "", link_cv: u.link_cv ?? "",
                 }

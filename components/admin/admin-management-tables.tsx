@@ -490,7 +490,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.grad_year || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.grad_year ?? item.career_year ?? item.careerYear ?? "-"}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
                                                         <TableCell className="text-brand-orange text-[10px] py-1">
                                                             {item.team ? (
