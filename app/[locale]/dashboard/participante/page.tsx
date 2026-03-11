@@ -26,6 +26,8 @@ export default function ParticipanteDashboard() {
 
   const [projectStatus, setProjectStatus] = useState<"none" | "draft" | "submitted" | "reviewed" | "disqualified">("none")
   const [showWinners, setShowWinners] = useState(false)
+  const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
 
   useEffect(() => {
     if (!db || !user?.team) return
@@ -40,13 +42,41 @@ export default function ParticipanteDashboard() {
   }, [db, user?.team])
 
   useEffect(() => {
-    if (!db) return
-    const unsub = onSnapshot(doc(db, "settings", "global"), (snap) => {
-      if (snap.exists()) {
-        setShowWinners(!!snap.data()?.showWinners)
+    // Allow an explicit env override for development/testing convenience.
+    const envVal = process.env.NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED
+    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+      setProjectSubmissionsEnabled(envVal === "true" || envVal === "1")
+      setProjectSubmissionsLoading(false)
+      return
+    }
+
+    if (!db) {
+      // No DB client available (local dev). Default to enabled so the UI is testable.
+      setProjectSubmissionsEnabled(true)
+      setShowWinners(false)
+      setProjectSubmissionsLoading(false)
+      return
+    }
+
+    const loadGlobalSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+          setShowWinners(!!data?.showWinners)
+        } else {
+          setProjectSubmissionsEnabled(true)
+          setShowWinners(false)
+        }
+      } catch (error) {
+        console.error("Error loading global settings:", error)
+      } finally {
+        setProjectSubmissionsLoading(false)
       }
-    })
-    return () => unsub()
+    }
+
+    loadGlobalSettings()
   }, [db])
 
   const hasTeam = user?.hasTeam === true && user?.team
