@@ -23,7 +23,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail } from "lucide-react"
+import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail, ExternalLink, Github, Play, Image as ImageIcon, FileText } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
@@ -39,6 +39,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [activeTab, setActiveTab] = useState<Tab>("participants")
     const [users, setUsers] = useState<any[]>([])
     const [teams, setTeams] = useState<any[]>([])
+    const [projects, setProjects] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const { categories } = useCategories(locale)
     const db = getDbClient()
@@ -58,6 +59,10 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [editType, setEditType] = useState<Tab | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
+
+    // Project view
+    const [showProject, setShowProject] = useState(false)
+    const [selectedProject, setSelectedProject] = useState<any | null>(null)
 
     // Delete / Move actions
     const [showDelete, setShowDelete] = useState(false)
@@ -93,16 +98,19 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         if (!db) return
         setLoading(true)
         try {
-            const [usersSnap, teamsSnap] = await Promise.all([
+            const [usersSnap, teamsSnap, projectsSnap] = await Promise.all([
                 getDocs(collection(db, "users")),
-                getDocs(collection(db, "teams"))
+                getDocs(collection(db, "teams")),
+                getDocs(collection(db, "projects"))
             ])
 
             const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
             const teamsData = teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            const projectsData = projectsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
             setUsers(usersData)
             setTeams(teamsData)
+            setProjects(projectsData)
         } catch (error) {
             console.error("Error fetching admin data:", error)
         } finally {
@@ -547,6 +555,21 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                 ) : (
                                                     <>
                                                         <TableCell className="text-[10px] py-1 flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const project = projects.find(p => p.teamId === item.id)
+                                                                    setSelectedProject(project || { teamId: item.id, teamName: item.name, status: "none" })
+                                                                    setShowProject(true)
+                                                                }}
+                                                                className={cn(
+                                                                    "text-sm px-2 py-1 rounded transition-colors flex items-center gap-1",
+                                                                    projects.some(p => p.teamId === item.id) 
+                                                                        ? "bg-brand-orange/20 text-brand-orange hover:bg-brand-orange/30" 
+                                                                        : "bg-gray-700/20 text-gray-400 hover:bg-gray-700/30"
+                                                                )}
+                                                            >
+                                                                Project
+                                                            </button>
                                                             <button
                                                                 onClick={() => { setDeleteTarget({ item, type: "teams" }); setShowDelete(true); }}
                                                                 className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
@@ -1128,50 +1151,101 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
             {/* Team Details Dialog */}
             <Dialog open={!!selectedTeam} onOpenChange={(open) => !open && setSelectedTeam(null)}>
-                <DialogContent className="glass-effect border-brand-cyan/30">
+                {/* ... existing dialog content ... */}
+            </Dialog>
+
+            {/* Project Details Dialog */}
+            <Dialog open={showProject} onOpenChange={setShowProject}>
+                <DialogContent className="glass-effect border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="font-pixel text-brand-yellow">
-                            {selectedTeam?.name}
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <FileText size={18} />
+                                {selectedProject?.title || (locale === "es" ? "Sin Título" : "No Title")}
+                            </div>
+                            {selectedProject?.status && (
+                                <span className={cn(
+                                    "text-[10px] px-2 py-0.5 rounded uppercase ml-4",
+                                    selectedProject.status === "submitted" ? "bg-green-500/20 text-green-400" : 
+                                    selectedProject.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
+                                    "bg-gray-500/20 text-gray-400"
+                                )}>
+                                    {selectedProject.status}
+                                </span>
+                            )}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div>
-                            <p className="text-xs text-brand-cyan/60 uppercase mb-2">{locale === "es" ? "Miembros" : "Members"}</p>
-                            <div className="space-y-2">
-                                {getTeamMembers(selectedTeam?.id).map((member) => (
-                                    <div key={member.id} className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                        <p className="text-brand-yellow text-xs">{member.name} {member.surname}</p>
-                                        <p className="text-brand-cyan/60 text-xs">{member.email}</p>
-                                        {member.university && <p className="text-brand-cyan/60 text-[10px] mt-1">{member.university}</p>}
-                                    </div>
-                                ))}
-                                {getTeamMembers(selectedTeam?.id).length === 0 && (
-                                    <p className="text-brand-cyan/60 text-xs">{locale === "es" ? "No hay miembros en este equipo" : "No members in this team"}</p>
+
+                    {selectedProject?.status === "none" ? (
+                        <div className="py-12 text-center space-y-4">
+                            <AlertTriangle size={48} className="mx-auto text-brand-cyan/20" />
+                            <p className="text-brand-cyan/60 font-pixel">
+                                {locale === "es" ? "Este equipo aún no ha creado un borrador." : "This team hasn't created a draft yet."}
+                            </p>
+                        </div>
+                    ) : selectedProject && (
+                        <div className="space-y-6 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-1">Team</p>
+                                    <p className="text-brand-yellow text-sm font-pixel">{selectedProject.teamName}</p>
+                                </div>
+                                <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-1">Category</p>
+                                    <p className="text-brand-cyan text-sm">{getCategoryName(selectedProject.categoryId)}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
+                                <p className="text-[10px] text-brand-cyan/60 uppercase mb-2">Description</p>
+                                <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap">{selectedProject.description}</p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-4">
+                                {selectedProject.githubRepoUrl && (
+                                    <a href={selectedProject.githubRepoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors text-xs">
+                                        <Github size={14} /> GitHub Repo
+                                    </a>
+                                )}
+                                {selectedProject.demoUrl && (
+                                    <a href={selectedProject.demoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors text-xs">
+                                        <ExternalLink size={14} /> Live Demo
+                                    </a>
                                 )}
                             </div>
+
+                            {selectedProject.images && selectedProject.images.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                        <ImageIcon size={14} /> Images
+                                    </p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {selectedProject.images.map((img: string, i: number) => (
+                                            <a key={i} href={img} target="_blank" rel="noreferrer" className="aspect-video relative rounded overflow-hidden border border-brand-cyan/20 group">
+                                                <img src={img} alt={`Project ${i}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedProject.videos && selectedProject.videos.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                        <Play size={14} /> Videos
+                                    </p>
+                                    <div className="space-y-2">
+                                        {selectedProject.videos.map((vid: string, i: number) => (
+                                            <video key={i} src={vid} controls className="w-full rounded border border-brand-cyan/20" />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {selectedTeam?.assignedRoom && (
-                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</p>
-                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.assignedRoom}</p>
-                            </div>
-                        )}
-                        {selectedTeam?.tell_why && (
-                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Motivation" : "Motivation"}</p>
-                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.tell_why}</p>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center">
-                            <button
-                                onClick={() => { setEditingItem({ ...selectedTeam }); setEditType("teams"); setSelectedTeam(null); }}
-                                className="text-xs text-brand-cyan hover:text-brand-yellow flex items-center gap-1 transition-colors"
-                            >
-                                <Edit2 size={12} />
-                                {locale === "es" ? "Editar este equipo" : "Edit this team"}
-                            </button>
-                            <PixelButton onClick={() => setSelectedTeam(null)} size="sm">Close</PixelButton>
-                        </div>
+                    )}
+
+                    <div className="flex justify-end mt-8 pt-4 border-t border-brand-cyan/10">
+                        <PixelButton onClick={() => setShowProject(false)} size="sm">Close</PixelButton>
                     </div>
                 </DialogContent>
             </Dialog>

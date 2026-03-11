@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck, Send, GanttChart, FolderKanban, FileEdit } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { doc, onSnapshot } from "firebase/firestore"
@@ -116,6 +116,72 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             <Home size={isMobile ? 18 : 20} className="flex-shrink-0" />
             {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Dashboard</span>}
           </Link>
+        )}
+
+        {user?.role === "participant" && (
+          pathname === `/${locale}/dashboard/participante/proyecto` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.myProject}
+            >
+              <FileEdit size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.myProject}</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/participante/proyecto`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.myProject}
+            >
+              <FileEdit size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.myProject}</span>}
+            </Link>
+          )
+        )}
+
+        {user?.role === "jury" && (
+          pathname === `/${locale}/dashboard/jurado/proyectos` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.projects}
+            >
+              <GanttChart size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.projects}</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/jurado/proyectos`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.projects}
+            >
+              <GanttChart size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.projects}</span>}
+            </Link>
+          )
+        )}
+
+        {user?.role === "admin" && (
+          pathname === `/${locale}/dashboard/admin/proyectos` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.projects}
+            >
+              <FolderKanban size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.projects}</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/admin/proyectos`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={t.dashboard.sidebar.projects}
+            >
+              <FolderKanban size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>{t.dashboard.sidebar.projects}</span>}
+            </Link>
+          )
         )}
 
         {user?.role !== "admin" && (pathname === `/${locale}/dashboard/evento` ? (

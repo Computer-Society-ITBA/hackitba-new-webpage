@@ -14,18 +14,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
-import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+import { Pencil, Trash2, Plus, Upload, CheckSquare, UserX, Trophy, FolderKanban } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
 import { AdminManagementTables } from "@/components/admin/admin-management-tables"
 import type { Locale } from "@/lib/i18n/config"
+import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
   const params = useParams()
+  const router = useRouter()
   const locale = (params?.locale as Locale) || "en"
-  const translations = getTranslations(locale)
+  const t = getTranslations(locale)
   const db = getDbClient()
   const storage = getStorageClient()
   const auth = getAuthClient()
@@ -123,7 +126,7 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Error updating project submissions setting:", error)
       setProjectSubmissionsEnabled(!nextValue)
-      toast({ title: translations.admin.projectSubmissions.updateError, variant: 'destructive' })
+      toast({ title: t.admin.projectSubmissions.updateError, variant: 'destructive' })
     }
   }
 
@@ -193,6 +196,23 @@ export default function AdminDashboard() {
         <div className="space-y-8">
 
           <section>
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="font-pixel text-2xl text-brand-yellow">Submission Settings</h3>
+            </div>
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-4">
+                <div onClick={toggleProjectSubmissions} className={cn("hover:scale-125 transition-transform p-3 rounded-full cursor-pointer", projectSubmissionsEnabled ? "bg-green-500/10 text-green-400" : "hover:scale-125 transition-transform bg-red-500/10 text-red-400")}>
+                  <LucideIcons.Power size={24} />
+                </div>
+                <div>
+                  <p className="font-pixel text-sm">{t.admin.projectSubmissions.title}: <span className={projectSubmissionsEnabled ? "text-green-400" : "text-red-400"}>{projectSubmissionsEnabled ? "ENABLED" : "DISABLED"}</span></p>
+                  <p className="text-xs text-brand-cyan/60">{t.admin.projectSubmissions.description}</p>
+                </div>
+              </div>
+            </GlassCard>
+          </section>
+
+          <section>
             <div className="mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
             </div>
@@ -223,7 +243,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
             </div>
-            <AdminManagementTables locale={locale} translations={translations} />
+            <AdminManagementTables locale={locale} translations={t} />
           </section>
 
           <section>

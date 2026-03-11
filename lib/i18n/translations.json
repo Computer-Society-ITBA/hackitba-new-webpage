@@ -536,7 +536,7 @@
         "project": {
           "title": "Project Title",
           "description": "Description",
-          "repoUrl": "Repository URL",
+          "repoUrl": "GitHub Repository URL",
           "repoPlaceholder": "https://github.com/...",
           "demoUrl": "Demo URL",
           "demoPlaceholder": "https://...",
@@ -550,7 +550,14 @@
           "delete": "Delete",
           "cancel": "Cancel",
           "required": "*",
-          "submissionsDisabled": "Project submissions are currently disabled"
+          "submissionsDisabled": "Project submissions are currently disabled",
+          "status": "Status",
+          "draft": "Draft (Not visible to judges)",
+          "submitted": "Submitted (Visible to judges)",
+          "confirmSubmitTitle": "Submit your project?",
+          "confirmSubmitDescription": "Once submitted, judges will be able to see your project. You can still make changes until the deadline.",
+          "submitConfirmation": "SUBMIT NOW",
+          "autoSaved": "Draft auto-saved"
         },
         "deleteDialog": {
           "title": "Are you sure?",
@@ -645,6 +652,8 @@
         "back": "Back",
         "dashboard": "Dashboard",
         "event": "Event",
+        "projects": "Projects",
+        "myProject": "My Project",
         "approvals": "Approvals",
         "incomplete": "Incomplete",
         "winners": "Winners",
@@ -1354,7 +1363,7 @@
         "project": {
           "title": "Título del proyecto",
           "description": "Descripción",
-          "repoUrl": "URL del repositorio",
+          "repoUrl": "URL del repositorio GitHub",
           "repoPlaceholder": "https://github.com/...",
           "demoUrl": "URL del demo",
           "demoPlaceholder": "https://...",
@@ -1368,7 +1377,14 @@
           "delete": "Eliminar",
           "cancel": "Cancelar",
           "required": "*",
-          "submissionsDisabled": "El envío de proyectos está deshabilitado actualmente"
+          "submissionsDisabled": "El envío de proyectos está deshabilitado actualmente",
+          "status": "Estado",
+          "draft": "Borrador (No visible para el jurado)",
+          "submitted": "Enviado (Visible para el jurado)",
+          "confirmSubmitTitle": "¿Enviar tu proyecto?",
+          "confirmSubmitDescription": "Una vez enviado, el jurado podrá ver tu proyecto. Podés seguir haciendo cambios hasta la fecha límite.",
+          "submitConfirmation": "ENVIAR AHORA",
+          "autoSaved": "Borrador guardado"
         },
         "deleteDialog": {
           "title": "¿Estás seguro?",
@@ -1463,6 +1479,8 @@
         "back": "Atrás",
         "dashboard": "Dashboard",
         "event": "Evento",
+        "projects": "Proyectos",
+        "myProject": "Mi proyecto",
         "approvals": "Aprobaciones",
         "incomplete": "Incompletos",
         "winners": "Ganadores",
