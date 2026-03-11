@@ -433,7 +433,7 @@
         },
         "team": {
           "question": "Do you already have a team?",
-          "yesHave": "Yes, I have one",
+          "yesHave": "I already have one registered",
           "noTeam": "I don't have a team",
           "howToContinue": "How would you like to continue?",
           "goSolo": "Join without a team",
@@ -1251,7 +1251,7 @@
         },
         "team": {
           "question": "¿Ya tenés equipo?",
-          "yesHave": "Sí, ya tengo uno",
+          "yesHave": "Ya tengo uno inscripto",
           "noTeam": "Todavía no tengo equipo",
           "howToContinue": "¿Cómo querés continuar?",
           "goSolo": "Participar sin equipo",

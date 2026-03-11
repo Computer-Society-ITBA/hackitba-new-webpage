@@ -97,8 +97,7 @@ function EventSignupContent() {
         twitter: "",
         cvLink: "",
         // Step 3 (Participante only)
-        hasTeam: "no",
-        noTeamOption: "solo" as "solo" | "create",
+        hasTeam: "solo" as "yes" | "solo" | "create",
         teamName: "",
         teamCode: "",
         priorities: [] as string[],
@@ -378,7 +377,7 @@ function EventSignupContent() {
                 github: formData.github || null,
                 team: formData.hasTeam === "yes" ? formData.teamCode : null,
                 hasTeam: formData.hasTeam === "yes",
-                wantsToCreateTeam: formData.hasTeam === "no" && formData.noTeamOption === "create",
+                wantsToCreateTeam: formData.hasTeam === "create",
                 food_preference: formData.dietaryPreference,
                 category_1: category_1,
                 category_2: category_2,
@@ -412,7 +411,7 @@ function EventSignupContent() {
             await new Promise(resolve => setTimeout(resolve, 500))
 
             // Success - redirect based on team choice
-            if (role === "participant" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
+            if (role === "participant" && formData.hasTeam === "create") {
                 router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
             } else {
                 router.push(`/${locale}/dashboard`)
@@ -582,7 +581,7 @@ function EventSignupContent() {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "yes" }))}
                                     className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
@@ -591,85 +590,74 @@ function EventSignupContent() {
                                     <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.yesHave}</span>
                                 </button>
                                 <button
-                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
-                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "solo" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
-                                    <UserPlus className="w-6 h-6 text-brand-cyan" />
-                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
+                                    <UserPlus className="w-5 h-5 text-brand-orange" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "create" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                >
+                                    <Users className="w-5 h-5 text-brand-cyan" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
                                 </button>
                             </div>
                         </div>
 
-                        {formData.hasTeam === "yes" ? (
+                        {formData.hasTeam === "yes" && (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-1">
                                     <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.teamCode} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
                                 </div>
                             </div>
-                        ) : (
+                        )}
+
+                        {formData.hasTeam === "solo" && (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-2">
-                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.howToContinue} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "solo" }))}
-                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
-                                        >
-                                            <UserPlus className="w-5 h-5 text-brand-orange" />
-                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "create" }))}
-                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
-                                        >
-                                            <Users className="w-5 h-5 text-brand-cyan" />
-                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {formData.noTeamOption === "solo" ? (
-                                    <div className="space-y-4 animate-in fade-in duration-300">
-                                        <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
-                                        {categoriesLoading ? (
-                                            <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
-                                        ) : formData.priorities.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {formData.priorities.map((catId, i) => {
-                                                    const category = categories.find(c => c.id === catId)
-                                                    return (
-                                                        <div
-                                                            key={catId}
-                                                            draggable
-                                                            onDragStart={(e) => handleDragStart(e, i)}
-                                                            onDragOver={handleDragOver}
-                                                            onDrop={(e) => handleDrop(e, i)}
-                                                            className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
-                                                        >
-                                                            <div className="flex items-center gap-3 pointer-events-none">
-                                                                <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                                {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
-                                                                <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
-                                                            </div>
-                                                            <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
-                                                                <Users className="w-4 h-4" />
-                                                            </div>
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                    {categoriesLoading ? (
+                                        <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                    ) : formData.priorities.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {formData.priorities.map((catId, i) => {
+                                                const category = categories.find(c => c.id === catId)
+                                                return (
+                                                    <div
+                                                        key={catId}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, i)}
+                                                        onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, i)}
+                                                        className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
+                                                    >
+                                                        <div className="flex items-center gap-3 pointer-events-none">
+                                                            <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
+                                                            {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                            <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
                                                         </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
-                                        <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
-                                            {translations.auth.eventSignup.team.redirectNotice}
-                                        </p>
-                                    </div>
-                                )}
+                                                        <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
+                                                            <Users className="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.hasTeam === "create" && (
+                            <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
+                                <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
+                                    {translations.auth.eventSignup.team.redirectNotice}
+                                </p>
                             </div>
                         )}
                     </div>
