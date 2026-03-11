@@ -115,7 +115,14 @@ function EventSignupContent() {
     }, [categories])
 
     useEffect(() => {
-        if (!db) return
+        if (!db) {
+            // If there's no Firestore client available (local dev without env or misconfigured),
+            // avoid leaving the page stuck in loading. Default to enabled so the UI can be tested.
+            console.warn("Event signup: no DB client available — defaulting signupEnabled=true for local dev")
+            setSignupEnabled(true)
+            setSignupLoading(false)
+            return
+        }
 
         const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
         if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {

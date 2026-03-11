@@ -151,7 +151,21 @@ export default function ParticipanteDashboard() {
   }, [loadCategories])
 
   useEffect(() => {
-    if (!db) return
+    // Allow an explicit env override for development/testing convenience.
+    const envVal = process.env.NEXT_PUBLIC_PROJECT_SUBMISSIONS_ENABLED
+    if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
+      setProjectSubmissionsEnabled(envVal === "true" || envVal === "1")
+      setProjectSubmissionsLoading(false)
+      return
+    }
+
+    if (!db) {
+      // No DB client available (local dev). Default to enabled so the UI is testable.
+      setProjectSubmissionsEnabled(true)
+      setShowWinners(false)
+      setProjectSubmissionsLoading(false)
+      return
+    }
 
     const loadGlobalSettings = async () => {
       try {
