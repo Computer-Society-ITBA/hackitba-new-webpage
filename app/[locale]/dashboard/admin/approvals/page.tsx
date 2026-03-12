@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
@@ -11,9 +11,11 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
-import { Plus, Users as UsersIcon, ArrowLeft } from "lucide-react"
+import { Plus, Users as UsersIcon, ArrowLeft, Search, ChevronUp, ChevronDown } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -27,7 +29,11 @@ export default function ApprovalsPage() {
   const db = getDbClient()
   const auth = getAuthClient()
 
-  const [pendingParticipants, setPendingParticipants] = useState<any[]>([])
+  const [noTeamUsers, setNoTeamUsers] = useState<any[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [noTeamPage, setNoTeamPage] = useState(1)
+  const [sortField, setSortField] = useState<"name" | "email" | "age" | "university">("name")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [teams, setTeams] = useState<any[]>([])
   const [pendingTeams, setPendingTeams] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
@@ -46,11 +52,8 @@ export default function ApprovalsPage() {
   const [selectedParticipantTeamId, setSelectedParticipantTeamId] = useState<string>("")
   const [participantRejectReason, setParticipantRejectReason] = useState<string>("")
 
-  const PARTICIPANTS_PAGE_SIZE = 5
+  const NO_TEAM_PAGE_SIZE = 20
   const TEAMS_PAGE_SIZE = 5
-  const [participantsPage, setParticipantsPage] = useState(1)
-  const [totalParticipants, setTotalParticipants] = useState(0)
-  const [totalParticipantPages, setTotalParticipantPages] = useState(1)
   const [teamsPage, setTeamsPage] = useState(1)
   const [totalTeams, setTotalTeams] = useState(0)
   const [totalTeamPages, setTotalTeamPages] = useState(1)
@@ -65,9 +68,61 @@ export default function ApprovalsPage() {
     return () => unsubscribe()
   }, [auth])
 
+  const handleSort = (field: "name" | "email" | "age" | "university") => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortOrder("asc")
+    }
+    setNoTeamPage(1)
+  }
+
+  const filteredNoTeamUsers = useMemo(() => {
+    let data = [...noTeamUsers]
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase()
+      data = data.filter(u => {
+        const name = `${u.name || ""} ${u.surname || ""}`.toLowerCase()
+        const email = (u.email || "").toLowerCase()
+        const university = (u.university || "").toLowerCase()
+        const age = String(u.age ?? "")
+        return name.includes(lower) || email.includes(lower) || university.includes(lower) || age.includes(lower)
+      })
+    }
+    data.sort((a, b) => {
+      let valA: any
+      let valB: any
+      if (sortField === "name") {
+        valA = `${a.name || ""} ${a.surname || ""}`.toLowerCase()
+        valB = `${b.name || ""} ${b.surname || ""}`.toLowerCase()
+      } else if (sortField === "email") {
+        valA = (a.email || "").toLowerCase()
+        valB = (b.email || "").toLowerCase()
+      } else if (sortField === "age") {
+        valA = Number(a.age ?? 0)
+        valB = Number(b.age ?? 0)
+      } else {
+        valA = (a.university || "").toLowerCase()
+        valB = (b.university || "").toLowerCase()
+      }
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1
+      return 0
+    })
+    return data
+  }, [noTeamUsers, searchTerm, sortField, sortOrder])
+
+  const noTeamTotalPages = Math.max(1, Math.ceil(filteredNoTeamUsers.length / NO_TEAM_PAGE_SIZE))
+
+  const pagedNoTeamUsers = useMemo(() => {
+    const start = (noTeamPage - 1) * NO_TEAM_PAGE_SIZE
+    return filteredNoTeamUsers.slice(start, start + NO_TEAM_PAGE_SIZE)
+  }, [filteredNoTeamUsers, noTeamPage])
+
   useEffect(() => {
     if (authReady) {
-      loadPendingParticipants()
+      loadNoTeamUsers()
       loadTeams()
       loadPendingTeams()
       loadCategories()
@@ -95,31 +150,21 @@ export default function ApprovalsPage() {
     }
   }
 
-  const loadPendingParticipants = async (targetPage = 1) => {
+  const loadNoTeamUsers = async () => {
+    if (!db) return
     try {
-      const idToken = await auth?.currentUser?.getIdToken()
-      if (!idToken) {
-        console.error("No auth token available")
-        return
-      }
-
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/users/pending-participants?page=${targetPage}&pageSize=${PARTICIPANTS_PAGE_SIZE}`, {
-        headers: { "Authorization": `Bearer ${idToken}` },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setPendingParticipants(data.participants || [])
-        setTotalParticipants(data.count ?? 0)
-        setTotalParticipantPages(data.totalPages ?? 1)
-        setParticipantsPage(data.page ?? targetPage)
-      } else {
-        const errorData = await response.text()
-        console.error("Error response:", errorData)
-      }
+      const snap = await getDocs(
+        query(collection(db, "users"),
+          where("role", "==", "participant"),
+          where("team", "==", null)
+        )
+      )
+      const users = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter((u: any) => u.status !== "accepted")
+      setNoTeamUsers(users)
     } catch (error) {
-      console.error("Error loading pending participants:", error)
+      console.error("Error loading no-team users:", error)
     }
   }
 
@@ -250,7 +295,7 @@ export default function ApprovalsPage() {
 
       if (response.ok) {
         toast({ title: translations.admin.pendingParticipants.approveSuccess })
-        loadPendingParticipants()
+        loadNoTeamUsers()
       } else {
         const error = await response.json()
         toast({ title: "Error", description: error.error, variant: 'destructive' })
@@ -285,7 +330,7 @@ export default function ApprovalsPage() {
 
       if (response.ok) {
         toast({ title: translations.admin.pendingParticipants.rejectSuccess })
-        loadPendingParticipants()
+        loadNoTeamUsers()
       } else {
         const error = await response.json()
         toast({ title: "Error", description: error.error, variant: 'destructive' })
@@ -408,14 +453,16 @@ export default function ApprovalsPage() {
             </h2>
           </div>
 
-          {/* Pending Participants */}
+          {/* No-team Users Table */}
           <section>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <UsersIcon className="w-6 h-6 text-brand-orange" />
-                <h3 className="font-pixel text-2xl text-brand-yellow">{translations.admin.pendingParticipants.title}</h3>
+                <h3 className="font-pixel text-2xl text-brand-yellow">
+                  {locale === "es" ? "Participantes Sin Equipo" : "Participants Without Team"}
+                </h3>
                 <span className="bg-brand-orange/20 text-brand-orange px-3 py-1 rounded-full text-sm font-pixel">
-                  {totalParticipants}
+                  {filteredNoTeamUsers.length}
                 </span>
               </div>
               <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
@@ -424,45 +471,113 @@ export default function ApprovalsPage() {
               </PixelButton>
             </div>
 
-            {pendingParticipants.length === 0 ? (
-              <GlassCard>
-                <p className="text-brand-cyan/60 text-center py-8">
-                  {translations.admin.pendingParticipants.noParticipants}
-                </p>
-              </GlassCard>
-            ) : (
-              <GlassCard className="p-4">
-                <div className="space-y-3">
-                  {pendingParticipants.map((participant) => (
-                    <div
-                      key={participant.id}
-                      className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
-                      onClick={() => {
-                        setSelectedParticipant(participant)
-                        setSelectedParticipantTeamId("")
-                        setParticipantRejectReason("")
-                      }}
-                    >
-                      <p className="font-pixel text-brand-yellow text-sm">
-                        {participant.name} {participant.surname}
-                      </p>
-                      <div className="text-xs text-brand-cyan/70 space-y-0.5 mt-1">
-                        <p>{participant.email}</p>
-                        <p>{[participant.university, participant.career].filter(Boolean).join(" - ")}</p>
-                      </div>
-                    </div>
-                  ))}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/40" />
+              <Input
+                placeholder={locale === "es" ? "Buscar por nombre o email..." : "Search by name or email..."}
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setNoTeamPage(1) }}
+                className="pl-10 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan h-9"
+              />
+            </div>
+
+            <GlassCard className="overflow-hidden border-brand-cyan/10">
+              <ScrollArea className="overflow-x-auto">
+                <div className="min-w-full">
+                  <Table>
+                    <TableHeader className="bg-brand-navy/60">
+                      <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                        <TableHead className="h-8 py-1 text-[10px] w-[90px]">
+                          {locale === "es" ? "Acciones" : "Actions"}
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("name")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Nombre" : "Name"}
+                            {sortField === "name" ? (sortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("email")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            Email
+                            {sortField === "email" ? (sortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("age")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Edad" : "Age"}
+                            {sortField === "age" ? (sortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleSort("university")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Universidad" : "University"}
+                            {sortField === "university" ? (sortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedNoTeamUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-brand-cyan/40">
+                            {locale === "es" ? "No se encontraron usuarios sin equipo" : "No teamless users found"}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        pagedNoTeamUsers.map((user) => (
+                          <TableRow key={user.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
+                            <TableCell className="py-1">
+                              <button
+                                onClick={() => {
+                                  setSelectedParticipant(user)
+                                  setSelectedParticipantTeamId("")
+                                  setParticipantRejectReason("")
+                                }}
+                                className="text-[10px] px-2 py-1 bg-brand-orange/10 text-brand-orange rounded hover:bg-brand-orange/20 transition-colors font-pixel"
+                              >
+                                {locale === "es" ? "Revisar" : "Review"}
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-brand-yellow text-[10px] py-1 font-medium">
+                              {user.name} {user.surname}
+                            </TableCell>
+                            <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                              {user.email}
+                            </TableCell>
+                            <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                              {user.age || "-"}
+                            </TableCell>
+                            <TableCell className="text-brand-cyan/80 text-[10px] py-1 max-w-[140px] truncate">
+                              {user.university || "-"}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
-                <PaginationControls
-                  page={participantsPage}
-                  totalPages={totalParticipantPages}
-                  onPageChange={(p) => loadPendingParticipants(p)}
-                  totalItems={totalParticipants}
-                  pageSize={PARTICIPANTS_PAGE_SIZE}
-                  locale={locale}
-                />
-              </GlassCard>
-            )}
+              </ScrollArea>
+              <PaginationControls
+                page={noTeamPage}
+                totalPages={noTeamTotalPages}
+                onPageChange={setNoTeamPage}
+                totalItems={filteredNoTeamUsers.length}
+                pageSize={NO_TEAM_PAGE_SIZE}
+                locale={locale}
+              />
+            </GlassCard>
           </section>
 
           {/* Pending Teams */}
@@ -520,49 +635,49 @@ export default function ApprovalsPage() {
 
         {/* Participant Detail Modal */}
         <Dialog open={!!selectedParticipant} onOpenChange={(open) => { if (!open) { setSelectedParticipant(null); setSelectedParticipantTeamId(""); setParticipantRejectReason("") } }}>
-          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
-            <DialogHeader className="pb-2">
-              <DialogTitle className="font-pixel text-brand-yellow">
+          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-5 py-4 max-w-md">
+            <DialogHeader className="pb-1">
+              <DialogTitle className="font-pixel text-brand-yellow text-base">
                 {selectedParticipant?.name} {selectedParticipant?.surname}
               </DialogTitle>
             </DialogHeader>
             {selectedParticipant && (
-              <div className="space-y-3 pt-2 pb-4">
-                <div>
-                  <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Nombre" : "Name"}</p>
-                  <p className="text-brand-cyan text-sm">{selectedParticipant.name} {selectedParticipant.surname}</p>
+              <div className="space-y-2 pt-1 pb-2">
+                {/* Compact info grid */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 p-3 rounded-lg bg-brand-cyan/5 border border-brand-cyan/10">
+                  <div>
+                    <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase">Email</p>
+                    <p className="text-brand-cyan text-xs break-all">{selectedParticipant.email}</p>
+                  </div>
+                  {selectedParticipant.university && (
+                    <div>
+                      <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase">{locale === "es" ? "Universidad" : "University"}</p>
+                      <p className="text-brand-cyan text-xs truncate">{selectedParticipant.university}</p>
+                    </div>
+                  )}
+                  {selectedParticipant.career && (
+                    <div>
+                      <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase">{locale === "es" ? "Carrera" : "Degree"}</p>
+                      <p className="text-brand-cyan text-xs truncate">{selectedParticipant.career}</p>
+                    </div>
+                  )}
+                  {selectedParticipant.age && (
+                    <div>
+                      <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase">{locale === "es" ? "Edad" : "Age"}</p>
+                      <p className="text-brand-cyan text-xs">{selectedParticipant.age}</p>
+                    </div>
+                  )}
+                  {selectedParticipant.food_preference && (
+                    <div>
+                      <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase">{locale === "es" ? "Alimentación" : "Food"}</p>
+                      <p className="text-brand-cyan text-xs">{selectedParticipant.food_preference}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-brand-cyan/60 text-xs font-pixel">Email</p>
-                  <p className="text-brand-cyan text-sm break-all">{selectedParticipant.email}</p>
-                </div>
-                {selectedParticipant.university && (
-                  <div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Universidad" : "University"}</p>
-                    <p className="text-brand-cyan text-sm">{selectedParticipant.university}</p>
-                  </div>
-                )}
-                {selectedParticipant.career && (
-                  <div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Carrera" : "Career"}</p>
-                    <p className="text-brand-cyan text-sm">{selectedParticipant.career}</p>
-                  </div>
-                )}
-                {selectedParticipant.age && (
-                  <div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Edad" : "Age"}</p>
-                    <p className="text-brand-cyan text-sm">{selectedParticipant.age}</p>
-                  </div>
-                )}
-                {selectedParticipant.food_preference && (
-                  <div>
-                    <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Preferencia alimentaria" : "Food preference"}</p>
-                    <p className="text-brand-cyan text-sm">{selectedParticipant.food_preference}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Preferencias de categoría" : "Category preferences"}</p>
-                  <div className="space-y-1">
+
+                {/* Category preferences */}
+                {[selectedParticipant?.category_1, selectedParticipant?.category_2, selectedParticipant?.category_3].some(v => v !== null && v !== undefined) && (
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-1.5">
                     {[selectedParticipant?.category_1, selectedParticipant?.category_2, selectedParticipant?.category_3].map((idx, i) => {
                       if (idx === null || idx === undefined) return null
                       const cat = categories[idx]
@@ -570,21 +685,23 @@ export default function ApprovalsPage() {
                       const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
                       const Icon = (LucideIcons as any)[cat.iconName] || LucideIcons.Tag
                       return (
-                        <div key={i} className="flex items-center gap-2 text-xs text-brand-cyan/70">
+                        <span key={i} className="flex items-center gap-1 text-[10px] text-brand-cyan/70 bg-brand-cyan/5 border border-brand-cyan/10 rounded px-2 py-0.5">
                           <span className="text-brand-orange font-pixel">{i + 1}.</span>
                           <Icon className="w-3 h-3" />
-                          <span>{name}</span>
-                        </div>
+                          {name}
+                        </span>
                       )
                     })}
                   </div>
-                </div>
+                )}
+
+                {/* Team selector */}
                 <div>
-                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{translations.admin.pendingParticipants.selectTeam}</p>
+                  <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase mb-1">{translations.admin.pendingParticipants.selectTeam}</p>
                   <select
                     value={selectedParticipantTeamId}
                     onChange={(e) => setSelectedParticipantTeamId(e.target.value)}
-                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-3 py-2 text-sm"
+                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-2 py-1.5 text-xs"
                   >
                     <option value="">{translations.admin.pendingParticipants.selectTeam}</option>
                     {teams.map((team) => (
@@ -592,16 +709,19 @@ export default function ApprovalsPage() {
                     ))}
                   </select>
                 </div>
+
+                {/* Rejection reason */}
                 <div>
-                  <p className="text-brand-cyan/60 text-xs font-pixel mb-1">{locale === "es" ? "Motivo de rechazo (opcional)" : "Rejection reason (optional)"}</p>
+                  <p className="text-brand-cyan/50 text-[9px] font-pixel uppercase mb-1">{locale === "es" ? "Motivo de rechazo (opcional)" : "Rejection reason (optional)"}</p>
                   <textarea
                     value={participantRejectReason}
                     onChange={(e) => setParticipantRejectReason(e.target.value)}
                     rows={2}
-                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-3 py-2 text-sm resize-none"
+                    className="w-full bg-brand-navy/80 border border-brand-cyan/40 text-brand-cyan rounded px-2 py-1.5 text-xs resize-none"
                     placeholder={locale === "es" ? "Razón..." : "Reason..."}
                   />
                 </div>
+
                 <div className="flex gap-2 pt-1">
                   <PixelButton
                     onClick={() => {

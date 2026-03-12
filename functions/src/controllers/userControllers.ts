@@ -403,8 +403,10 @@ export const approveParticipantAndAssignTeam = async (req: Request, res: Respons
 
     if (status === "rejected") {
       updateData.participationStatus = "rejected";
+      updateData.status = "rejected";
     } else if (status === "accepted") {
       updateData.participationStatus = null;
+      updateData.status = "accepted";
     }
 
     let teamName = "";
