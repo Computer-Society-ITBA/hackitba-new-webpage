@@ -30,6 +30,7 @@ export default function ApprovalsPage() {
   const auth = getAuthClient()
 
   const [noTeamUsers, setNoTeamUsers] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<"users" | "teams">("users")
   const [searchTerm, setSearchTerm] = useState("")
   const [noTeamPage, setNoTeamPage] = useState(1)
   const [sortField, setSortField] = useState<"name" | "email" | "age" | "university">("name")
@@ -53,10 +54,13 @@ export default function ApprovalsPage() {
   const [participantRejectReason, setParticipantRejectReason] = useState<string>("")
 
   const NO_TEAM_PAGE_SIZE = 20
-  const TEAMS_PAGE_SIZE = 5
+  const TEAMS_TABLE_PAGE_SIZE = 20
   const [teamsPage, setTeamsPage] = useState(1)
-  const [totalTeams, setTotalTeams] = useState(0)
-  const [totalTeamPages, setTotalTeamPages] = useState(1)
+  const [teamSearchTerm, setTeamSearchTerm] = useState("")
+  const [teamSortField, setTeamSortField] = useState<"name" | "members" | "category">("name")
+  const [teamSortOrder, setTeamSortOrder] = useState<"asc" | "desc">("asc")
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [membersViewTeam, setMembersViewTeam] = useState<any | null>(null)
 
   useEffect(() => {
     if (!auth) return
@@ -67,6 +71,25 @@ export default function ApprovalsPage() {
     })
     return () => unsubscribe()
   }, [auth])
+
+  const getTeamMemberCount = (teamId: string) => allUsers.filter(u => u.team === teamId).length
+
+  const getCategoryName = (idx: any) => {
+    if (idx === null || idx === undefined) return "-"
+    const cat = categories[parseInt(idx)]
+    if (!cat) return "-"
+    return locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
+  }
+
+  const handleTeamSort = (field: "name" | "members" | "category") => {
+    if (teamSortField === field) {
+      setTeamSortOrder(teamSortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setTeamSortField(field)
+      setTeamSortOrder("asc")
+    }
+    setTeamsPage(1)
+  }
 
   const handleSort = (field: "name" | "email" | "age" | "university") => {
     if (sortField === field) {
@@ -120,6 +143,39 @@ export default function ApprovalsPage() {
     return filteredNoTeamUsers.slice(start, start + NO_TEAM_PAGE_SIZE)
   }, [filteredNoTeamUsers, noTeamPage])
 
+  const filteredPendingTeams = useMemo(() => {
+    let data = [...pendingTeams]
+    if (teamSearchTerm) {
+      const lower = teamSearchTerm.toLowerCase()
+      data = data.filter(t => (t.name || "").toLowerCase().includes(lower))
+    }
+    data.sort((a, b) => {
+      let valA: any
+      let valB: any
+      if (teamSortField === "name") {
+        valA = (a.name || "").toLowerCase()
+        valB = (b.name || "").toLowerCase()
+      } else if (teamSortField === "members") {
+        valA = getTeamMemberCount(a.id)
+        valB = getTeamMemberCount(b.id)
+      } else {
+        valA = getCategoryName(a.category_1).toLowerCase()
+        valB = getCategoryName(b.category_1).toLowerCase()
+      }
+      if (valA < valB) return teamSortOrder === "asc" ? -1 : 1
+      if (valA > valB) return teamSortOrder === "asc" ? 1 : -1
+      return 0
+    })
+    return data
+  }, [pendingTeams, teamSearchTerm, teamSortField, teamSortOrder, allUsers, categories])
+
+  const teamTotalPages = Math.max(1, Math.ceil(filteredPendingTeams.length / TEAMS_TABLE_PAGE_SIZE))
+
+  const pagedPendingTeams = useMemo(() => {
+    const start = (teamsPage - 1) * TEAMS_TABLE_PAGE_SIZE
+    return filteredPendingTeams.slice(start, start + TEAMS_TABLE_PAGE_SIZE)
+  }, [filteredPendingTeams, teamsPage])
+
   useEffect(() => {
     if (authReady) {
       loadNoTeamUsers()
@@ -127,6 +183,7 @@ export default function ApprovalsPage() {
       loadPendingTeams()
       loadCategories()
       loadWithTeamCount()
+      loadAllUsers()
     }
   }, [authReady])
 
@@ -187,25 +244,26 @@ export default function ApprovalsPage() {
     }
   }
 
-  const loadPendingTeams = async (targetPage = 1) => {
+  const loadPendingTeams = async () => {
+    if (!db) return
     try {
-      const idToken = await auth?.currentUser?.getIdToken()
-      if (!idToken) return
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/teams/pending?page=${targetPage}&pageSize=${TEAMS_PAGE_SIZE}`, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setPendingTeams(data.teams || [])
-        setTotalTeams(data.count ?? 0)
-        setTotalTeamPages(data.totalPages ?? 1)
-        setTeamsPage(data.page ?? targetPage)
-      } else {
-        console.error("Error loading pending teams")
-      }
+      const snap = await getDocs(query(collection(db, "teams"), where("status", "==", "registered")))
+      const allTeams = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter((t: any) => !t.is_created_by_admin)
+      setPendingTeams(allTeams)
     } catch (error) {
       console.error("Error loading pending teams:", error)
+    }
+  }
+
+  const loadAllUsers = async () => {
+    if (!db) return
+    try {
+      const snap = await getDocs(query(collection(db, "users"), where("role", "==", "participant")))
+      setAllUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    } catch (error) {
+      console.error("Error loading all users:", error)
     }
   }
 
@@ -233,6 +291,7 @@ export default function ApprovalsPage() {
       })
       if (response.ok) {
         await loadPendingTeams()
+        await loadAllUsers()
       } else {
         const error = await response.json()
         toast({ title: "Error", description: error.error, variant: 'destructive' })
@@ -445,32 +504,49 @@ export default function ApprovalsPage() {
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title={locale === "es" ? "Aprobaciones" : "Approvals"}>
-        <div className="space-y-8">
-          <div className="flex items-center gap-3 mb-2">
-            <UsersIcon className="w-7 h-7 text-brand-orange" />
-            <h2 className="font-pixel text-3xl text-brand-yellow">
-              {locale === "es" ? "Aprobaciones" : "Approvals"}
-            </h2>
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-3">
+                <UsersIcon className="w-7 h-7 text-brand-orange" />
+                <h2 className="font-pixel text-3xl text-brand-yellow">
+                  {locale === "es" ? "Aprobaciones" : "Approvals"}
+                </h2>
+              </div>
+              <div className="flex gap-2 p-1 bg-brand-navy/40 border border-brand-cyan/20 rounded-lg">
+                <button
+                  onClick={() => setActiveTab("users")}
+                  className={`px-4 py-2 rounded font-pixel text-xs transition-all flex items-center gap-1.5 ${
+                    activeTab === "users" ? "bg-brand-orange text-brand-navy" : "text-brand-cyan hover:bg-brand-cyan/10"
+                  }`}
+                >
+                  {locale === "es" ? "Participantes" : "Participants"}
+                </button>
+                <button
+                  onClick={() => setActiveTab("teams")}
+                  className={`px-4 py-2 rounded font-pixel text-xs transition-all flex items-center gap-1.5 ${
+                    activeTab === "teams" ? "bg-brand-orange text-brand-navy" : "text-brand-cyan hover:bg-brand-cyan/10"
+                  }`}
+                >
+                  {locale === "es" ? "Equipos" : "Teams"}
+                </button>
+              </div>
+              <span className="flex items-center gap-1.5 bg-brand-orange/10 border border-brand-orange/20 px-3 py-1 rounded-full text-xs font-pixel text-brand-orange/70">
+                {locale === "es" ? "Pendientes" : "Pending"}
+                <span className="text-brand-orange font-bold text-sm">
+                  {activeTab === "users" ? filteredNoTeamUsers.length : filteredPendingTeams.length}
+                </span>
+              </span>
+            </div>
+            <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
+              <Plus size={16} className="mr-2" />
+              {translations.admin.pendingParticipants.createTeam}
+            </PixelButton>
           </div>
 
           {/* No-team Users Table */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <UsersIcon className="w-6 h-6 text-brand-orange" />
-                <h3 className="font-pixel text-2xl text-brand-yellow">
-                  {locale === "es" ? "Participantes Sin Equipo" : "Participants Without Team"}
-                </h3>
-                <span className="bg-brand-orange/20 text-brand-orange px-3 py-1 rounded-full text-sm font-pixel">
-                  {filteredNoTeamUsers.length}
-                </span>
-              </div>
-              <PixelButton onClick={() => openCreateTeamModal(null)} size="sm" variant="outline">
-                <Plus size={16} className="mr-2" />
-                {translations.admin.pendingParticipants.createTeam}
-              </PixelButton>
-            </div>
-
+          {activeTab === "users" && (
+            <section>
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/40" />
               <Input
@@ -545,21 +621,21 @@ export default function ApprovalsPage() {
                                   setSelectedParticipantTeamId("")
                                   setParticipantRejectReason("")
                                 }}
-                                className="text-[10px] px-2 py-1 bg-brand-orange/10 text-brand-orange rounded hover:bg-brand-orange/20 transition-colors font-pixel"
+                                className="text-[11px] px-2.5 py-0.5 bg-brand-orange/20 text-brand-orange border border-brand-orange/30 rounded hover:bg-brand-orange/30 transition-colors font-pixel whitespace-nowrap"
                               >
                                 {locale === "es" ? "Revisar" : "Review"}
                               </button>
                             </TableCell>
-                            <TableCell className="text-brand-yellow text-[10px] py-1 font-medium">
+                            <TableCell className="text-brand-yellow text-[11px] py-1 font-medium">
                               {user.name} {user.surname}
                             </TableCell>
-                            <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                            <TableCell className="text-brand-cyan/80 text-[11px] py-1">
                               {user.email}
                             </TableCell>
-                            <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                            <TableCell className="text-brand-cyan/80 text-[11px] py-1">
                               {user.age || "-"}
                             </TableCell>
-                            <TableCell className="text-brand-cyan/80 text-[10px] py-1 max-w-[140px] truncate">
+                            <TableCell className="text-brand-cyan/80 text-[11px] py-1 max-w-[140px] truncate">
                               {user.university || "-"}
                             </TableCell>
                           </TableRow>
@@ -579,58 +655,110 @@ export default function ApprovalsPage() {
               />
             </GlassCard>
           </section>
+          )}
 
           {/* Pending Teams */}
+          {activeTab === "teams" && (
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3 flex-wrap">
-                <UsersIcon className="w-6 h-6 text-brand-cyan" />
-                <h3 className="font-pixel text-2xl text-brand-yellow">
-                  {locale === "es" ? "Equipos Pendientes de Aprobación" : "Teams Pending Approval"}
-                </h3>
-                <span className="bg-brand-cyan/20 text-brand-cyan px-3 py-1 rounded-full text-sm font-pixel">
-                  {totalTeams}
-                </span>
-                <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-xs font-pixel text-green-400/70">
-                  {locale === "es" ? "Participantes" : "Participants"}:
-                  <span className="text-green-400 font-bold text-sm">
-                    {withTeamCount ?? "—"}
-                  </span>
-                </span>
-              </div>
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/40" />
+              <Input
+                placeholder={locale === "es" ? "Buscar por nombre..." : "Search by name..."}
+                value={teamSearchTerm}
+                onChange={(e) => { setTeamSearchTerm(e.target.value); setTeamsPage(1) }}
+                className="pl-10 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan h-9"
+              />
             </div>
 
-            {pendingTeams.length === 0 ? (
-              <GlassCard>
-                <p className="text-brand-cyan/60 text-center py-8">
-                  {locale === "es" ? "No hay equipos pendientes de aprobación" : "No teams pending approval"}
-                </p>
-              </GlassCard>
-            ) : (
-              <GlassCard className="p-4">
-                <div className="space-y-3">
-                  {pendingTeams.map((team) => (
-                    <div
-                      key={team.id}
-                      className="p-4 rounded-lg border border-brand-cyan/10 bg-brand-cyan/5 hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-colors cursor-pointer"
-                      onClick={() => openTeamDetail(team)}
-                    >
-                      <p className="font-pixel text-brand-yellow text-sm mb-1">{team.name}</p>
-                      <p className="text-brand-cyan/50 text-xs">{team.id}</p>
-                    </div>
-                  ))}
+            <GlassCard className="overflow-hidden border-brand-cyan/10">
+              <ScrollArea className="overflow-x-auto">
+                <div className="min-w-full">
+                  <Table>
+                    <TableHeader className="bg-brand-navy/60">
+                      <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                        <TableHead className="h-8 py-1 text-[10px] w-[90px]">
+                          {locale === "es" ? "Acciones" : "Actions"}
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleTeamSort("name")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Nombre" : "Name"}
+                            {teamSortField === "name" ? (teamSortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleTeamSort("members")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Miembros" : "Members"}
+                            {teamSortField === "members" ? (teamSortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                        <TableHead
+                          onClick={() => handleTeamSort("category")}
+                          className="h-8 py-1 text-[10px] cursor-pointer hover:text-brand-orange select-none"
+                        >
+                          <span className="flex items-center gap-1">
+                            {locale === "es" ? "Categoría" : "Category"}
+                            {teamSortField === "category" ? (teamSortOrder === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />) : <ChevronUp className="w-3 h-3 opacity-20" />}
+                          </span>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedPendingTeams.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-brand-cyan/40">
+                            {locale === "es" ? "No hay equipos pendientes de aprobación" : "No teams pending approval"}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        pagedPendingTeams.map((team) => (
+                          <TableRow key={team.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5">
+                            <TableCell className="py-1">
+                              <button
+                                onClick={() => openTeamDetail(team)}
+                                className="text-[11px] px-2.5 py-0.5 bg-brand-orange/20 text-brand-orange border border-brand-orange/30 rounded hover:bg-brand-orange/30 transition-colors font-pixel whitespace-nowrap"
+                              >
+                                {locale === "es" ? "Revisar" : "Review"}
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-brand-yellow text-[11px] py-1 font-medium">
+                              {team.name}
+                            </TableCell>
+                            <TableCell className="text-brand-cyan/80 text-[11px] py-1">
+                              <button
+                                onClick={() => setMembersViewTeam(team)}
+                                className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors"
+                              >
+                                <UsersIcon size={12} />
+                                {getTeamMemberCount(team.id)}
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-brand-cyan/80 text-[11px] py-1">
+                              {getCategoryName(team.category_1)}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
-                <PaginationControls
-                  page={teamsPage}
-                  totalPages={totalTeamPages}
-                  onPageChange={(p) => loadPendingTeams(p)}
-                  totalItems={totalTeams}
-                  pageSize={TEAMS_PAGE_SIZE}
-                  locale={locale}
-                />
-              </GlassCard>
-            )}
+              </ScrollArea>
+              <PaginationControls
+                page={teamsPage}
+                totalPages={teamTotalPages}
+                onPageChange={setTeamsPage}
+                totalItems={filteredPendingTeams.length}
+                pageSize={TEAMS_TABLE_PAGE_SIZE}
+                locale={locale}
+              />
+            </GlassCard>
           </section>
+          )}
         </div>
 
         {/* Participant Detail Modal */}
@@ -973,6 +1101,39 @@ export default function ApprovalsPage() {
                 {translations.admin.createTeam.create}
               </PixelButton>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Team Members View Modal */}
+        <Dialog open={!!membersViewTeam} onOpenChange={(open) => { if (!open) setMembersViewTeam(null) }}>
+          <DialogContent className="bg-brand-navy border-brand-cyan/30 max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                <UsersIcon size={16} />
+                {membersViewTeam?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 mt-2">
+              {allUsers.filter(u => u.team === membersViewTeam?.id).length === 0 ? (
+                <p className="text-brand-cyan/40 text-sm text-center py-4">
+                  {locale === "es" ? "Sin miembros" : "No members"}
+                </p>
+              ) : (
+                allUsers.filter(u => u.team === membersViewTeam?.id).map((m) => (
+                  <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                    <div>
+                      <p className="text-brand-yellow text-xs font-medium">{m.name} {m.surname}</p>
+                      <p className="text-brand-cyan/50 text-[10px]">{m.email}</p>
+                    </div>
+                    {m.isLeader && (
+                      <span className="text-[9px] px-1.5 py-0.5 bg-brand-orange/20 text-brand-orange border border-brand-orange/30 rounded font-pixel">
+                        {locale === "es" ? "Líder" : "Leader"}
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </DashboardLayout>
