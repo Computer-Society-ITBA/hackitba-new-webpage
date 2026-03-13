@@ -145,6 +145,39 @@ export default function ProfilePage() {
 
 
 
+  const saveProfile = async () => {
+    if (!db || !user?.id) return
+
+    setSavingProfile(true)
+    try {
+      await updateDoc(doc(db, "users", user.id), {
+        github: profileForm.github || "",
+        link_cv: profileForm.link_cv || "",
+        linkedin: profileForm.linkedin || "",
+        instagram: profileForm.instagram || "",
+        twitter: profileForm.twitter || "",
+        food_preference: profileForm.food_preference || "",
+        updatedAt: new Date(),
+      })
+
+      toast({
+        title: translations.dashboard.profile.toasts.updated.title,
+        description: translations.dashboard.profile.toasts.updated.description,
+      })
+
+      setShowProfileForm(false)
+    } catch (error) {
+      console.error("Error saving profile:", error)
+      toast({
+        title: translations.dashboard.profile.toasts.error.title,
+        description: translations.dashboard.profile.toasts.error.description,
+        variant: "destructive",
+      })
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   const saveMentorProfile = async () => {
     if (!db || !user) return
 
