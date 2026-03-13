@@ -699,7 +699,19 @@
         "labelsDuration": "Duration",
         "labelsFormat": "Format",
         "locationTitle": "Location",
-        "locationVenue": "Venue"
+        "locationVenue": "Venue",
+        "timeline": "Event Timeline",
+        "presentation": "Opening Presentation",
+        "presentationTime": "5:00 PM",
+        "presentationLocation": "Auditorium",
+        "competitionStart": "Competition Begins",
+        "competitionTime": "8:00 PM",
+        "badgeOpening": "OPENING",
+        "badgeCompetition": "COMPETITION",
+        "auditorialLocation": "ITBA — Sede Distrito Rectorado",
+        "auditorialAddress": "Iguazú 341, C1437 CABA",
+        "competitionLocation": "ITBA Sede Rectorado",
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
       }
     },
     "credits": {
@@ -1526,7 +1538,19 @@
         "labelsDuration": "Duración",
         "labelsFormat": "Formato",
         "locationTitle": "Ubicación",
-        "locationVenue": "Sede"
+        "locationVenue": "Sede",
+        "timeline": "Timeline del Evento",
+        "presentation": "Presentación Inaugural",
+        "presentationTime": "5:00 PM",
+        "presentationLocation": "Auditorio",
+        "competitionStart": "Competencia Comienza",
+        "competitionTime": "8:00 PM",
+        "badgeOpening": "APERTURA",
+        "badgeCompetition": "COMPETENCIA",
+        "auditorialLocation": "ITBA — Sede Distrito Rectorado",
+        "auditorialAddress": "Iguazú 341, C1437 CABA",
+        "competitionLocation": "ITBA Sede Rectorado",
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
       }
     },
     "credits": {
