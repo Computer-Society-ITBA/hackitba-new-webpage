@@ -68,12 +68,6 @@ export default function DashboardPage() {
       } else if (user.role === "judge") {
         router.replace(`/${locale}/dashboard/jurado`)
       } else if (user.role === "participant") {
-        // If user wanted to create a team but hasn't yet, redirect to create-team
-        if (user.wantsToCreateTeam && !user.hasTeam) {
-          console.log("Redirecting to create-team because wantsToCreateTeam is true and no team yet")
-          router.replace(`/${locale}/dashboard/create-team?userId=${user.id}`)
-          return
-        }
         router.replace(`/${locale}/dashboard/participante`)
       }
     }

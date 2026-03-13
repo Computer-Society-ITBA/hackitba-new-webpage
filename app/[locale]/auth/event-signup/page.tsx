@@ -99,6 +99,7 @@ function EventSignupContent() {
         // Step 3 (Participante only)
         hasTeam: "solo" as "yes" | "solo" | "create",
         teamName: "",
+        teamMotivation: "",
         teamCode: "",
         priorities: [] as string[],
     })
@@ -306,6 +307,23 @@ function EventSignupContent() {
                 setError(translations.auth.eventSignup.errors.teamCodeRequired)
                 return
             }
+
+            if (formData.hasTeam === "create") {
+                if (!formData.teamName.trim()) {
+                    setError(translations.auth.createTeam.errors.teamNameRequired)
+                    return
+                }
+
+                if (!formData.teamMotivation.trim()) {
+                    setError(translations.auth.createTeam.errors.motivationRequired)
+                    return
+                }
+
+                if (formData.teamMotivation.trim().length < 20) {
+                    setError(translations.auth.createTeam.errors.motivationTooShort)
+                    return
+                }
+            }
         }
 
         if (currentStep < totalSteps) {
@@ -410,6 +428,56 @@ function EventSignupContent() {
                 throw new Error(errorData.error || translations.auth.eventSignup.errors.createFailed)
             }
 
+            // If participant wants to create a team, create it immediately in this flow.
+            if (role === "participant" && formData.hasTeam === "create") {
+                const teamsResponse = await fetch(`${apiUrl}/teams`, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`,
+                    }
+                })
+
+                if (!teamsResponse.ok) {
+                    const teamsError = await teamsResponse.json().catch(() => ({}))
+                    throw new Error(teamsError.error || translations.auth.createTeam.errors.createFailed)
+                }
+
+                const teamsData = await teamsResponse.json()
+                const teamsList = Array.isArray(teamsData?.teams) ? teamsData.teams : []
+                const existingTeams = teamsList.map((team: any) => team?.name).filter(Boolean)
+
+                if (existingTeams.some((teamName: string) => teamName.toLowerCase() === formData.teamName.trim().toLowerCase())) {
+                    throw new Error(translations.auth.createTeam.errors.teamNameExists)
+                }
+
+                const categoryIdToIndex = Object.fromEntries(categories.map((c, i) => [c.id, i]))
+                const category_1 = categoryIdToIndex[formData.priorities[0]] ?? 0
+                const category_2 = categoryIdToIndex[formData.priorities[1]] ?? 1
+                const category_3 = categoryIdToIndex[formData.priorities[2]] ?? 2
+
+                const createTeamPayload = {
+                    name: formData.teamName.trim(),
+                    tell_why: formData.teamMotivation.trim(),
+                    category_1,
+                    category_2,
+                    category_3,
+                    uid,
+                }
+
+                const createTeamResponse = await fetch(`${apiUrl}/teams`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${idToken}`,
+                    },
+                    body: JSON.stringify(createTeamPayload)
+                })
+
+                if (!createTeamResponse.ok) {
+                    const createTeamError = await createTeamResponse.json().catch(() => ({}))
+                    throw new Error(createTeamError.error || translations.auth.createTeam.errors.createFailed)
+                }
+            }
+
             // Refresh user data to get updated onboardingStep
             console.log("Event registration successful, refreshing user data...")
             await refreshUser()
@@ -417,12 +485,8 @@ function EventSignupContent() {
             // Wait a bit for Firestore to fully update
             await new Promise(resolve => setTimeout(resolve, 500))
 
-            // Success - redirect based on team choice
-            if (role === "participant" && formData.hasTeam === "create") {
-                router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
-            } else {
-                router.push(`/${locale}/dashboard`)
-            }
+            // Success - always go to dashboard. Team creation already happened inline when selected.
+            router.push(`/${locale}/dashboard`)
         } catch (err: any) {
             setError(err.message || translations.auth.eventSignup.errors.createFailed)
         } finally {
@@ -661,10 +725,67 @@ function EventSignupContent() {
                         )}
 
                         {formData.hasTeam === "create" && (
-                            <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
-                                <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
-                                    {translations.auth.eventSignup.team.redirectNotice}
-                                </p>
+                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-1">
+                                    <Label htmlFor="teamName" className="text-brand-cyan font-pixel text-xs">
+                                        {translations.auth.createTeam.fields.teamName} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span>
+                                    </Label>
+                                    <Input
+                                        id="teamName"
+                                        value={formData.teamName}
+                                        onChange={handleInputChange}
+                                        className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8"
+                                        placeholder={translations.auth.createTeam.fields.teamNamePlaceholder}
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label htmlFor="teamMotivation" className="text-brand-cyan font-pixel text-xs">
+                                        {translations.auth.createTeam.fields.motivation} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span>
+                                    </Label>
+                                    <textarea
+                                        id="teamMotivation"
+                                        value={formData.teamMotivation}
+                                        onChange={handleInputChange}
+                                        className="w-full min-h-[100px] bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-3 text-sm text-brand-cyan placeholder:text-brand-cyan/40 focus:outline-none resize-none"
+                                        placeholder={translations.auth.createTeam.fields.motivationPlaceholder}
+                                    />
+                                    <p className="text-[10px] text-brand-cyan/50 uppercase">{translations.auth.createTeam.validation.minCharacters}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                    {categoriesLoading ? (
+                                        <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                    ) : formData.priorities.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {formData.priorities.map((catId, i) => {
+                                                const category = categories.find(c => c.id === catId)
+                                                return (
+                                                    <div
+                                                        key={catId}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, i)}
+                                                        onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, i)}
+                                                        className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-cyan/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-cyan/5"
+                                                    >
+                                                        <div className="flex items-center gap-3 pointer-events-none">
+                                                            <span className="text-brand-cyan font-pixel text-[10px]">{i + 1}</span>
+                                                            {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                            <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
+                                                        </div>
+                                                        <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-cyan/50 transition-colors pointer-events-none">
+                                                            <Users className="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

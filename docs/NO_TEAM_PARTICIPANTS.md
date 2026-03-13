@@ -107,7 +107,7 @@ if (!userTeamLabel || !team) {
    - Se muestra un indicador visual con ⚠️ "You don't have a team yet"
    - Tiene dos opciones:
      - **Unirse a un equipo:** Usando un código de equipo
-     - **Crear un nuevo equipo:** Ir a `/dashboard/create-team`
+  - **Crear un nuevo equipo:** Desde el paso "Team Status" del `event-signup` (inline, sin redirección)
 
 3. **Al Crear o Unirse a un Equipo:**
    - El campo `team` se actualiza con el ID/código del equipo
@@ -201,9 +201,9 @@ TeamSection.tsx
    - Verificar `hasTeam: true` después
 
 3. **Crear nuevo equipo:**
-   - Ir a `/dashboard/create-team`
-   - Completar formulario
-   - Verificar que el usuario aparece en el equipo
+  - En `event-signup`, elegir "Create a team"
+  - Completar nombre, motivación y prioridades en el mismo paso
+  - Verificar que el equipo se crea y que el usuario aparece en él
 
 4. **Visual de advertencia:**
    - Participante sin equipo debe ver ⚠️ en dashboard
