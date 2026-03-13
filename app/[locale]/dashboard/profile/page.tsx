@@ -15,8 +15,6 @@ import { doc, updateDoc, getDoc, collection, query, where, getDocs } from "fireb
 import { toast } from "@/hooks/use-toast"
 import { Github, Linkedin, Instagram, Twitter, ExternalLink, Utensils } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { getAuth } from "firebase/auth"
 
 import { Textarea } from "@/components/ui/textarea"
 
@@ -56,8 +54,6 @@ export default function ProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [hasRedirected, setHasRedirected] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
-  const [resettingSignup, setResettingSignup] = useState(false)
-  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
 
   // Load signup enabled setting
   useEffect(() => {
@@ -132,7 +128,6 @@ export default function ProfilePage() {
                 twitter: data.twitter || "",
                 categories: (user.role === "mentor" && data.categories) ? data.categories : [],
               })
-              setPhotoPreview(data.avatar || null)
             }
           } catch (err) {
             console.error("Error loading mentor data:", err)
@@ -228,53 +223,9 @@ export default function ProfilePage() {
     }
   }
 
-  const handleOpenResetModal = () => {
-    setShowResetConfirmModal(true)
-  }
-
-  const confirmResetSignup = async () => {
-    if (!user?.id) return
-
-    setResettingSignup(true)
-    try {
-      const auth = getAuth()
-      const idToken = await auth.currentUser?.getIdToken()
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-
-      const response = await fetch(`${apiUrl}/users/${user.id}/reset-event-signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-      })
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error || (locale === "es" ? "No se pudo reiniciar la inscripción" : "Could not reset signup"))
-      }
-
-      toast({
-        title: locale === "es" ? "Inscripción reiniciada" : "Signup reset",
-        description: locale === "es" ? "Te redirigimos para que vuelvas a elegir la modalidad." : "Redirecting you to choose your registration mode again.",
-      })
-
-      router.replace(`/${locale}/auth/event-signup`)
-    } catch (error: any) {
-      toast({
-        title: locale === "es" ? "Error" : "Error",
-        description: error?.message || (locale === "es" ? "No se pudo completar la acción" : "Could not complete the action"),
-        variant: "destructive",
-      })
-    } finally {
-      setResettingSignup(false)
-      setShowResetConfirmModal(false)
-    }
-  }
-
   return (
     <ProtectedRoute>
-      <DashboardLayout>
+      <DashboardLayout title={translations.dashboard.profile.title}>
         <div className="space-y-6">
           <h1 className="text-3xl font-pixel text-brand-cyan neon-glow-cyan">
             {translations.dashboard.profile.title}
@@ -293,13 +244,6 @@ export default function ProfilePage() {
                   <p className="text-brand-cyan/60 text-sm">{user?.email}</p>
                 </div>
               </div>
-              {user?.role === "participant" && (
-                <PixelButton onClick={handleOpenResetModal} disabled={resettingSignup} variant="outline" className="whitespace-nowrap">
-                  {resettingSignup
-                    ? (locale === "es" ? "REINICIANDO..." : "RESETTING...")
-                    : (locale === "es" ? "CAMBIAR INSCRIPCIÓN" : "CHANGE REGISTRATION")}
-                </PixelButton>
-              )}
             </div>
           </GlassCard>
 
@@ -580,41 +524,6 @@ export default function ProfilePage() {
           </GlassCard>
         </div>
       </DashboardLayout>
-
-      {/* Reset Signup Confirmation Modal */}
-      <Dialog open={showResetConfirmModal} onOpenChange={setShowResetConfirmModal}>
-        <DialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-pixel text-brand-yellow">
-              {locale === "es" ? "Cambiar forma de inscripción" : "Change registration mode"}
-            </DialogTitle>
-            <DialogDescription className="text-brand-cyan/80 text-sm mt-2">
-              {locale === "es"
-                ? "Esto te hará volver al formulario de inscripción para cambiar la modalidad. Si estás solo en tu equipo, el equipo se eliminará. ¿Querés continuar?"
-                : "This will send you back to event signup to change your registration mode. If you are the only member in your team, the team will be deleted. Continue?"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 pt-4">
-            <PixelButton
-              onClick={confirmResetSignup}
-              disabled={resettingSignup}
-              className="flex-1"
-            >
-              {resettingSignup
-                ? (locale === "es" ? "REINICIANDO..." : "RESETTING...")
-                : (locale === "es" ? "CONTINUAR" : "CONTINUE")}
-            </PixelButton>
-            <PixelButton
-              onClick={() => setShowResetConfirmModal(false)}
-              variant="outline"
-              disabled={resettingSignup}
-              className="flex-1"
-            >
-              {locale === "es" ? "CANCELAR" : "CANCEL"}
-            </PixelButton>
-          </div>
-        </DialogContent>
-      </Dialog>
     </ProtectedRoute>
   )
 }

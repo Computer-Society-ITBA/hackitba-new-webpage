@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Image from "next/image"
 
 import { useAuth } from "@/lib/firebase/auth-context"
@@ -9,11 +9,14 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck, Send, GanttChart, FolderKanban, FileEdit, Star } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck, RotateCcw, GanttChart, FolderKanban, FileEdit, Star } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { doc, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
+import { getAuth } from "firebase/auth"
+import { toast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -41,6 +44,10 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [showWinners, setShowWinners] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [hasProject, setHasProject] = useState(false)
+  const [signupEnabled, setSignupEnabled] = useState(true)
+  const [resettingSignup, setResettingSignup] = useState(false)
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
+  const lockScrollY = useRef(0)
 
   useEffect(() => {
     const db = getDbClient()
@@ -51,6 +58,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         const data = snap.data()
         setShowWinners(!!data?.showWinners)
         setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+        setSignupEnabled(data?.signupEnabled !== false)
       }
     })
 
@@ -74,6 +82,47 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+
+    if (isMobile && mobileOpen) {
+      lockScrollY.current = window.scrollY
+
+      html.style.overflow = "hidden"
+      body.style.overflow = "hidden"
+      body.style.position = "fixed"
+      body.style.top = `-${lockScrollY.current}px`
+      body.style.left = "0"
+      body.style.right = "0"
+      body.style.width = "100%"
+      return
+    }
+
+    html.style.overflow = ""
+    body.style.overflow = ""
+    body.style.position = ""
+    body.style.top = ""
+    body.style.left = ""
+    body.style.right = ""
+    body.style.width = ""
+
+    if (lockScrollY.current > 0) {
+      window.scrollTo(0, lockScrollY.current)
+      lockScrollY.current = 0
+    }
+
+    return () => {
+      html.style.overflow = ""
+      body.style.overflow = ""
+      body.style.position = ""
+      body.style.top = ""
+      body.style.left = ""
+      body.style.right = ""
+      body.style.width = ""
+    }
+  }, [isMobile, mobileOpen])
+
   // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false)
@@ -86,6 +135,53 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
   const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), [])
   const toggleMobile = useCallback(() => setMobileOpen((o) => !o), [])
+
+  const handleOpenResetSignupModal = () => {
+    if (resettingSignup) return
+    setShowResetConfirmModal(true)
+  }
+
+  const handleResetSignupFlow = async () => {
+    if (!user?.id || resettingSignup) return
+
+    setResettingSignup(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+
+      const response = await fetch(`${apiUrl}/users/${user.id}/reset-event-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || (locale === "es" ? "No se pudo reiniciar la inscripción" : "Could not reset signup"))
+      }
+
+      toast({
+        title: locale === "es" ? "Inscripción reiniciada" : "Signup reset",
+        description: locale === "es" ? "Te redirigimos para que vuelvas a elegir la modalidad." : "Redirecting you to choose your registration mode again.",
+      })
+
+      setShowResetConfirmModal(false)
+      if (isMobile) setMobileOpen(false)
+      // Force a full navigation so auth/onboarding state is reloaded before guards run.
+      window.location.assign(`/${locale}/auth/event-signup`)
+    } catch (error: any) {
+      toast({
+        title: locale === "es" ? "Error" : "Error",
+        description: error?.message || (locale === "es" ? "No se pudo completar la acción" : "Could not complete the action"),
+        variant: "destructive",
+      })
+    } finally {
+      setResettingSignup(false)
+    }
+  }
 
   const sidebarContent = (
     <>
@@ -312,6 +408,36 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         {(!collapsed || isMobile) && (
           <p className={`${isMobile ? "px-3 pb-2" : "px-2 pb-1"} text-brand-yellow font-pixel ${isMobile ? "text-lg" : "text-xs"}`}>{user?.role.toUpperCase()}</p>
         )}
+
+        {user?.role === "participant" && signupEnabled && (
+          collapsed && !isMobile ? (
+            <button
+              onClick={handleOpenResetSignupModal}
+              disabled={resettingSignup}
+              className="w-full flex items-center justify-center py-2 text-brand-cyan hover:bg-brand-cyan/10 rounded transition-colors mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={locale === "es" ? "Editar inscripción" : "Edit registration"}
+            >
+              <RotateCcw size={16} />
+            </button>
+          ) : (
+            <button
+              onClick={handleOpenResetSignupModal}
+              disabled={resettingSignup}
+              className={`w-full flex items-center gap-2 ${isMobile ? "px-3 py-2" : "px-2 py-2"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors mb-2 disabled:opacity-50 disabled:cursor-not-allowed ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title={locale === "es" ? "Editar inscripción" : "Edit registration"}
+            >
+              <RotateCcw size={14} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && (
+                <span className={isMobile ? "text-base" : "text-sm"}>
+                  {resettingSignup
+                    ? (locale === "es" ? "Redirigiendo..." : "Redirecting...")
+                    : (locale === "es" ? "Editar inscripción" : "Edit registration")}
+                </span>
+              )}
+            </button>
+          )
+        )}
+
         {pathname === `/${locale}/dashboard/profile` ? (
           <span
             className={`flex items-center gap-3 ${isMobile ? "px-3 py-2" : "px-2 py-3"} rounded text-brand-cyan/40 cursor-default select-none mb-2 ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -430,6 +556,40 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
         {children}
       </main>
+
+      <Dialog open={showResetConfirmModal} onOpenChange={setShowResetConfirmModal}>
+        <DialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-brand-yellow">
+              {locale === "es" ? "Cambiar forma de inscripción" : "Change registration mode"}
+            </DialogTitle>
+            <DialogDescription className="text-brand-cyan/80 text-sm mt-2">
+              {locale === "es"
+                ? "Esto te hará volver al formulario de inscripción para cambiar la modalidad. Si estás solo en tu equipo, el equipo se eliminará. ¿Querés continuar?"
+                : "This will send you back to event signup to change your registration mode. If you are the only member in your team, the team will be deleted. Continue?"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 pt-4 px-3 overflow-visible">
+            <PixelButton
+              onClick={handleResetSignupFlow}
+              disabled={resettingSignup}
+              className="flex-1 hover:scale-100"
+            >
+              {resettingSignup
+                ? (locale === "es" ? "REINICIANDO..." : "RESETTING...")
+                : (locale === "es" ? "CONTINUAR" : "CONTINUE")}
+            </PixelButton>
+            <PixelButton
+              onClick={() => setShowResetConfirmModal(false)}
+              variant="outline"
+              disabled={resettingSignup}
+              className="flex-1 hover:scale-100"
+            >
+              {locale === "es" ? "CANCELAR" : "CANCEL"}
+            </PixelButton>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
