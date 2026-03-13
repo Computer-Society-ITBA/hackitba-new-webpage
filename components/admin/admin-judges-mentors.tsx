@@ -75,6 +75,12 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+    
+    // Email Dialog States
+    const [showEmailDialog, setShowEmailDialog] = useState(false)
+    const [emailEditingPerson, setEmailEditingPerson] = useState<Person | null>(null)
+    const [emailValue, setEmailValue] = useState("")
+    const [emailSaving, setEmailSaving] = useState(false)
 
     const db = getDbClient()
     const storage = getStorageClient()
@@ -347,6 +353,35 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
         }
     }
 
+    const handleOpenEmailDialog = (person: Person) => {
+        setEmailEditingPerson(person)
+        setEmailValue(person.email)
+        setShowEmailDialog(true)
+    }
+
+    const handleSaveEmail = async () => {
+        if (!db || !emailEditingPerson || !emailValue.trim()) {
+            toast({ title: "Error", description: "Email is required" })
+            return
+        }
+
+        setEmailSaving(true)
+        try {
+            const collectionName = personType === "judges" ? "judges" : "mentors"
+            const docRef = doc(db, collectionName, emailEditingPerson.id)
+            await updateDoc(docRef, { email: emailValue.trim() })
+            toast({ title: "Success", description: "Email updated" })
+            setShowEmailDialog(false)
+            setEmailEditingPerson(null)
+            await fetchData()
+        } catch (error) {
+            console.error("Error updating email:", error)
+            toast({ title: "Error", description: String(error) })
+        } finally {
+            setEmailSaving(false)
+        }
+    }
+
     const filteredPeople = useMemo(() => {
         let filtered = people
 
@@ -462,6 +497,13 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
                                                         <Edit2 size={12} />
                                                     </button>
                                                     <button
+                                                        onClick={() => handleOpenEmailDialog(person)}
+                                                        className="text-sm px-2 py-1 bg-brand-yellow/10 text-brand-yellow rounded hover:bg-brand-yellow/20 transition-colors flex items-center gap-1"
+                                                        title="Add/Edit Email"
+                                                    >
+                                                        @
+                                                    </button>
+                                                    <button
                                                         onClick={() => {
                                                             setDeleteTarget(person.id)
                                                             setShowDeleteConfirm(true)
@@ -543,17 +585,6 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
                     </DialogHeader>
 
                     <div className="space-y-4">
-                        {/* Email */}
-                        <div>
-                            <label className="text-xs font-pixel text-brand-yellow mb-2 block">Email {editingPerson && "(no editable)"}</label>
-                            <Input
-                                value={formData.email || ""}
-                                onChange={(e) => !editingPerson && setFormData({ ...formData, email: e.target.value })}
-                                disabled={!!editingPerson}
-                                className="bg-brand-navy/50 border-brand-cyan/30"
-                            />
-                        </div>
-
                         {/* Name */}
                         <div>
                             <label className="text-xs font-pixel text-brand-yellow mb-2 block">{locale === "es" ? "Nombre" : "Name"}</label>
@@ -747,6 +778,44 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
                                 className="px-4 py-2 bg-red-700/20 text-red-400 border border-red-500/30 rounded font-pixel text-xs hover:bg-red-700/30"
                             >
                                 {locale === "es" ? "Eliminar" : "Delete"}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Email Dialog */}
+            <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-brand-yellow font-pixel">
+                            {locale === "es" ? "Agregar Email" : "Add Email"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-pixel text-brand-yellow mb-2 block">Email</label>
+                            <Input
+                                value={emailValue}
+                                onChange={(e) => setEmailValue(e.target.value)}
+                                placeholder="example@email.com"
+                                className="bg-brand-navy/50 border-brand-cyan/30"
+                            />
+                        </div>
+                        <div className="flex gap-3 justify-end pt-4">
+                            <button
+                                onClick={() => setShowEmailDialog(false)}
+                                className="px-4 py-2 bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded font-pixel text-xs hover:bg-brand-navy/70"
+                            >
+                                {locale === "es" ? "Cancelar" : "Cancel"}
+                            </button>
+                            <button
+                                onClick={handleSaveEmail}
+                                disabled={emailSaving}
+                                className="px-4 py-2 bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/40 rounded font-pixel text-xs hover:bg-brand-yellow/30 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {emailSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save size={14} />}
+                                {locale === "es" ? "Guardar" : "Save"}
                             </button>
                         </div>
                     </div>

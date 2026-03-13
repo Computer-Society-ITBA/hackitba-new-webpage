@@ -67,6 +67,8 @@ export default function DashboardPage() {
         router.replace(`/${locale}/dashboard/admin`)
       } else if (user.role === "judge") {
         router.replace(`/${locale}/dashboard/jurado`)
+      } else if (user.role === "mentor") {
+        router.replace(`/${locale}/dashboard/mentor`)
       } else if (user.role === "participant") {
         router.replace(`/${locale}/dashboard/participante`)
       }

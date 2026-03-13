@@ -356,13 +356,16 @@ function EventSignupContent() {
 
         // Validation for Step 1
         if (currentStep === 1) {
-            if (!formData.dni) {
-                setError(translations.auth.eventSignup.errors.dniRequired)
-                return
-            }
-            if (!/^\d+$/.test(formData.dni)) {
-                setError(translations.auth.eventSignup.errors.dniNumeric)
-                return
+            // Only validate DNI for participants, not for judges/mentors
+            if (!isJudgeOrMentor) {
+                if (!formData.dni) {
+                    setError(translations.auth.eventSignup.errors.dniRequired)
+                    return
+                }
+                if (!/^\d+$/.test(formData.dni)) {
+                    setError(translations.auth.eventSignup.errors.dniNumeric)
+                    return
+                }
             }
 
             if (role === "participant") {
@@ -373,11 +376,6 @@ function EventSignupContent() {
                 const age = parseInt(formData.age)
                 if (isNaN(age) || age < 18) {
                     setError(translations.auth.eventSignup.errors.minAge)
-                    return
-                }
-            } else {
-                if (!formData.company || !formData.professionalRole || !formData.photo) {
-                    setError(translations.auth.eventSignup.errors.companyRequired)
                     return
                 }
             }
@@ -501,9 +499,12 @@ function EventSignupContent() {
 
             await updateDoc(firestoreDoc(db, collectionName, docId), updatePayload)
 
-            // Update onboarding step to 2
+            // Update onboarding step to 2 and ensure role is set
             const userDocRef = firestoreDoc(db, "users", authUser.id)
-            await updateDoc(userDocRef, { onboardingStep: 2 })
+            await updateDoc(userDocRef, { 
+                onboardingStep: 2,
+                role: role // Ensure role is saved/updated
+            })
 
             toast({ title: "Success", description: `${role === "judge" ? "Judge" : "Mentor"} profile updated` })
             
