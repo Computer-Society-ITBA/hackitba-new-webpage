@@ -132,6 +132,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             // Remove id from payload
             const { id, ...payload } = editingItem
 
+            if (editType === "participants") {
+                const nextTeam = payload.team || null
+                payload.team = nextTeam
+                payload.hasTeam = !!nextTeam
+            }
+
             await updateDoc(docRef, payload)
 
             // Refresh local data
@@ -179,7 +185,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         if (!db || !moveItem) return
         try {
             const docRef = doc(db, "users", moveItem.id)
-            await updateDoc(docRef, { team: moveTargetTeam || null })
+            const nextTeam = moveTargetTeam || null
+            await updateDoc(docRef, { team: nextTeam, hasTeam: !!nextTeam })
             await fetchData()
             setShowMove(false)
             setMoveItem(null)
