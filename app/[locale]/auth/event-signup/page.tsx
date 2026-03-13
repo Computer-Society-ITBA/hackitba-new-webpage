@@ -98,6 +98,11 @@ function EventSignupContent() {
                 console.log("User is a judge")
                 setIsJudgeOrMentor(true)
                 setRole("judge")
+                // Update role in user doc if needed
+                const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+                if (authUser.role !== "judge") {
+                    await updateDoc(firestoreDoc(db, "users", authUser.id), { role: "judge" })
+                }
                 // Populate form with existing judge data
                 const judgeData = judgesSnapshot.docs[0].data()
                 setFormData(prev => ({
@@ -126,6 +131,11 @@ function EventSignupContent() {
                 console.log("User is a mentor")
                 setIsJudgeOrMentor(true)
                 setRole("mentor")
+                // Update role in user doc if needed
+                const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+                if (authUser.role !== "mentor") {
+                    await updateDoc(firestoreDoc(db, "users", authUser.id), { role: "mentor" })
+                }
                 // Populate form with existing mentor data
                 const mentorData = mentorsSnapshot.docs[0].data()
                 setFormData(prev => ({
