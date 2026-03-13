@@ -15,7 +15,6 @@ interface TeamRequestData {
     category_2: number;
     category_3: number;
   uid?: string;
-  is_created_by_admin?: boolean;
 }
 
 // eslint-disable-next-line camelcase
@@ -32,9 +31,9 @@ interface TeamResponseData {
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
-    const {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin}: TeamRequestData = req.body;
+    const {name, tell_why, category_1, category_2, category_3, uid}: TeamRequestData = req.body;
 
-    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin});
+    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid});
 
     // Validaciones
     if (!name || name.trim().length < 3) {
@@ -80,12 +79,15 @@ export const createTeam = async (req: Request, res: Response) => {
       adminId = uid;
     }
 
+    let creatorIsAdmin = false;
+
     // If the requestor is an admin using the dashboard, do not assign admin_id
     try {
       const creatorUid = req.user?.uid;
       if (creatorUid) {
         const creatorData = await teamService.getUserById(creatorUid);
         if (creatorData?.role === "admin") {
+          creatorIsAdmin = true;
           adminId = null;
         }
       }
@@ -95,6 +97,8 @@ export const createTeam = async (req: Request, res: Response) => {
       // eslint-disable-next-line no-console
       console.warn("Could not determine creator role:", err);
     }
+
+    const createdByAdmin = creatorIsAdmin;
 
     // Crear equipo
     // eslint-disable-next-line camelcase
@@ -107,11 +111,11 @@ export const createTeam = async (req: Request, res: Response) => {
       category_3,
       category: null,
 
-      is_created_by_admin: is_created_by_admin === true,
+      is_created_by_admin: createdByAdmin,
       is_finalista: false,
       link_deploy: null,
       link_github: null,
-      status: "registered",
+      status: createdByAdmin ? "accepted" : "registered",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };

@@ -433,8 +433,8 @@ export default function ApprovalsPage() {
       return
     }
 
-    const categoryIndex = categories.findIndex((category) => category.id === newTeamForm.category)
-    if (categoryIndex === -1) {
+    const categoryIndex = Number.parseInt(newTeamForm.category, 10)
+    if (Number.isNaN(categoryIndex) || categoryIndex < 0 || categoryIndex >= categories.length) {
       toast({ title: translations.admin.createTeam.invalidCategory, variant: 'destructive' })
       return
     }
@@ -457,11 +457,10 @@ export default function ApprovalsPage() {
         },
         body: JSON.stringify({
           name: newTeamForm.name.trim(),
-          tell_why: translations.admin.createTeam.defaultReason,
+          tell_why: (translations.admin.createTeam.defaultReason || "Team created by administrator for assignment").padEnd(20, "."),
           category_1: categoryIndex,
           category_2: null,
           category_3: null,
-          is_created_by_admin: true,
         }),
       })
 
@@ -1073,10 +1072,10 @@ export default function ApprovalsPage() {
                   className="pixel-select mt-2 w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded px-3 py-2"
                 >
                   <option value="">{translations.admin.createTeam.selectCategory}</option>
-                  {categories.map((category) => {
+                  {categories.map((category, index) => {
                     const displayName = locale === "es" ? category.spanishName : category.englishName
                     return (
-                      <option key={category.id} value={category.id}>
+                      <option key={category.id || index} value={String(index)}>
                         {displayName}
                       </option>
                     )
