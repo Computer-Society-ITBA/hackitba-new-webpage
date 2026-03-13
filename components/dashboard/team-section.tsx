@@ -483,7 +483,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 w-full">
               <div className="flex flex-row items-center gap-2 min-w-0 w-full mb-2 sm:mb-0">
                 <Users className="w-6 h-6 text-brand-cyan" />
-                <h3 className="font-pixel text-lg text-brand-yellow break-words whitespace-normal">{team.name}</h3>
+                <h3 className="font-pixel text-lg text-brand-yellow break-words hyphens-auto min-w-0 leading-tight" lang="es">{team.name}</h3>
                 <button
                   onClick={handleEditTeam}
                   disabled={!signupEnabled}
