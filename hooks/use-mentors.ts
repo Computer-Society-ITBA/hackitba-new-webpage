@@ -10,7 +10,8 @@ export interface Mentor {
     name: string
     position: string
     company: string
-    category: MentorCategory
+    categories?: MentorCategory[] // New: array of categories
+    category?: MentorCategory // Deprecated: kept for backward compatibility
     englishBio: string
     spanishBio: string
 
@@ -61,12 +62,16 @@ export function useMentors(): UseMentorsReturn {
                         }
                     }
 
+                    // Support both new (categories array) and old (category string) formats
+                    const categories = d.categories && Array.isArray(d.categories) ? d.categories : (d.category ? [d.category] : [])
+
                     return {
                         id: doc.id,
                         name: d.name,
                         position: d.position,
                         company: d.company,
-                        category: d.category,
+                        categories: categories,
+                        category: categories[0], // Keep for backward compatibility
                         englishBio: d.englishBio ?? d.bio ?? "",
                         spanishBio: d.spanishBio ?? d.bio ?? "",
                         linkedin: d.linkedin,

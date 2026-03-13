@@ -98,7 +98,10 @@ export function Mentors({ translations, locale }: MentorsProps) {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
   const [activeCategory, setActiveCategory] = useState<MentorCategory>("tech")
 
-  const filteredMentors = mentors.filter(mentor => mentor.category === activeCategory)
+  const filteredMentors = mentors.filter(mentor => 
+    (mentor.categories && mentor.categories.includes(activeCategory)) || 
+    mentor.category === activeCategory
+  )
 
   const getBio = (mentor: Mentor) =>
     locale === "es" ? mentor.spanishBio : mentor.englishBio
@@ -128,7 +131,10 @@ export function Mentors({ translations, locale }: MentorsProps) {
               {(["entrepreneurship", "tech", "oratory"] as MentorCategory[]).map((category) => {
                 const Icon = categoryIcons[category]
                 const isActive = activeCategory === category
-                const hasMentors = mentors.some(m => m.category === category)
+                const hasMentors = mentors.some(m => 
+                  (m.categories && m.categories.includes(category)) || 
+                  m.category === category
+                )
                 return (
                   <button
                     key={category}

@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
 import { AdminManagementTables } from "@/components/admin/admin-management-tables"
+import { AdminJudgesMentors } from "@/components/admin/admin-judges-mentors"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
 
@@ -298,6 +299,13 @@ export default function AdminDashboard() {
               </div>
             </div>
             <AdminManagementTables locale={locale} translations={t} />
+          </section>
+
+          <section>
+            <div className="mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">{locale === "es" ? "Jurados & Mentores" : "Judges & Mentors"}</h3>
+            </div>
+            <AdminJudgesMentors locale={locale} translations={t} />
           </section>
 
           <section>
