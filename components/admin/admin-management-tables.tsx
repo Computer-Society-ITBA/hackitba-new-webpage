@@ -1149,14 +1149,50 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 </DialogContent>
             </Dialog>
 
-            {/* Team Details Dialog */}
+            {/* Team Details Modal */}
             <Dialog open={!!selectedTeam} onOpenChange={(open) => !open && setSelectedTeam(null)}>
-                {/* ... existing dialog content ... */}
+                <DialogContent className="bg-brand-navy/90 border-brand-cyan/20 text-brand-cyan font-pixel backdrop-blur-sm w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0">
+                    <DialogHeader className="p-6 pb-4 flex-shrink-0">
+                        <DialogTitle>{selectedTeam?.name || (locale === "es" ? "Detalles del Equipo" : "Team Details")}</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto px-6 pb-6">
+                        {selectedTeam && (
+                            <div className="space-y-4 text-sm">
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">ID</h3>
+                                    <p className="text-xs text-brand-cyan/70">{selectedTeam.id}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Estado" : "Status"}</h3>
+                                    <p>{selectedTeam.status}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Categoría" : "Category"}</h3>
+                                    <p>{getCategoryName(selectedTeam.category_1)}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Miembros" : "Members"}</h3>
+                                    <div className="space-y-2">
+                                        {getTeamMembers(selectedTeam.id).map(member => (
+                                            <div key={member.id} className="flex items-center justify-between p-2 bg-brand-cyan/5 rounded">
+                                                <div>
+                                                    <p className="font-semibold">{member.name} {member.surname}</p>
+                                                    <p className="text-xs text-brand-cyan/60">{member.email}</p>
+                                                </div>
+                                                <span className="text-xs text-brand-cyan/60">{member.role || "user"}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
             </Dialog>
 
             {/* Project Details Dialog */}
             <Dialog open={showProject} onOpenChange={setShowProject}>
-                <DialogContent className="glass-effect border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-2xl max-h-[90vh] overflow-hidden px-4 sm:px-6">
                     <DialogHeader>
                         <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -1176,6 +1212,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                         </DialogTitle>
                     </DialogHeader>
 
+                    <div className="max-h-[72vh] overflow-y-auto pr-1">
                     {selectedProject?.status === "none" ? (
                         <div className="py-12 text-center space-y-4">
                             <AlertTriangle size={48} className="mx-auto text-brand-cyan/20" />
@@ -1243,6 +1280,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             )}
                         </div>
                     )}
+                    </div>
 
                     <div className="flex justify-end mt-8 pt-4 border-t border-brand-cyan/10">
                         <PixelButton onClick={() => setShowProject(false)} size="sm">Close</PixelButton>
