@@ -36,7 +36,7 @@ export default function ParticipanteProyectoPage() {
   const t = getTranslations(locale)
   const db = getDbClient()
   const storage = getStorageClient()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
   const [project, setProject] = useState<any>(null)
   const [team, setTeam] = useState<any>(null)
@@ -47,7 +47,49 @@ export default function ParticipanteProyectoPage() {
   const [isAutoSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [loadingProject, setLoadingProject] = useState(true)
+  const [hasRedirected, setHasRedirected] = useState(false)
+  const [signupEnabled, setSignupEnabled] = useState(true)
   const router = useRouter()
+
+  // Load signup enabled setting
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      }
+    }
+    loadSettings()
+  }, [db])
+
+  // Check onboarding completion and redirect if needed
+  useEffect(() => {
+    if (!loading && user && !hasRedirected) {
+      setHasRedirected(true)
+      const onboardingStep = user.onboardingStep || 0
+
+      console.log("ParticipanteProyectoPage - User onboarding step:", onboardingStep, typeof onboardingStep)
+
+      if (Number(onboardingStep) < 2) {
+        if (signupEnabled) {
+          console.log("Redirecting to event-signup because step < 2")
+          router.replace(`/${locale}/auth/event-signup`)
+        } else {
+          console.log("Signup disabled, redirecting to home")
+          router.replace(`/${locale}`)
+        }
+      }
+    }
+  }, [user, loading, router, locale, hasRedirected, signupEnabled])
 
   const [projectForm, setProjectForm] = useState({
     title: "",

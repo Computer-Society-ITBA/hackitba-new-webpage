@@ -15,6 +15,9 @@ import { TeamSection } from "@/components/dashboard/team-section"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
+import { getAuth } from "firebase/auth"
+import { toast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 export default function ParticipanteDashboard() {
   const params = useParams()
@@ -22,7 +25,7 @@ export default function ParticipanteDashboard() {
   const locale = (params?.locale as Locale) || "en"
   const t = getTranslations(locale)
   const db = getDbClient()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
   const [projectStatus, setProjectStatus] = useState<"none" | "draft" | "submitted" | "reviewed" | "disqualified">("none")
   const [showWinners, setShowWinners] = useState(false)
@@ -30,6 +33,50 @@ export default function ParticipanteDashboard() {
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
   const [showScoresToTeams, setShowScoresToTeams] = useState(false)
   const [resolvedTeamId, setResolvedTeamId] = useState<string | null>(null)
+  const [resettingSignup, setResettingSignup] = useState(false)
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
+  const [hasRedirected, setHasRedirected] = useState(false)
+  const [signupEnabled, setSignupEnabled] = useState(true)
+
+  // Load signup enabled setting
+  useEffect(() => {
+    if (!db) return
+    const loadSettings = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, "settings", "global"))
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data()
+          setSignupEnabled(data?.signupEnabled !== false)
+        } else {
+          setSignupEnabled(true)
+        }
+      } catch (err) {
+        console.error("Error loading signup setting:", err)
+        setSignupEnabled(true)
+      }
+    }
+    loadSettings()
+  }, [db])
+
+  // Check onboarding completion and redirect if needed
+  useEffect(() => {
+    if (!loading && user && !hasRedirected) {
+      setHasRedirected(true)
+      const onboardingStep = user.onboardingStep || 0
+
+      console.log("ParticipanteDashboard - User onboarding step:", onboardingStep, typeof onboardingStep)
+
+      if (Number(onboardingStep) < 2) {
+        if (signupEnabled) {
+          console.log("Redirecting to event-signup because step < 2")
+          router.replace(`/${locale}/auth/event-signup`)
+        } else {
+          console.log("Signup disabled, redirecting to home")
+          router.replace(`/${locale}`)
+        }
+      }
+    }
+  }, [user, loading, router, locale, hasRedirected, signupEnabled])
 
   useEffect(() => {
     if (!db || !user?.id) return
@@ -139,6 +186,97 @@ export default function ParticipanteDashboard() {
 
   const hasTeam = !!resolvedTeamId
 
+  const handleOpenResetModal = () => {
+    setShowResetConfirmModal(true)
+  }
+
+  const confirmResetSignup = async () => {
+    if (!user?.id) return
+
+    setResettingSignup(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+
+      const response = await fetch(`${apiUrl}/users/${user.id}/reset-event-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || (locale === "es" ? "No se pudo reiniciar la inscripción" : "Could not reset signup"))
+      }
+
+      toast({
+        title: locale === "es" ? "Inscripción reiniciada" : "Signup reset",
+        description: locale === "es" ? "Te redirigimos para que vuelvas a elegir la modalidad." : "Redirecting you to choose your registration mode again.",
+      })
+
+      router.replace(`/${locale}/auth/event-signup`)
+    } catch (error: any) {
+      toast({
+        title: locale === "es" ? "Error" : "Error",
+        description: error?.message || (locale === "es" ? "No se pudo completar la acción" : "Could not complete the action"),
+        variant: "destructive",
+      })
+    } finally {
+      setResettingSignup(false)
+      setShowResetConfirmModal(false)
+    }
+  }
+
+  const handleResetSignupFlow = async () => {
+    if (!user?.id) return
+
+    const confirmed = window.confirm(
+      locale === "es"
+        ? "Esto te hará volver al formulario de inscripción para cambiar la modalidad. Si estás solo en tu equipo, el equipo se eliminará. ¿Querés continuar?"
+        : "This will send you back to event signup to change your registration mode. If you are the only member in your team, the team will be deleted. Continue?"
+    )
+
+    if (!confirmed) return
+
+    setResettingSignup(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+
+      const response = await fetch(`${apiUrl}/users/${user.id}/reset-event-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || (locale === "es" ? "No se pudo reiniciar la inscripción" : "Could not reset signup"))
+      }
+
+      toast({
+        title: locale === "es" ? "Inscripción reiniciada" : "Signup reset",
+        description: locale === "es" ? "Te redirigimos para que vuelvas a elegir la modalidad." : "Redirecting you to choose your registration mode again.",
+      })
+
+      router.replace(`/${locale}/auth/event-signup`)
+    } catch (error: any) {
+      toast({
+        title: locale === "es" ? "Error" : "Error",
+        description: error?.message || (locale === "es" ? "No se pudo completar la acción" : "Could not complete the action"),
+        variant: "destructive",
+      })
+    } finally {
+      setResettingSignup(false)
+    }
+  }
+
   return (
     <ProtectedRoute allowedRoles={["participant"]}>
       <DashboardLayout title={t.dashboard.participant.title}>
@@ -190,6 +328,13 @@ export default function ParticipanteDashboard() {
           {/* Team Section */}
           <section>
             <h3 className="font-pixel text-2xl text-brand-yellow mb-6">{t.dashboard.participant.myTeam}</h3>
+            <div className="mb-4 flex justify-end">
+              <PixelButton onClick={handleOpenResetModal} disabled={resettingSignup} variant="outline">
+                {resettingSignup
+                  ? (locale === "es" ? "REINICIANDO..." : "RESETTING...")
+                  : (locale === "es" ? "CAMBIAR FORMA DE INSCRIPCION" : "CHANGE REGISTRATION MODE")}
+              </PixelButton>
+            </div>
             {user?.participationStatus === "rejected" ? (
               <div className="mb-6 p-4 border-2 border-red-500/60 rounded-lg bg-red-500/5">
                 <p className="text-red-400 font-pixel font-bold mb-2">
@@ -245,6 +390,41 @@ export default function ParticipanteDashboard() {
           )}
         </div>
       </DashboardLayout>
+
+      {/* Reset Signup Confirmation Modal */}
+      <Dialog open={showResetConfirmModal} onOpenChange={setShowResetConfirmModal}>
+        <DialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-brand-yellow">
+              {locale === "es" ? "Cambiar forma de inscripción" : "Change registration mode"}
+            </DialogTitle>
+            <DialogDescription className="text-brand-cyan/80 text-sm mt-2">
+              {locale === "es"
+                ? "Esto te hará volver al formulario de inscripción para cambiar la modalidad. Si estás solo en tu equipo, el equipo se eliminará. ¿Querés continuar?"
+                : "This will send you back to event signup to change your registration mode. If you are the only member in your team, the team will be deleted. Continue?"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 pt-4">
+            <PixelButton
+              onClick={confirmResetSignup}
+              disabled={resettingSignup}
+              className="flex-1"
+            >
+              {resettingSignup
+                ? (locale === "es" ? "REINICIANDO..." : "RESETTING...")
+                : (locale === "es" ? "CONTINUAR" : "CONTINUE")}
+            </PixelButton>
+            <PixelButton
+              onClick={() => setShowResetConfirmModal(false)}
+              variant="outline"
+              disabled={resettingSignup}
+              className="flex-1"
+            >
+              {locale === "es" ? "CANCELAR" : "CANCEL"}
+            </PixelButton>
+          </div>
+        </DialogContent>
+      </Dialog>
     </ProtectedRoute>
   )
 }
