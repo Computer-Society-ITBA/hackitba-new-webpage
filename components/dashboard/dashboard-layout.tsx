@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { useRouter, useParams, usePathname } from "next/navigation"
 import { NeonGlow } from "@/components/effects/neon-glow"
 import Link from "next/link"
-import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ListChecks, ShieldCheck, UserCheck, RotateCcw, GanttChart, FolderKanban, FileEdit, Star } from "lucide-react"
+import { Home, User, LogOut, CheckSquare, UserX, Menu, X, ChevronLeft, ChevronRight, CalendarDays, Trophy, ShieldCheck, UserCheck, RotateCcw, GanttChart, FolderKanban, FileEdit, Star } from "lucide-react"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { doc, onSnapshot } from "firebase/firestore"
@@ -35,6 +35,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     `/${locale}/dashboard/participante`,
     `/${locale}/dashboard/admin`,
     `/${locale}/dashboard/jurado`,
+    `/${locale}/dashboard/mentor`,
   ]
   const isDashboardHome = dashboardHomeRoutes.includes(pathname)
 
