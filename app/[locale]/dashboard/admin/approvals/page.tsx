@@ -81,6 +81,12 @@ export default function ApprovalsPage() {
     return locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
   }
 
+  const getTeamCategoryIndex = (team: any) => {
+    if (team?.category !== null && team?.category !== undefined) return team.category
+    if (team?.category_1 !== null && team?.category_1 !== undefined) return team.category_1
+    return null
+  }
+
   const handleTeamSort = (field: "name" | "members" | "category") => {
     if (teamSortField === field) {
       setTeamSortOrder(teamSortOrder === "asc" ? "desc" : "asc")
@@ -159,8 +165,8 @@ export default function ApprovalsPage() {
         valA = getTeamMemberCount(a.id)
         valB = getTeamMemberCount(b.id)
       } else {
-        valA = getCategoryName(a.category_1).toLowerCase()
-        valB = getCategoryName(b.category_1).toLowerCase()
+        valA = getCategoryName(getTeamCategoryIndex(a)).toLowerCase()
+        valB = getCategoryName(getTeamCategoryIndex(b)).toLowerCase()
       }
       if (valA < valB) return teamSortOrder === "asc" ? -1 : 1
       if (valA > valB) return teamSortOrder === "asc" ? 1 : -1
@@ -458,7 +464,8 @@ export default function ApprovalsPage() {
         body: JSON.stringify({
           name: newTeamForm.name.trim(),
           tell_why: (translations.admin.createTeam.defaultReason || "Team created by administrator for assignment").padEnd(20, "."),
-          category_1: categoryIndex,
+          category: categoryIndex,
+          category_1: null,
           category_2: null,
           category_3: null,
         }),
@@ -738,7 +745,7 @@ export default function ApprovalsPage() {
                               </button>
                             </TableCell>
                             <TableCell className="text-brand-cyan/80 text-[11px] py-1">
-                              {getCategoryName(team.category_1)}
+                              {getCategoryName(getTeamCategoryIndex(team))}
                             </TableCell>
                           </TableRow>
                         ))

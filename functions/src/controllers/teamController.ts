@@ -11,9 +11,10 @@ import {getHackitbaDb} from "../helpers/getDb";
 interface TeamRequestData {
     name: string;
     tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+    category_1: number | null;
+    category_2: number | null;
+    category_3: number | null;
+    category?: number | null;
   uid?: string;
 }
 
@@ -22,18 +23,18 @@ interface TeamResponseData {
     id: string;
     name: string;
     tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+  category_1: number | null;
+  category_2: number | null;
+  category_3: number | null;
     status: string;
 }
 
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
-    const {name, tell_why, category_1, category_2, category_3, uid}: TeamRequestData = req.body;
+    const {name, tell_why, category_1, category_2, category_3, category, uid}: TeamRequestData = req.body;
 
-    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid});
+    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, category, uid});
 
     // Validaciones
     if (!name || name.trim().length < 3) {
@@ -106,10 +107,10 @@ export const createTeam = async (req: Request, res: Response) => {
       label,
       name: name.trim(),
       tell_why: tell_why.trim(),
-      category_1,
-      category_2,
-      category_3,
-      category: null,
+      category_1: category_1 ?? null,
+      category_2: category_2 ?? null,
+      category_3: category_3 ?? null,
+      category: createdByAdmin ? (typeof category === "number" ? category : null) : null,
 
       is_created_by_admin: createdByAdmin,
       is_finalista: false,

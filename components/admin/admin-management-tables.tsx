@@ -218,6 +218,18 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
     }
 
+    const getTeamCategoryIndex = (team: any) => {
+        const teamStatus = (team?.status || "").toLowerCase()
+        const isAccepted = teamStatus === "accepted" || teamStatus === "approved"
+        if (isAccepted && team?.category !== null && team?.category !== undefined) return team.category
+        return null
+    }
+
+    const getParticipantCategoryIndex = (participant: any) => {
+        const team = participant.team ? teams.find(t => t.id === participant.team) : null
+        return getTeamCategoryIndex(team)
+    }
+
     const filteredAndSortedData = useMemo(() => {
         let data = activeTab === "participants" ? users.filter(u => u.role !== "admin") : [...teams]
 
@@ -556,7 +568,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                             })()}
                                                         </TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName((item.team ? teams.find(t => t.id === item.team)?.category_1 : null) ?? item.category_1)}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(getParticipantCategoryIndex(item))}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">
                                                             {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                         </TableCell>
@@ -624,7 +636,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                 {item.status}
                                                             </span>
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(item.category_1)}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(getTeamCategoryIndex(item))}</TableCell>
                                                         <TableCell className="text-brand-cyan/60 text-[10px]">
                                                             {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                         </TableCell>

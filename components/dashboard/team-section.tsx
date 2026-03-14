@@ -268,13 +268,24 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
 
   const isAdmin = team?.admin_id === userId
 
+  const isAcceptedTeam = useMemo(() => {
+    const status = (team?.status || "").toLowerCase()
+    return status === "accepted" || status === "approved"
+  }, [team?.status])
+
+  const resolveCategoryIdFromIndex = (index: number) => {
+    if (index < 0) return ""
+    return categories[index]?.id || ""
+  }
+
   const teamCategoryId = useMemo(() => {
     if (!team) return ""
-    if (typeof team.category === "number" && team.category >= 0) {
-      return categories[team.category]?.id || ""
+    // Only accepted/approved teams show their admin-assigned category; pending teams show nothing.
+    if (isAcceptedTeam && typeof team.category === "number") {
+      return resolveCategoryIdFromIndex(team.category)
     }
     return ""
-  }, [team, categories])
+  }, [team, categories, isAcceptedTeam])
 
   const teamCategoryLabel = useMemo(() => {
     const fallbackLabel = locale === "es" ? "Categoria no asignada" : "Category not assigned"
