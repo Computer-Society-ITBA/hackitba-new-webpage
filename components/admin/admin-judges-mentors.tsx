@@ -218,12 +218,6 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
             return
         }
 
-        // Only require email for new documents
-        if (!editingPerson && !formData.email) {
-            toast({ title: "Error", description: "Email is required for new entries" })
-            return
-        }
-
         if (!formData.name) {
             toast({ title: "Error", description: "Name is required" })
             return
