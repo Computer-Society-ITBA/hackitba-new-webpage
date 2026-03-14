@@ -136,6 +136,10 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 const nextTeam = payload.team || null
                 payload.team = nextTeam
                 payload.hasTeam = !!nextTeam
+                // Normalize legacy role value used in old records.
+                if (payload.role === "user") {
+                    payload.role = "participant"
+                }
             }
 
             await updateDoc(docRef, payload)
@@ -556,7 +560,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">
                                                             {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
 
                                                     </>
                                                 ) : (
@@ -798,11 +802,11 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                     <div className="space-y-1">
                                         <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
                                         <select
-                                            value={editingItem.role || "user"}
+                                            value={editingItem.role === "user" ? "participant" : (editingItem.role || "participant")}
                                             onChange={e => setEditingItem({ ...editingItem, role: e.target.value })}
                                             className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
                                         >
-                                            <option value="user">User</option>
+                                            <option value="participant">Participant</option>
                                             <option value="judge">Judge</option>
                                             <option value="mentor">Mentor</option>
                                             <option value="admin">Admin</option>
