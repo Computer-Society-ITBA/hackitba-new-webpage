@@ -2,11 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { collection, getDocs, query, where } from "firebase/firestore"
+import { getAuth } from "firebase/auth"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 import { getDbClient } from "@/lib/firebase/client-config"
 import type { Locale } from "@/lib/i18n/config"
+import { toast } from "@/hooks/use-toast"
 import { Search, School, Users, UserCircle2, Mail, GraduationCap, Hash } from "lucide-react"
 
 interface TeamDoc {
@@ -28,6 +32,13 @@ interface ParticipantDoc {
   age?: number
 }
 
+interface TeamNote {
+  id: string
+  text: string
+  createdAt: string | null
+  authorRole: "mentor" | "judge" | "admin"
+}
+
 interface MentorTeamsDashboardProps {
   locale: Locale
 }
@@ -40,6 +51,14 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
+  const [noteText, setNoteText] = useState("")
+  const [savingNote, setSavingNote] = useState(false)
+  const [myNotesOpen, setMyNotesOpen] = useState(false)
+  const [myNotesLoading, setMyNotesLoading] = useState(false)
+  const [myNotes, setMyNotes] = useState<TeamNote[]>([])
+  const [myNotesPage, setMyNotesPage] = useState(1)
+  const [myNotesTotalPages, setMyNotesTotalPages] = useState(1)
+  const [myNotesTotalItems, setMyNotesTotalItems] = useState(0)
 
   useEffect(() => {
     const loadData = async () => {
@@ -142,6 +161,115 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
   }, [teams, selectedTeamId])
 
   const selectedParticipants = selectedTeam ? participantsByTeam[selectedTeam.id] || [] : []
+
+  const handleCreateNote = async () => {
+    if (!selectedTeam) return
+
+    const trimmedText = noteText.trim()
+    if (!trimmedText) {
+      toast({
+        title: locale === "es" ? "Nota vacia" : "Empty note",
+        description: locale === "es" ? "Escribe un texto para guardar la nota." : "Write some text before saving the note.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSavingNote(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ text: trimmedText }),
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || (locale === "es" ? "No se pudo crear la nota" : "Could not create note"))
+      }
+
+      setNoteText("")
+      toast({
+        title: locale === "es" ? "Nota guardada" : "Note saved",
+        description: locale === "es" ? "La nota se guardo correctamente." : "The note was saved successfully.",
+      })
+    } catch (error: any) {
+      toast({
+        title: locale === "es" ? "Error al guardar nota" : "Error saving note",
+        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+        variant: "destructive",
+      })
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
+  const loadMyNotes = async (targetPage: number) => {
+    if (!selectedTeam) return
+
+    setMyNotesLoading(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes/mine?page=${targetPage}&pageSize=10`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${idToken}`,
+        },
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || (locale === "es" ? "No se pudieron cargar tus notas" : "Could not load your notes"))
+      }
+
+      const payload = await response.json()
+      const notes = Array.isArray(payload?.notes) ? payload.notes : []
+      setMyNotes(notes)
+      setMyNotesPage(typeof payload?.page === "number" ? payload.page : targetPage)
+      setMyNotesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 1)
+      setMyNotesTotalItems(typeof payload?.count === "number" ? payload.count : 0)
+    } catch (error: any) {
+      setMyNotes([])
+      setMyNotesPage(1)
+      setMyNotesTotalPages(1)
+      setMyNotesTotalItems(0)
+      toast({
+        title: locale === "es" ? "Error al cargar notas" : "Error loading notes",
+        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+        variant: "destructive",
+      })
+    } finally {
+      setMyNotesLoading(false)
+    }
+  }
+
+  const openMyNotesModal = async () => {
+    setMyNotesOpen(true)
+    await loadMyNotes(1)
+  }
+
+  const formatNoteDate = (value: string | null) => {
+    if (!value) return locale === "es" ? "Sin fecha" : "No date"
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    return date.toLocaleString(locale === "es" ? "es-AR" : "en-US")
+  }
 
   return (
     <div className="space-y-6">
@@ -253,6 +381,38 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
                 </span>
               </div>
 
+              <div className="rounded-lg border border-brand-yellow/30 bg-brand-navy/40 p-3 mb-4 space-y-2">
+                <p className="text-sm font-pixel text-brand-yellow">
+                  Add note
+                </p>
+                <Textarea
+                  value={noteText}
+                  onChange={(event) => setNoteText(event.target.value)}
+                  placeholder={locale === "es" ? "Escribe una nota del equipo..." : "Write a team note..."}
+                  className="min-h-20 bg-brand-navy/30 border-brand-cyan/30 text-brand-cyan"
+                  disabled={savingNote}
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={openMyNotesModal}
+                    className="mr-2 px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20"
+                  >
+                    {locale === "es" ? "Ver mis notas" : "View my notes"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateNote}
+                    disabled={savingNote}
+                    className="px-3 py-2 text-xs font-pixel rounded border border-brand-yellow/40 bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 disabled:opacity-50"
+                  >
+                    {savingNote
+                      ? locale === "es" ? "Guardando..." : "Saving..."
+                      : locale === "es" ? "Guardar nota" : "Save note"}
+                  </button>
+                </div>
+              </div>
+
               {selectedParticipants.length === 0 ? (
                 <p className="text-brand-cyan/70 text-sm">
                   {locale === "es"
@@ -289,6 +449,45 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
               )}
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={myNotesOpen} onOpenChange={setMyNotesOpen}>
+        <DialogContent className="bg-brand-navy border-brand-yellow/30 text-brand-cyan max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-brand-yellow text-lg">
+              {locale === "es" ? "Mis notas" : "My notes"}
+            </DialogTitle>
+          </DialogHeader>
+
+          {myNotesLoading ? (
+            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
+          ) : myNotes.length === 0 ? (
+            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "No hiciste notas para este equipo aun." : "You have not created notes for this team yet."}</p>
+          ) : (
+            <>
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                {myNotes.map((note) => (
+                  <div key={note.id} className="rounded-lg border border-brand-cyan/20 bg-brand-navy/40 p-3">
+                    <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                    <p className="text-xs text-brand-cyan/60 mt-2">{formatNoteDate(note.createdAt)}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <PaginationControls
+            page={myNotesPage}
+            totalPages={myNotesTotalPages}
+            onPageChange={(nextPage) => {
+              if (myNotesLoading) return
+              void loadMyNotes(nextPage)
+            }}
+            totalItems={myNotesTotalItems}
+            pageSize={10}
+            locale={locale}
+          />
         </DialogContent>
       </Dialog>
     </div>

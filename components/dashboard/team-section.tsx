@@ -8,6 +8,7 @@ import { Users, Crown, UserCircle, Trash2, Edit2, X, Settings, Copy, Check } fro
 import * as LucideIcons from "lucide-react"
 import type { User } from "@/lib/firebase/types"
 import { PixelButton } from "@/components/ui/pixel-button"
+import { PaginationControls } from "@/components/ui/pagination-controls"
 import { toast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -42,6 +43,19 @@ interface TeamSectionProps {
   userTeamLabel: string | null
 }
 
+interface TeamNote {
+  id: string
+  text: string
+  authorId: string
+  authorRole: "mentor" | "judge" | "admin"
+  createdAt: string | null
+  author?: {
+    id: string
+    name?: string
+    surname?: string
+  }
+}
+
 export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
@@ -55,12 +69,21 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   const [rejoinCode, setRejoinCode] = useState("")
   const [rejoinError, setRejoinError] = useState("")
   const [copied, setCopied] = useState(false)
+  const [teamNotes, setTeamNotes] = useState<TeamNote[]>([])
+  const [notesLoading, setNotesLoading] = useState(false)
+  const [notesPage, setNotesPage] = useState(1)
+  const [notesTotalPages, setNotesTotalPages] = useState(1)
+  const [notesTotalItems, setNotesTotalItems] = useState(0)
   const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "false" && process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== "0"
   const db = getDbClient()
   const router = useRouter()
   const params = useParams()
   const locale = (params.locale as Locale) || "es"
   const t = getTranslations(locale)
+  const isAcceptedTeam = useMemo(() => {
+    const status = (team?.status || "").toLowerCase()
+    return status === "accepted" || status === "approved"
+  }, [team?.status])
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -144,6 +167,61 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
 
     loadCategories()
   }, [db])
+
+  useEffect(() => {
+    setNotesPage(1)
+  }, [userTeamLabel])
+
+  useEffect(() => {
+    const loadTeamNotes = async () => {
+      if (!userTeamLabel || !isAcceptedTeam) {
+        setTeamNotes([])
+        setNotesTotalPages(1)
+        setNotesTotalItems(0)
+        return
+      }
+
+      setNotesLoading(true)
+      try {
+        const auth = getAuth()
+        const idToken = await auth.currentUser?.getIdToken()
+        if (!idToken) {
+          throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+        }
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+        const response = await fetch(`${apiUrl}/teams/${userTeamLabel}/notes?page=${notesPage}&pageSize=10`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${idToken}`,
+          },
+        })
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => null)
+          throw new Error(payload?.error || (locale === "es" ? "No se pudieron cargar las notas" : "Could not load notes"))
+        }
+
+        const payload = await response.json()
+        setTeamNotes(Array.isArray(payload?.notes) ? payload.notes : [])
+        setNotesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 1)
+        setNotesTotalItems(typeof payload?.count === "number" ? payload.count : 0)
+      } catch (error: any) {
+        setTeamNotes([])
+        setNotesTotalPages(1)
+        setNotesTotalItems(0)
+        toast({
+          title: locale === "es" ? "Error al cargar notas" : "Error loading notes",
+          description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+          variant: "destructive",
+        })
+      } finally {
+        setNotesLoading(false)
+      }
+    }
+
+    loadTeamNotes()
+  }, [isAcceptedTeam, locale, notesPage, userTeamLabel])
 
   // Eliminar miembros deshabilitado
 
@@ -267,11 +345,6 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
   }
 
   const isAdmin = team?.admin_id === userId
-
-  const isAcceptedTeam = useMemo(() => {
-    const status = (team?.status || "").toLowerCase()
-    return status === "accepted" || status === "approved"
-  }, [team?.status])
 
   const resolveCategoryIdFromIndex = (index: number) => {
     if (index < 0) return ""
@@ -420,6 +493,19 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
     } catch (error) {
       console.error("Failed to copy:", error)
     }
+  }
+
+  const formatNoteDate = (value: string | null) => {
+    if (!value) return locale === "es" ? "Sin fecha" : "No date"
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    return date.toLocaleString(locale === "es" ? "es-AR" : "en-US")
+  }
+
+  const getRoleLabel = (role: TeamNote["authorRole"]) => {
+    if (role === "mentor") return locale === "es" ? "Mentor" : "Mentor"
+    if (role === "judge") return locale === "es" ? "Jurado" : "Judge"
+    return locale === "es" ? "Admin" : "Admin"
   }
 
   if (loading) {
@@ -597,6 +683,49 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
             ))}
           </div>
         </div>
+
+        {isAcceptedTeam && (
+          <div className="space-y-3">
+            <h4 className="font-pixel text-xs text-brand-cyan">
+              {locale === "es" ? "Notas del equipo" : "Team notes"}
+            </h4>
+
+            {notesLoading ? (
+              <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
+            ) : teamNotes.length === 0 ? (
+              <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Todavia no hay notas para este equipo." : "There are no notes for this team yet."}</p>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {teamNotes.map((note) => {
+                    const fullName = [note.author?.name, note.author?.surname].filter(Boolean).join(" ")
+                    const authorLabel = fullName || note.author?.id || note.authorId
+                    return (
+                      <div key={note.id} className="rounded border border-brand-cyan/20 bg-brand-navy/30 p-3">
+                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                        <p className="text-xs text-brand-cyan/60 mt-2">
+                          {authorLabel} · {getRoleLabel(note.authorRole)} · {formatNoteDate(note.createdAt)}
+                        </p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+
+            <PaginationControls
+              page={notesPage}
+              totalPages={notesTotalPages}
+              onPageChange={(nextPage) => {
+                if (notesLoading) return
+                setNotesPage(nextPage)
+              }}
+              totalItems={notesTotalItems}
+              pageSize={10}
+              locale={locale}
+            />
+          </div>
+        )}
       </div>
 
       {/* Edit Member Dialog */}

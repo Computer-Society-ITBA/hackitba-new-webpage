@@ -29,6 +29,38 @@ interface TeamResponseData {
     status: string;
 }
 
+interface CreateTeamNoteRequest {
+  text: string;
+}
+
+type TeamNoteAuthorRole = "mentor" | "judge" | "admin";
+
+interface TeamNoteAuthor {
+  id: string;
+  name?: string;
+  surname?: string;
+}
+
+interface TeamNoteItemResponse {
+  id: string;
+  text: string;
+  authorId: string;
+  authorRole: TeamNoteAuthorRole;
+  teamId: string;
+  isMentorNote: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+  author: TeamNoteAuthor;
+}
+
+interface TeamNotesListResponse {
+  notes: TeamNoteItemResponse[];
+  count: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
@@ -451,5 +483,237 @@ export const getAdminTeams = async (_req: Request, res: Response) => {
   } catch (error) {
     logger.error("Error getting admin teams:", error);
     return res.status(500).json({error: "Error getting admin teams"});
+  }
+};
+
+/**
+ * Create a note under teams/{teamId}/notes/{noteId}.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const createTeamNote = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const {text} = req.body as CreateTeamNoteRequest;
+    const authorId = req.user?.uid as string | undefined;
+
+    if (!authorId) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    if (!trimmedText) {
+      return res.status(400).json({error: "text is required"});
+    }
+
+    const db = getHackitbaDb();
+    const teamRef = db.collection("teams").doc(label);
+    const teamSnap = await teamRef.get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(authorId).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const rawRole = userSnap.data()?.role;
+    const allowedRoles: TeamNoteAuthorRole[] = ["mentor", "judge", "admin"];
+    if (!allowedRoles.includes(rawRole)) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const authorRole = rawRole as TeamNoteAuthorRole;
+    const noteRef = teamRef.collection("notes").doc();
+
+    await noteRef.set({
+      text: trimmedText,
+      authorId,
+      authorRole,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      teamId: label,
+      isMentorNote: authorRole === "mentor",
+    });
+
+    return res.status(201).json({
+      id: noteRef.id,
+      teamId: label,
+      authorId,
+      authorRole,
+      text: trimmedText,
+    });
+  } catch (error: any) {
+    logger.error("Error creating team note:", error);
+    return res.status(500).json({error: "Error creando nota de equipo"});
+  }
+};
+
+const buildTeamNoteResponse = async (
+  db: FirebaseFirestore.Firestore,
+  label: string,
+  page: number,
+  pageSize: number,
+  uid?: string
+): Promise<TeamNotesListResponse> => {
+  let notesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db
+    .collection("teams")
+    .doc(label)
+    .collection("notes");
+
+  if (uid) {
+    notesQuery = notesQuery.where("authorId", "==", uid);
+  } else {
+    notesQuery = notesQuery.orderBy("createdAt", "desc");
+  }
+
+  const notesSnap = await notesQuery.get();
+  const notesRaw = notesSnap.docs.map((noteDoc) => ({
+    id: noteDoc.id,
+    ...(noteDoc.data() as {
+      text?: string;
+      authorId?: string;
+      authorRole?: TeamNoteAuthorRole;
+      teamId?: string;
+      isMentorNote?: boolean;
+      createdAt?: FirebaseFirestore.Timestamp;
+      updatedAt?: FirebaseFirestore.Timestamp;
+    }),
+  }));
+
+  const authorIds = Array.from(new Set(notesRaw.map((note) => note.authorId).filter(Boolean))) as string[];
+  const authorMap = new Map<string, TeamNoteAuthor>();
+
+  await Promise.all(
+    authorIds.map(async (authorId) => {
+      const userSnap = await db.collection("users").doc(authorId).get();
+      if (!userSnap.exists) {
+        authorMap.set(authorId, {id: authorId});
+        return;
+      }
+      const userData = userSnap.data() as {name?: string; surname?: string};
+      authorMap.set(authorId, {
+        id: authorId,
+        name: userData.name,
+        surname: userData.surname,
+      });
+    })
+  );
+
+  const sortedNotes = uid ? [...notesRaw].sort((a, b) => {
+    const aTime = a.createdAt ? a.createdAt.toMillis() : 0;
+    const bTime = b.createdAt ? b.createdAt.toMillis() : 0;
+    return bTime - aTime;
+  }) : notesRaw;
+
+  const mappedNotes = sortedNotes.map((note) => ({
+    id: note.id,
+    text: note.text || "",
+    authorId: note.authorId || "",
+    authorRole: (note.authorRole || "mentor") as TeamNoteAuthorRole,
+    teamId: note.teamId || label,
+    isMentorNote: Boolean(note.isMentorNote),
+    createdAt: note.createdAt ? note.createdAt.toDate().toISOString() : null,
+    updatedAt: note.updatedAt ? note.updatedAt.toDate().toISOString() : null,
+    author: authorMap.get(note.authorId || "") || {id: note.authorId || ""},
+  }));
+
+  const total = mappedNotes.length;
+  const safePageSize = Math.max(1, pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const paginatedNotes = mappedNotes.slice((safePage - 1) * safePageSize, safePage * safePageSize);
+
+  return {
+    notes: paginatedNotes,
+    count: total,
+    page: safePage,
+    pageSize: safePageSize,
+    totalPages,
+  };
+};
+
+const parseNotesPagination = (req: Request) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+  const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? "10"), 10) || 10);
+  return {page, pageSize};
+};
+
+/**
+ * Get notes created by the authenticated user for a team.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @return {Promise<Response>} Response
+ */
+export const getMyTeamNotes = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const uid = req.user?.uid as string | undefined;
+    const {page, pageSize} = parseNotesPagination(req);
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const db = getHackitbaDb();
+    const teamSnap = await db.collection("teams").doc(label).get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+    const result = await buildTeamNoteResponse(db, label, page, pageSize, uid);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    logger.error("Error getting my team notes:", error);
+    return res.status(500).json({error: "Error obteniendo notas del equipo"});
+  }
+};
+
+/**
+ * Get all notes for a team.
+ * Participants can only read notes for their own team.
+ * Mentors, judges and admins can read any team notes.
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @return {Promise<Response>} Response
+ */
+export const getTeamNotes = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const uid = req.user?.uid as string | undefined;
+    const {page, pageSize} = parseNotesPagination(req);
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const db = getHackitbaDb();
+    const teamSnap = await db.collection("teams").doc(label).get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const userData = userSnap.data() as {role?: string; team?: string | null};
+    const role = userData.role;
+    const canReadAll = role === "mentor" || role === "judge" || role === "admin";
+    const isParticipantInTeam = role === "participant" && userData.team === label;
+
+    if (!canReadAll && !isParticipantInTeam) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const result = await buildTeamNoteResponse(db, label, page, pageSize);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    logger.error("Error getting team notes:", error);
+    return res.status(500).json({error: "Error obteniendo notas del equipo"});
   }
 };

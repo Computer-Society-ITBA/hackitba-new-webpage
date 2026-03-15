@@ -35,6 +35,19 @@ interface AdminManagementTablesProps {
 
 type Tab = "participants" | "teams"
 
+interface AdminTeamNote {
+    id: string
+    text: string
+    authorId: string
+    authorRole: "mentor" | "judge" | "admin"
+    createdAt: string | null
+    author?: {
+        id: string
+        name?: string
+        surname?: string
+    }
+}
+
 export function AdminManagementTables({ locale, translations }: AdminManagementTablesProps) {
     const [activeTab, setActiveTab] = useState<Tab>("participants")
     const [users, setUsers] = useState<any[]>([])
@@ -93,6 +106,17 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
     // Team Details Modal (view only members)
     const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
+
+    // Team Notes Modal (admin in edit team flow)
+    const [showTeamNotesModal, setShowTeamNotesModal] = useState(false)
+    const [teamNotesTarget, setTeamNotesTarget] = useState<any | null>(null)
+    const [teamNotesLoading, setTeamNotesLoading] = useState(false)
+    const [teamNotesSaving, setTeamNotesSaving] = useState(false)
+    const [teamNotes, setTeamNotes] = useState<AdminTeamNote[]>([])
+    const [teamNotesText, setTeamNotesText] = useState("")
+    const [teamNotesPage, setTeamNotesPage] = useState(1)
+    const [teamNotesTotalPages, setTeamNotesTotalPages] = useState(1)
+    const [teamNotesTotalItems, setTeamNotesTotalItems] = useState(0)
 
     const fetchData = async () => {
         if (!db) return
@@ -339,6 +363,132 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
     const getTeamMembers = (teamId: string) => {
         return users.filter(user => user.team === teamId)
+    }
+
+    const formatNoteDate = (value: string | null) => {
+        if (!value) return locale === "es" ? "Sin fecha" : "No date"
+        const date = new Date(value)
+        if (Number.isNaN(date.getTime())) return value
+        return date.toLocaleString(locale === "es" ? "es-AR" : "en-US")
+    }
+
+    const getNoteAuthorLabel = (note: AdminTeamNote) => {
+        const fullName = [note.author?.name, note.author?.surname].filter(Boolean).join(" ")
+        const roleLabel = note.authorRole === "mentor"
+            ? (locale === "es" ? "Mentor" : "Mentor")
+            : note.authorRole === "judge"
+                ? (locale === "es" ? "Jurado" : "Judge")
+                : "Admin"
+        return `${fullName || note.author?.id || note.authorId} · ${roleLabel}`
+    }
+
+    const loadTeamNotes = async (teamId: string, targetPage: number) => {
+        setTeamNotesLoading(true)
+        try {
+            const auth = getAuthClient()
+            const idToken = await auth?.currentUser?.getIdToken()
+            if (!idToken) {
+                throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+            }
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/teams/${teamId}/notes?page=${targetPage}&pageSize=10`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${idToken}`,
+                },
+            })
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null)
+                throw new Error(payload?.error || (locale === "es" ? "No se pudieron cargar las notas" : "Could not load notes"))
+            }
+
+            const payload = await response.json()
+            setTeamNotes(Array.isArray(payload?.notes) ? payload.notes : [])
+            setTeamNotesPage(typeof payload?.page === "number" ? payload.page : targetPage)
+            setTeamNotesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 1)
+            setTeamNotesTotalItems(typeof payload?.count === "number" ? payload.count : 0)
+        } catch (error: any) {
+            setTeamNotes([])
+            setTeamNotesPage(1)
+            setTeamNotesTotalPages(1)
+            setTeamNotesTotalItems(0)
+            toast({
+                title: locale === "es" ? "Error al cargar notas" : "Error loading notes",
+                description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+                variant: "destructive",
+            })
+        } finally {
+            setTeamNotesLoading(false)
+        }
+    }
+
+    const openTeamNotesModal = async (teamItem: any) => {
+        setTeamNotesTarget(teamItem)
+        setTeamNotesText("")
+        setShowTeamNotesModal(true)
+        await loadTeamNotes(teamItem.id, 1)
+    }
+
+    const handleAddTeamNote = async () => {
+        if (!teamNotesTarget) return
+
+        const trimmedText = teamNotesText.trim()
+        if (!trimmedText) {
+            toast({
+                title: locale === "es" ? "Nota vacia" : "Empty note",
+                description: locale === "es" ? "Escribe una nota antes de guardar." : "Write a note before saving.",
+                variant: "destructive",
+            })
+            return
+        }
+
+        setTeamNotesSaving(true)
+        try {
+            const auth = getAuthClient()
+            const idToken = await auth?.currentUser?.getIdToken()
+            if (!idToken) {
+                throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+            }
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/teams/${teamNotesTarget.id}/notes`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ text: trimmedText }),
+            })
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null)
+                throw new Error(payload?.error || (locale === "es" ? "No se pudo crear la nota" : "Could not create note"))
+            }
+
+            setTeamNotesText("")
+            toast({ title: locale === "es" ? "Nota guardada" : "Note saved" })
+            await loadTeamNotes(teamNotesTarget.id, 1)
+        } catch (error: any) {
+            toast({
+                title: locale === "es" ? "Error al guardar nota" : "Error saving note",
+                description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+                variant: "destructive",
+            })
+        } finally {
+            setTeamNotesSaving(false)
+        }
+    }
+
+    const handleTeamNotesPrev = async () => {
+        if (!teamNotesTarget || teamNotesPage <= 1 || teamNotesLoading) return
+        await loadTeamNotes(teamNotesTarget.id, teamNotesPage - 1)
+    }
+
+    const handleTeamNotesNext = async () => {
+        if (!teamNotesTarget || teamNotesPage >= teamNotesTotalPages || teamNotesLoading) return
+        await loadTeamNotes(teamNotesTarget.id, teamNotesPage + 1)
     }
 
     return (
@@ -897,15 +1047,102 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     )}
 
                     <div className="flex justify-between mt-8 pt-4 border-t border-brand-cyan/10">
-                        <PixelButton variant="secondary" onClick={() => setEditingItem(null)} size="sm">
-                            <X size={14} className="mr-2" />
-                            {locale === "es" ? "Cancelar" : "Cancel"}
-                        </PixelButton>
+                        <div className="flex items-center gap-2">
+                            <PixelButton variant="secondary" onClick={() => setEditingItem(null)} size="sm">
+                                <X size={14} className="mr-2" />
+                                {locale === "es" ? "Cancelar" : "Cancel"}
+                            </PixelButton>
+                            {editType === "teams" && (
+                                <PixelButton
+                                    variant="secondary"
+                                    onClick={() => openTeamNotesModal(editingItem)}
+                                    size="sm"
+                                >
+                                    <FileText size={14} className="mr-2" />
+                                    {locale === "es" ? "Notas" : "Notes"}
+                                </PixelButton>
+                            )}
+                        </div>
                         <PixelButton onClick={() => setShowConfirm(true)} size="sm">
                             <Save size={14} className="mr-2" />
                             {locale === "es" ? "Guardar Cambios" : "Save Changes"}
                         </PixelButton>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Team Notes Modal */}
+            <Dialog
+                open={showTeamNotesModal}
+                onOpenChange={(open) => {
+                    setShowTeamNotesModal(open)
+                    if (!open) {
+                        setTeamNotesTarget(null)
+                        setTeamNotesText("")
+                        setTeamNotes([])
+                        setTeamNotesPage(1)
+                        setTeamNotesTotalPages(1)
+                        setTeamNotesTotalItems(0)
+                    }
+                }}
+            >
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow">
+                            {locale === "es" ? "Notas del equipo" : "Team notes"}
+                            {teamNotesTarget?.name ? ` · ${teamNotesTarget.name}` : ""}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-3">
+                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Agregar nota" : "Add note"}</label>
+                        <textarea
+                            value={teamNotesText}
+                            onChange={(e) => setTeamNotesText(e.target.value)}
+                            rows={4}
+                            placeholder={locale === "es" ? "Escribí una nota para este equipo..." : "Write a note for this team..."}
+                            className="w-full bg-black/40 border border-brand-cyan/20 rounded text-xs px-2 py-2 text-brand-cyan"
+                        />
+                        <div className="flex justify-end">
+                            <PixelButton onClick={handleAddTeamNote} size="sm" disabled={teamNotesSaving || !teamNotesTarget}>
+                                {teamNotesSaving
+                                    ? (locale === "es" ? "Guardando..." : "Saving...")
+                                    : (locale === "es" ? "Guardar nota" : "Save note")}
+                            </PixelButton>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                        <p className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Historial" : "History"}</p>
+                        {teamNotesLoading ? (
+                            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
+                        ) : teamNotes.length === 0 ? (
+                            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "No hay notas para este equipo." : "There are no notes for this team."}</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {teamNotes.map((note) => (
+                                    <div key={note.id} className="rounded border border-brand-cyan/20 bg-black/30 p-3">
+                                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                                        <p className="text-xs text-brand-cyan/60 mt-2">
+                                            {getNoteAuthorLabel(note)} · {formatNoteDate(note.createdAt)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <PaginationControls
+                        page={teamNotesPage}
+                        totalPages={teamNotesTotalPages}
+                        onPageChange={(nextPage) => {
+                            if (!teamNotesTarget || teamNotesLoading) return
+                            void loadTeamNotes(teamNotesTarget.id, nextPage)
+                        }}
+                        totalItems={teamNotesTotalItems}
+                        pageSize={10}
+                        locale={locale}
+                    />
                 </DialogContent>
             </Dialog>
 
