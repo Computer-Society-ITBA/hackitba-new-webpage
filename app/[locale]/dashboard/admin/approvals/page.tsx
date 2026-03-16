@@ -882,7 +882,7 @@ export default function ApprovalsPage() {
 
         {/* Team Detail Modal */}
         <Dialog open={!!selectedTeam} onOpenChange={(open) => { if (!open) { setSelectedTeam(null); setTeamMembers([]); setSelectedApprovalCategory("") } }}>
-          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5">
+          <DialogContent className="bg-brand-navy border-brand-cyan/30 px-6 py-5 max-h-[85vh] overflow-y-auto">
             <DialogHeader className="pb-2">
               <DialogTitle className="font-pixel text-brand-yellow">{selectedTeam?.name}</DialogTitle>
             </DialogHeader>
@@ -895,7 +895,7 @@ export default function ApprovalsPage() {
                 {selectedTeam.tell_why && (
                   <div>
                     <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Motivación" : "Motivation"}</p>
-                    <p className="text-brand-cyan text-sm break-words">{selectedTeam.tell_why}</p>
+                    <p className="text-brand-cyan text-sm whitespace-pre-wrap break-all">{selectedTeam.tell_why}</p>
                   </div>
                 )}
                 <div>
@@ -905,13 +905,13 @@ export default function ApprovalsPage() {
                 {selectedTeam.link_github && (
                   <div>
                     <p className="text-brand-cyan/60 text-xs font-pixel">GitHub</p>
-                    <a href={selectedTeam.link_github} target="_blank" rel="noopener noreferrer" className="text-brand-orange text-sm underline">{selectedTeam.link_github}</a>
+                    <a href={selectedTeam.link_github} target="_blank" rel="noopener noreferrer" className="text-brand-orange text-sm underline break-all">{selectedTeam.link_github}</a>
                   </div>
                 )}
                 {selectedTeam.link_deploy && (
                   <div>
                     <p className="text-brand-cyan/60 text-xs font-pixel">Deploy</p>
-                    <a href={selectedTeam.link_deploy} target="_blank" rel="noopener noreferrer" className="text-brand-orange text-sm underline">{selectedTeam.link_deploy}</a>
+                    <a href={selectedTeam.link_deploy} target="_blank" rel="noopener noreferrer" className="text-brand-orange text-sm underline break-all">{selectedTeam.link_deploy}</a>
                   </div>
                 )}
                 <div>
@@ -927,7 +927,7 @@ export default function ApprovalsPage() {
                           onClick={() => setSelectedMember(m)}
                         >
                           <span>{m.name} {m.surname}</span>
-                          <span className="text-brand-cyan/40 text-xs">({m.email})</span>
+                          <span className="text-brand-cyan/40 text-xs break-all">({m.email})</span>
                         </li>
                       ))}
                     </ul>
