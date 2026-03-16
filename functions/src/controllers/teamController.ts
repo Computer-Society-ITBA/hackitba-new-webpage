@@ -33,6 +33,10 @@ interface CreateTeamNoteRequest {
   text: string;
 }
 
+interface UpdateTeamNoteRequest {
+  text: string;
+}
+
 type TeamNoteAuthorRole = "mentor" | "judge" | "admin";
 
 interface TeamNoteAuthor {
@@ -549,6 +553,78 @@ export const createTeamNote = async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error("Error creating team note:", error);
     return res.status(500).json({error: "Error creando nota de equipo"});
+  }
+};
+
+/**
+ * Update a note under teams/{teamId}/notes/{noteId}.
+ * Author can only edit their own notes.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const updateTeamNote = async (req: Request, res: Response) => {
+  try {
+    const {label, noteId} = req.params;
+    const {text} = req.body as UpdateTeamNoteRequest;
+    const uid = req.user?.uid as string | undefined;
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    if (!trimmedText) {
+      return res.status(400).json({error: "text is required"});
+    }
+
+    const db = getHackitbaDb();
+    const teamRef = db.collection("teams").doc(label);
+    const teamSnap = await teamRef.get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const rawRole = userSnap.data()?.role;
+    const allowedRoles: TeamNoteAuthorRole[] = ["mentor", "judge", "admin"];
+    if (!allowedRoles.includes(rawRole)) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const noteRef = teamRef.collection("notes").doc(noteId);
+    const noteSnap = await noteRef.get();
+    if (!noteSnap.exists) {
+      return res.status(404).json({error: "Nota no encontrada"});
+    }
+
+    const noteData = noteSnap.data() as {authorId?: string; teamId?: string};
+    if (noteData.teamId && noteData.teamId !== label) {
+      return res.status(400).json({error: "Nota invalida para este equipo"});
+    }
+
+    if (noteData.authorId !== uid) {
+      return res.status(403).json({error: "Solo puedes editar tus propias notas"});
+    }
+
+    await noteRef.update({
+      text: trimmedText,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return res.status(200).json({
+      id: noteId,
+      teamId: label,
+      text: trimmedText,
+    });
+  } catch (error: any) {
+    logger.error("Error updating team note:", error);
+    return res.status(500).json({error: "Error actualizando nota de equipo"});
   }
 };
 

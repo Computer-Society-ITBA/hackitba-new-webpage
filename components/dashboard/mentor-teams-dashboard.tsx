@@ -36,6 +36,7 @@ interface TeamNote {
   id: string
   text: string
   createdAt: string | null
+  updatedAt?: string | null
   authorRole: "mentor" | "judge" | "admin"
 }
 
@@ -59,6 +60,9 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
   const [myNotesPage, setMyNotesPage] = useState(1)
   const [myNotesTotalPages, setMyNotesTotalPages] = useState(1)
   const [myNotesTotalItems, setMyNotesTotalItems] = useState(0)
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
+  const [editingNoteText, setEditingNoteText] = useState("")
+  const [updatingNote, setUpdatingNote] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -261,7 +265,73 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
 
   const openMyNotesModal = async () => {
     setMyNotesOpen(true)
+    setEditingNoteId(null)
+    setEditingNoteText("")
     await loadMyNotes(1)
+  }
+
+  const startEditingNote = (note: TeamNote) => {
+    setEditingNoteId(note.id)
+    setEditingNoteText(note.text)
+  }
+
+  const cancelEditingNote = () => {
+    setEditingNoteId(null)
+    setEditingNoteText("")
+  }
+
+  const handleUpdateMyNote = async () => {
+    if (!selectedTeam || !editingNoteId) return
+
+    const trimmedText = editingNoteText.trim()
+    if (!trimmedText) {
+      toast({
+        title: locale === "es" ? "Nota vacia" : "Empty note",
+        description: locale === "es" ? "La nota no puede estar vacia." : "The note cannot be empty.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setUpdatingNote(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) {
+        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes/${editingNoteId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ text: trimmedText }),
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || (locale === "es" ? "No se pudo actualizar la nota" : "Could not update note"))
+      }
+
+      toast({
+        title: locale === "es" ? "Nota actualizada" : "Note updated",
+        description: locale === "es" ? "La nota se actualizo correctamente." : "The note was updated successfully.",
+      })
+
+      cancelEditingNote()
+      await loadMyNotes(myNotesPage)
+    } catch (error: any) {
+      toast({
+        title: locale === "es" ? "Error al actualizar nota" : "Error updating note",
+        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+        variant: "destructive",
+      })
+    } finally {
+      setUpdatingNote(false)
+    }
   }
 
   const formatNoteDate = (value: string | null) => {
@@ -467,12 +537,61 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
           ) : (
             <>
               <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                {myNotes.map((note) => (
-                  <div key={note.id} className="rounded-lg border border-brand-cyan/20 bg-brand-navy/40 p-3">
-                    <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
-                    <p className="text-xs text-brand-cyan/60 mt-2">{formatNoteDate(note.createdAt)}</p>
-                  </div>
-                ))}
+                {myNotes.map((note) => {
+                  const isEditing = editingNoteId === note.id
+                  return (
+                    <div key={note.id} className="rounded-lg border border-brand-cyan/20 bg-brand-navy/40 p-3 space-y-2">
+                      {isEditing ? (
+                        <Textarea
+                          value={editingNoteText}
+                          onChange={(event) => setEditingNoteText(event.target.value)}
+                          className="min-h-20 bg-brand-navy/30 border-brand-cyan/30 text-brand-cyan"
+                          disabled={updatingNote}
+                        />
+                      ) : (
+                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                      )}
+
+                      <p className="text-xs text-brand-cyan/60">
+                        {formatNoteDate(note.createdAt)}
+                        {note.updatedAt && note.updatedAt !== note.createdAt ? ` · ${locale === "es" ? "Actualizada" : "Updated"}: ${formatNoteDate(note.updatedAt)}` : ""}
+                      </p>
+
+                      <div className="flex justify-end gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={cancelEditingNote}
+                              disabled={updatingNote}
+                              className="px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 disabled:opacity-50"
+                            >
+                              {locale === "es" ? "Cancelar" : "Cancel"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleUpdateMyNote}
+                              disabled={updatingNote}
+                              className="px-3 py-2 text-xs font-pixel rounded border border-brand-yellow/40 bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 disabled:opacity-50"
+                            >
+                              {updatingNote
+                                ? locale === "es" ? "Guardando..." : "Saving..."
+                                : locale === "es" ? "Guardar cambios" : "Save changes"}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEditingNote(note)}
+                            className="px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20"
+                          >
+                            {locale === "es" ? "Editar" : "Edit"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </>
           )}

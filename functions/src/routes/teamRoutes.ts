@@ -41,6 +41,9 @@ router.get("/:label/notes", validateToken, teamController.getTeamNotes);
 // Crear una nota para un equipo (mentor/judge/admin)
 router.post("/:label/notes", validateToken, requireRoles(["mentor", "judge", "admin"]), teamController.createTeamNote);
 
+// Editar una nota propia de equipo (mentor/judge/admin)
+router.patch("/:label/notes/:noteId", validateToken, requireRoles(["mentor", "judge", "admin"]), teamController.updateTeamNote);
+
 /* // Eliminar miembro de un equipo
 router.delete("/:label/members/:userId", validateToken, teamController.removeMember); */
 
