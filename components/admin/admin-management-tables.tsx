@@ -365,11 +365,23 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         return users.filter(user => user.team === teamId)
     }
 
+    const formatDateTime = (value: Date | string | null | undefined) => {
+        if (!value) return "-"
+        const date = value instanceof Date ? value : new Date(value)
+        if (Number.isNaN(date.getTime())) return String(value)
+
+        const p = (n: number) => n.toString().padStart(2, "0")
+        return `${p(date.getDate())}/${p(date.getMonth() + 1)}/${date.getFullYear()} ${p(date.getHours())}:${p(date.getMinutes())}`
+    }
+
+    const formatTimestampDateTime = (value: { seconds?: number } | null | undefined) => {
+        if (!value?.seconds) return "-"
+        return formatDateTime(new Date(value.seconds * 1000))
+    }
+
     const formatNoteDate = (value: string | null) => {
         if (!value) return locale === "es" ? "Sin fecha" : "No date"
-        const date = new Date(value)
-        if (Number.isNaN(date.getTime())) return value
-        return date.toLocaleString(locale === "es" ? "es-AR" : "en-US")
+        return formatDateTime(value)
     }
 
     const getNoteAuthorLabel = (note: AdminTeamNote) => {
@@ -720,7 +732,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(getParticipantCategoryIndex(item))}</TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1">
-                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                            {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
 
@@ -788,7 +800,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         </TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(getTeamCategoryIndex(item))}</TableCell>
                                                         <TableCell className="text-brand-cyan/60 text-[10px]">
-                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                            {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
 
                                                     </>

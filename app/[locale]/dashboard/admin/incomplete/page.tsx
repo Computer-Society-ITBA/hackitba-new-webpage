@@ -216,18 +216,13 @@ export default function IncompleteUsersPage() {
     }
   }
 
-  const formatDate = (value: string | null, short = false) => {
+  const formatDate = (value: string | null) => {
     if (!value) return "—"
     const d = new Date(value)
     if (isNaN(d.getTime())) return "—"
-    if (short) {
-      return d.toLocaleDateString(locale === "es" ? "es-AR" : "en-US", {
-        day: "2-digit", month: "short", year: "numeric",
-      })
-    }
-    return d.toLocaleDateString(locale === "es" ? "es-AR" : "en-US", {
-      day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-    })
+
+    const p = (n: number) => n.toString().padStart(2, "0")
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`
   }
 
   const title = locale === "es" ? "Inscripciones Incompletas" : "Incomplete Registrations"
@@ -424,7 +419,7 @@ export default function IncompleteUsersPage() {
                             {user.emailVerified ? (locale === "es" ? "Sí" : "Yes") : (locale === "es" ? "No" : "No")}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-brand-cyan/60 text-xs">{formatDate(user.createdAt, true)}</td>
+                        <td className="py-3 px-3 text-brand-cyan/60 text-xs">{formatDate(user.createdAt)}</td>
                         <td className="py-3 px-3 text-center">
                           {user.incompleteMailCount > 0 ? (
                             <span className="px-2 py-1 rounded-full text-xs font-pixel bg-brand-orange/20 text-brand-orange border border-brand-orange/30">
@@ -435,7 +430,7 @@ export default function IncompleteUsersPage() {
                           )}
                         </td>
                         <td className="py-3 px-3 text-brand-cyan/50 text-xs">
-                          {formatDate(user.incompleteMailLastSent, true)}
+                          {formatDate(user.incompleteMailLastSent)}
                         </td>
                         <td className="py-3 px-3 text-center">
                           <button
@@ -487,7 +482,7 @@ export default function IncompleteUsersPage() {
                     <p className="text-brand-cyan/60 text-xs">{user.email ?? "—"}</p>
                     <div className="flex items-center justify-between gap-2">
                       <div className="space-y-0.5">
-                        <p className="text-brand-cyan/40 text-xs">{formatDate(user.createdAt, true)}</p>
+                        <p className="text-brand-cyan/40 text-xs">{formatDate(user.createdAt)}</p>
                         <div className="flex items-center gap-1.5 text-xs text-brand-cyan/50">
                           <Mail size={10} />
                           <span>
@@ -498,7 +493,7 @@ export default function IncompleteUsersPage() {
                           </span>
                           {user.incompleteMailLastSent && (
                             <span className="text-brand-cyan/30">
-                              · {locale === "es" ? "Último:" : "Last:"} {formatDate(user.incompleteMailLastSent, true)}
+                              · {locale === "es" ? "Último:" : "Last:"} {formatDate(user.incompleteMailLastSent)}
                             </span>
                           )}
                         </div>
