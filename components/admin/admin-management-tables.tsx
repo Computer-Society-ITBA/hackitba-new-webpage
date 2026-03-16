@@ -243,15 +243,21 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     }
 
     const getTeamCategoryIndex = (team: any) => {
+        if (!team) return null
+
         const teamStatus = (team?.status || "").toLowerCase()
         const isAccepted = teamStatus === "accepted" || teamStatus === "approved"
         if (isAccepted && team?.category !== null && team?.category !== undefined) return team.category
+
+        if (team?.category_1 !== null && team?.category_1 !== undefined) return team.category_1
         return null
     }
 
     const getParticipantCategoryIndex = (participant: any) => {
         const team = participant.team ? teams.find(t => t.id === participant.team) : null
-        return getTeamCategoryIndex(team)
+        if (team) return getTeamCategoryIndex(team)
+        if (participant?.category_1 !== null && participant?.category_1 !== undefined) return participant.category_1
+        return null
     }
 
     const filteredAndSortedData = useMemo(() => {
@@ -272,14 +278,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             const catIdx = parseInt(categoryFilter)
             data = data.filter(item => {
                 if (activeTab === "participants") {
-                    // Match by the displayed category (team's category_1 if in a team, else participant's category_1)
-                    if (item.team) {
-                        const team = teams.find(t => t.id === item.team)
-                        return parseInt(team?.category_1) === catIdx
-                    }
-                    return parseInt(item.category_1) === catIdx
+                    return parseInt(getParticipantCategoryIndex(item)) === catIdx
                 } else {
-                    return parseInt(item.category_1) === catIdx
+                    return parseInt(getTeamCategoryIndex(item)) === catIdx
                 }
             })
         }
@@ -330,6 +331,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             } else if (sortField === "age") {
                 valA = Number(a.age || 0)
                 valB = Number(b.age || 0)
+            } else if (sortField === "category_1") {
+                valA = activeTab === "participants" ? Number(getParticipantCategoryIndex(a) ?? -1) : Number(getTeamCategoryIndex(a) ?? -1)
+                valB = activeTab === "participants" ? Number(getParticipantCategoryIndex(b) ?? -1) : Number(getTeamCategoryIndex(b) ?? -1)
             } else {
                 // Normalize undefined/null
                 if (valA === undefined || valA === null) valA = ""
