@@ -40,7 +40,6 @@ export default function ApprovalsPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [processing, setProcessing] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
-  const [withTeamCount, setWithTeamCount] = useState<number | null>(null)
 
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false)
   const [pendingParticipantId, setPendingParticipantId] = useState<string | null>(null)
@@ -188,7 +187,6 @@ export default function ApprovalsPage() {
       loadTeams()
       loadPendingTeams()
       loadCategories()
-      loadWithTeamCount()
       loadAllUsers()
     }
   }, [authReady])
@@ -203,22 +201,13 @@ export default function ApprovalsPage() {
     }
   }
 
-  const loadWithTeamCount = async () => {
-    if (!db) return
-    try {
-      const snap = await getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true)))
-      setWithTeamCount(snap.size)
-    } catch (error) {
-      console.error("Error loading withTeam count:", error)
-    }
-  }
-
   const loadNoTeamUsers = async () => {
     if (!db) return
     try {
       const snap = await getDocs(
         query(collection(db, "users"),
           where("role", "==", "participant"),
+          where("onboardingStep", "==", 2),
           where("team", "==", null)
         )
       )
@@ -266,7 +255,9 @@ export default function ApprovalsPage() {
   const loadAllUsers = async () => {
     if (!db) return
     try {
-      const snap = await getDocs(query(collection(db, "users"), where("role", "==", "participant")))
+      const snap = await getDocs(
+        query(collection(db, "users"), where("role", "==", "participant"), where("onboardingStep", "==", 2))
+      )
       setAllUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     } catch (error) {
       console.error("Error loading all users:", error)

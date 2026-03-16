@@ -83,12 +83,15 @@ export default function AdminDashboard() {
     if (!db) return
     setLoadingStats(true)
     try {
-      const [completeSnap, withTeamSnap, withoutTeamSnap] = await Promise.all([
-        getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))),
-        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true))),
-        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", false))),
-      ])
-      setCompleteStats({ complete: completeSnap.size, withTeam: withTeamSnap.size, withoutTeam: withoutTeamSnap.size })
+      const completeSnap = await getDocs(
+        query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))
+      )
+
+      const completeParticipants = completeSnap.docs.map((participantDoc) => participantDoc.data())
+      const withTeam = completeParticipants.filter((participant) => participant.hasTeam === true).length
+      const withoutTeam = completeParticipants.filter((participant) => participant.hasTeam !== true).length
+
+      setCompleteStats({ complete: completeParticipants.length, withTeam, withoutTeam })
     } catch (error) {
       console.error("Error loading complete stats:", error)
     } finally {
