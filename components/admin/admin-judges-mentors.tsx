@@ -234,8 +234,12 @@ export function AdminJudgesMentors({ locale, translations }: AdminJudgesMentorsP
                 // New photo being uploaded
                 try {
                     const isNewDoc = !editingPerson?.id
-                    const docId = editingPerson?.id || "temp"
-                    const fileName = `${personType}/${docId}`
+                    const docId = editingPerson?.id
+                    
+                    // Generate unique filename to prevent overwrites
+                    // Use docId if editing, otherwise use timestamp + random for uniqueness
+                    const fileIdentifier = docId || `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    const fileName = `${personType}/${fileIdentifier}`
                     
                     console.log(`Uploading photo to: ${fileName}`)
                     const sRef = storageRef(storage, fileName)
