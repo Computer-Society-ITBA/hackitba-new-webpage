@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import {
   Dialog,
@@ -36,18 +36,61 @@ function MentorSkeleton() {
 }
 
 const CARD_GAP = 8
+const MAX_DESKTOP_CARDS_PER_ROW = 5
 
-function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor) => void }) {
-  const n = items.length
-  const splitAt = Math.ceil(n / 2)
-  const topRow = n >= 5 ? items.slice(0, splitAt) : items
-  const bottomRow = n >= 5 ? items.slice(splitAt) : []
+function PersonGrid({
+  items,
+  onSelect,
+  baseRows,
+}: {
+  items: Mentor[];
+  onSelect: (m: Mentor) => void;
+  baseRows: number;
+}) {
+  const [responsiveDesktopLimit, setResponsiveDesktopLimit] = useState(MAX_DESKTOP_CARDS_PER_ROW)
+
+  useEffect(() => {
+    const updateDesktopLimit = () => {
+      const width = window.innerWidth
+      if (width >= 1280) {
+        setResponsiveDesktopLimit(5)
+      } else if (width >= 1024) {
+        setResponsiveDesktopLimit(4)
+      } else {
+        setResponsiveDesktopLimit(3)
+      }
+    }
+
+    updateDesktopLimit()
+    window.addEventListener("resize", updateDesktopLimit)
+    return () => window.removeEventListener("resize", updateDesktopLimit)
+  }, [])
+
+  const maxCardsPerRow = Math.min(MAX_DESKTOP_CARDS_PER_ROW, responsiveDesktopLimit)
+
+  let rowsCount = Math.max(1, baseRows)
+  while (items.length > rowsCount * maxCardsPerRow) {
+    rowsCount += 1
+  }
+
+  const minItemsPerRow = Math.floor(items.length / rowsCount)
+  const rowsWithExtraItem = items.length % rowsCount
+
+  const rows = Array.from({ length: rowsCount }, (_, rowIndex) => {
+    const size = minItemsPerRow + (rowIndex < rowsWithExtraItem ? 1 : 0)
+    return size
+  }).reduce<{ start: number; items: Mentor[] }[]>((acc, size) => {
+    const previousEnd = acc.length > 0 ? acc[acc.length - 1].start + acc[acc.length - 1].items.length : 0
+    const rowItems = items.slice(previousEnd, previousEnd + size)
+    acc.push({ start: previousEnd, items: rowItems })
+    return acc
+  }, []).filter((row) => row.items.length > 0)
 
   const renderCard = (mentor: Mentor, index: number) => (
     <button
       key={mentor.id}
       onClick={() => onSelect(mentor)}
-      className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 md:w-[172px] md:flex-shrink-0"
+      className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 w-full max-w-[172px]"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="p-4">
@@ -70,23 +113,21 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
 
   return (
     <>
-      {/* Desktop: fixed-width cards in two flex rows, centered */}
-      <div className="hidden md:flex flex-col items-center gap-2 max-w-4xl mx-auto">
-        <div className="flex items-start justify-center" style={{ gap: `${CARD_GAP}px` }}>
-          {topRow.map((m, i) => renderCard(m, i))}
-        </div>
-        {bottomRow.length > 0 && (
+      {/* Desktop: fixed-width cards in configurable flex rows, centered */}
+      <div className="hidden md:flex flex-col items-center gap-2 max-w-6xl mx-auto">
+        {rows.map((row, rowIndex) => (
           <div
+            key={rowIndex}
             className="flex items-start justify-center"
             style={{ gap: `${CARD_GAP}px` }}
           >
-            {bottomRow.map((m, i) => renderCard(m, topRow.length + i))}
+            {row.items.map((m, i) => renderCard(m, row.start + i))}
           </div>
-        )}
+        ))}
       </div>
 
       {/* Mobile: unchanged 2-col grid */}
-      <div className="grid grid-cols-2 items-start gap-2 max-w-4xl mx-auto md:hidden">
+      <div className="grid grid-cols-2 items-start gap-2 max-w-6xl mx-auto md:hidden">
         {items.map((m, i) => renderCard(m, i))}
       </div>
     </>
@@ -105,6 +146,11 @@ export function Mentors({ translations, locale }: MentorsProps) {
 
   const getBio = (mentor: Mentor) =>
     locale === "es" ? mentor.spanishBio : mentor.englishBio
+
+  const getMentorCategoryLabel = (mentor: Mentor) => {
+    const key = (mentor.category || mentor.categories?.[0] || "tech") as MentorCategory
+    return translations.mentors.categories[key] || translations.mentors.categories.tech
+  }
 
   return (
     <section id="mentors" className="pb-20 px-4">
@@ -160,7 +206,7 @@ export function Mentors({ translations, locale }: MentorsProps) {
         </div>
 
         {loading && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-6xl mx-auto">
             {Array.from({ length: 5 }).map((_, i) => <MentorSkeleton key={i} />)}
           </div>
         )}
@@ -176,7 +222,11 @@ export function Mentors({ translations, locale }: MentorsProps) {
 
         {!loading && !error && mentors.length > 0 && (
           filteredMentors.length > 0 ? (
-            <PersonGrid items={filteredMentors} onSelect={setSelectedMentor} />
+            <PersonGrid
+              items={filteredMentors}
+              onSelect={setSelectedMentor}
+              baseRows={activeCategory === "tech" ? 3 : 2}
+            />
           ) : (
             <div className="text-center py-12">
               <p className="font-pixel text-sm text-brand-cyan/40 uppercase">
@@ -201,7 +251,7 @@ export function Mentors({ translations, locale }: MentorsProps) {
                       {selectedMentor.name}
                     </DialogTitle>
                     <span className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
-                      {translations.mentors.categories[selectedMentor.category]}
+                      {getMentorCategoryLabel(selectedMentor)}
                     </span>
                   </div>
                   {selectedMentor.position && (
