@@ -147,9 +147,14 @@ export function Mentors({ translations, locale }: MentorsProps) {
   const getBio = (mentor: Mentor) =>
     locale === "es" ? mentor.spanishBio : mentor.englishBio
 
-  const getMentorCategoryLabel = (mentor: Mentor) => {
-    const key = (mentor.category || mentor.categories?.[0] || "tech") as MentorCategory
-    return translations.mentors.categories[key] || translations.mentors.categories.tech
+  const getMentorCategories = (mentor: Mentor): MentorCategory[] => {
+    const normalized = [
+      ...(Array.isArray(mentor.categories) ? mentor.categories : []),
+      mentor.category,
+    ].filter(Boolean) as MentorCategory[]
+
+    if (normalized.length === 0) return ["tech"]
+    return Array.from(new Set(normalized))
   }
 
   return (
@@ -246,13 +251,20 @@ export function Mentors({ translations, locale }: MentorsProps) {
                   <Image src={selectedMentor.avatar || "/placeholder.svg"} alt={selectedMentor.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="relative mb-1">
                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow">
                       {selectedMentor.name}
                     </DialogTitle>
-                    <span className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
-                      {getMentorCategoryLabel(selectedMentor)}
-                    </span>
+                    <div className="absolute top-0 right-8 sm:right-10 flex flex-col items-end gap-1">
+                      {getMentorCategories(selectedMentor).map((categoryKey) => (
+                        <span
+                          key={categoryKey}
+                          className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20"
+                        >
+                          {translations.mentors.categories[categoryKey] || translations.mentors.categories.tech}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   {selectedMentor.position && (
                     <p className="text-brand-yellow">
