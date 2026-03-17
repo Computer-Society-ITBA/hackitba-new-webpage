@@ -895,7 +895,9 @@ export default function ApprovalsPage() {
                 {selectedTeam.tell_why && (
                   <div>
                     <p className="text-brand-cyan/60 text-xs font-pixel">{locale === "es" ? "Motivación" : "Motivation"}</p>
-                    <p className="text-brand-cyan text-sm whitespace-pre-wrap break-all">{selectedTeam.tell_why}</p>
+                    <p className="text-brand-cyan text-sm whitespace-pre-wrap break-words [hyphens:auto]">
+                      {selectedTeam.tell_why}
+                    </p>
                   </div>
                 )}
                 <div>
