@@ -24,6 +24,8 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail, ExternalLink, Github, Play, Image as ImageIcon, FileText } from "lucide-react"
+import { MarkdownEditor } from "@/components/ui/markdown-editor"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
@@ -1112,12 +1114,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
                     <div className="space-y-3">
                         <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Agregar nota" : "Add note"}</label>
-                        <textarea
+                        <MarkdownEditor
                             value={teamNotesText}
-                            onChange={(e) => setTeamNotesText(e.target.value)}
-                            rows={4}
+                            onChange={setTeamNotesText}
                             placeholder={locale === "es" ? "Escribí una nota para este equipo..." : "Write a note for this team..."}
-                            className="w-full bg-black/40 border border-brand-cyan/20 rounded text-xs px-2 py-2 text-brand-cyan"
+                            disabled={teamNotesSaving}
+                            className="min-h-32"
                         />
                         <div className="flex justify-end">
                             <PixelButton onClick={handleAddTeamNote} size="sm" disabled={teamNotesSaving || !teamNotesTarget}>
@@ -1138,7 +1140,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             <div className="space-y-2">
                                 {teamNotes.map((note) => (
                                     <div key={note.id} className="rounded border border-brand-cyan/20 bg-black/30 p-3">
-                                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                                        <MarkdownRenderer content={note.text} />
                                         <p className="text-xs text-brand-cyan/60 mt-2">
                                             {getNoteAuthorLabel(note)} · {formatNoteDate(note.createdAt)}
                                         </p>

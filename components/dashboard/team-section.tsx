@@ -18,6 +18,7 @@ import { getAuth } from "firebase/auth"
 import { useRouter, useParams } from "next/navigation"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 
 interface TeamMember {
   id: string
@@ -702,7 +703,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
                     const authorLabel = fullName || note.author?.id || note.authorId
                     return (
                       <div key={note.id} className="rounded border border-brand-cyan/20 bg-brand-navy/30 p-3">
-                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
+                        <MarkdownRenderer content={note.text} />
                         <p className="text-xs text-brand-cyan/60 mt-2">
                           {authorLabel} · {getRoleLabel(note.authorRole)} · {formatNoteDate(note.createdAt)}
                         </p>

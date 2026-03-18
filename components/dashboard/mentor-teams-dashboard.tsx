@@ -4,14 +4,17 @@ import { useEffect, useMemo, useState } from "react"
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { getAuth } from "firebase/auth"
 import { GlassCard } from "@/components/ui/glass-card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { PaginationControls } from "@/components/ui/pagination-controls"
 import { getDbClient } from "@/lib/firebase/client-config"
 import type { Locale } from "@/lib/i18n/config"
 import { toast } from "@/hooks/use-toast"
-import { Search, School, Users, UserCircle2, Mail, GraduationCap, Hash } from "lucide-react"
+import { Search, School, Users, UserCircle2, Mail, GraduationCap, ArrowLeft, PlusCircle, MessageSquare } from "lucide-react"
+import { MarkdownEditor } from "@/components/ui/markdown-editor"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { PixelButton } from "@/components/ui/pixel-button"
+import Image from "next/image"
 
 interface TeamDoc {
   id: string
@@ -38,6 +41,11 @@ interface TeamNote {
   createdAt: string | null
   updatedAt?: string | null
   authorRole: "mentor" | "judge" | "admin"
+  author?: {
+    name?: string
+    surname?: string
+    id: string
+  }
 }
 
 interface MentorTeamsDashboardProps {
@@ -52,17 +60,17 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
+
+  // Note creation state
   const [noteText, setNoteText] = useState("")
   const [savingNote, setSavingNote] = useState(false)
-  const [myNotesOpen, setMyNotesOpen] = useState(false)
-  const [myNotesLoading, setMyNotesLoading] = useState(false)
-  const [myNotes, setMyNotes] = useState<TeamNote[]>([])
-  const [myNotesPage, setMyNotesPage] = useState(1)
-  const [myNotesTotalPages, setMyNotesTotalPages] = useState(1)
-  const [myNotesTotalItems, setMyNotesTotalItems] = useState(0)
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
-  const [editingNoteText, setEditingNoteText] = useState("")
-  const [updatingNote, setUpdatingNote] = useState(false)
+
+  // Note history state
+  const [teamNotes, setTeamNotes] = useState<TeamNote[]>([])
+  const [notesLoading, setNotesLoading] = useState(false)
+  const [notesPage, setNotesPage] = useState(1)
+  const [notesTotalPages, setNotesTotalPages] = useState(1)
+  const [notesTotalItems, setNotesTotalItems] = useState(0)
 
   useEffect(() => {
     const loadData = async () => {
@@ -104,7 +112,7 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
           grouped[teamId].push(participant)
         }
 
-        // Fallback for legacy data where user.team may be missing but team.participantIds is present.
+        // Fallback for legacy data
         for (const team of teamsData) {
           if (grouped[team.id]?.length) continue
           if (!Array.isArray(team.participantIds) || team.participantIds.length === 0) continue
@@ -145,50 +153,54 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
     loadData()
   }, [db])
 
-  const filteredTeams = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return teams
+  const loadTeamNotes = async (teamId: string, page: number) => {
+    setNotesLoading(true)
+    try {
+      const auth = getAuth()
+      const idToken = await auth.currentUser?.getIdToken()
+      if (!idToken) throw new Error("No id token")
 
-    return teams.filter((team) => {
-      return [
-        team.name || "",
-        team.id,
-        team.assignedRoom || "",
-        team.status || "",
-      ].some((value) => value.toLowerCase().includes(term))
-    })
-  }, [teams, search])
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+      const res = await fetch(`${apiUrl}/teams/${teamId}/notes?page=${page}&pageSize=10`, {
+        headers: { "Authorization": `Bearer ${idToken}` }
+      })
 
-  const selectedTeam = useMemo(() => {
-    if (!selectedTeamId) return null
-    return teams.find((team) => team.id === selectedTeamId) || null
-  }, [teams, selectedTeamId])
+      if (!res.ok) throw new Error("Could not load notes")
 
-  const selectedParticipants = selectedTeam ? participantsByTeam[selectedTeam.id] || [] : []
+      const payload = await res.json()
+      setTeamNotes(payload.notes || [])
+      setNotesPage(payload.page || page)
+      setNotesTotalPages(payload.totalPages || 1)
+      setNotesTotalItems(payload.count || 0)
+    } catch (error) {
+      console.error("Error loading notes:", error)
+      setTeamNotes([])
+    } finally {
+      setNotesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedTeamId) {
+      loadTeamNotes(selectedTeamId, 1)
+      setNoteText("")
+    }
+  }, [selectedTeamId])
 
   const handleCreateNote = async () => {
-    if (!selectedTeam) return
+    if (!selectedTeamId) return
 
     const trimmedText = noteText.trim()
-    if (!trimmedText) {
-      toast({
-        title: locale === "es" ? "Nota vacia" : "Empty note",
-        description: locale === "es" ? "Escribe un texto para guardar la nota." : "Write some text before saving the note.",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!trimmedText) return
 
     setSavingNote(true)
     try {
       const auth = getAuth()
       const idToken = await auth.currentUser?.getIdToken()
-      if (!idToken) {
-        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
-      }
+      if (!idToken) throw new Error("No id token")
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes`, {
+      const res = await fetch(`${apiUrl}/teams/${selectedTeamId}/notes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -197,418 +209,251 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
         body: JSON.stringify({ text: trimmedText }),
       })
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error || (locale === "es" ? "No se pudo crear la nota" : "Could not create note"))
-      }
+      if (!res.ok) throw new Error("Failed to save note")
 
       setNoteText("")
-      toast({
-        title: locale === "es" ? "Nota guardada" : "Note saved",
-        description: locale === "es" ? "La nota se guardo correctamente." : "The note was saved successfully.",
-      })
+      toast({ title: locale === "es" ? "Nota guardada" : "Note saved" })
+      loadTeamNotes(selectedTeamId, 1)
     } catch (error: any) {
-      toast({
-        title: locale === "es" ? "Error al guardar nota" : "Error saving note",
-        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: error.message, variant: "destructive" })
     } finally {
       setSavingNote(false)
     }
   }
 
-  const loadMyNotes = async (targetPage: number) => {
-    if (!selectedTeam) return
+  const filteredTeams = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    if (!term) return teams
 
-    setMyNotesLoading(true)
-    try {
-      const auth = getAuth()
-      const idToken = await auth.currentUser?.getIdToken()
-      if (!idToken) {
-        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
-      }
+    return teams.filter((team) => {
+      return (team.name || "").toLowerCase().includes(term) ||
+        (team.assignedRoom || "").toLowerCase().includes(term)
+    })
+  }, [teams, search])
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes/mine?page=${targetPage}&pageSize=10`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${idToken}`,
-        },
-      })
+  const selectedTeam = useMemo(() => {
+    return teams.find(t => t.id === selectedTeamId) || null
+  }, [teams, selectedTeamId])
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error || (locale === "es" ? "No se pudieron cargar tus notas" : "Could not load your notes"))
-      }
+  const selectedParticipants = selectedTeamId ? participantsByTeam[selectedTeamId] || [] : []
 
-      const payload = await response.json()
-      const notes = Array.isArray(payload?.notes) ? payload.notes : []
-      setMyNotes(notes)
-      setMyNotesPage(typeof payload?.page === "number" ? payload.page : targetPage)
-      setMyNotesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 1)
-      setMyNotesTotalItems(typeof payload?.count === "number" ? payload.count : 0)
-    } catch (error: any) {
-      setMyNotes([])
-      setMyNotesPage(1)
-      setMyNotesTotalPages(1)
-      setMyNotesTotalItems(0)
-      toast({
-        title: locale === "es" ? "Error al cargar notas" : "Error loading notes",
-        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
-        variant: "destructive",
-      })
-    } finally {
-      setMyNotesLoading(false)
-    }
-  }
+  if (selectedTeam) {
+    return (
+      <div className="space-y-6 pb-20">
+        <div className="flex items-center gap-8">
 
-  const openMyNotesModal = async () => {
-    setMyNotesOpen(true)
-    setEditingNoteId(null)
-    setEditingNoteText("")
-    await loadMyNotes(1)
-  }
+          <h2 className="font-pixel text-brand-yellow text-2xl lg:text-3xl neon-glow-yellow">
+            {selectedTeam.name || selectedTeam.id}
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded bg-brand-orange/10 border border-brand-orange/20">
+              <School className="w-5 h-5 text-brand-orange" />
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="text-brand-cyan text-lg font-pixel">{selectedTeam.assignedRoom || "-"}</p>
+            </div>
+          </div>
+          <div>
+            <button
+              onClick={() => setSelectedTeamId(null)}
+              className={`flex items-center gap-2 px-2 py-2 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full`}
+              title="Back"
+            >
+              <div className={`relative w-6 h-6 rotate-90 flex-shrink-0`}>
+                <Image src="/images/flecha-abajo.png" alt="Arrow" fill className="object-contain" />
+              </div>
+              <p className="font-pixel text-brand-cyan text-xs">{locale === "es" ? "Volver" : "Back"}</p>
+            </button>
+          </div>
+        </div>
 
-  const startEditingNote = (note: TeamNote) => {
-    setEditingNoteId(note.id)
-    setEditingNoteText(note.text)
-  }
+        <div >
+          {/* Main: Notes and Participants */}
+          <div className="space-y-6">
 
-  const cancelEditingNote = () => {
-    setEditingNoteId(null)
-    setEditingNoteText("")
-  }
+            <GlassCard className="p-6 border-brand-cyan/30 bg-brand-navy/60">
+              <h3 className="font-pixel text-brand-yellow text-xl mb-6 flex items-center gap-4">
+                <Users className="w-5 h-5" />
+                {locale === "es" ? "Participantes" : "Participants"}
+              </h3>
 
-  const handleUpdateMyNote = async () => {
-    if (!selectedTeam || !editingNoteId) return
+              <div className="overflow-hidden rounded-lg border border-brand-cyan/10">
+                <Table>
+                  <TableHeader className="bg-brand-navy/80">
+                    <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                      <TableHead className="text-brand-yellow font-pixel text-xs">{locale === "es" ? "Nombre" : "Name"}</TableHead>
+                      <TableHead className="text-brand-yellow font-pixel text-xs">{locale === "es" ? "Universidad / Escuela" : "University / School"}</TableHead>
+                      <TableHead className="text-brand-yellow font-pixel text-xs">{locale === "es" ? "Email" : "Email"}</TableHead>
+                      <TableHead className="text-brand-yellow font-pixel text-xs text-right">{locale === "es" ? "Edad" : "Age"}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedParticipants.map(participant => (
+                      <TableRow key={participant.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
+                        <TableCell className="font-semibold text-brand-cyan">
+                          {participant.name} {participant.surname}
+                        </TableCell>
+                        <TableCell className="text-brand-cyan/80">
+                          {participant.university || "-"}
+                        </TableCell>
+                        <TableCell className="text-brand-cyan/80 font-mono text-xs">
+                          {participant.email}
+                        </TableCell>
+                        <TableCell className="text-brand-cyan/80 text-right">
+                          {participant.age || "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </GlassCard>
 
-    const trimmedText = editingNoteText.trim()
-    if (!trimmedText) {
-      toast({
-        title: locale === "es" ? "Nota vacia" : "Empty note",
-        description: locale === "es" ? "La nota no puede estar vacia." : "The note cannot be empty.",
-        variant: "destructive",
-      })
-      return
-    }
+            <GlassCard className="p-6 border-brand-yellow/30 bg-brand-navy/60">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-pixel text-brand-yellow text-xl flex items-center gap-4">
+                  <MessageSquare className="w-5 h-5" />
+                  {locale === "es" ? "Notas del Equipo" : "Team Notes"}
+                </h3>
+              </div>
 
-    setUpdatingNote(true)
-    try {
-      const auth = getAuth()
-      const idToken = await auth.currentUser?.getIdToken()
-      if (!idToken) {
-        throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
-      }
+              <div className="space-y-4">
+                <MarkdownEditor
+                  value={noteText}
+                  onChange={setNoteText}
+                  placeholder={locale === "es" ? "Escribe una nueva nota..." : "Write a new note..."}
+                  disabled={savingNote}
+                  className="min-h-40"
+                />
+                <div className="flex justify-end">
+                  <PixelButton onClick={handleCreateNote} disabled={savingNote || !noteText.trim()}>
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    {savingNote ? (locale === "es" ? "Guardando..." : "Saving...") : (locale === "es" ? "Agregar Nota" : "Add Note")}
+                  </PixelButton>
+                </div>
+              </div>
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-      const response = await fetch(`${apiUrl}/teams/${selectedTeam.id}/notes/${editingNoteId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ text: trimmedText }),
-      })
+              <div className="mt-8 pt-8 border-t border-brand-cyan/20 space-y-6">
+                <h4 className="font-pixel text-brand-cyan text-lg uppercase tracking-wider">
+                  {locale === "es" ? "Historial de Notas" : "Note History"}
+                </h4>
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error || (locale === "es" ? "No se pudo actualizar la nota" : "Could not update note"))
-      }
+                {notesLoading ? (
+                  <div className="py-10 text-center animate-pulse text-brand-cyan/50">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</div>
+                ) : teamNotes.length === 0 ? (
+                  <div className="py-10 text-center text-brand-cyan/30 italic">{locale === "es" ? "No hay notas aún." : "No notes yet."}</div>
+                ) : (
+                  <div className="space-y-4">
+                    {teamNotes.map(note => (
+                      <div key={note.id} className="p-4 rounded-lg bg-black/40 border border-brand-cyan/10 hover:border-brand-cyan/30 transition-colors">
+                        <MarkdownRenderer content={note.text} />
+                        <div className="mt-3 pt-3 border-t border-brand-cyan/5 flex justify-between items-center text-xs text-brand-cyan/50">
+                          <span>
+                            {note.author?.name ? `${note.author.name} ${note.author.surname || ""}` : note.authorRole}
+                          </span>
+                          <span>{note.createdAt ? new Date(note.createdAt).toLocaleString(locale === "es" ? "es-AR" : "en-US") : ""}</span>
+                        </div>
+                      </div>
+                    ))}
 
-      toast({
-        title: locale === "es" ? "Nota actualizada" : "Note updated",
-        description: locale === "es" ? "La nota se actualizo correctamente." : "The note was updated successfully.",
-      })
-
-      cancelEditingNote()
-      await loadMyNotes(myNotesPage)
-    } catch (error: any) {
-      toast({
-        title: locale === "es" ? "Error al actualizar nota" : "Error updating note",
-        description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
-        variant: "destructive",
-      })
-    } finally {
-      setUpdatingNote(false)
-    }
-  }
-
-  const formatNoteDate = (value: string | null) => {
-    if (!value) return locale === "es" ? "Sin fecha" : "No date"
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) return value
-    return date.toLocaleString(locale === "es" ? "es-AR" : "en-US")
+                    {notesTotalPages > 1 && (
+                      <PaginationControls
+                        page={notesPage}
+                        totalPages={notesTotalPages}
+                        onPageChange={p => loadTeamNotes(selectedTeamId!, p)}
+                        totalItems={notesTotalItems}
+                        pageSize={10}
+                        locale={locale}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <GlassCard className="p-5">
-        <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-          <div>
-            <h3 className="font-pixel text-brand-yellow text-lg mb-1">
-              {locale === "es" ? "Listado de equipos" : "Teams list"}
-            </h3>
-            <p className="text-sm text-brand-cyan/70">
-              {locale === "es"
-                ? "Selecciona un equipo para ver sus participantes."
-                : "Select a team to view its participants."}
-            </p>
-          </div>
-
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/50" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder={locale === "es" ? "Buscar por equipo, aula o estado" : "Search by team, room or status"}
-              className="pl-9 bg-brand-navy/30 border-brand-cyan/30"
-            />
-          </div>
-        </div>
-      </GlassCard>
-
-      {loading ? (
-        <GlassCard className="p-6">
-          <p className="font-pixel text-brand-cyan">{locale === "es" ? "Cargando equipos..." : "Loading teams..."}</p>
-        </GlassCard>
-      ) : filteredTeams.length === 0 ? (
-        <GlassCard className="p-6">
-          <p className="text-brand-cyan/80">{locale === "es" ? "No se encontraron equipos." : "No teams found."}</p>
-        </GlassCard>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filteredTeams.map((team) => {
-            const membersCount = (participantsByTeam[team.id] || []).length
-            const isSelected = team.id === selectedTeamId
-
-            return (
-              <button
-                key={team.id}
-                type="button"
-                onClick={() => setSelectedTeamId(team.id)}
-                className="text-left h-full"
-              >
-                <GlassCard
-                  className={`p-4 transition-colors border h-full min-h-[142px] ${isSelected ? "border-brand-yellow/60" : "border-brand-cyan/20 hover:border-brand-cyan/40"}`}
-                >
-                  <div className="h-full flex flex-col">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <h4
-                          className="font-pixel text-brand-cyan text-base leading-tight"
-                          style={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }}
-                        >
-                          {team.name || team.id}
-                        </h4>
-                        <p className="text-[11px] text-brand-cyan/50 mt-1 truncate">ID: {team.id}</p>
-                      </div>
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-pixel px-2 py-1 rounded-sm bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan flex-shrink-0">
-                        <Users className="w-3 h-3" />
-                        {membersCount}
-                      </span>
-                    </div>
-
-                    <div className="mt-auto pt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="flex items-center gap-1.5 text-brand-yellow">
-                        <School className="w-3.5 h-3.5" />
-                        <span>{locale === "es" ? "Aula:" : "Room:"} {team.assignedRoom || "-"}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-brand-cyan/80">
-                        <Hash className="w-3.5 h-3.5" />
-                        <span>{locale === "es" ? "Estado:" : "Status:"} {team.status || "-"}</span>
-                      </div>
-                    </div>
-                  </div>
-                </GlassCard>
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      <Dialog open={!!selectedTeam} onOpenChange={(open) => !open && setSelectedTeamId(null)}>
-        <DialogContent className="bg-brand-navy border-brand-yellow/30 text-brand-cyan max-w-4xl">
-          {selectedTeam && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="font-pixel text-brand-yellow text-lg">
-                  {locale === "es" ? "Participantes del equipo" : "Team participants"}
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                <p className="text-sm text-brand-cyan/70">
-                  {(selectedTeam.name || selectedTeam.id)} · {locale === "es" ? "Aula" : "Room"}: {selectedTeam.assignedRoom || "-"}
-                </p>
-                <span className="text-sm text-brand-cyan/80 font-pixel">
-                  {selectedParticipants.length} {locale === "es" ? "participantes" : "participants"}
-                </span>
-              </div>
-
-              <div className="rounded-lg border border-brand-yellow/30 bg-brand-navy/40 p-3 mb-4 space-y-2">
-                <p className="text-sm font-pixel text-brand-yellow">
-                  Add note
-                </p>
-                <Textarea
-                  value={noteText}
-                  onChange={(event) => setNoteText(event.target.value)}
-                  placeholder={locale === "es" ? "Escribe una nota del equipo..." : "Write a team note..."}
-                  className="min-h-20 bg-brand-navy/30 border-brand-cyan/30 text-brand-cyan"
-                  disabled={savingNote}
-                />
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={openMyNotesModal}
-                    className="mr-2 px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20"
-                  >
-                    {locale === "es" ? "Ver mis notas" : "View my notes"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCreateNote}
-                    disabled={savingNote}
-                    className="px-3 py-2 text-xs font-pixel rounded border border-brand-yellow/40 bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 disabled:opacity-50"
-                  >
-                    {savingNote
-                      ? locale === "es" ? "Guardando..." : "Saving..."
-                      : locale === "es" ? "Guardar nota" : "Save note"}
-                  </button>
-                </div>
-              </div>
-
-              {selectedParticipants.length === 0 ? (
-                <p className="text-brand-cyan/70 text-sm">
-                  {locale === "es"
-                    ? "Este equipo todavia no tiene participantes vinculados."
-                    : "This team has no linked participants yet."}
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedParticipants.map((participant) => (
-                    <div key={participant.id} className="rounded-lg border border-brand-cyan/20 bg-brand-navy/30 p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-2 text-brand-cyan">
-                          <UserCircle2 className="w-4 h-4" />
-                          <p className="font-semibold">
-                            {[participant.name, participant.surname].filter(Boolean).join(" ") || participant.id}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-brand-cyan/80 flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        {participant.email || "-"}
-                      </p>
-
-                      <p className="text-sm text-brand-cyan/80 flex items-center gap-2">
-                        <GraduationCap className="w-4 h-4" />
-                        {[participant.university, participant.career].filter(Boolean).join(" · ") || (locale === "es" ? "Sin datos academicos" : "No academic details")}
-                      </p>
-
-                      <p className="text-xs text-brand-cyan/60">Age: {participant.age ?? "-"}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={myNotesOpen} onOpenChange={setMyNotesOpen}>
-        <DialogContent className="bg-brand-navy border-brand-yellow/30 text-brand-cyan max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-pixel text-brand-yellow text-lg">
-              {locale === "es" ? "Mis notas" : "My notes"}
-            </DialogTitle>
-          </DialogHeader>
-
-          {myNotesLoading ? (
-            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
-          ) : myNotes.length === 0 ? (
-            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "No hiciste notas para este equipo aun." : "You have not created notes for this team yet."}</p>
-          ) : (
-            <>
-              <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                {myNotes.map((note) => {
-                  const isEditing = editingNoteId === note.id
-                  return (
-                    <div key={note.id} className="rounded-lg border border-brand-cyan/20 bg-brand-navy/40 p-3 space-y-2">
-                      {isEditing ? (
-                        <Textarea
-                          value={editingNoteText}
-                          onChange={(event) => setEditingNoteText(event.target.value)}
-                          className="min-h-20 bg-brand-navy/30 border-brand-cyan/30 text-brand-cyan"
-                          disabled={updatingNote}
-                        />
-                      ) : (
-                        <p className="text-sm text-brand-cyan whitespace-pre-wrap">{note.text}</p>
-                      )}
-
-                      <p className="text-xs text-brand-cyan/60">
-                        {formatNoteDate(note.createdAt)}
-                        {note.updatedAt && note.updatedAt !== note.createdAt ? ` · ${locale === "es" ? "Actualizada" : "Updated"}: ${formatNoteDate(note.updatedAt)}` : ""}
-                      </p>
-
-                      <div className="flex justify-end gap-2">
-                        {isEditing ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={cancelEditingNote}
-                              disabled={updatingNote}
-                              className="px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 disabled:opacity-50"
-                            >
-                              {locale === "es" ? "Cancelar" : "Cancel"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleUpdateMyNote}
-                              disabled={updatingNote}
-                              className="px-3 py-2 text-xs font-pixel rounded border border-brand-yellow/40 bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 disabled:opacity-50"
-                            >
-                              {updatingNote
-                                ? locale === "es" ? "Guardando..." : "Saving..."
-                                : locale === "es" ? "Guardar cambios" : "Save changes"}
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => startEditingNote(note)}
-                            className="px-3 py-2 text-xs font-pixel rounded border border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20"
-                          >
-                            {locale === "es" ? "Editar" : "Edit"}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
-
-          <PaginationControls
-            page={myNotesPage}
-            totalPages={myNotesTotalPages}
-            onPageChange={(nextPage) => {
-              if (myNotesLoading) return
-              void loadMyNotes(nextPage)
-            }}
-            totalItems={myNotesTotalItems}
-            pageSize={10}
-            locale={locale}
+    <div className="space-y-6 pb-20">
+      <div className="flex flex-col md:flex-row gap-6 md:items-center md:justify-between">
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-cyan/50" />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={locale === "es" ? "Buscar por nombre o aula..." : "Search by name or room..."}
+            className="pl-9 bg-brand-navy/60 border-brand-cyan/20 h-10 text-sm"
           />
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
+
+      <GlassCard className="overflow-hidden border-brand-cyan/20 bg-brand-navy/40 shadow-2xl">
+        {loading ? (
+          <div className="py-20 text-center font-pixel text-brand-cyan text-lg animate-pulse">
+            {locale === "es" ? "Cargando equipos..." : "Loading teams..."}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-brand-navy/80 hover:bg-transparent">
+                <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10 pl-6">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10">{locale === "es" ? "Aula" : "Room"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10 text-center">{locale === "es" ? "Miembros" : "Members"}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTeams.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-40 text-center text-brand-cyan/40 italic">
+                      {locale === "es" ? "No se encontraron equipos." : "No teams found."}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTeams.map((team) => {
+                    const membersCount = (participantsByTeam[team.id] || []).length
+                    return (
+                      <TableRow key={team.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 group divide-x divide-brand-cyan/5 transition-colors">
+                        <TableCell className="pl-6 py-2">
+                          <PixelButton size="sm" onClick={() => setSelectedTeamId(team.id)}>
+                            {locale === "es" ? "Ver Detalles" : "See Details"}
+                          </PixelButton>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <button
+                            onClick={() => setSelectedTeamId(team.id)}
+                            className="text-brand-yellow font-medium hover:underline transition-colors text-sm"
+                          >
+                            {team.name || team.id}
+                          </button>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className="flex items-center gap-2 text-brand-cyan/80 text-sm">
+                            <School className="w-3.5 h-3.5 text-brand-orange/60" />
+                            {team.assignedRoom || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className="flex justify-center">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan text-xs font-pixel">
+                              <Users className="w-3 h-3 text-brand-cyan/60" />
+                              {membersCount}
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </GlassCard>
     </div>
   )
 }
