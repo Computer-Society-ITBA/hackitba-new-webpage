@@ -251,7 +251,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           )
         )}
 
-        {user?.role === "judge" && (
+        {(user?.role === "judge") && (
           pathname === `/${locale}/dashboard/jurado/proyectos` ? (
             <span
               className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -273,7 +273,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           )
         )}
 
-        {user?.role === "judge" && (
+        {(user?.role === "judge") && (
           pathname === `/${locale}/dashboard/jurado/puntajes` ? (
             <span
               className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}

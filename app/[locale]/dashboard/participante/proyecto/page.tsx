@@ -20,11 +20,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { collection, getDocs, query, where, updateDoc, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore"
+import { collection, getDocs, query, where, updateDoc, doc, getDoc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban } from "lucide-react"
+import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban, Trophy } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
@@ -49,6 +49,8 @@ export default function ParticipanteProyectoPage() {
   const [loadingProject, setLoadingProject] = useState(true)
   const [hasRedirected, setHasRedirected] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
+  const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
   const router = useRouter()
 
   // Load signup enabled setting
@@ -201,6 +203,10 @@ export default function ParticipanteProyectoPage() {
           setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
           setShowScoresToTeams(!!data?.showScoresToTeams)
         }
+
+        // Also load criteria
+        const criteriaSnap = await getDocs(query(collection(db, "scoringCriteria")))
+        setScoringCriteria(criteriaSnap.docs.map(d => ({ id: d.id, ...d.data() })))
       } finally {
         setProjectSubmissionsLoading(false)
       }
@@ -215,6 +221,16 @@ export default function ParticipanteProyectoPage() {
   useEffect(() => {
     if (team?.id && db) loadProject()
   }, [team?.id, db, loadProject])
+
+  // Load reviews for this project
+  useEffect(() => {
+    if (!db || !team?.id) return
+    const qReviews = query(collection(db, "projectReviews"), where("projectId", "==", team.id))
+    const unsub = onSnapshot(qReviews, (snap) => {
+      setReviews(snap.docs.map(d => d.data()))
+    })
+    return () => unsub()
+  }, [db, team?.id])
 
   const saveProject = useCallback(async (statusOverride?: "draft" | "submitted") => {
     // We allow saving if we're overriding status (submitting), even if canEdit might be false for other reasons.
@@ -384,18 +400,18 @@ export default function ParticipanteProyectoPage() {
           <div className="flex items-center justify-between">
             <div className={cn(
               "flex items-center gap-2 px-3 rounded-full border text-xs font-pixel",
-              projectForm.status === "reviewed" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
-                projectForm.status === "disqualified" ? "bg-red-500/10 border-red-500/30 text-red-500" :
+              project?.disqualified ? "bg-red-500/10 border-red-500/30 text-red-500" :
+                projectForm.status === "reviewed" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
                   projectForm.status === "submitted" ? "bg-green-500/10 border-green-500/30 text-green-400" :
                     "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
             )}>
-              {projectForm.status === "reviewed" ? <CheckCircle2 size={12} className="text-blue-400" /> :
-                projectForm.status === "disqualified" ? <Ban size={12} className="text-red-500" /> :
+              {project?.disqualified ? <Ban size={12} className="text-red-500" /> :
+                projectForm.status === "reviewed" ? <CheckCircle2 size={12} className="text-blue-400" /> :
                   projectForm.status === "submitted" ? <CheckCircle2 size={12} /> :
                     <AlertCircle size={12} />}
 
-              {projectForm.status === "reviewed" ? (locale === "es" ? "Revisado" : "Reviewed") :
-                projectForm.status === "disqualified" ? (locale === "es" ? "Descalificado" : "Disqualified") :
+              {project?.disqualified ? (locale === "es" ? "Descalificado" : "Disqualified") :
+                projectForm.status === "reviewed" ? (locale === "es" ? "Revisado" : "Reviewed") :
                   projectForm.status === "submitted" ? t.dashboard.participant.project.submitted :
                     t.dashboard.participant.project.draft}
             </div>
@@ -407,38 +423,93 @@ export default function ParticipanteProyectoPage() {
             )}
           </div>
 
-          {(project?.reviewComment && showScoresToTeams) && (
-            <GlassCard className="border-brand-cyan/20 bg-brand-cyan/5">
-              <div className="flex gap-3">
-                <MessageSquare className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-pixel text-xs text-brand-cyan uppercase">Reviewer Feedback</p>
-                  <p className="text-sm text-brand-cyan/80 whitespace-pre-wrap">{project.reviewComment}</p>
-                </div>
-              </div>
-            </GlassCard>
-          )}
+          {/* New Reviews Display */}
+          {showScoresToTeams && reviews.length > 0 && (
+            <div className="space-y-4">
+              {/* Aggregated Average Scores */}
+              {scoringCriteria.length > 0 && (() => {
+                const relevantPhaseReviews = reviews.filter(r =>
+                  (project?.isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin") && !r.disqualified
+                )
 
-          {(project?.scores && showScoresToTeams) && (
-            <GlassCard className="border-brand-yellow/20 bg-brand-yellow/5">
-              <div className="space-y-4">
-                <h4 className="font-pixel text-sm text-brand-yellow uppercase flex items-center gap-2">
-                  <Trophy size={16} /> Scores
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Object.entries(project.scores).map(([cid, score]: [string, any]) => (
-                    <div key={cid} className="flex justify-between items-center bg-black/20 p-2 rounded">
-                      <span className="text-xs text-brand-cyan/60">Criteria ID: {cid}</span>
-                      <span className="text-sm font-bold text-brand-yellow">{Math.round(score)}</span>
+                if (relevantPhaseReviews.length === 0) return null
+
+                return (
+                  <GlassCard className="border-brand-yellow/20 bg-brand-yellow/5">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-1">
+                        <h4 className="font-pixel text-sm text-brand-yellow uppercase flex items-center gap-2">
+                          <Trophy size={16} /> {locale === "es" ? "Puntajes del Jurado" : "Judging Scores"}
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        {scoringCriteria.map((c) => {
+                          const avgWeighted = relevantPhaseReviews.reduce((sum, r) => sum + (r.calculatedScores?.[c.id] || 0), 0) / relevantPhaseReviews.length
+                          const avgRaw = relevantPhaseReviews.reduce((sum, r) => sum + (r.rawScores?.[c.id] || 0), 0) / relevantPhaseReviews.length
+
+                          return (
+                            <div key={c.id} className="flex flex-col gap-1 bg-black/20 p-3 rounded border border-white/5">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-bold text-brand-cyan">{c.name}</span>
+                                <span className="text-sm font-bold text-brand-yellow">{Math.round(avgRaw * 10) / 10} / 10</span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px]">
+
+                              </div>
+                              <div className="w-full h-1 bg-white/5 rounded-full mt-1 overflow-hidden">
+                                <div
+                                  className="h-full bg-brand-yellow shadow-[0_0_8px_#FAD399]"
+                                  style={{ width: `${(avgRaw / 10) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          )
+                        })}
+
+                        <div className="mt-4 pt-4 border-t border-brand-yellow/20 flex justify-between items-center">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-pixel text-brand-yellow uppercase">{locale === "es" ? "Puntaje Final" : "Final Score"}</span>
+                            <span className="text-[10px] text-brand-cyan/40">Calculated from {relevantPhaseReviews.length} reviews</span>
+                          </div>
+                          <div className="text-3xl font-bold text-brand-yellow neon-glow-orange">
+                            {Math.round(relevantPhaseReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / relevantPhaseReviews.length)}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                  <div className="col-span-full border-t border-brand-yellow/20 pt-2 flex justify-between items-center">
-                    <span className="text-sm font-pixel text-brand-yellow">Total Score</span>
-                    <span className="text-xl font-bold text-brand-yellow">{Math.round(project.totalScore || 0)}</span>
+                  </GlassCard>
+                )
+              })()}
+
+              {/* Aggregated Comments */}
+              {(() => {
+                const phaseComments = reviews
+                  .filter(r => (project?.isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin"))
+                  .map(r => r.comment)
+                  .filter(c => c && c.trim())
+
+                if (phaseComments.length === 0) return null
+
+                return (
+                  <div className="space-y-2">
+                    <h4 className="font-pixel text-xs text-brand-cyan uppercase ml-1">
+                      {locale === "es" ? "Comentarios de Revisión" : "Reviewer Comments"}
+                    </h4>
+                    <div className="space-y-3">
+                      {phaseComments.map((comment, i) => (
+                        <GlassCard key={i} className="border-brand-cyan/20 bg-brand-cyan/5 p-4">
+                          <div className="flex gap-3">
+                            <MessageSquare className="w-5 h-5 text-brand-cyan shrink-0 mt-0.5" />
+                            <p className="text-sm text-brand-cyan/80 whitespace-pre-wrap">{comment}</p>
+                          </div>
+                        </GlassCard>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </GlassCard>
+                )
+              })()}
+            </div>
           )}
 
           <GlassCard>

@@ -45,6 +45,7 @@ export default function AdminProyectosPage() {
   const [submittingReview, setSubmittingReview] = useState(false)
   const [confirmAction, setConfirmAction] = useState<"review" | "disqualify" | "mark_finalist" | null>(null)
   const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
+  const [myReviews, setMyReviews] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!db) return
@@ -74,7 +75,25 @@ export default function AdminProyectosPage() {
       }
     }
     fetchProjects()
-  }, [db])
+
+    // Listen to my reviews (only judge-role reviews for the finalist phase)
+    let unsubReviews = () => { }
+    if (user?.id) {
+      const reviewsQuery = query(
+        collection(db, "projectReviews"),
+        where("reviewerId", "==", user.id),
+        where("reviewerRole", "==", "judge")
+      )
+      unsubReviews = onSnapshot(reviewsQuery, (snapshot) => {
+        const reviewedIds = new Set(snapshot.docs.map(doc => doc.data().projectId))
+        setMyReviews(reviewedIds)
+      })
+    }
+
+    return () => {
+      unsubReviews()
+    }
+  }, [db, user?.id])
 
   const handleReview = async (disqualify: boolean) => {
     if (!db || !selectedProject || !user) return
@@ -93,10 +112,13 @@ export default function AdminProyectosPage() {
         totalWeightedScore += weighted
       })
 
+      const isFinalist = selectedProject.isFinalist
+      const reviewerRole = isFinalist ? "judge" : "admin"
+
       const reviewData = {
         projectId: selectedProject.id,
         reviewerId: user.id || "admin",
-        reviewerRole: "admin",
+        reviewerRole: reviewerRole,
         rawScores: reviewScores,
         calculatedScores: scoresWithWeights,
         totalScore: totalWeightedScore,
@@ -111,41 +133,48 @@ export default function AdminProyectosPage() {
       const allReviews = reviewsSnap.docs.map(d => d.data())
 
       const newStatus = disqualify ? "disqualified" : "reviewed"
-      const isFinalist = selectedProject.isFinalist
 
-      // Filter reviews based on pool (admin pool for non-finalists, judge pool for finalists)
+      // Filter reviews based on pool:
+      // If project is a finalist, ONLY include judge-role reviews (includes admins voting as judges)
+      // If NOT a finalist, only include admin-role reviews (screening phase)
       const relevantReviews = allReviews.filter(r =>
         (isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin") && !r.disqualified
       )
 
       let avgTotal = 0
       let avgScores: Record<string, number> = {}
+      let avgRawScores: Record<string, number> = {}
 
       if (relevantReviews.length > 0) {
-        avgTotal = relevantReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / relevantReviews.length
+        avgTotal = relevantReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / relevantReviews.length
 
         scoringCriteria.forEach(c => {
-          const sum = relevantReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          const sum = relevantReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / relevantReviews.length
+
+          const sumRaw = relevantReviews.reduce((s, r: any) => s + (r.rawScores?.[c.id] || 0), 0)
+          avgRawScores[c.id] = sumRaw / relevantReviews.length
         })
       } else {
-        // Fallback if no relevant reviews yet but we are submitting one now
         avgTotal = totalWeightedScore
         avgScores = scoresWithWeights
+        avgRawScores = reviewScores
       }
+
+      const anyDisqualified = relevantReviews.some(r => r.disqualified) || disqualify
 
       await updateDoc(doc(db, "projects", selectedProject.id), {
         status: newStatus,
-        scores: avgScores,
+        disqualified: anyDisqualified,
         totalScore: avgTotal,
-        reviewComment: reviewData.comment, // Keep the last comment as summary
         reviewCount: relevantReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: relevantReviews.length } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: relevantReviews.length }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: newStatus, disqualified: anyDisqualified, totalScore: avgTotal, reviewCount: relevantReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: newStatus, disqualified: anyDisqualified, totalScore: avgTotal, reviewCount: relevantReviews.length }))
       setShowDetails(false)
       setReviewComment("")
+      toast({ title: locale === "es" ? "Evaluación enviada" : "Evaluation submitted" })
     } catch (error) {
       console.error("Error submitting review:", error)
     } finally {
@@ -165,25 +194,31 @@ export default function AdminProyectosPage() {
 
       let avgTotal = 0
       let avgScores: Record<string, number> = {}
+      let avgRawScores: Record<string, number> = {}
 
       if (judgeReviews.length > 0) {
-        avgTotal = judgeReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / judgeReviews.length
+        avgTotal = judgeReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / judgeReviews.length
         scoringCriteria.forEach(c => {
-          const sum = judgeReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          const sum = judgeReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / judgeReviews.length
+
+          const sumRaw = judgeReviews.reduce((s, r: any) => s + (r.rawScores?.[c.id] || 0), 0)
+          avgRawScores[c.id] = sumRaw / judgeReviews.length
         })
       }
 
+      const anyDisqualified = judgeReviews.some(r => r.disqualified)
+
       await updateDoc(doc(db, "projects", selectedProject.id), {
         isFinalist: true,
+        disqualified: anyDisqualified,
         status: "reviewed",
-        scores: avgScores,
         totalScore: avgTotal,
         reviewCount: judgeReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
-      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewCount: judgeReviews.length }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length }))
       setShowDetails(false)
       toast({ title: locale === "es" ? "Marcado como finalista" : "Marked as finalist" })
     } catch (error) {
@@ -193,12 +228,22 @@ export default function AdminProyectosPage() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
+      // Judges only evaluate finalists and never disqualified ones
+      // This filter is for the admin view, but if the judging stage is "judge", admins might want to see projects as judges would.
+      // For now, let's apply this filter only if the judgingStage is 'judge' AND the project is not a finalist or is disqualified.
+      // If judgingStage is 'admin', all projects are visible based on other filters.
+      if (judgingStage === "judge" && (!p.isFinalist || p.disqualified)) return false
+
       const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || p.status === statusFilter
+
+      // If judgingStage is 'judge', also filter out projects already reviewed by the current user
+      if (judgingStage === "judge" && myReviews.has(p.id)) return false
+
       return matchesSearch && matchesStatus
     })
-  }, [projects, searchTerm, statusFilter])
+  }, [projects, searchTerm, statusFilter, judgingStage, myReviews])
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
@@ -210,7 +255,8 @@ export default function AdminProyectosPage() {
   const groupedRankings = useMemo(() => {
     const groups: Record<string, any[]> = {}
     projects.forEach(p => {
-      if (p.status !== "reviewed") return // only rank reviewed projects
+      if (p.disqualified) return // hide disqualified from leaderboard
+      if (p.status !== "reviewed") return // only show reviewed projects
       const cat = p.categoryId || "uncategorized"
       if (!groups[cat]) {
         groups[cat] = []
@@ -415,9 +461,11 @@ export default function AdminProyectosPage() {
                     </div>
                   )}
 
-                  {selectedProject.status !== "reviewed" && selectedProject.status !== "disqualified" && (
+                  {selectedProject.status !== "disqualified" && (selectedProject.isFinalist ? !myReviews.has(selectedProject.id) : selectedProject.status !== "reviewed") && (
                     <div className="mt-8 pt-6 border-t border-brand-cyan/20">
-                      <h3 className="font-pixel text-lg text-brand-yellow mb-4">Project Review</h3>
+                      <h3 className="font-pixel text-lg text-brand-yellow mb-4">
+                        {selectedProject.isFinalist ? "Final Judging Review" : "Screening Review"}
+                      </h3>
                       <div className="space-y-4">
                         {scoringCriteria.map(criteria => (
                           <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
@@ -456,7 +504,7 @@ export default function AdminProyectosPage() {
                             disabled={submittingReview}
                           >
                             <CheckCircle className="mr-2 w-4 h-4" />
-                            Submit Review
+                            {selectedProject.isFinalist ? "Submit Vote" : "Submit Review"}
                           </Button>
                           {!selectedProject.isFinalist && (
                             <Button
@@ -477,6 +525,15 @@ export default function AdminProyectosPage() {
                             Disqualify
                           </Button>
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {myReviews.has(selectedProject.id) && selectedProject.isFinalist && (
+                    <div className="mt-8 pt-6 border-t border-brand-cyan/20 text-center">
+                      <div className="flex flex-col items-center gap-2 text-brand-cyan/60">
+                        <CheckCircle className="w-8 h-8 text-green-400" />
+                        <p className="font-pixel text-sm uppercase">{locale === "es" ? "Ya has evaluado este proyecto" : "You have already evaluated this project"}</p>
                       </div>
                     </div>
                   )}

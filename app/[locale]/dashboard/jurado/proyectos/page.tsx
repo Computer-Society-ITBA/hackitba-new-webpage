@@ -70,7 +70,11 @@ export default function JuradoProyectosPage() {
     // Listen to my reviews
     let unsubReviews = () => { }
     if (user?.id) {
-      const reviewsQuery = query(collection(db, "projectReviews"), where("reviewerId", "==", user.id))
+      const reviewsQuery = query(
+        collection(db, "projectReviews"),
+        where("reviewerId", "==", user.id),
+        where("reviewerRole", "==", "judge")
+      )
       unsubReviews = onSnapshot(reviewsQuery, (snapshot) => {
         const reviewedIds = new Set(snapshot.docs.map(doc => doc.data().projectId))
         setMyReviews(reviewedIds)
@@ -131,35 +135,44 @@ export default function JuradoProyectosPage() {
       }
       await addDoc(collection(db, "projectReviews"), reviewData)
 
-      // Calculate new averages specifically from judge reviews
+      // Calculate new averages from all relevant reviews (judges and admins)
       const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", selectedProject.id)))
       const allReviews = reviewsSnap.docs.map(d => d.data())
 
-      // Judges only contribute to the judge score pool
+      // Judges and Admins-as-Judges contribution to the judge score pool
       const judgeReviews = allReviews.filter(r => r.reviewerRole === "judge" && !r.disqualified)
 
       let avgTotal = 0
       let avgScores: Record<string, number> = {}
+      let avgRawScores: Record<string, number> = {}
 
       if (judgeReviews.length > 0) {
-        avgTotal = judgeReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / judgeReviews.length
+        avgTotal = judgeReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / judgeReviews.length
 
         scoringCriteria.forEach(c => {
-          const sum = judgeReviews.reduce((s, r) => s + (r.calculatedScores?.[c.id] || 0), 0)
+          const sum = judgeReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / judgeReviews.length
+
+          const sumRaw = judgeReviews.reduce((s, r: any) => s + (r.rawScores?.[c.id] || 0), 0)
+          avgRawScores[c.id] = sumRaw / judgeReviews.length
         })
+      } else {
+        avgTotal = totalWeightedScore
+        avgScores = scoresWithWeights
+        avgRawScores = reviewScores
       }
+
+      const anyDisqualified = judgeReviews.some(r => r.disqualified)
 
       await updateDoc(doc(db, "projects", selectedProject.id), {
         status: "reviewed",
-        scores: avgScores,
+        disqualified: anyDisqualified,
         totalScore: avgTotal,
-        reviewComment: reviewData.comment,
         reviewCount: judgeReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: judgeReviews.length } : p))
-      setSelectedProject((prev: any) => ({ ...prev, status: "reviewed", scores: avgScores, totalScore: avgTotal, reviewComment: reviewData.comment, reviewCount: judgeReviews.length }))
+      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, status: "reviewed", disqualified: anyDisqualified, totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
+      setSelectedProject((prev: any) => ({ ...prev, status: "reviewed", disqualified: anyDisqualified, totalScore: avgTotal, reviewCount: judgeReviews.length }))
       setShowDetails(false)
       setReviewComment("")
       toast({ title: locale === "es" ? "Evaluación enviada" : "Evaluation submitted" })
@@ -175,8 +188,8 @@ export default function JuradoProyectosPage() {
     if (judgingStage === "admin") return []
 
     return projects.filter(p => {
-      // Judges only evaluate finalists
-      if (!p.isFinalist) return false
+      // Judges only evaluate finalists and never disqualified ones
+      if (!p.isFinalist || p.disqualified) return false
 
       const isReviewedByMe = myReviews.has(p.id)
       const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||

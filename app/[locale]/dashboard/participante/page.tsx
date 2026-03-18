@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { collection, getDocs, query, where, doc, getDoc, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { Trophy, FileEdit, CheckCircle2, AlertCircle } from "lucide-react"
+import { Trophy, FileEdit, CheckCircle2, AlertCircle, Ban } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -27,6 +27,7 @@ export default function ParticipanteDashboard() {
   const { user, loading } = useAuth()
 
   const [projectStatus, setProjectStatus] = useState<"none" | "draft" | "submitted" | "reviewed" | "disqualified">("none")
+  const [isDisqualified, setIsDisqualified] = useState(false)
   const [showWinners, setShowWinners] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
@@ -34,6 +35,7 @@ export default function ParticipanteDashboard() {
   const [resolvedTeamId, setResolvedTeamId] = useState<string | null>(null)
   const [hasRedirected, setHasRedirected] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
+  const [resettingSignup, setResettingSignup] = useState(false)
 
   // Load signup enabled setting
   useEffect(() => {
@@ -109,14 +111,18 @@ export default function ParticipanteDashboard() {
 
     const unsub = onSnapshot(doc(db, "projects", resolvedTeamId), async (snap) => {
       if (snap.exists()) {
-        setProjectStatus(snap.data().status || "submitted")
+        const data = snap.data()
+        setProjectStatus(data.status || "submitted")
+        setIsDisqualified(!!data.disqualified)
       } else {
         // Fallback 1: Try querying by teamId field (in case ID doesn't match)
         try {
           const q = query(collection(db, "projects"), where("teamId", "==", resolvedTeamId))
           const qSnap = await getDocs(q)
           if (!qSnap.empty) {
-            setProjectStatus(qSnap.docs[0].data().status || "submitted")
+            const data = qSnap.docs[0].data()
+            setProjectStatus(data.status || "submitted")
+            setIsDisqualified(!!data.disqualified)
             return
           }
         } catch (err) {
@@ -126,8 +132,10 @@ export default function ParticipanteDashboard() {
         // Fallback 2: check if project exists within the team document (legacy)
         try {
           const teamDoc = await getDoc(doc(db, "teams", resolvedTeamId))
-          if (teamDoc.exists() && teamDoc.data().project) {
+          const teamData = teamDoc.data()
+          if (teamData?.project) {
             setProjectStatus("submitted")
+            setIsDisqualified(!!teamData.project.disqualified)
           } else {
             setProjectStatus("none")
           }
@@ -254,6 +262,29 @@ export default function ParticipanteDashboard() {
                           projectStatus === "draft" ? <LucideIcons.Clock size={24} /> :
                             <FileEdit size={24} />}
                   </div>
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-brand-cyan/20 bg-brand-cyan/5 text-xs font-pixel mb-6">
+                {isDisqualified ? (
+                  <>
+                    <Ban size={14} className="text-red-500" />
+                    <span className="text-red-500 uppercase">{locale === "es" ? "Descalificado" : "Disqualified"}</span>
+                  </>
+                ) : projectStatus === "reviewed" ? (
+                  <>
+                    <Trophy size={14} className="text-blue-400" />
+                    <span className="text-blue-400 uppercase">{locale === "es" ? "Evaluado" : "Evaluated"}</span>
+                  </>
+                ) : projectStatus === "submitted" ? (
+                  <>
+                    <CheckCircle2 size={14} className="text-brand-cyan" />
+                    <span className="text-brand-cyan uppercase">{locale === "es" ? "Enviado" : "Submitted"}</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle size={14} className="text-brand-yellow" />
+                    <span className="text-brand-yellow uppercase">{locale === "es" ? "Borrador" : "Draft"}</span>
+                  </>
+                )}
+              </div>
                   <div>
                     <h4 className="font-pixel text-md text-brand-yellow">
                       {projectStatus === "reviewed" ? (locale === "es" ? "Revisado" : "Reviewed") :

@@ -41,7 +41,11 @@ export default function JuradoPuntajesPage() {
         // Listen to my reviews
         let unsubReviews = () => { }
         if (user?.id) {
-            const reviewsQuery = query(collection(db, "projectReviews"), where("reviewerId", "==", user.id))
+            const reviewsQuery = query(
+                collection(db, "projectReviews"),
+                where("reviewerId", "==", user.id),
+                where("reviewerRole", "==", "judge")
+            )
             unsubReviews = onSnapshot(reviewsQuery, (snapshot) => {
                 const reviewedIds = new Set(snapshot.docs.map(doc => doc.data().projectId))
                 setMyReviews(reviewedIds)
@@ -78,6 +82,7 @@ export default function JuradoPuntajesPage() {
         const grouped: Record<string, any[]> = {}
 
         projects.forEach(p => {
+            if (p.disqualified) return // hide disqualified from leaderboard
             const catId = p.categoryId || "none"
             if (!grouped[catId]) grouped[catId] = []
             grouped[catId].push(p)
@@ -101,7 +106,7 @@ export default function JuradoPuntajesPage() {
                                 {locale === "es" ? "Puntajes de Finalistas" : "Finalist Rankings"}
                             </h3>
                             <p className="text-xs text-brand-cyan/60 font-pixel uppercase">
-                                {locale === "es" ? "Basado en el promedio de todos los jurados" : "Based on average from all judges"}
+                                {locale === "es" ? "Basado en el promedio de votos del jurado" : "Based on average from all judge votes"}
                             </p>
                         </div>
 

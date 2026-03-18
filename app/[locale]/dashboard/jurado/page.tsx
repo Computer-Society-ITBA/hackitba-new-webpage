@@ -32,8 +32,12 @@ export default function JuradoDashboard() {
       setStats(prev => ({ ...prev, total: snap.size }))
     })
 
-    // Listen to projects scored by this judge
-    const scoredQuery = query(collection(db, "projectReviews"), where("reviewerId", "==", user.id))
+    // Listen to projects scored by this judge (as judge role)
+    const scoredQuery = query(
+      collection(db, "projectReviews"),
+      where("reviewerId", "==", user.id),
+      where("reviewerRole", "==", "judge")
+    )
     const unsubScored = onSnapshot(scoredQuery, (snap) => {
       // We want to count unique projects reviewed by this judge
       const uniqueProjects = new Set(snap.docs.map(doc => doc.data().projectId))
@@ -47,7 +51,7 @@ export default function JuradoDashboard() {
   }, [db, user?.id])
 
   return (
-    <ProtectedRoute allowedRoles={["judge"]}>
+    <ProtectedRoute allowedRoles={["judge", "admin"]}>
       <DashboardLayout title={t.judge.title}>
         <div className="space-y-8">
           <section>
