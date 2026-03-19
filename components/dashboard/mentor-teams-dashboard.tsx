@@ -240,29 +240,28 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
   if (selectedTeam) {
     return (
       <div className="space-y-6 pb-20">
-        <div className="flex items-center gap-8">
-
-          <h2 className="font-pixel text-brand-yellow text-2xl lg:text-3xl neon-glow-yellow">
-            {selectedTeam.name || selectedTeam.id}
-          </h2>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded bg-brand-orange/10 border border-brand-orange/20">
-              <School className="w-5 h-5 text-brand-orange" />
-            </div>
-            <div className="flex items-center gap-3">
-              <p className="text-brand-cyan text-lg font-pixel">{selectedTeam.assignedRoom || "-"}</p>
-            </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-brand-cyan/10">
+          <div className="flex items-center gap-4 min-w-0">
+            <h2 className="text-3xl font-bold text-brand-yellow font-pixel truncate">
+              {selectedTeam.name || selectedTeam.id}
+            </h2>
           </div>
-          <div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-orange/5 border border-brand-orange/20 rounded-md text-sm">
+              <School className="w-4 h-4 text-brand-orange/60" />
+              <span className="text-brand-orange/60 font-pixel uppercase text-xs">{locale === "es" ? "Aula" : "Room"}</span>
+              <span className="text-brand-orange font-pixel font-bold">{selectedTeam.assignedRoom || "-"}</span>
+            </div>
+
             <button
               onClick={() => setSelectedTeamId(null)}
-              className={`flex items-center gap-2 px-2 py-2 rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors w-full`}
-              title="Back"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-brand-cyan/20 text-brand-cyan/60 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-all text-sm"
             >
-              <div className={`relative w-6 h-6 rotate-90 flex-shrink-0`}>
+              <div className={`relative w-4 h-4 rotate-90 flex-shrink-0`}>
                 <Image src="/images/flecha-abajo.png" alt="Arrow" fill className="object-contain" />
               </div>
-              <p className="font-pixel text-brand-cyan text-xs">{locale === "es" ? "Volver" : "Back"}</p>
+              <span className="text-xs font-pixel tracking-wider">{locale === "es" ? "Volver" : "Back"}</span>
             </button>
           </div>
         </div>
@@ -344,17 +343,27 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
                   <div className="py-10 text-center text-brand-cyan/30 italic">{locale === "es" ? "No hay notas aún." : "No notes yet."}</div>
                 ) : (
                   <div className="space-y-4">
-                    {teamNotes.map(note => (
-                      <div key={note.id} className="p-4 rounded-lg bg-black/40 border border-brand-cyan/10 hover:border-brand-cyan/30 transition-colors">
-                        <MarkdownRenderer content={note.text} />
-                        <div className="mt-3 pt-3 border-t border-brand-cyan/5 flex justify-between items-center text-xs text-brand-cyan/50">
-                          <span>
-                            {note.author?.name ? `${note.author.name} ${note.author.surname || ""}` : note.authorRole}
-                          </span>
-                          <span>{note.createdAt ? new Date(note.createdAt).toLocaleString(locale === "es" ? "es-AR" : "en-US") : ""}</span>
+                    {teamNotes.map(note => {
+                      const authorLabel = note.author?.name ? `${note.author.name} ${note.author.surname || ""}` : note.authorRole
+                      return (
+                        <div key={note.id} className="rounded-lg border border-brand-cyan/10 bg-black/30 overflow-hidden">
+                          <div className="p-4 overflow-hidden break-words">
+                            <MarkdownRenderer content={note.text} />
+                          </div>
+                          <div className="px-4 py-2 bg-brand-cyan/5 border-t border-brand-cyan/5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className="text-xs font-bold text-brand-cyan/70 uppercase">{authorLabel}</span>
+                            <span className="h-1 w-1 rounded-full bg-brand-cyan/20 shrink-0" />
+                            <span className="text-xs font-pixel text-brand-cyan/40 uppercase tracking-wide">
+                              {note.authorRole}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-brand-cyan/20 shrink-0" />
+                            <span className="text-xs text-brand-cyan/40">
+                              {note.createdAt ? new Date(note.createdAt).toLocaleString(locale === "es" ? "es-AR" : "en-US") : ""}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
 
                     {notesTotalPages > 1 && (
                       <PaginationControls
@@ -400,10 +409,10 @@ export function MentorTeamsDashboard({ locale }: MentorTeamsDashboardProps) {
             <Table>
               <TableHeader className="bg-brand-navy/80 hover:bg-transparent">
                 <TableRow className="border-brand-cyan/20 hover:bg-transparent">
-                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10 pl-6">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
-                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</TableHead>
-                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10">{locale === "es" ? "Aula" : "Room"}</TableHead>
-                  <TableHead className="text-brand-cyan/50 font-bold text-[10px] uppercase h-10 text-center">{locale === "es" ? "Miembros" : "Members"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-xs h-10 px-4 pl-6">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-xs h-10 px-4">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-xs h-10 px-4">{locale === "es" ? "Aula" : "Room"}</TableHead>
+                  <TableHead className="text-brand-cyan/50 font-bold text-xs h-10 px-4 text-center">{locale === "es" ? "Miembros" : "Members"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

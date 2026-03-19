@@ -577,64 +577,64 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                     <TableRow className="border-brand-cyan/20 hover:bg-transparent">
                                         {activeTab === "participants" ? (
                                             <>
-                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
-                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead className="h-8 py-1 text-xs">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Email" : "Email"} {sortField === "email" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Escuela/Uni" : "School/Uni"} {sortField === "university" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("grad_year")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("grad_year")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Año egreso" : "Grad. Year"} {sortField === "grad_year" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("neighborhood")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("neighborhood")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Barrio/Localidad" : "Neighborhood"} {sortField === "neighborhood" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Edad" : "Age"} {sortField === "age" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
                                             </>
                                         ) : (
                                             <>
-                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                                <TableHead className="h-8 py-1 text-xs">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
 
-                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Miembros" : "Members"} {sortField === "members" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
 
@@ -655,7 +655,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                 {activeTab === "participants" ? (
                                                     <>
 
-                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                        <TableCell className="text-xs py-1 flex gap-2">
                                                             <button
                                                                 onClick={() => { setMailTarget(item); setShowMail(true); setMailSubject(`${locale === "es" ? "Hola" : "Hi"} ${item.name}`); setMailBody(""); }}
                                                                 className="text-sm px-2 py-1 bg-blue-700/10 text-blue-300 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
@@ -680,18 +680,18 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="py-1">
                                                             <button
                                                                 onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
-                                                                className="text-brand-yellow text-[10px] hover:underline flex items-center gap-1.5 group"
+                                                                className="text-brand-yellow text-xs hover:underline flex items-center gap-1.5 group"
                                                             >
                                                                 {item.name} {item.surname}
                                                                 <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
                                                             </button>
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.grad_year ?? item.career_year ?? item.careerYear ?? "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
-                                                        <TableCell className="text-brand-orange text-[10px] py-1">
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.email}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.grad_year ?? item.career_year ?? item.careerYear ?? "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
+                                                        <TableCell className="text-brand-orange text-xs py-1">
                                                             {item.team ? (
                                                                 <button onClick={() => {
                                                                     const team = teams.find(t => t.id === item.team)
@@ -729,23 +729,23 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                 })()
 
                                                                 return (
-                                                                    <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-[9px] uppercase", statusClass)}>
+                                                                    <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-xs uppercase", statusClass)}>
                                                                         {displayStatus}
                                                                     </span>
                                                                 )
                                                             })()}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName(getParticipantCategoryIndex(item))}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.age || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{getCategoryName(getParticipantCategoryIndex(item))}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">
                                                             {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
 
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                        <TableCell className="text-xs py-1 flex gap-2">
                                                             <button
                                                                 onClick={() => {
                                                                     const project = projects.find(p => p.teamId === item.id)
@@ -796,7 +796,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         </TableCell>
                                                         <TableCell>
                                                             <span data-status={item.status || "pending"} className={cn(
-                                                                "px-2 py-0.5 rounded text-[10px] uppercase",
+                                                                "px-2 py-0.5 rounded text-xs uppercase",
                                                                 item.status === "approved" ? "bg-green-500/20 text-green-400" :
                                                                     item.status === "rejected" ? "bg-red-500/20 text-red-400" :
                                                                         "bg-yellow-500/20 text-yellow-400"
@@ -805,7 +805,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                             </span>
                                                         </TableCell>
                                                         <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(getTeamCategoryIndex(item))}</TableCell>
-                                                        <TableCell className="text-brand-cyan/60 text-[10px]">
+                                                        <TableCell className="text-brand-cyan/60 text-xs">
                                                             {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
 
@@ -843,7 +843,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     </DialogHeader>
                     <div className="py-4 space-y-3">
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
                             <input
                                 type="email"
                                 value={customMailTo}
@@ -853,7 +853,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={customMailSubject}
                                 onChange={(e) => setCustomMailSubject(e.target.value)}
@@ -861,8 +861,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={customMailBody}
                                 onChange={(e) => setCustomMailBody(e.target.value)}
@@ -931,7 +931,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             {editType === "participants" ? (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre" : "Name"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre" : "Name"}</label>
                                         <Input
                                             value={editingItem.name || ""}
                                             onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
@@ -939,7 +939,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Apellido" : "Surname"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Apellido" : "Surname"}</label>
                                         <Input
                                             value={editingItem.surname || ""}
                                             onChange={e => setEditingItem({ ...editingItem, surname: e.target.value })}
@@ -947,7 +947,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">Email</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">Email</label>
                                         <Input
                                             value={editingItem.email || ""}
                                             onChange={e => setEditingItem({ ...editingItem, email: e.target.value })}
@@ -955,7 +955,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Universidad" : "University"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Universidad" : "University"}</label>
                                         <Input
                                             value={editingItem.university || ""}
                                             onChange={e => setEditingItem({ ...editingItem, university: e.target.value })}
@@ -963,7 +963,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Carrera" : "Degree"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Carrera" : "Degree"}</label>
                                         <Input
                                             value={editingItem.career || ""}
                                             onChange={e => setEditingItem({ ...editingItem, career: e.target.value })}
@@ -971,7 +971,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Edad" : "Age"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Edad" : "Age"}</label>
                                         <Input
                                             type="number"
                                             value={editingItem.age || ""}
@@ -980,7 +980,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
                                         <select
                                             value={editingItem.role === "user" ? "participant" : (editingItem.role || "participant")}
                                             onChange={e => setEditingItem({ ...editingItem, role: e.target.value })}
@@ -993,7 +993,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
                                         <select
                                             value={editingItem.status || "pending"}
                                             onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
@@ -1008,7 +1008,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             ) : (
                                 <>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</label>
                                         <Input
                                             value={editingItem.name || ""}
                                             onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
@@ -1016,7 +1016,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Categoría" : "Category"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Categoría" : "Category"}</label>
                                         <select
                                             value={editingItem.category_1 || "0"}
                                             onChange={e => setEditingItem({ ...editingItem, category_1: parseInt(e.target.value) })}
@@ -1030,7 +1030,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
                                         <select
                                             value={editingItem.status || "pending"}
                                             onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
@@ -1042,7 +1042,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </select>
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</label>
                                         <Input
                                             value={editingItem.assignedRoom || ""}
                                             onChange={e => setEditingItem({ ...editingItem, assignedRoom: e.target.value })}
@@ -1051,7 +1051,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "¿Por qué participas en el hackathon?" : "Why are you participating in the hackathon?"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "¿Por qué participas en el hackathon?" : "Why are you participating in the hackathon?"}</label>
                                         <textarea
                                             value={editingItem.tell_why || ""}
                                             onChange={e => setEditingItem({ ...editingItem, tell_why: e.target.value })}
@@ -1113,7 +1113,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     </DialogHeader>
 
                     <div className="space-y-3">
-                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Agregar nota" : "Add note"}</label>
+                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Agregar nota" : "Add note"}</label>
                         <MarkdownEditor
                             value={teamNotesText}
                             onChange={setTeamNotesText}
@@ -1131,7 +1131,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     </div>
 
                     <div className="mt-4 space-y-2">
-                        <p className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Historial" : "History"}</p>
+                        <p className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Historial" : "History"}</p>
                         {teamNotesLoading ? (
                             <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
                         ) : teamNotes.length === 0 ? (
@@ -1204,7 +1204,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     <div className="py-4 space-y-3">
                         <p className="text-sm text-brand-cyan/80">{moveItem ? `${moveItem.name} ${moveItem.surname}` : ""}</p>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Seleccionar Equipo" : "Select Team"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Seleccionar Equipo" : "Select Team"}</label>
                             <select
                                 value={moveTargetTeam || ""}
                                 onChange={(e) => setMoveTargetTeam(e.target.value || null)}
@@ -1245,12 +1245,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                 <p className="text-sm text-brand-cyan/80">
                                     <span className="text-brand-yellow font-semibold">{teamMailTarget.name}</span>
                                     {" — "}{members.length} {locale === "es" ? "integrante(s)" : "member(s)"}
-                                    {members.length > 0 && <span className="block text-[10px] text-brand-cyan/50 mt-1">{members.map((m: any) => m.email).join(", ")}</span>}
+                                    {members.length > 0 && <span className="block text-xs text-brand-cyan/50 mt-1">{members.map((m: any) => m.email).join(", ")}</span>}
                                 </p>
                             )
                         })()}
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={teamMailSubject}
                                 onChange={(e) => setTeamMailSubject(e.target.value)}
@@ -1258,8 +1258,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={teamMailBody}
                                 onChange={(e) => setTeamMailBody(e.target.value)}
@@ -1326,7 +1326,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     <div className="py-4 space-y-3">
                         <p className="text-sm text-brand-cyan/80">{mailTarget ? `${mailTarget.name} ${mailTarget.surname} — ${mailTarget.email}` : ""}</p>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={mailSubject}
                                 onChange={(e) => setMailSubject(e.target.value)}
@@ -1334,8 +1334,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={mailBody}
                                 onChange={(e) => setMailBody(e.target.value)}
@@ -1479,7 +1479,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             </div>
                             {selectedProject?.status && (
                                 <span className={cn(
-                                    "text-[10px] px-2 py-0.5 rounded uppercase ml-4",
+                                    "text-xs px-2 py-0.5 rounded uppercase ml-4",
                                     selectedProject.status === "submitted" ? "bg-green-500/20 text-green-400" :
                                         selectedProject.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
                                             "bg-gray-500/20 text-gray-400"
@@ -1502,17 +1502,17 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                         <div className="space-y-6 mt-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-1">Team</p>
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Team</p>
                                     <p className="text-brand-yellow text-sm font-pixel">{selectedProject.teamName}</p>
                                 </div>
                                 <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-1">Category</p>
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Category</p>
                                     <p className="text-brand-cyan text-sm">{getCategoryName(selectedProject.categoryId)}</p>
                                 </div>
                             </div>
 
                             <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
-                                <p className="text-[10px] text-brand-cyan/60 uppercase mb-2">Description</p>
+                                <p className="text-xs text-brand-cyan/60 uppercase mb-2">Description</p>
                                 <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap">{selectedProject.description}</p>
                             </div>
 
@@ -1531,7 +1531,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
                             {selectedProject.images && selectedProject.images.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
                                         <ImageIcon size={14} /> Images
                                     </p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1546,7 +1546,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
                             {selectedProject.videos && selectedProject.videos.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
                                         <Play size={14} /> Videos
                                     </p>
                                     <div className="space-y-2">

@@ -10,31 +10,31 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
-    <div className={cn("text-brand-cyan max-w-none space-y-3", className)}>
+    <div className={cn("text-brand-cyan max-w-none space-y-3 break-words overflow-hidden", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
-          h1: ({ ...props }) => <h1 className="font-pixel text-brand-yellow text-xl sm:text-2xl mb-4 mt-6" {...props} />,
-          h2: ({ ...props }) => <h2 className="font-pixel text-brand-yellow text-lg sm:text-xl mb-3 mt-5" {...props} />,
-          h3: ({ ...props }) => <h3 className="font-pixel text-brand-yellow text-md sm:text-lg mb-2 mt-4" {...props} />,
-          p: ({ ...props }) => <p className="text-brand-cyan text-sm sm:text-base leading-relaxed mb-3" {...props} />,
+          h1: ({ ...props }) => <h1 className="font-pixel text-brand-yellow text-xl sm:text-2xl mb-4 mt-6 break-words" {...props} />,
+          h2: ({ ...props }) => <h2 className="font-pixel text-brand-yellow text-lg sm:text-xl mb-3 mt-5 break-words" {...props} />,
+          h3: ({ ...props }) => <h3 className="font-pixel text-brand-yellow text-md sm:text-lg mb-2 mt-4 break-words" {...props} />,
+          p: ({ ...props }) => <p className="text-brand-cyan text-sm sm:text-base leading-relaxed mb-3 break-words" {...props} />,
           ul: ({ ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
           ol: ({ ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
-          li: ({ ...props }) => <li className="text-brand-cyan text-sm sm:text-base" {...props} />,
-          a: ({ ...props }) => <a className="text-brand-orange underline hover:text-brand-orange/80 transition-colors" target="_blank" rel="noreferrer" {...props} />,
-          blockquote: ({ ...props }) => <blockquote className="border-l-4 border-brand-yellow/30 pl-4 py-1 italic text-brand-cyan/80 bg-brand-navy/20 rounded-r my-4" {...props} />,
+          li: ({ ...props }) => <li className="text-brand-cyan text-sm sm:text-base break-words" {...props} />,
+          a: ({ ...props }) => <a className="text-brand-orange underline hover:text-brand-orange/80 transition-colors break-words" target="_blank" rel="noreferrer" {...props} />,
+          blockquote: ({ ...props }) => <blockquote className="border-l-4 border-brand-yellow/30 pl-4 py-1 italic text-brand-cyan/80 bg-brand-navy/20 rounded-r my-4 break-words" {...props} />,
           code: ({ ...props }) => {
             const isInline = !props.className?.includes('language-');
             return isInline 
-              ? <code className="text-brand-yellow bg-brand-navy/50 px-1.5 py-0.5 rounded text-sm" {...props} />
+              ? <code className="text-brand-yellow bg-brand-navy/50 px-1.5 py-0.5 rounded text-sm break-words" {...props} />
               : <code className="block text-brand-yellow bg-black/60 p-4 rounded-lg border border-brand-cyan/20 overflow-x-auto my-4 text-sm font-mono whitespace-pre" {...props} />;
           },
           hr: () => <hr className="border-brand-cyan/10 my-6" />,
           table: ({ ...props }) => <div className="overflow-x-auto my-4"><table className="w-full border-collapse" {...props} /></div>,
-          th: ({ ...props }) => <th className="border border-brand-cyan/20 p-2 bg-brand-navy/60 text-brand-yellow text-left text-xs uppercase" {...props} />,
-          td: ({ ...props }) => <td className="border border-brand-cyan/20 p-2 text-brand-cyan/80 text-sm" {...props} />,
-          strong: ({ ...props }) => <strong className="text-brand-yellow font-bold" {...props} />,
-          em: ({ ...props }) => <em className="text-brand-cyan italic" {...props} />,
+          th: ({ ...props }) => <th className="border border-brand-cyan/20 p-2 bg-brand-navy/60 text-brand-yellow text-left text-xs uppercase break-words" {...props} />,
+          td: ({ ...props }) => <td className="border border-brand-cyan/20 p-2 text-brand-cyan/80 text-sm break-words" {...props} />,
+          strong: ({ ...props }) => <strong className="text-brand-yellow font-bold break-words" {...props} />,
+          em: ({ ...props }) => <em className="text-brand-cyan italic break-words" {...props} />,
         }}
       >
         {content}

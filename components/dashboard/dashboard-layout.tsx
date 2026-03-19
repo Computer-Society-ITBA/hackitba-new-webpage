@@ -541,19 +541,19 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             >
               <Menu size={20} />
             </button>
-            <h2 className="font-pixel text-sm text-brand-yellow truncate">
+            {/* <h2 className="font-pixel text-sm text-brand-yellow truncate">
               <NeonGlow color="orange">{title}</NeonGlow>
-            </h2>
+            </h2> */}
           </div>
         )}
 
-        {!isMobile && (
+        {/* {!isMobile && (
           <div className="mb-6">
             <h2 className="font-pixel text-2xl text-brand-yellow">
               <NeonGlow color="orange">{title}</NeonGlow>
             </h2>
           </div>
-        )}
+        )} */}
 
         {children}
       </main>

@@ -227,7 +227,7 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <DashboardLayout title={translations.dashboard.profile.title}>
         <div className="space-y-6">
-          <h1 className="text-3xl font-pixel text-brand-cyan neon-glow-cyan">
+          <h1 className="text-3xl font-pixel text-brand-cyan">
             {translations.dashboard.profile.title}
           </h1>
 
@@ -359,7 +359,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     value={user?.role === "mentor" || user?.role === "judge" ? mentorForm.github : profileForm.github}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       user?.role === "mentor" || user?.role === "judge"
                         ? setMentorForm({ ...mentorForm, github: e.target.value })
                         : setProfileForm({ ...profileForm, github: e.target.value })
@@ -375,7 +375,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     value={user?.role === "mentor" || user?.role === "judge" ? mentorForm.linkedin : profileForm.linkedin}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       user?.role === "mentor" || user?.role === "judge"
                         ? setMentorForm({ ...mentorForm, linkedin: e.target.value })
                         : setProfileForm({ ...profileForm, linkedin: e.target.value })
@@ -394,7 +394,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     value={user?.role === "mentor" || user?.role === "judge" ? mentorForm.instagram : profileForm.instagram}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       user?.role === "mentor" || user?.role === "judge"
                         ? setMentorForm({ ...mentorForm, instagram: e.target.value })
                         : setProfileForm({ ...profileForm, instagram: e.target.value })
@@ -410,7 +410,7 @@ export default function ProfilePage() {
                   </Label>
                   <Input
                     value={user?.role === "mentor" || user?.role === "judge" ? mentorForm.twitter : profileForm.twitter}
-                    onChange={(e) => 
+                    onChange={(e) =>
                       user?.role === "mentor" || user?.role === "judge"
                         ? setMentorForm({ ...mentorForm, twitter: e.target.value })
                         : setProfileForm({ ...profileForm, twitter: e.target.value })
@@ -461,7 +461,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="flex gap-3 justify-end pt-4">
-                  <PixelButton 
+                  <PixelButton
                     onClick={() => {
                       setShowProfileForm(false)
                       // Resetear valores originales
@@ -505,7 +505,7 @@ export default function ProfilePage() {
                           food_preference: user?.food_preference || "",
                         })
                       }
-                    }} 
+                    }}
                     variant="outline"
                     disabled={savingProfile}
                   >

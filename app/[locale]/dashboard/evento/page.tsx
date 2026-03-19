@@ -123,14 +123,14 @@ export default function EventoPage() {
           <div className="space-y-6">
             {/* Auditorium Map */}
             <GlassCard className="p-6">
-              <h3 className="font-pixel text-lg text-brand-yellow mb-4 flex items-center gap-2">
+              <h3 className="font-pixel text-lg text-brand-cyan mb-4 flex items-center gap-2">
                 <Navigation className="w-4 h-4" />
                 {ei.presentation} — {ei.presentationLocation}
               </h3>
 
-              <div className="flex flex-col divide-y divide-brand-cyan/10 mb-6 rounded-lg border border-brand-yellow/30 overflow-hidden">
+              <div className="flex flex-col divide-y divide-brand-cyan/10 mb-6 rounded-lg border border-brand-cyan/30 overflow-hidden">
                 <div className="flex items-center gap-4 px-4 py-3">
-                  <MapPin className="w-4 h-4 text-brand-yellow flex-shrink-0" />
+                  <MapPin className="w-4 h-4 text-brand-cyan flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-pixel uppercase tracking-wider text-brand-cyan/40 mb-0.5">{ei.labelsLocation}</p>
                     <a
@@ -146,7 +146,7 @@ export default function EventoPage() {
                 </div>
               </div>
 
-              <div className="relative w-full h-[280px] rounded-lg overflow-hidden border border-brand-yellow/30 shadow-lg">
+              <div className="relative w-full h-[280px] rounded-lg overflow-hidden border border-brand-cyan/30 shadow-lg">
                 <iframe
                   src="https://maps.google.com/maps?hl=en&q=Uspallata%203150%20C1437JCJ%20CABA%20Argentina+(Sede%20del%20Gobierno)&z=15&output=embed"
                   className="absolute inset-0 w-full h-full border-0"

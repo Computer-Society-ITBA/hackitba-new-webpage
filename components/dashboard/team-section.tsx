@@ -19,6 +19,7 @@ import { useRouter, useParams } from "next/navigation"
 import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
+import { cn } from "@/lib/utils"
 
 interface TeamMember {
   id: string
@@ -567,164 +568,200 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
 
   return (
     <GlassCard>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {!signupEnabled && (
           <div className="p-3 bg-brand-orange/10 border border-brand-orange/30 rounded-lg">
-            <p className="text-brand-orange text-xs font-pixel text-center">
-              {locale === "es" ? "⚠️ Inscripciones cerradas - No se pueden hacer cambios al equipo" : "⚠️ Signup disabled - Team changes not allowed"}
+            <p className="text-brand-orange text-xs font-pixel text-center uppercase tracking-wider">
+              {locale === "es" ? "Inscripciones cerradas" : "Signup disabled"}
             </p>
           </div>
         )}
-        <div className="flex flex-row flex-wrap items-center justify-between border-b border-brand-cyan/20 pb-4 gap-3">
-          <div className="flex flex-col items-start gap-3 w-full">
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 w-full">
-              <div className="flex flex-row items-center gap-2 min-w-0 w-full mb-2 sm:mb-0">
-                <Users className="w-6 h-6 text-brand-cyan" />
-                <h3 className="font-pixel text-lg text-brand-yellow break-words hyphens-auto min-w-0 leading-tight" lang="es">{team.name}</h3>
+        {/* Header Section */}
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 group">
+                <Users className="w-5 h-5 text-brand-cyan shrink-0" />
+                <h3 className="text-2xl font-bold text-brand-yellow break-words leading-tight">
+                  {team.name}
+                </h3>
                 <button
                   onClick={handleEditTeam}
                   disabled={!signupEnabled}
-                  className={`p-2 rounded transition-colors flex items-center ${signupEnabled ? 'hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan' : 'text-brand-cyan/30 cursor-not-allowed'} whitespace-nowrap`}
-                  title={signupEnabled ? (isAdmin ? "Edit team" : (locale === "es" ? "Solicitar cambio de nombre" : "Request name change")) : (locale === "es" ? "Inscripciones cerradas" : "Signup disabled")}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all shrink-0",
+                    signupEnabled
+                      ? "hover:bg-brand-cyan/10 text-brand-cyan/40 hover:text-brand-cyan"
+                      : "text-brand-cyan/10 cursor-not-allowed"
+                  )}
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
               </div>
-              {team.status && (
-                <div className={`flex items-center px-4 py-2 rounded-full border font-pixel text-xs sm:text-sm ${getStatusColor(team.status)} whitespace-nowrap mb-2 sm:mb-0`}>
-                  {capitalizeStatus(team.status)}
-                </div>
-              )}
-
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full justify-between"> {/* was items-center */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center w-full justify-between gap-2 sm:gap-4 min-w-0"> {/* was items-center */}
-                {teamCategoryId ? (
-                  <div className="flex items-center gap-2 font-pixel text-xs sm:text-md min-w-0 break-words whitespace-normal"> {/* was text-sm */}
-                    {(() => {
-                      const IconComponent = (LucideIcons as any)[teamCategoryIconName] || (LucideIcons as any).Tag
-                      return <IconComponent className="h-4 w-4 text-brand-cyan/70" />
-                    })()}
-                    <span className="text-brand-cyan">Category: </span>
-                    <span className="text-brand-cyan/70 break-words whitespace-normal">{teamCategoryLabel}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 font-pixel text-xs sm:text-md text-brand-cyan/40 italic"> {/* was text-sm */}
-                    <LucideIcons.Clock className="h-4 w-4" />
-                    <span>{locale === "es" ? "Categoría pendiente de asignación" : "Category pending assignment"}</span>
-                  </div>
-                )}
-                {(team as any)?.assignedRoom && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-brand-orange/10 border border-brand-orange/20 rounded flex-row">
-                    <LucideIcons.MapPin className="h-4 w-4 text-brand-orange" />
-                    <span className="text-brand-orange font-pixel text-xs uppercase">{locale === "es" ? "Aula:" : "Room:"}</span>
-                    <span className="text-brand-cyan font-pixel text-xs">{(team as any).assignedRoom}</span>
-                  </div>
-                )}
-                <button
-                  onClick={handleCopyTeamCode}
-                  className="flex items-center gap-2 px-3 py-2 rounded hover:bg-brand-cyan/10 text-brand-cyan/70 hover:text-brand-cyan transition-colors border border-brand-cyan/20 break-words whitespace-normal"
-                  title={locale === "es" ? "Copiar código del equipo" : "Copy team code"}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 text-green-400" />
-                      <span className="text-xs sm:text-md font-pixel text-green-400"> {/* was text-xs */}
-                        {t?.dashboard?.participant?.toasts?.copyTeamCode?.success?.title ?? (locale === "es" ? "Copiado" : "Copied")}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      <span className="text-xs sm:text-md font-pixel"> {/* was text-xs */}
-                        {t?.dashboard?.participant?.toasts?.copyTeamCode?.button ?? (locale === "es" ? "Copiar código del equipo" : "Copy team code")}
-                      </span>
-                    </>
-                  )}
-                </button>
 
+            {team.status && (
+              <div className={cn(
+                "px-4 py-1.5 rounded-full border text-xs font-pixel uppercase tracking-widest whitespace-nowrap self-start md:self-center",
+                getStatusColor(team.status) || "border-brand-cyan/20 text-brand-cyan/60"
+              )}>
+                {capitalizeStatus(team.status)}
               </div>
-            </div>
-
-
+            )}
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            {teamCategoryId ? (
+              <div className="flex items-center gap-2 px-3 py-1 bg-brand-cyan/5 border border-brand-cyan/20 rounded-md text-xs">
+                {(() => {
+                  const IconComponent = (LucideIcons as any)[teamCategoryIconName] || LucideIcons.Tag
+                  return <IconComponent className="h-3.5 w-3.5 text-brand-cyan/60" />
+                })()}
+                <span className="text-brand-cyan/60">{locale === "es" ? "Categoría:" : "Category:"}</span>
+                <span className="text-brand-cyan font-medium">{teamCategoryLabel}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1 bg-brand-cyan/5 border border-brand-cyan/10 rounded-md text-xs text-brand-cyan/40 italic">
+                <LucideIcons.Clock className="h-3.5 w-3.5" />
+                <span>{locale === "es" ? "Categoría pendiente" : "Category pending"}</span>
+              </div>
+            )}
+
+            {(team as any)?.assignedRoom && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-brand-orange/5 border border-brand-orange/20 rounded-md text-xs">
+                <LucideIcons.MapPin className="h-3.5 w-3.5 text-brand-orange/60" />
+                <span className="text-brand-orange/60 font-medium uppercase text-xs">{locale === "es" ? "Aula" : "Room"}</span>
+                <span className="text-brand-cyan font-bold">{(team as any).assignedRoom}</span>
+              </div>
+            )}
+
+            <button
+              onClick={handleCopyTeamCode}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1 rounded-md transition-all border text-xs group",
+                copied
+                  ? "bg-green-500/10 border-green-500/30 text-green-400"
+                  : "bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan/60 hover:border-brand-cyan/40 hover:text-brand-cyan"
+              )}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{t.dashboard.participant.toasts.copyTeamCode.success.title}</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{t.dashboard.participant.toasts.copyTeamCode.button}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-3">
-          <h4 className="font-pixel text-xs text-brand-cyan"> {/* was text-sm */}
-            Team Members ({members.length})
-          </h4>
-          <div className="space-y-2">
+        {/* Team Members */}
+        <div className="space-y-4 pt-4 border-t border-brand-cyan/10">
+          <div className="flex items-center justify-between">
+            <h4 className="font-pixel text-xs text-brand-cyan/40 uppercase tracking-widest">
+              Team Members ({members.length})
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {members.map((member) => (
               <div
                 key={member.id}
-                className={`flex items-center gap-3 p-3 rounded border ${member.id === userId
-                  ? "border-brand-cyan/40 bg-brand-cyan/5"
-                  : "border-brand-cyan/20 bg-brand-navy/30"
-                  }`}
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                  member.id === userId
+                    ? "border-brand-cyan/40 bg-brand-cyan/5"
+                    : "border-brand-cyan/10 bg-black/20 hover:border-brand-cyan/30"
+                )}
               >
-                <div className="flex-1 flex items-center gap-3">
-                  <UserCircle className="w-5 h-5 text-brand-cyan/70" />
-                  <div>
-                    <p className="text-brand-cyan font-medium">
-                      {member.name} {member.surname}
-                      {member.id === userId && (
-                        <span className="text-brand-cyan/50 text-xs ml-2">(You)</span>
-                      )}
-                    </p>
-                    <p className="text-brand-cyan/50 text-xs">{member.email}</p>
-                  </div>
+                <div className="w-8 h-8 rounded-full bg-brand-cyan/10 flex items-center justify-center shrink-0">
+                  {member.id === team?.admin_id ? (
+                    <Crown className="w-4 h-4 text-brand-yellow" />
+                  ) : (
+                    <UserCircle className="w-4 h-4 text-brand-cyan/60" />
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {/* Eliminar miembros y admin removidos */}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-brand-cyan truncate">
+                    {member.name} {member.surname}
+                    {member.id === userId && (
+                      <span className="text-xs text-brand-cyan/40 ml-2">YOU</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-brand-cyan/40 truncate">{member.email}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Team Notes */}
         {isAcceptedTeam && (
-          <div className="space-y-3">
-            <h4 className="font-pixel text-xs text-brand-cyan">
+          <div className="space-y-4 pt-4 border-t border-brand-cyan/10">
+            <h4 className="font-pixel text-xs text-brand-cyan/40 uppercase tracking-widest">
               {locale === "es" ? "Notas del equipo" : "Team notes"}
             </h4>
 
             {notesLoading ? (
-              <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
+              <div className="flex items-center justify-center p-8 bg-black/20 rounded-lg border border-brand-cyan/5">
+                <p className="text-xs font-pixel text-brand-cyan/40 animate-pulse uppercase tracking-widest">
+                  {locale === "es" ? "Cargando notas..." : "Loading notes..."}
+                </p>
+              </div>
             ) : teamNotes.length === 0 ? (
-              <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Todavia no hay notas para este equipo." : "There are no notes for this team yet."}</p>
+              <div className="p-8 bg-black/20 rounded-lg border border-brand-cyan/5 text-center">
+                <p className="text-xs text-brand-cyan/40">
+                  {locale === "es" ? "Aún no hay notas para este equipo." : "No notes for this team yet."}
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="space-y-2">
+              <div className="space-y-4">
+                <div className="space-y-3">
                   {teamNotes.map((note) => {
                     const fullName = [note.author?.name, note.author?.surname].filter(Boolean).join(" ")
                     const authorLabel = fullName || note.author?.id || note.authorId
                     return (
-                      <div key={note.id} className="rounded border border-brand-cyan/20 bg-brand-navy/30 p-3">
-                        <MarkdownRenderer content={note.text} />
-                        <p className="text-xs text-brand-cyan/60 mt-2">
-                          {authorLabel} · {getRoleLabel(note.authorRole)} · {formatNoteDate(note.createdAt)}
-                        </p>
+                      <div key={note.id} className="rounded-lg border border-brand-cyan/10 bg-black/30 overflow-hidden">
+                        <div className="p-4 overflow-hidden break-words">
+                          <MarkdownRenderer content={note.text} />
+                        </div>
+                        <div className="px-4 py-2 bg-brand-cyan/5 border-t border-brand-cyan/5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="text-xs font-bold text-brand-cyan/70 uppercase">{authorLabel}</span>
+                          <span className="h-1 w-1 rounded-full bg-brand-cyan/20 shrink-0" />
+                          <span className="text-xs text-brand-cyan/40 uppercase tracking-wide">
+                            {getRoleLabel(note.authorRole)}
+                          </span>
+                          <span className="h-1 w-1 rounded-full bg-brand-cyan/20 shrink-0" />
+                          <span className="text-xs text-brand-cyan/40">
+                            {formatNoteDate(note.createdAt)}
+                          </span>
+                        </div>
                       </div>
                     )
                   })}
                 </div>
-              </>
-            )}
 
-            <PaginationControls
-              page={notesPage}
-              totalPages={notesTotalPages}
-              onPageChange={(nextPage) => {
-                if (notesLoading) return
-                setNotesPage(nextPage)
-              }}
-              totalItems={notesTotalItems}
-              pageSize={10}
-              locale={locale}
-            />
+                {notesTotalPages > 1 && (
+                  <div className="pt-2">
+                    <PaginationControls
+                      page={notesPage}
+                      totalPages={notesTotalPages}
+                      onPageChange={(nextPage) => {
+                        if (notesLoading) return
+                        setNotesPage(nextPage)
+                      }}
+                      totalItems={notesTotalItems}
+                      pageSize={10}
+                      locale={locale}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

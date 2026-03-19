@@ -66,7 +66,7 @@ export default function SettingsPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-6">
-          <h1 className="text-3xl font-pixel text-brand-cyan neon-glow-cyan">
+          <h1 className="text-3xl font-pixel text-brand-cyan">
             {translations.dashboard.settings.title}
           </h1>
 

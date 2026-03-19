@@ -105,9 +105,6 @@ export default function JuradoPuntajesPage() {
                             <h3 className="font-pixel text-2xl text-brand-yellow font-pixel">
                                 {locale === "es" ? "Puntajes de Finalistas" : "Finalist Rankings"}
                             </h3>
-                            <p className="text-xs text-brand-cyan/60 font-pixel uppercase">
-                                {locale === "es" ? "Basado en el promedio de votos del jurado" : "Based on average from all judge votes"}
-                            </p>
                         </div>
 
                         {loading ? (
@@ -117,7 +114,7 @@ export default function JuradoPuntajesPage() {
                                 </div>
                             </div>
                         ) : Object.keys(groupedRankings).length === 0 ? (
-                            <GlassCard className="p-12 text-center text-brand-cyan/40 font-pixel">
+                            <GlassCard className="p-12 text-center text-xs text-brand-cyan/40 font-pixel">
                                 {locale === "es" ? "Aún no hay finalistas seleccionados." : "No finalists selected yet."}
                             </GlassCard>
                         ) : (

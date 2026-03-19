@@ -75,7 +75,7 @@ export function Categories({ translations, locale }: CategoriesProps) {
           {selectedCategory && (
             <div className="space-y-6">
               <div className="flex items-center justify-center">
-                <div className="w-24 h-24 flex items-center justify-center neon-glow-cyan">
+                <div className="w-24 h-24 flex items-center justify-center">
                   {(() => {
                     const IconComponent = (LucideIcons as any)[selectedCategory.iconName] || LucideIcons.HelpCircle
                     return <IconComponent size={64} />

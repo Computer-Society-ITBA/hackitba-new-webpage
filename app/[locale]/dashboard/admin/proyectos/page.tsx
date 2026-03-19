@@ -308,9 +308,9 @@ export default function AdminProyectosPage() {
               </div>
 
               {loading ? (
-                <div className="p-12 text-center text-brand-cyan animate-pulse font-pixel">LOADING PROJECTS...</div>
+                <div className="p-12 text-xs text-center text-brand-cyan animate-pulse font-pixel">LOADING PROJECTS...</div>
               ) : filteredProjects.length === 0 ? (
-                <GlassCard className="p-12 text-center text-brand-cyan/40 font-pixel">No projects found.</GlassCard>
+                <GlassCard className="p-12 text-xs text-center text-brand-cyan/40 font-pixel">No projects found.</GlassCard>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProjects.map((project) => (
@@ -347,7 +347,7 @@ export default function AdminProyectosPage() {
 
             <TabsContent value="leaderboard" className="space-y-8">
               {Object.keys(groupedRankings).length === 0 ? (
-                <GlassCard className="p-12 text-center text-brand-cyan/40 font-pixel">No reviewed projects yet.</GlassCard>
+                <GlassCard className="p-12 text-xs text-center text-brand-cyan/40 font-pixel">No reviewed projects yet.</GlassCard>
               ) : (
                 Object.keys(groupedRankings).map(catId => {
                   const ranked = groupedRankings[catId]
