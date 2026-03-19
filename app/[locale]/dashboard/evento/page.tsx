@@ -132,7 +132,7 @@ export default function EventoPage() {
                     href={locInfo.map}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute top-0 right-0 mt-4 mr-4 z-50 transition-all"
+                    className="absolute top-0 right-0 mt-4 mr-4 z-10 transition-all"
                   >
                     <div className="flex items-center gap-1.5 text-xs uppercase font-pixel tracking-wider text-white/30 hover:text-brand-orange transition-colors">
                       <MapPin size={15} />
@@ -200,7 +200,7 @@ export default function EventoPage() {
 
 
           {/* Maps */}
-          <div className="space-y-6 grid grid-cols-2 gap-8 space-between">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Auditorium Map */}
             <GlassCard className="p-6 h-full">
               <p className="text-sm uppercase text-brand-cyan/50">{ei.presentation}</p>
