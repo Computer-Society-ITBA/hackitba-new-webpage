@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { useAuth } from "@/lib/firebase/auth-context"
 import type { UserRole } from "@/lib/firebase/types"
@@ -19,6 +18,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const params = useParams()
   const locale = (params.locale as Locale) || "es"
 
+  // Memoize allowedRoles to prevent infinite loops if array literal is passed as prop
+  const rolesKey = JSON.stringify(allowedRoles)
+  const stableRoles = useMemo(() => allowedRoles, [rolesKey])
+
   useEffect(() => {
     if (loading) return // Don't redirect while loading
 
@@ -27,10 +30,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       return
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (stableRoles && !stableRoles.includes(user.role)) {
       router.replace(`/${locale}/dashboard`)
     }
-  }, [user, loading, router, allowedRoles, locale])
+  }, [user, loading, router, stableRoles, locale])
 
   if (loading) {
     return (
@@ -44,7 +47,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return null
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (stableRoles && !stableRoles.includes(user.role)) {
     return null
   }
 

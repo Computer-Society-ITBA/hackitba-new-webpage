@@ -1,21 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useParams } from "next/navigation"
-import { ProtectedRoute } from "@/components/auth/protected-route"
 import { collection, query, where, orderBy, limit, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { getTranslations } from "@/lib/i18n/get-translations"
-import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
-import { Users, UserCheck, Clock, ShieldAlert } from "lucide-react"
+import { Users, UserCheck, Clock, Loader2 } from "lucide-react"
+
+export const dynamic = "force-dynamic"
 
 export default function LiveDisplayPage() {
   const params = useParams()
-  const locale = (params?.locale as Locale) || "es"
-  const t = getTranslations(locale)
-  const db = getDbClient()
+  const locale = (params?.locale as any) || "es"
 
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-brand-navy flex flex-col items-center justify-center p-12 space-y-4">
+        <Loader2 className="w-12 h-12 text-brand-cyan animate-spin" />
+        <p className="font-pixel text-brand-cyan animate-pulse">
+          {locale === "es" ? "CARGANDO..." : "LOADING..."}
+        </p>
+      </div>
+    }>
+      <LiveDisplayContent locale={locale} />
+    </Suspense>
+  )
+}
+
+function LiveDisplayContent({ locale }: { locale: string }) {
+  const db = getDbClient()
   const [arrivedUsers, setArrivedUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -26,7 +39,7 @@ export default function LiveDisplayPage() {
       collection(db, "users"),
       where("arrived", "==", true),
       orderBy("arrivedAt", "desc"),
-      limit(8) // 2 columns of 4
+      limit(8)
     )
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -49,60 +62,54 @@ export default function LiveDisplayPage() {
   const rightCol = arrivedUsers.slice(4, 8)
 
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
-      <div className="min-h-screen bg-brand-navy flex flex-col p-8 md:p-12 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-12 border-b-2 border-brand-cyan/20 pb-8">
-          <div className="flex items-center gap-8">
-            <div className="w-20 h-20 bg-brand-cyan/10 border-2 border-brand-cyan rounded-lg flex items-center justify-center text-brand-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]">
-              <Users size={32} />
-            </div>
-            <div>
-              <h1 className="font-pixel text-2xl text-brand-yellow shadow-brand-yellow/20 text-shadow-sm">
-                {locale === "es" ? "RECIÉN LLEGADOS" : "RECENTLY ARRIVED"}
-              </h1>
-              <p className="font-pixel text-brand-cyan/60 text-sm">HACKITBA 2024 · ACCREDITATION LIVE</p>
-            </div>
+    <div className="min-h-screen bg-brand-navy flex flex-col p-8 md:p-12 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-12 border-b-2 border-brand-cyan/20 pb-8">
+        <div className="flex items-center gap-8">
+          <div className="w-20 h-20 bg-brand-cyan/10 border-2 border-brand-cyan rounded-lg flex items-center justify-center text-brand-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]">
+            <Users size={32} />
           </div>
-          <div className="flex items-center gap-4 bg-brand-navy/60 px-6 py-2 rounded-full border border-brand-cyan/20 shadow-inner">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-            <span className="font-pixel text-brand-cyan text-md">LIVE</span>
+          <div>
+            <h1 className="font-pixel text-2xl text-brand-yellow shadow-brand-yellow/20 text-shadow-sm">
+              {locale === "es" ? "RECIÉN LLEGADOS" : "RECENTLY ARRIVED"}
+            </h1>
+            <p className="font-pixel text-brand-cyan/60 text-sm">HACKITBA 2024 · ACCREDITATION LIVE</p>
           </div>
         </div>
-
-        {/* Content - McDonald's style columns */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-4">
-
-          {/* Left Column */}
-          <div className="space-y-4">
-            {leftCol.map((user, idx) => (
-              <UserRow key={user.id} user={user} isNew={idx === 0} />
-            ))}
-            {leftCol.length === 0 && !loading && (
-              <div className="h-full flex items-center justify-center text-brand-cyan/20 font-pixel text-2xl uppercase italic">
-                {locale === "es" ? "Esperando ingresos..." : "Waiting for entries..."}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
-            {rightCol.map((user) => (
-              <UserRow key={user.id} user={user} isNew={false} />
-            ))}
-          </div>
-
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-brand-cyan/10 flex justify-between items-center text-xs font-pixel text-brand-cyan/40">
-          <span>{new Date().toLocaleDateString()}</span>
-          <div className="flex gap-4">
-            <span>{arrivedUsers.length} {locale === "es" ? "PRESENTES" : "PRESENT"}</span>
-          </div>
+        <div className="flex items-center gap-4 bg-brand-navy/60 px-6 py-2 rounded-full border border-brand-cyan/20 shadow-inner">
+          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+          <span className="font-pixel text-brand-cyan text-md">LIVE</span>
         </div>
       </div>
-    </ProtectedRoute>
+
+      {/* Content */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-4 text-white">
+        <div className="space-y-4">
+          {leftCol.map((user, idx) => (
+            <UserRow key={user.id} user={user} isNew={idx === 0} />
+          ))}
+          {leftCol.length === 0 && !loading && (
+            <div className="h-full flex items-center justify-center text-brand-cyan/20 font-pixel text-2xl uppercase italic">
+              {locale === "es" ? "Esperando ingresos..." : "Waiting for entries..."}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          {rightCol.map((user) => (
+            <UserRow key={user.id} user={user} isNew={false} />
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-8 pt-6 border-t border-brand-cyan/10 flex justify-between items-center text-xs font-pixel text-brand-cyan/40">
+        <span>{new Date().toLocaleDateString()}</span>
+        <div className="flex gap-4">
+          <span>{arrivedUsers.length} {locale === "es" ? "PRESENTES" : "PRESENT"}</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -141,7 +148,7 @@ function UserRow({ user, isNew }: { user: any, isNew: boolean }) {
           )}
         </div>
       </div>
-      <div className="font-pixel text-brand-cyan/20 text-xs">
+      <div className="font-pixel text-brand-cyan/20 text-xs text-right">
         {formatTime(user.arrivedAt)}
       </div>
     </div>
