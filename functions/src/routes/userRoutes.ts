@@ -19,6 +19,7 @@ import {
   getIncompleteMailLog,
   sendIncompleteReminderAll,
   sendIncompleteReminderOne,
+  resetEventSignup,
 } from "../controllers/userControllers";
 import {validateToken, requireAdmin} from "../middleware/authMiddleware";
 
@@ -61,6 +62,9 @@ router.get("/:id", validateToken, getUserById);
 
 // PATCH /api/users/:id
 router.patch("/:id", validateToken, updateUser);
+
+// POST /api/users/:id/reset-event-signup
+router.post("/:id/reset-event-signup", validateToken, resetEventSignup);
 
 // POST /api/users/register
 router.post("/register", register);

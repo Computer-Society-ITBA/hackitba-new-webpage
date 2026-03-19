@@ -40,6 +40,8 @@ export interface User {
   createdAt?: Date
   updatedAt?: Date
   emailVerified?: boolean
+  arrived?: boolean
+  arrivedAt?: any // Firestore timestamp
 }
 
 export interface Event {

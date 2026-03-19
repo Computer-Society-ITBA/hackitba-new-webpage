@@ -1,5 +1,31 @@
 {
   "en": {
+    "accreditation": {
+      "title": "Accreditation",
+      "searchPlaceholder": "Search by name...",
+      "userData": "User Data",
+      "id": "ID",
+      "name": "Name",
+      "occupation": "Occupation",
+      "team": "Team",
+      "category": "Category",
+      "room": "Room",
+      "correct": "Correct",
+      "incorrect": "Incorrect / Search",
+      "success": "Accreditation successful!",
+      "error": "Error during accreditation",
+      "userNotFound": "User not found",
+      "scanNFC": "Scan NFC chip to start",
+      "searchParticipants": "Search Participants",
+      "select": "Select",
+      "alreadyArrived": "Already checked in"
+    },
+    "liveCheckins": {
+      "title": "Recent Sign-ins",
+      "welcome": "Welcome to HackITBA!",
+      "loading": "Loading...",
+      "noSignins": "Waiting for the first participant..."
+    },
     "nav": {
       "home": "Home",
       "pastEditions": "Past Editions",
@@ -433,7 +459,7 @@
         },
         "team": {
           "question": "Do you already have a team?",
-          "yesHave": "Yes, I have one",
+          "yesHave": "I already have one registered",
           "noTeam": "I don't have a team",
           "howToContinue": "How would you like to continue?",
           "goSolo": "Join without a team",
@@ -536,7 +562,7 @@
         "project": {
           "title": "Project Title",
           "description": "Description",
-          "repoUrl": "Repository URL",
+          "repoUrl": "GitHub Repository URL",
           "repoPlaceholder": "https://github.com/...",
           "demoUrl": "Demo URL",
           "demoPlaceholder": "https://...",
@@ -550,7 +576,14 @@
           "delete": "Delete",
           "cancel": "Cancel",
           "required": "*",
-          "submissionsDisabled": "Project submissions are currently disabled"
+          "submissionsDisabled": "Project submissions are currently disabled",
+          "status": "Status",
+          "draft": "Draft (Not visible to judges)",
+          "submitted": "Submitted (Visible to judges)",
+          "confirmSubmitTitle": "Submit your project?",
+          "confirmSubmitDescription": "Once submitted, judges will be able to see your project. You can still make changes until the deadline.",
+          "submitConfirmation": "SUBMIT NOW",
+          "autoSaved": "Draft auto-saved"
         },
         "deleteDialog": {
           "title": "Are you sure?",
@@ -645,6 +678,8 @@
         "back": "Back",
         "dashboard": "Dashboard",
         "event": "Event",
+        "projects": "Projects",
+        "myProject": "My Project",
         "approvals": "Approvals",
         "incomplete": "Incomplete",
         "winners": "Winners",
@@ -690,7 +725,19 @@
         "labelsDuration": "Duration",
         "labelsFormat": "Format",
         "locationTitle": "Location",
-        "locationVenue": "Venue"
+        "locationVenue": "Venue",
+        "timeline": "Event Timeline",
+        "presentation": "Opening Presentation",
+        "presentationTime": "Viernes 27 · 4:00 PM",
+        "presentationLocation": "BA City Auditorium",
+        "competitionStart": "Competition Begins",
+        "competitionTime": "Viernes 27 · 8:00 PM",
+        "badgeOpening": "OPENING",
+        "badgeCompetition": "COMPETITION",
+        "auditorialLocation": "ITBA — Sede Distrito Rectorado",
+        "auditorialAddress": "Iguazú 341, C1437 CABA",
+        "competitionLocation": "ITBA Sede Rectorado",
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
       }
     },
     "credits": {
@@ -1251,7 +1298,7 @@
         },
         "team": {
           "question": "¿Ya tenés equipo?",
-          "yesHave": "Sí, ya tengo uno",
+          "yesHave": "Ya tengo uno inscripto",
           "noTeam": "Todavía no tengo equipo",
           "howToContinue": "¿Cómo querés continuar?",
           "goSolo": "Participar sin equipo",
@@ -1354,7 +1401,7 @@
         "project": {
           "title": "Título del proyecto",
           "description": "Descripción",
-          "repoUrl": "URL del repositorio",
+          "repoUrl": "URL del repositorio GitHub",
           "repoPlaceholder": "https://github.com/...",
           "demoUrl": "URL del demo",
           "demoPlaceholder": "https://...",
@@ -1368,7 +1415,14 @@
           "delete": "Eliminar",
           "cancel": "Cancelar",
           "required": "*",
-          "submissionsDisabled": "El envío de proyectos está deshabilitado actualmente"
+          "submissionsDisabled": "El envío de proyectos está deshabilitado actualmente",
+          "status": "Estado",
+          "draft": "Borrador (No visible para el jurado)",
+          "submitted": "Enviado (Visible para el jurado)",
+          "confirmSubmitTitle": "¿Enviar tu proyecto?",
+          "confirmSubmitDescription": "Una vez enviado, el jurado podrá ver tu proyecto. Podés seguir haciendo cambios hasta la fecha límite.",
+          "submitConfirmation": "ENVIAR AHORA",
+          "autoSaved": "Borrador guardado"
         },
         "deleteDialog": {
           "title": "¿Estás seguro?",
@@ -1463,6 +1517,8 @@
         "back": "Atrás",
         "dashboard": "Dashboard",
         "event": "Evento",
+        "projects": "Proyectos",
+        "myProject": "Mi proyecto",
         "approvals": "Aprobaciones",
         "incomplete": "Incompletos",
         "winners": "Ganadores",
@@ -1508,7 +1564,19 @@
         "labelsDuration": "Duración",
         "labelsFormat": "Formato",
         "locationTitle": "Ubicación",
-        "locationVenue": "Sede"
+        "locationVenue": "Sede",
+        "timeline": "Timeline del Evento",
+        "presentation": "Presentación Inaugural",
+        "presentationTime": "4:00 PM",
+        "presentationLocation": "Auditorio de la Ciudad",
+        "competitionStart": "Competencia Comienza",
+        "competitionTime": "8:00 PM",
+        "badgeOpening": "APERTURA",
+        "badgeCompetition": "COMPETENCIA",
+        "auditorialLocation": "ITBA — Sede Distrito Rectorado",
+        "auditorialAddress": "Iguazú 341, C1437 CABA",
+        "competitionLocation": "ITBA Sede Rectorado",
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
       }
     },
     "credits": {

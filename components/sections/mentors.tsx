@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import {
   Dialog,
@@ -36,18 +36,61 @@ function MentorSkeleton() {
 }
 
 const CARD_GAP = 8
+const MAX_DESKTOP_CARDS_PER_ROW = 5
 
-function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor) => void }) {
-  const n = items.length
-  const splitAt = Math.ceil(n / 2)
-  const topRow = n >= 5 ? items.slice(0, splitAt) : items
-  const bottomRow = n >= 5 ? items.slice(splitAt) : []
+function PersonGrid({
+  items,
+  onSelect,
+  baseRows,
+}: {
+  items: Mentor[];
+  onSelect: (m: Mentor) => void;
+  baseRows: number;
+}) {
+  const [responsiveDesktopLimit, setResponsiveDesktopLimit] = useState(MAX_DESKTOP_CARDS_PER_ROW)
+
+  useEffect(() => {
+    const updateDesktopLimit = () => {
+      const width = window.innerWidth
+      if (width >= 1280) {
+        setResponsiveDesktopLimit(5)
+      } else if (width >= 1024) {
+        setResponsiveDesktopLimit(4)
+      } else {
+        setResponsiveDesktopLimit(3)
+      }
+    }
+
+    updateDesktopLimit()
+    window.addEventListener("resize", updateDesktopLimit)
+    return () => window.removeEventListener("resize", updateDesktopLimit)
+  }, [])
+
+  const maxCardsPerRow = Math.min(MAX_DESKTOP_CARDS_PER_ROW, responsiveDesktopLimit)
+
+  let rowsCount = Math.max(1, baseRows)
+  while (items.length > rowsCount * maxCardsPerRow) {
+    rowsCount += 1
+  }
+
+  const minItemsPerRow = Math.floor(items.length / rowsCount)
+  const rowsWithExtraItem = items.length % rowsCount
+
+  const rows = Array.from({ length: rowsCount }, (_, rowIndex) => {
+    const size = minItemsPerRow + (rowIndex < rowsWithExtraItem ? 1 : 0)
+    return size
+  }).reduce<{ start: number; items: Mentor[] }[]>((acc, size) => {
+    const previousEnd = acc.length > 0 ? acc[acc.length - 1].start + acc[acc.length - 1].items.length : 0
+    const rowItems = items.slice(previousEnd, previousEnd + size)
+    acc.push({ start: previousEnd, items: rowItems })
+    return acc
+  }, []).filter((row) => row.items.length > 0)
 
   const renderCard = (mentor: Mentor, index: number) => (
     <button
       key={mentor.id}
       onClick={() => onSelect(mentor)}
-      className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 md:w-[172px] md:flex-shrink-0"
+      className="group cursor-pointer transition-transform hover:scale-105 animate-in fade-in zoom-in-95 duration-300 w-full max-w-[172px]"
       style={{ animationDelay: `${index * 50}ms` }}
     >
       <div className="p-4">
@@ -70,23 +113,21 @@ function PersonGrid({ items, onSelect }: { items: Mentor[]; onSelect: (m: Mentor
 
   return (
     <>
-      {/* Desktop: fixed-width cards in two flex rows, centered */}
-      <div className="hidden md:flex flex-col items-center gap-2 max-w-4xl mx-auto">
-        <div className="flex items-start justify-center" style={{ gap: `${CARD_GAP}px` }}>
-          {topRow.map((m, i) => renderCard(m, i))}
-        </div>
-        {bottomRow.length > 0 && (
+      {/* Desktop: fixed-width cards in configurable flex rows, centered */}
+      <div className="hidden md:flex flex-col items-center gap-2 max-w-6xl mx-auto">
+        {rows.map((row, rowIndex) => (
           <div
+            key={rowIndex}
             className="flex items-start justify-center"
             style={{ gap: `${CARD_GAP}px` }}
           >
-            {bottomRow.map((m, i) => renderCard(m, topRow.length + i))}
+            {row.items.map((m, i) => renderCard(m, row.start + i))}
           </div>
-        )}
+        ))}
       </div>
 
       {/* Mobile: unchanged 2-col grid */}
-      <div className="grid grid-cols-2 items-start gap-2 max-w-4xl mx-auto md:hidden">
+      <div className="grid grid-cols-2 items-start gap-2 max-w-6xl mx-auto md:hidden">
         {items.map((m, i) => renderCard(m, i))}
       </div>
     </>
@@ -98,10 +139,23 @@ export function Mentors({ translations, locale }: MentorsProps) {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
   const [activeCategory, setActiveCategory] = useState<MentorCategory>("tech")
 
-  const filteredMentors = mentors.filter(mentor => mentor.category === activeCategory)
+  const filteredMentors = mentors.filter(mentor => 
+    (mentor.categories && mentor.categories.includes(activeCategory)) || 
+    mentor.category === activeCategory
+  )
 
   const getBio = (mentor: Mentor) =>
     locale === "es" ? mentor.spanishBio : mentor.englishBio
+
+  const getMentorCategories = (mentor: Mentor): MentorCategory[] => {
+    const normalized = [
+      ...(Array.isArray(mentor.categories) ? mentor.categories : []),
+      mentor.category,
+    ].filter(Boolean) as MentorCategory[]
+
+    if (normalized.length === 0) return ["tech"]
+    return Array.from(new Set(normalized))
+  }
 
   return (
     <section id="mentors" className="pb-20 px-4">
@@ -128,7 +182,10 @@ export function Mentors({ translations, locale }: MentorsProps) {
               {(["entrepreneurship", "tech", "oratory"] as MentorCategory[]).map((category) => {
                 const Icon = categoryIcons[category]
                 const isActive = activeCategory === category
-                const hasMentors = mentors.some(m => m.category === category)
+                const hasMentors = mentors.some(m => 
+                  (m.categories && m.categories.includes(category)) || 
+                  m.category === category
+                )
                 return (
                   <button
                     key={category}
@@ -154,7 +211,7 @@ export function Mentors({ translations, locale }: MentorsProps) {
         </div>
 
         {loading && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 max-w-6xl mx-auto">
             {Array.from({ length: 5 }).map((_, i) => <MentorSkeleton key={i} />)}
           </div>
         )}
@@ -170,7 +227,11 @@ export function Mentors({ translations, locale }: MentorsProps) {
 
         {!loading && !error && mentors.length > 0 && (
           filteredMentors.length > 0 ? (
-            <PersonGrid items={filteredMentors} onSelect={setSelectedMentor} />
+            <PersonGrid
+              items={filteredMentors}
+              onSelect={setSelectedMentor}
+              baseRows={activeCategory === "tech" ? 3 : 2}
+            />
           ) : (
             <div className="text-center py-12">
               <p className="font-pixel text-sm text-brand-cyan/40 uppercase">
@@ -190,13 +251,20 @@ export function Mentors({ translations, locale }: MentorsProps) {
                   <Image src={selectedMentor.avatar || "/placeholder.svg"} alt={selectedMentor.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="relative mb-1">
                     <DialogTitle className="font-pixel font-bold text-xs text-brand-yellow">
                       {selectedMentor.name}
                     </DialogTitle>
-                    <span className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
-                      {translations.mentors.categories[selectedMentor.category]}
-                    </span>
+                    <div className="absolute top-0 right-8 sm:right-10 flex flex-col items-end gap-1">
+                      {getMentorCategories(selectedMentor).map((categoryKey) => (
+                        <span
+                          key={categoryKey}
+                          className="px-2 py-1 rounded text-[14px] font-pixel uppercase bg-brand-orange/10 text-brand-orange border border-brand-orange/20"
+                        >
+                          {translations.mentors.categories[categoryKey] || translations.mentors.categories.tech}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   {selectedMentor.position && (
                     <p className="text-brand-yellow">

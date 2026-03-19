@@ -23,7 +23,7 @@ export function CreditsSection({ translations, locale }: CreditsSectionProps) {
         <GlassCard className="p-4 md:py-4 md:px-12">
           <div className="space-y-8">
             <div className="text-center border-b border-brand-cyan/20 pb-2">
-              <h1 className="font-pixel neon-glow-orange text-3xl md:text-4xl text-brand-yellow mb-2">
+              <h1 className="font-pixel text-3xl md:text-4xl text-brand-yellow mb-2">
                 {translations.credits.title}
               </h1>
               <p className="font-pixel text-xs">

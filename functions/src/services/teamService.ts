@@ -6,9 +6,9 @@ export interface TeamData {
     label: string;
     name: string;
     tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+  category_1: number | null;
+  category_2: number | null;
+  category_3: number | null;
     category: number | null;
     is_finalista: boolean;
     link_deploy: string | null;
@@ -22,9 +22,9 @@ export interface TeamData {
 export interface UpdateTeamData {
     name?: string;
     tell_why?: string;
-    category_1?: number;
-    category_2?: number;
-    category_3?: number;
+  category_1?: number | null;
+  category_2?: number | null;
+  category_3?: number | null;
     category?: number | null;
     status?: string;
 }

@@ -23,6 +23,7 @@ import { doc, getDoc } from "firebase/firestore"
 import { set } from "date-fns"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { useCategories } from "@/hooks/use-categories"
+import { toast } from "@/hooks/use-toast"
 
 
 function EventSignupContent() {
@@ -44,6 +45,8 @@ function EventSignupContent() {
     const [role, setRole] = useState<UserRole | null>(null)
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
     const [photoFile, setPhotoFile] = useState<File | null>(null)
+    const [isJudgeOrMentor, setIsJudgeOrMentor] = useState(false)
+    const [mentorCategories, setMentorCategories] = useState<("entrepreneurship" | "tech" | "oratory")[]>(["tech"])
 
     // Refresh user data when component mounts
     useEffect(() => {
@@ -74,8 +77,93 @@ function EventSignupContent() {
                 console.log("User already completed event signup, redirecting to dashboard")
                 router.replace(`/${locale}/dashboard`)
             }
+
+            // Check if user is a judge or mentor
+            checkIfJudgeOrMentor()
         }
     }, [authUser, authLoading, router, locale])
+
+    const checkIfJudgeOrMentor = async () => {
+        if (!db || !authUser?.email) return
+
+        try {
+            const { getDocs, collection, query, where } = await import("firebase/firestore")
+            
+            // Check judges collection
+            const judgesSnapshot = await getDocs(
+                query(collection(db, "judges"), where("email", "==", authUser.email))
+            )
+            
+            if (judgesSnapshot.docs.length > 0) {
+                console.log("User is a judge")
+                setIsJudgeOrMentor(true)
+                setRole("judge")
+                // Update role in user doc if needed
+                const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+                if (authUser.role !== "judge") {
+                    await updateDoc(firestoreDoc(db, "users", authUser.id), { role: "judge" })
+                }
+                // Populate form with existing judge data
+                const judgeData = judgesSnapshot.docs[0].data()
+                setFormData(prev => ({
+                    ...prev,
+                    name: judgeData.name || "",
+                    company: judgeData.company || "",
+                    professionalRole: judgeData.position || "",
+                    englishBio: judgeData.englishBio || judgeData.bio || "",
+                    spanishBio: judgeData.spanishBio || judgeData.bio || "",
+                    linkedin: judgeData.linkedin || "",
+                    github: judgeData.github || "",
+                    instagram: judgeData.instagram || "",
+                    twitter: judgeData.twitter || "",
+                    photo: judgeData.avatarPath || "",
+                }))
+                setPhotoPreview(judgeData.avatar || null)
+                return
+            }
+            
+            // Check mentors collection
+            const mentorsSnapshot = await getDocs(
+                query(collection(db, "mentors"), where("email", "==", authUser.email))
+            )
+            
+            if (mentorsSnapshot.docs.length > 0) {
+                console.log("User is a mentor")
+                setIsJudgeOrMentor(true)
+                setRole("mentor")
+                // Update role in user doc if needed
+                const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+                if (authUser.role !== "mentor") {
+                    await updateDoc(firestoreDoc(db, "users", authUser.id), { role: "mentor" })
+                }
+                // Populate form with existing mentor data
+                const mentorData = mentorsSnapshot.docs[0].data()
+                setFormData(prev => ({
+                    ...prev,
+                    name: mentorData.name || "",
+                    company: mentorData.company || "",
+                    professionalRole: mentorData.position || "",
+                    englishBio: mentorData.englishBio || mentorData.bio || "",
+                    spanishBio: mentorData.spanishBio || mentorData.bio || "",
+                    linkedin: mentorData.linkedin || "",
+                    github: mentorData.github || "",
+                    instagram: mentorData.instagram || "",
+                    twitter: mentorData.twitter || "",
+                    photo: mentorData.avatarPath || "",
+                }))
+                setPhotoPreview(mentorData.avatar || null)
+                const categories = mentorData.categories && Array.isArray(mentorData.categories) ? mentorData.categories : (mentorData.category ? [mentorData.category] : ["tech"])
+                setMentorCategories(categories)
+                return
+            }
+
+            console.log("User is not a judge or mentor, showing participant flow")
+            setIsJudgeOrMentor(false)
+        } catch (err) {
+            console.error("Error checking if judge or mentor:", err)
+            setIsJudgeOrMentor(false)
+        }
+    }
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -90,6 +178,10 @@ function EventSignupContent() {
         professionalRole: "",
         photo: "",
         dietaryPreference: "",
+        // For judges/mentors
+        name: "",
+        englishBio: "",
+        spanishBio: "",
         // Step 2
         github: "",
         linkedin: "",
@@ -97,9 +189,9 @@ function EventSignupContent() {
         twitter: "",
         cvLink: "",
         // Step 3 (Participante only)
-        hasTeam: "no",
-        noTeamOption: "solo" as "solo" | "create",
+        hasTeam: "solo" as "yes" | "solo" | "create",
         teamName: "",
+        teamMotivation: "",
         teamCode: "",
         priorities: [] as string[],
     })
@@ -116,7 +208,14 @@ function EventSignupContent() {
     }, [categories])
 
     useEffect(() => {
-        if (!db) return
+        if (!db) {
+            // If there's no Firestore client available (local dev without env or misconfigured),
+            // avoid leaving the page stuck in loading. Default to enabled so the UI can be tested.
+            console.warn("Event signup: no DB client available — defaulting signupEnabled=true for local dev")
+            setSignupEnabled(true)
+            setSignupLoading(false)
+            return
+        }
 
         const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
         if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
@@ -219,7 +318,7 @@ function EventSignupContent() {
         fetchUserRole()
     }, [authUser, authLoading, router, locale])
 
-    const totalSteps = role === "participant" ? 3 : 2
+    const totalSteps = isJudgeOrMentor ? 1 : (role === "participant" ? 3 : 2)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
@@ -240,21 +339,21 @@ function EventSignupContent() {
         }
     }
 
-    const uploadPhotoToStorage = async (file: File) => {
+    const uploadPhotoToStorage = async (file: File, path?: string) => {
         const storage = getStorageClient()
         if (!storage) {
             throw new Error(translations.auth.eventSignup.errors.storageNotConfigured)
         }
 
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_")
-        const path = `event-photos/${Date.now()}-${safeName}`
-        const fileRef = storageRef(storage, path)
+        const storagePath = path || `event-photos/${Date.now()}-${safeName}`
+        const fileRef = storageRef(storage, storagePath)
 
         await uploadBytes(fileRef, file, {
             contentType: file.type,
         })
 
-        return getDownloadURL(fileRef)
+        return storagePath
     }
 
     const handleNext = () => {
@@ -267,13 +366,16 @@ function EventSignupContent() {
 
         // Validation for Step 1
         if (currentStep === 1) {
-            if (!formData.dni) {
-                setError(translations.auth.eventSignup.errors.dniRequired)
-                return
-            }
-            if (!/^\d+$/.test(formData.dni)) {
-                setError(translations.auth.eventSignup.errors.dniNumeric)
-                return
+            // Only validate DNI for participants, not for judges/mentors
+            if (!isJudgeOrMentor) {
+                if (!formData.dni) {
+                    setError(translations.auth.eventSignup.errors.dniRequired)
+                    return
+                }
+                if (!/^\d+$/.test(formData.dni)) {
+                    setError(translations.auth.eventSignup.errors.dniNumeric)
+                    return
+                }
             }
 
             if (role === "participant") {
@@ -286,11 +388,6 @@ function EventSignupContent() {
                     setError(translations.auth.eventSignup.errors.minAge)
                     return
                 }
-            } else {
-                if (!formData.company || !formData.professionalRole || !formData.photo) {
-                    setError(translations.auth.eventSignup.errors.companyRequired)
-                    return
-                }
             }
         }
 
@@ -299,6 +396,23 @@ function EventSignupContent() {
             if (formData.hasTeam === "yes" && !formData.teamCode.trim()) {
                 setError(translations.auth.eventSignup.errors.teamCodeRequired)
                 return
+            }
+
+            if (formData.hasTeam === "create") {
+                if (!formData.teamName.trim()) {
+                    setError(translations.auth.createTeam.errors.teamNameRequired)
+                    return
+                }
+
+                if (!formData.teamMotivation.trim()) {
+                    setError(translations.auth.createTeam.errors.motivationRequired)
+                    return
+                }
+
+                if (formData.teamMotivation.trim().length < 20) {
+                    setError(translations.auth.createTeam.errors.motivationTooShort)
+                    return
+                }
             }
         }
 
@@ -336,11 +450,96 @@ function EventSignupContent() {
         setFormData(prev => ({ ...prev, priorities: newPriorities }))
     }
 
+    const handleJudgeMentorSubmit = async () => {
+        setError("")
+        
+        if (!formData.name) {
+            setError("El nombre es requerido")
+            return
+        }
+
+        setLoading(true)
+        try {
+            if (!db || !authUser?.email) {
+                throw new Error("No database or user email available")
+            }
+
+            // Upload photo if changed
+            let avatarPath = formData.photo
+            if (photoFile) {
+                const photoUrl = await uploadPhotoToStorage(photoFile)
+                avatarPath = photoUrl
+            }
+
+            const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+
+            // Get the judge/mentor document ID based on email
+            const collectionName = role === "judge" ? "judges" : "mentors"
+            const { getDocs, collection, query, where } = await import("firebase/firestore")
+            
+            const snapshot = await getDocs(
+                query(collection(db, collectionName), where("email", "==", authUser.email))
+            )
+
+            if (snapshot.docs.length === 0) {
+                throw new Error(`No ${role} found with this email`)
+            }
+
+            const docId = snapshot.docs[0].id
+            const updatePayload: any = {
+                name: formData.name,
+                company: formData.company,
+                position: formData.professionalRole,
+                englishBio: formData.englishBio,
+                spanishBio: formData.spanishBio,
+                linkedin: formData.linkedin || "",
+                github: formData.github || "",
+                instagram: formData.instagram || "",
+                twitter: formData.twitter || "",
+                updatedAt: new Date(),
+            }
+
+            if (avatarPath) {
+                updatePayload.avatarPath = avatarPath
+            }
+
+            if (role === "mentor") {
+                updatePayload.categories = mentorCategories
+            }
+
+            await updateDoc(firestoreDoc(db, collectionName, docId), updatePayload)
+
+            // Update onboarding step to 2 and ensure role is set
+            const userDocRef = firestoreDoc(db, "users", authUser.id)
+            await updateDoc(userDocRef, { 
+                onboardingStep: 2,
+                role: role // Ensure role is saved/updated
+            })
+
+            toast({ title: "Success", description: `${role === "judge" ? "Judge" : "Mentor"} profile updated` })
+            
+            // Refresh user and redirect
+            await refreshUser()
+            router.push(`/${locale}/dashboard`)
+        } catch (err: any) {
+            console.error("Error updating judge/mentor:", err)
+            setError(err.message || "Error updating profile")
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleSubmit = async () => {
         if (!signupEnabled) {
             setError(translations.auth.eventSignup.errors.signupDisabled)
             return
         }
+
+        // Handle judge/mentor submission
+        if (isJudgeOrMentor) {
+            return handleJudgeMentorSubmit()
+        }
+
         setLoading(true)
         try {
             if (!authUser?.id) {
@@ -378,7 +577,7 @@ function EventSignupContent() {
                 github: formData.github || null,
                 team: formData.hasTeam === "yes" ? formData.teamCode : null,
                 hasTeam: formData.hasTeam === "yes",
-                wantsToCreateTeam: formData.hasTeam === "no" && formData.noTeamOption === "create",
+                wantsToCreateTeam: formData.hasTeam === "create",
                 food_preference: formData.dietaryPreference,
                 category_1: category_1,
                 category_2: category_2,
@@ -404,6 +603,56 @@ function EventSignupContent() {
                 throw new Error(errorData.error || translations.auth.eventSignup.errors.createFailed)
             }
 
+            // If participant wants to create a team, create it immediately in this flow.
+            if (role === "participant" && formData.hasTeam === "create") {
+                const teamsResponse = await fetch(`${apiUrl}/teams`, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`,
+                    }
+                })
+
+                if (!teamsResponse.ok) {
+                    const teamsError = await teamsResponse.json().catch(() => ({}))
+                    throw new Error(teamsError.error || translations.auth.createTeam.errors.createFailed)
+                }
+
+                const teamsData = await teamsResponse.json()
+                const teamsList = Array.isArray(teamsData?.teams) ? teamsData.teams : []
+                const existingTeams = teamsList.map((team: any) => team?.name).filter(Boolean)
+
+                if (existingTeams.some((teamName: string) => teamName.toLowerCase() === formData.teamName.trim().toLowerCase())) {
+                    throw new Error(translations.auth.createTeam.errors.teamNameExists)
+                }
+
+                const categoryIdToIndex = Object.fromEntries(categories.map((c, i) => [c.id, i]))
+                const category_1 = categoryIdToIndex[formData.priorities[0]] ?? 0
+                const category_2 = categoryIdToIndex[formData.priorities[1]] ?? 1
+                const category_3 = categoryIdToIndex[formData.priorities[2]] ?? 2
+
+                const createTeamPayload = {
+                    name: formData.teamName.trim(),
+                    tell_why: formData.teamMotivation.trim(),
+                    category_1,
+                    category_2,
+                    category_3,
+                    uid,
+                }
+
+                const createTeamResponse = await fetch(`${apiUrl}/teams`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${idToken}`,
+                    },
+                    body: JSON.stringify(createTeamPayload)
+                })
+
+                if (!createTeamResponse.ok) {
+                    const createTeamError = await createTeamResponse.json().catch(() => ({}))
+                    throw new Error(createTeamError.error || translations.auth.createTeam.errors.createFailed)
+                }
+            }
+
             // Refresh user data to get updated onboardingStep
             console.log("Event registration successful, refreshing user data...")
             await refreshUser()
@@ -411,12 +660,8 @@ function EventSignupContent() {
             // Wait a bit for Firestore to fully update
             await new Promise(resolve => setTimeout(resolve, 500))
 
-            // Success - redirect based on team choice
-            if (role === "participant" && formData.hasTeam === "no" && formData.noTeamOption === "create") {
-                router.push(`/${locale}/dashboard/create-team?userId=${uid}`)
-            } else {
-                router.push(`/${locale}/dashboard`)
-            }
+            // Success - always go to dashboard. Team creation already happened inline when selected.
+            router.push(`/${locale}/dashboard`)
         } catch (err: any) {
             setError(err.message || translations.auth.eventSignup.errors.createFailed)
         } finally {
@@ -429,6 +674,134 @@ function EventSignupContent() {
             return (
                 <div className="flex items-center justify-center min-h-[400px]">
                     <p className="text-brand-cyan font-pixel text-xs uppercase">{translations.auth.eventSignup.loading}</p>
+                </div>
+            )
+        }
+
+        // Judge/Mentor flow
+        if (isJudgeOrMentor) {
+            return (
+                <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="mb-3">
+                        <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{role === "judge" ? "Perfil Jurado" : "Perfil Mentor"}</h2>
+                    </div>
+
+                    {/* Name */}
+                    <div className="space-y-1">
+                        <Label htmlFor="name" className="text-brand-cyan font-pixel text-xs">Nombre <span className="text-red-500">*</span></Label>
+                        <Input id="name" value={formData.name} onChange={handleInputChange} placeholder="Nombre completo" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                    </div>
+
+                    {/* Position & Company */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">Posición <span className="text-red-500">*</span></Label>
+                            <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} placeholder="Ej: CTO" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">Compañía <span className="text-red-500">*</span></Label>
+                            <Input id="company" value={formData.company} onChange={handleInputChange} placeholder="Ej: Google" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                        </div>
+                    </div>
+
+                    {/* Mentor categories */}
+                    {role === "mentor" && (
+                        <div className="space-y-1">
+                            <Label className="text-brand-cyan font-pixel text-xs mb-2 block">Categorías <span className="text-red-500">*</span></Label>
+                            <div className="space-y-2 p-2 bg-brand-black/40 border border-brand-cyan/20 rounded">
+                                {(["tech", "entrepreneurship", "oratory"] as const).map((cat) => (
+                                    <label key={cat} className="flex items-center gap-2 cursor-pointer text-xs text-brand-cyan hover:text-brand-yellow transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={mentorCategories.includes(cat)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setMentorCategories([...mentorCategories, cat])
+                                                } else {
+                                                    setMentorCategories(mentorCategories.filter(c => c !== cat))
+                                                }
+                                            }}
+                                            className="w-4 h-4 accent-brand-yellow"
+                                        />
+                                        <span>
+                                            {cat === "tech" && "Tech"}
+                                            {cat === "entrepreneurship" && "Emprendimiento"}
+                                            {cat === "oratory" && "Oratoria"}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Bios */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="englishBio" className="text-brand-cyan font-pixel text-xs">Bio (English)</Label>
+                            <textarea id="englishBio" value={formData.englishBio} onChange={(e) => setFormData(prev => ({ ...prev, englishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="spanishBio" className="text-brand-cyan font-pixel text-xs">Bio (Español)</Label>
+                            <textarea id="spanishBio" value={formData.spanishBio} onChange={(e) => setFormData(prev => ({ ...prev, spanishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" />
+                        </div>
+                    </div>
+
+                    {/* Social Media */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> LinkedIn</Label>
+                            <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder="https://linkedin.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> GitHub</Label>
+                            <Input id="github" value={formData.github} onChange={handleInputChange} placeholder="https://github.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> Instagram</Label>
+                            <Input id="instagram" value={formData.instagram} onChange={handleInputChange} placeholder="https://instagram.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> Twitter/X</Label>
+                            <Input id="twitter" value={formData.twitter} onChange={handleInputChange} placeholder="https://twitter.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                        </div>
+                    </div>
+
+                    {/* Photo */}
+                    <div>
+                        <Label className="text-brand-cyan font-pixel text-xs mb-2 block">{translations.auth.eventSignup.fields.photo}</Label>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/*"
+                        />
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-brand-cyan/20 rounded-lg cursor-pointer hover:border-brand-cyan/40 transition-colors bg-brand-black/20 overflow-hidden relative h-24 md:h-16 w-full flex items-center justify-center p-0"
+                        >
+                            {photoPreview ? (
+                                <div className="w-full h-full relative group flex items-center gap-3 px-4">
+                                    <img
+                                        src={photoPreview}
+                                        alt="Preview"
+                                        className="h-12 w-12 object-cover rounded"
+                                    />
+                                    <p className="font-pixel text-[8px] text-brand-cyan uppercase leading-none">{translations.auth.eventSignup.photo.change}</p>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 p-4">
+                                    <Upload className="w-4 h-4 text-brand-cyan/40" />
+                                    <p className="text-[10px] text-brand-cyan/60 uppercase">
+                                        {translations.auth.eventSignup.photo.choose}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )
         }
@@ -582,7 +955,7 @@ function EventSignupContent() {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.question} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, hasTeam: "yes" }))}
                                     className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "yes" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
@@ -591,85 +964,131 @@ function EventSignupContent() {
                                     <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.yesHave}</span>
                                 </button>
                                 <button
-                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "no" }))}
-                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "no" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "solo" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
                                 >
-                                    <UserPlus className="w-6 h-6 text-brand-cyan" />
-                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.noTeam}</span>
+                                    <UserPlus className="w-5 h-5 text-brand-orange" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
+                                </button>
+                                <button
+                                    onClick={() => setFormData(prev => ({ ...prev, hasTeam: "create" }))}
+                                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.hasTeam === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
+                                >
+                                    <Users className="w-5 h-5 text-brand-cyan" />
+                                    <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
                                 </button>
                             </div>
                         </div>
 
-                        {formData.hasTeam === "yes" ? (
+                        {formData.hasTeam === "yes" && (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-1">
                                     <Label htmlFor="teamCode" className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.fields.teamCode} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
                                     <Input id="teamCode" value={formData.teamCode} onChange={handleInputChange} className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" placeholder={translations.auth.eventSignup.fields.teamCodePlaceholder} />
                                 </div>
                             </div>
-                        ) : (
+                        )}
+
+                        {formData.hasTeam === "solo" && (
                             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                 <div className="space-y-2">
-                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.howToContinue} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span></Label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "solo" }))}
-                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "solo" ? "border-brand-orange bg-brand-orange/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
-                                        >
-                                            <UserPlus className="w-5 h-5 text-brand-orange" />
-                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.goSolo}</span>
-                                        </button>
-                                        <button
-                                            onClick={() => setFormData(prev => ({ ...prev, noTeamOption: "create" }))}
-                                            className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${formData.noTeamOption === "create" ? "border-brand-cyan bg-brand-cyan/10" : "border-brand-cyan/20 bg-brand-black/40 opacity-60"}`}
-                                        >
-                                            <Users className="w-5 h-5 text-brand-cyan" />
-                                            <span className="font-pixel text-[10px] uppercase">{translations.auth.eventSignup.team.createTeam}</span>
-                                        </button>
-                                    </div>
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                    {categoriesLoading ? (
+                                        <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                    ) : formData.priorities.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {formData.priorities.map((catId, i) => {
+                                                const category = categories.find(c => c.id === catId)
+                                                return (
+                                                    <div
+                                                        key={catId}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, i)}
+                                                        onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, i)}
+                                                        className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
+                                                    >
+                                                        <div className="flex items-center gap-3 pointer-events-none">
+                                                            <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
+                                                            {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                            <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
+                                                        </div>
+                                                        <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
+                                                            <Users className="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.hasTeam === "create" && (
+                            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                <div className="space-y-1">
+                                    <Label htmlFor="teamName" className="text-brand-cyan font-pixel text-xs">
+                                        {translations.auth.createTeam.fields.teamName} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span>
+                                    </Label>
+                                    <Input
+                                        id="teamName"
+                                        value={formData.teamName}
+                                        onChange={handleInputChange}
+                                        className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8"
+                                        placeholder={translations.auth.createTeam.fields.teamNamePlaceholder}
+                                    />
                                 </div>
 
-                                {formData.noTeamOption === "solo" ? (
-                                    <div className="space-y-4 animate-in fade-in duration-300">
-                                        <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
-                                        {categoriesLoading ? (
-                                            <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
-                                        ) : formData.priorities.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {formData.priorities.map((catId, i) => {
-                                                    const category = categories.find(c => c.id === catId)
-                                                    return (
-                                                        <div
-                                                            key={catId}
-                                                            draggable
-                                                            onDragStart={(e) => handleDragStart(e, i)}
-                                                            onDragOver={handleDragOver}
-                                                            onDrop={(e) => handleDrop(e, i)}
-                                                            className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-orange/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-orange/5"
-                                                        >
-                                                            <div className="flex items-center gap-3 pointer-events-none">
-                                                                <span className="text-brand-orange font-pixel text-[10px]">{i + 1}</span>
-                                                                {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
-                                                                <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
-                                                            </div>
-                                                            <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-orange/40 transition-colors pointer-events-none">
-                                                                <Users className="w-4 h-4" />
-                                                            </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="teamMotivation" className="text-brand-cyan font-pixel text-xs">
+                                        {translations.auth.createTeam.fields.motivation} <span className="text-red-500">{translations.auth.eventSignup.validation.required}</span>
+                                    </Label>
+                                    <textarea
+                                        id="teamMotivation"
+                                        value={formData.teamMotivation}
+                                        onChange={handleInputChange}
+                                        className="w-full min-h-[100px] bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-3 text-sm text-brand-cyan placeholder:text-brand-cyan/40 focus:outline-none resize-none"
+                                        placeholder={translations.auth.createTeam.fields.motivationPlaceholder}
+                                    />
+                                    <p className="text-[10px] text-brand-cyan/50 uppercase">{translations.auth.createTeam.validation.minCharacters}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-brand-cyan font-pixel text-xs">{translations.auth.eventSignup.team.dragToReorder}</Label>
+                                    {categoriesLoading ? (
+                                        <p className="text-brand-cyan/60 text-xs uppercase animate-pulse">{translations.auth.eventSignup.loading}</p>
+                                    ) : formData.priorities.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {formData.priorities.map((catId, i) => {
+                                                const category = categories.find(c => c.id === catId)
+                                                return (
+                                                    <div
+                                                        key={catId}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, i)}
+                                                        onDragOver={handleDragOver}
+                                                        onDrop={(e) => handleDrop(e, i)}
+                                                        className="flex items-center justify-between bg-brand-black/40 border border-brand-cyan/10 p-3 rounded group hover:border-brand-cyan/40 transition-all cursor-grab active:cursor-grabbing hover:bg-brand-cyan/5"
+                                                    >
+                                                        <div className="flex items-center gap-3 pointer-events-none">
+                                                            <span className="text-brand-cyan font-pixel text-[10px]">{i + 1}</span>
+                                                            {(() => { const Icon = (LucideIcons as any)[category?.iconName || ""] || LucideIcons.HelpCircle; return <Icon className="w-4 h-4 text-brand-cyan/60" /> })()}
+                                                            <span className="text-[10px] text-brand-cyan/80">{category?.name || "Unknown"}</span>
                                                         </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="p-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded animate-in fade-in duration-300">
-                                        <p className="text-[10px] text-brand-cyan/80 uppercase leading-relaxed italic">
-                                            {translations.auth.eventSignup.team.redirectNotice}
-                                        </p>
-                                    </div>
-                                )}
+                                                        <div className="flex items-center text-brand-cyan/20 group-hover:text-brand-cyan/50 transition-colors pointer-events-none">
+                                                            <Users className="w-4 h-4" />
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className="text-red-400/60 text-xs">{translations.auth.eventSignup.errors.noCategoriesAvailable}</p>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

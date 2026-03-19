@@ -3,6 +3,8 @@ import admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {getHackitbaDb} from "../helpers/getDb";
 
+type AllowedRole = "mentor" | "judge" | "admin";
+
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
@@ -115,4 +117,48 @@ export const requireAdmin = async (
     res.status(500).json({error: "Error verificando permisos"});
     return;
   }
+};
+
+/**
+ * Middleware to validate that user has one of the allowed roles.
+ * @param {AllowedRole[]} allowedRoles Roles allowed to access endpoint.
+ * @return {Function} Express middleware function.
+ */
+export const requireRoles = (allowedRoles: AllowedRole[]) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.user || !req.user.uid) {
+      logger.error("No user in request. Did you forget validateToken middleware?");
+      res.status(401).json({error: "No autorizado"});
+      return;
+    }
+
+    try {
+      const db = getHackitbaDb();
+      const userDoc = await db.collection("users").doc(req.user.uid).get();
+
+      if (!userDoc.exists) {
+        logger.error(`User ${req.user.uid} not found in database`);
+        res.status(404).json({error: "Usuario no encontrado"});
+        return;
+      }
+
+      const userData = userDoc.data();
+      const userRole = userData?.role as AllowedRole | undefined;
+
+      if (!userRole || !allowedRoles.includes(userRole)) {
+        logger.error(`User ${req.user.uid} has no access. Role: ${userRole}`);
+        res.status(403).json({error: "Acceso denegado"});
+        return;
+      }
+
+      logger.info(`Role access granted for ${req.user.uid} with role ${userRole}`);
+      next();
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = error as any;
+      logger.error("Error checking user role:", err.message || err);
+      res.status(500).json({error: "Error verificando permisos"});
+      return;
+    }
+  };
 };

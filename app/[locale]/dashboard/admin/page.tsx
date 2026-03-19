@@ -11,21 +11,25 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore"
+import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where, updateDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
-import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+import { Pencil, Trash2, Plus, Upload, CheckSquare, UserX, Trophy, FolderKanban } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
 import { AdminManagementTables } from "@/components/admin/admin-management-tables"
+import { AdminJudgesMentors } from "@/components/admin/admin-judges-mentors"
 import type { Locale } from "@/lib/i18n/config"
+import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
   const params = useParams()
+  const router = useRouter()
   const locale = (params?.locale as Locale) || "en"
-  const translations = getTranslations(locale)
+  const t = getTranslations(locale)
   const db = getDbClient()
   const storage = getStorageClient()
   const auth = getAuthClient()
@@ -36,6 +40,8 @@ export default function AdminDashboard() {
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [authReady, setAuthReady] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [showScoresToTeams, setShowScoresToTeams] = useState(false)
+  const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
   const [completeStats, setCompleteStats] = useState<{ complete: number; withTeam: number; withoutTeam: number } | null>(null)
   const [loadingStats, setLoadingStats] = useState(false)
 
@@ -50,6 +56,7 @@ export default function AdminDashboard() {
     name: "",
     description: "",
     maxScore: 10,
+    weight: 1,
     order: 0,
   })
 
@@ -76,12 +83,15 @@ export default function AdminDashboard() {
     if (!db) return
     setLoadingStats(true)
     try {
-      const [completeSnap, withTeamSnap, withoutTeamSnap] = await Promise.all([
-        getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))),
-        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", true))),
-        getDocs(query(collection(db, "users"), where("role", "==", "participant"), where("hasTeam", "==", false))),
-      ])
-      setCompleteStats({ complete: completeSnap.size, withTeam: withTeamSnap.size, withoutTeam: withoutTeamSnap.size })
+      const completeSnap = await getDocs(
+        query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))
+      )
+
+      const completeParticipants = completeSnap.docs.map((participantDoc) => participantDoc.data())
+      const withTeam = completeParticipants.filter((participant) => participant.hasTeam === true).length
+      const withoutTeam = completeParticipants.filter((participant) => participant.hasTeam !== true).length
+
+      setCompleteStats({ complete: completeParticipants.length, withTeam, withoutTeam })
     } catch (error) {
       console.error("Error loading complete stats:", error)
     } finally {
@@ -97,11 +107,15 @@ export default function AdminDashboard() {
       if (settingsDoc.exists()) {
         const data = settingsDoc.data()
         setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+        setShowScoresToTeams(!!data?.showScoresToTeams)
+        setJudgingStage(data?.judgingStage || "admin")
       } else {
         setProjectSubmissionsEnabled(true)
+        setShowScoresToTeams(false)
+        setJudgingStage("admin")
         await setDoc(
           settingsRef,
-          { projectSubmissionsEnabled: true, updatedAt: new Date() },
+          { projectSubmissionsEnabled: true, showScoresToTeams: false, judgingStage: "admin", updatedAt: new Date() },
           { merge: true }
         )
       }
@@ -110,20 +124,39 @@ export default function AdminDashboard() {
     }
   }
 
-  const toggleProjectSubmissions = async () => {
+  const toggleSetting = async (key: string, currentValue: any) => {
     if (!db) return
-    const nextValue = !projectSubmissionsEnabled
-    setProjectSubmissionsEnabled(nextValue)
+    const nextValue = !currentValue
     try {
       await setDoc(
         doc(db, "settings", "global"),
-        { projectSubmissionsEnabled: nextValue, updatedAt: new Date() },
+        { [key]: nextValue, updatedAt: new Date() },
         { merge: true }
       )
+      if (key === "projectSubmissionsEnabled") setProjectSubmissionsEnabled(nextValue)
+      if (key === "showScoresToTeams") setShowScoresToTeams(nextValue)
     } catch (error) {
-      console.error("Error updating project submissions setting:", error)
-      setProjectSubmissionsEnabled(!nextValue)
-      toast({ title: translations.admin.projectSubmissions.updateError, variant: 'destructive' })
+      console.error(`Error updating ${key}:`, error)
+      toast({ title: "Update Error", variant: 'destructive' })
+    }
+  }
+
+  const updateJudgingStage = async (stage: "admin" | "judge") => {
+    if (!db) return
+    try {
+      await setDoc(
+        doc(db, "settings", "global"),
+        { judgingStage: stage, updatedAt: new Date() },
+        { merge: true }
+      )
+      setJudgingStage(stage)
+
+      toast({
+        title: stage === "judge" ? (locale === "es" ? "Fase Jueces Iniciada" : "Judge Phase Started") : (locale === "es" ? "Fase Admins Iniciada" : "Admin Phase Started")
+      })
+    } catch (error) {
+      console.error("Error updating judging stage:", error)
+      toast({ title: "Update Error", variant: 'destructive' })
     }
   }
 
@@ -174,7 +207,7 @@ export default function AdminDashboard() {
       createdAt: new Date(),
     })
     setShowScoringForm(false)
-    setScoringForm({ name: "", description: "", maxScore: 10, order: 0 })
+    setScoringForm({ name: "", description: "", maxScore: 10, weight: 1, order: 0 })
     loadData()
   }
 
@@ -191,6 +224,51 @@ export default function AdminDashboard() {
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title="Admin Dashboard">
         <div className="space-y-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-4">
+                <div onClick={() => toggleSetting("projectSubmissionsEnabled", projectSubmissionsEnabled)} className={cn("transition-transform p-3 rounded-full cursor-pointer", projectSubmissionsEnabled ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400")}>
+                  <LucideIcons.Power size={24} />
+                </div>
+                <div>
+                  <p className="font-pixel text-xs">{t.admin.projectSubmissions.title}</p>
+                  <p className={cn("text-xs font-bold", projectSubmissionsEnabled ? "text-green-400" : "text-red-400")}>{projectSubmissionsEnabled ? "ENABLED" : "DISABLED"}</p>
+                </div>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-4">
+                <div onClick={() => toggleSetting("showScoresToTeams", showScoresToTeams)} className={cn("transition-transform p-3 rounded-full cursor-pointer", showScoresToTeams ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400")}>
+                  <LucideIcons.Eye size={24} />
+                </div>
+                <div>
+                  <p className="font-pixel text-xs">Show Scores to Teams</p>
+                  <p className={cn("text-xs font-bold", showScoresToTeams ? "text-green-400" : "text-red-400")}>{showScoresToTeams ? "VISIBLE" : "HIDDEN"}</p>
+                </div>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6">
+              <div className="flex h-full items-center gap-4">
+                <div className="flex justify-center h-full flex-col gap-2">
+                  <button
+                    onClick={() => updateJudgingStage("admin")}
+                    className={cn("px-3 py-1 rounded text-[10px] font-pixel border", judgingStage === "admin" ? "bg-brand-cyan/20 border-brand-cyan text-brand-cyan" : "border-brand-cyan/20 text-brand-cyan/40")}
+                  >ADMINS</button>
+                  <button
+                    onClick={() => updateJudgingStage("judge")}
+                    className={cn("px-3 py-1 rounded text-[10px] font-pixel border", judgingStage === "judge" ? "bg-brand-orange/20 border-brand-orange text-brand-orange" : "border-brand-orange/20 text-brand-orange/40")}
+                  >JUDGES</button>
+                </div>
+                <div>
+                  <p className="font-pixel text-xs">Judging Stage</p>
+                  <p className="text-xs text-brand-cyan/60 italic">{judgingStage === "admin" ? "Phase 1: Admin Screening" : "Phase 2: Finalist Judging"}</p>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
 
           <section>
             <div className="mb-6">
@@ -223,7 +301,14 @@ export default function AdminDashboard() {
                 </span>
               </div>
             </div>
-            <AdminManagementTables locale={locale} translations={translations} />
+            <AdminManagementTables locale={locale} translations={t} />
+          </section>
+
+          <section>
+            <div className="mb-6">
+              <h3 className="font-pixel text-2xl text-brand-yellow">{locale === "es" ? "Jurados & Mentores" : "Judges & Mentors"}</h3>
+            </div>
+            <AdminJudgesMentors locale={locale} translations={t} />
           </section>
 
           <section>
@@ -256,14 +341,26 @@ export default function AdminDashboard() {
                     />
                   </div>
 
-                  <div>
-                    <Label className="text-brand-cyan">Max Score</Label>
-                    <Input
-                      type="number"
-                      value={scoringForm.maxScore}
-                      onChange={(e) => setScoringForm({ ...scoringForm, maxScore: Number(e.target.value) })}
-                      className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-brand-cyan">Max Score (Target)</Label>
+                      <Input
+                        type="number"
+                        value={scoringForm.maxScore}
+                        onChange={(e) => setScoringForm({ ...scoringForm, maxScore: Number(e.target.value) })}
+                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-brand-cyan">Weight Factor</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={scoringForm.weight}
+                        onChange={(e) => setScoringForm({ ...scoringForm, weight: Number(e.target.value) })}
+                        className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -288,7 +385,11 @@ export default function AdminDashboard() {
                     <div>
                       <p className="font-pixel text-brand-yellow text-sm">{criteria.name}</p>
                       <p className="text-brand-cyan/60 text-xs">{criteria.description}</p>
-                      <p className="text-brand-orange text-xs mt-1">Max: {criteria.maxScore}</p>
+                      <div className="flex gap-4 mt-1">
+                        <p className="text-brand-orange text-[10px]">Scale: 1-10</p>
+                        <p className="text-brand-orange text-[10px]">Weight: {criteria.weight || 1}</p>
+                        <p className="text-brand-orange text-[10px]">Points: {10 * (criteria.weight || 1)}</p>
+                      </div>
                     </div>
                     <button
                       onClick={() => deleteScoring(criteria.id)}

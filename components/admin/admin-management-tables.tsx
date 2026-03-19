@@ -23,7 +23,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail } from "lucide-react"
+import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail, ExternalLink, Github, Play, Image as ImageIcon, FileText } from "lucide-react"
+import { MarkdownEditor } from "@/components/ui/markdown-editor"
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
@@ -35,10 +37,24 @@ interface AdminManagementTablesProps {
 
 type Tab = "participants" | "teams"
 
+interface AdminTeamNote {
+    id: string
+    text: string
+    authorId: string
+    authorRole: "mentor" | "judge" | "admin"
+    createdAt: string | null
+    author?: {
+        id: string
+        name?: string
+        surname?: string
+    }
+}
+
 export function AdminManagementTables({ locale, translations }: AdminManagementTablesProps) {
     const [activeTab, setActiveTab] = useState<Tab>("participants")
     const [users, setUsers] = useState<any[]>([])
     const [teams, setTeams] = useState<any[]>([])
+    const [projects, setProjects] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const { categories } = useCategories(locale)
     const db = getDbClient()
@@ -58,6 +74,10 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [editType, setEditType] = useState<Tab | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
+
+    // Project view
+    const [showProject, setShowProject] = useState(false)
+    const [selectedProject, setSelectedProject] = useState<any | null>(null)
 
     // Delete / Move actions
     const [showDelete, setShowDelete] = useState(false)
@@ -89,20 +109,34 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     // Team Details Modal (view only members)
     const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
 
+    // Team Notes Modal (admin in edit team flow)
+    const [showTeamNotesModal, setShowTeamNotesModal] = useState(false)
+    const [teamNotesTarget, setTeamNotesTarget] = useState<any | null>(null)
+    const [teamNotesLoading, setTeamNotesLoading] = useState(false)
+    const [teamNotesSaving, setTeamNotesSaving] = useState(false)
+    const [teamNotes, setTeamNotes] = useState<AdminTeamNote[]>([])
+    const [teamNotesText, setTeamNotesText] = useState("")
+    const [teamNotesPage, setTeamNotesPage] = useState(1)
+    const [teamNotesTotalPages, setTeamNotesTotalPages] = useState(1)
+    const [teamNotesTotalItems, setTeamNotesTotalItems] = useState(0)
+
     const fetchData = async () => {
         if (!db) return
         setLoading(true)
         try {
-            const [usersSnap, teamsSnap] = await Promise.all([
+            const [usersSnap, teamsSnap, projectsSnap] = await Promise.all([
                 getDocs(collection(db, "users")),
-                getDocs(collection(db, "teams"))
+                getDocs(collection(db, "teams")),
+                getDocs(collection(db, "projects"))
             ])
 
             const usersData = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
             const teamsData = teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            const projectsData = projectsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 
             setUsers(usersData)
             setTeams(teamsData)
+            setProjects(projectsData)
         } catch (error) {
             console.error("Error fetching admin data:", error)
         } finally {
@@ -123,6 +157,16 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
             // Remove id from payload
             const { id, ...payload } = editingItem
+
+            if (editType === "participants") {
+                const nextTeam = payload.team || null
+                payload.team = nextTeam
+                payload.hasTeam = !!nextTeam
+                // Normalize legacy role value used in old records.
+                if (payload.role === "user") {
+                    payload.role = "participant"
+                }
+            }
 
             await updateDoc(docRef, payload)
 
@@ -171,7 +215,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         if (!db || !moveItem) return
         try {
             const docRef = doc(db, "users", moveItem.id)
-            await updateDoc(docRef, { team: moveTargetTeam || null })
+            const nextTeam = moveTargetTeam || null
+            await updateDoc(docRef, { team: nextTeam, hasTeam: !!nextTeam })
             await fetchData()
             setShowMove(false)
             setMoveItem(null)
@@ -199,6 +244,24 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
     }
 
+    const getTeamCategoryIndex = (team: any) => {
+        if (!team) return null
+
+        const teamStatus = (team?.status || "").toLowerCase()
+        const isAccepted = teamStatus === "accepted" || teamStatus === "approved"
+        if (isAccepted && team?.category !== null && team?.category !== undefined) return team.category
+
+        if (team?.category_1 !== null && team?.category_1 !== undefined) return team.category_1
+        return null
+    }
+
+    const getParticipantCategoryIndex = (participant: any) => {
+        const team = participant.team ? teams.find(t => t.id === participant.team) : null
+        if (team) return getTeamCategoryIndex(team)
+        if (participant?.category_1 !== null && participant?.category_1 !== undefined) return participant.category_1
+        return null
+    }
+
     const filteredAndSortedData = useMemo(() => {
         let data = activeTab === "participants" ? users.filter(u => u.role !== "admin") : [...teams]
 
@@ -217,14 +280,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             const catIdx = parseInt(categoryFilter)
             data = data.filter(item => {
                 if (activeTab === "participants") {
-                    // Match by the displayed category (team's category_1 if in a team, else participant's category_1)
-                    if (item.team) {
-                        const team = teams.find(t => t.id === item.team)
-                        return parseInt(team?.category_1) === catIdx
-                    }
-                    return parseInt(item.category_1) === catIdx
+                    return parseInt(getParticipantCategoryIndex(item)) === catIdx
                 } else {
-                    return parseInt(item.category_1) === catIdx
+                    return parseInt(getTeamCategoryIndex(item)) === catIdx
                 }
             })
         }
@@ -275,6 +333,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             } else if (sortField === "age") {
                 valA = Number(a.age || 0)
                 valB = Number(b.age || 0)
+            } else if (sortField === "category_1") {
+                valA = activeTab === "participants" ? Number(getParticipantCategoryIndex(a) ?? -1) : Number(getTeamCategoryIndex(a) ?? -1)
+                valB = activeTab === "participants" ? Number(getParticipantCategoryIndex(b) ?? -1) : Number(getTeamCategoryIndex(b) ?? -1)
             } else {
                 // Normalize undefined/null
                 if (valA === undefined || valA === null) valA = ""
@@ -308,6 +369,144 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
     const getTeamMembers = (teamId: string) => {
         return users.filter(user => user.team === teamId)
+    }
+
+    const formatDateTime = (value: Date | string | null | undefined) => {
+        if (!value) return "-"
+        const date = value instanceof Date ? value : new Date(value)
+        if (Number.isNaN(date.getTime())) return String(value)
+
+        const p = (n: number) => n.toString().padStart(2, "0")
+        return `${p(date.getDate())}/${p(date.getMonth() + 1)}/${date.getFullYear()} ${p(date.getHours())}:${p(date.getMinutes())}`
+    }
+
+    const formatTimestampDateTime = (value: { seconds?: number } | null | undefined) => {
+        if (!value?.seconds) return "-"
+        return formatDateTime(new Date(value.seconds * 1000))
+    }
+
+    const formatNoteDate = (value: string | null) => {
+        if (!value) return locale === "es" ? "Sin fecha" : "No date"
+        return formatDateTime(value)
+    }
+
+    const getNoteAuthorLabel = (note: AdminTeamNote) => {
+        const fullName = [note.author?.name, note.author?.surname].filter(Boolean).join(" ")
+        const roleLabel = note.authorRole === "mentor"
+            ? (locale === "es" ? "Mentor" : "Mentor")
+            : note.authorRole === "judge"
+                ? (locale === "es" ? "Jurado" : "Judge")
+                : "Admin"
+        return `${fullName || note.author?.id || note.authorId} · ${roleLabel}`
+    }
+
+    const loadTeamNotes = async (teamId: string, targetPage: number) => {
+        setTeamNotesLoading(true)
+        try {
+            const auth = getAuthClient()
+            const idToken = await auth?.currentUser?.getIdToken()
+            if (!idToken) {
+                throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+            }
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/teams/${teamId}/notes?page=${targetPage}&pageSize=10`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${idToken}`,
+                },
+            })
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null)
+                throw new Error(payload?.error || (locale === "es" ? "No se pudieron cargar las notas" : "Could not load notes"))
+            }
+
+            const payload = await response.json()
+            setTeamNotes(Array.isArray(payload?.notes) ? payload.notes : [])
+            setTeamNotesPage(typeof payload?.page === "number" ? payload.page : targetPage)
+            setTeamNotesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 1)
+            setTeamNotesTotalItems(typeof payload?.count === "number" ? payload.count : 0)
+        } catch (error: any) {
+            setTeamNotes([])
+            setTeamNotesPage(1)
+            setTeamNotesTotalPages(1)
+            setTeamNotesTotalItems(0)
+            toast({
+                title: locale === "es" ? "Error al cargar notas" : "Error loading notes",
+                description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+                variant: "destructive",
+            })
+        } finally {
+            setTeamNotesLoading(false)
+        }
+    }
+
+    const openTeamNotesModal = async (teamItem: any) => {
+        setTeamNotesTarget(teamItem)
+        setTeamNotesText("")
+        setShowTeamNotesModal(true)
+        await loadTeamNotes(teamItem.id, 1)
+    }
+
+    const handleAddTeamNote = async () => {
+        if (!teamNotesTarget) return
+
+        const trimmedText = teamNotesText.trim()
+        if (!trimmedText) {
+            toast({
+                title: locale === "es" ? "Nota vacia" : "Empty note",
+                description: locale === "es" ? "Escribe una nota antes de guardar." : "Write a note before saving.",
+                variant: "destructive",
+            })
+            return
+        }
+
+        setTeamNotesSaving(true)
+        try {
+            const auth = getAuthClient()
+            const idToken = await auth?.currentUser?.getIdToken()
+            if (!idToken) {
+                throw new Error(locale === "es" ? "No se pudo obtener sesion autenticada" : "Could not get authenticated session")
+            }
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
+            const response = await fetch(`${apiUrl}/teams/${teamNotesTarget.id}/notes`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ text: trimmedText }),
+            })
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null)
+                throw new Error(payload?.error || (locale === "es" ? "No se pudo crear la nota" : "Could not create note"))
+            }
+
+            setTeamNotesText("")
+            toast({ title: locale === "es" ? "Nota guardada" : "Note saved" })
+            await loadTeamNotes(teamNotesTarget.id, 1)
+        } catch (error: any) {
+            toast({
+                title: locale === "es" ? "Error al guardar nota" : "Error saving note",
+                description: error?.message || (locale === "es" ? "Ocurrio un error inesperado." : "Unexpected error."),
+                variant: "destructive",
+            })
+        } finally {
+            setTeamNotesSaving(false)
+        }
+    }
+
+    const handleTeamNotesPrev = async () => {
+        if (!teamNotesTarget || teamNotesPage <= 1 || teamNotesLoading) return
+        await loadTeamNotes(teamNotesTarget.id, teamNotesPage - 1)
+    }
+
+    const handleTeamNotesNext = async () => {
+        if (!teamNotesTarget || teamNotesPage >= teamNotesTotalPages || teamNotesLoading) return
+        await loadTeamNotes(teamNotesTarget.id, teamNotesPage + 1)
     }
 
     return (
@@ -378,64 +577,64 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                     <TableRow className="border-brand-cyan/20 hover:bg-transparent">
                                         {activeTab === "participants" ? (
                                             <>
-                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
-                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead className="h-8 py-1 text-xs">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("email")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Email" : "Email"} {sortField === "email" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("university")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Escuela/Uni" : "School/Uni"} {sortField === "university" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("career")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Carrera" : "Degree"} {sortField === "career" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("grad_year")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("grad_year")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Año egreso" : "Grad. Year"} {sortField === "grad_year" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("neighborhood")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("neighborhood")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Barrio/Localidad" : "Neighborhood"} {sortField === "neighborhood" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("team")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Equipo" : "Team"} {sortField === "team" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("age")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Edad" : "Age"} {sortField === "age" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
                                             </>
                                         ) : (
                                             <>
-                                                <TableHead className="h-8 py-1 text-[10px]">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
+                                                <TableHead className="h-8 py-1 text-xs">{locale === "es" ? "Acciones" : "Actions"}</TableHead>
 
-                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("name")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Nombre" : "Name"} {sortField === "name" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("members")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Miembros" : "Members"} {sortField === "members" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("status")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Estado" : "Status"} {sortField === "status" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("category_1")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Categoría" : "Category"} {sortField === "category_1" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-[10px]">
+                                                <TableHead onClick={() => handleSort("assignedRoom")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Aula" : "Room"} {sortField === "assignedRoom" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
 
@@ -456,7 +655,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                 {activeTab === "participants" ? (
                                                     <>
 
-                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                        <TableCell className="text-xs py-1 flex gap-2">
                                                             <button
                                                                 onClick={() => { setMailTarget(item); setShowMail(true); setMailSubject(`${locale === "es" ? "Hola" : "Hi"} ${item.name}`); setMailBody(""); }}
                                                                 className="text-sm px-2 py-1 bg-blue-700/10 text-blue-300 rounded hover:bg-blue-700/20 transition-colors flex items-center gap-1"
@@ -481,18 +680,18 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="py-1">
                                                             <button
                                                                 onClick={() => { setEditingItem({ ...item }); setEditType("participants"); }}
-                                                                className="text-brand-yellow text-[10px] hover:underline flex items-center gap-1.5 group"
+                                                                className="text-brand-yellow text-xs hover:underline flex items-center gap-1.5 group"
                                                             >
                                                                 {item.name} {item.surname}
                                                                 <Edit2 size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
                                                             </button>
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.email}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.grad_year || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
-                                                        <TableCell className="text-brand-orange text-[10px] py-1">
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.email}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[120px]">{item.university || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[100px]">{item.career || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.grad_year ?? item.career_year ?? item.careerYear ?? "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 truncate max-w-[120px]">{item.neighborhood || "-"}</TableCell>
+                                                        <TableCell className="text-brand-orange text-xs py-1">
                                                             {item.team ? (
                                                                 <button onClick={() => {
                                                                     const team = teams.find(t => t.id === item.team)
@@ -530,23 +729,38 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                 })()
 
                                                                 return (
-                                                                    <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-[9px] uppercase", statusClass)}>
+                                                                    <span data-status={statusKey} style={inlineStyle} className={cn("px-1.5 py-0 rounded text-xs uppercase", statusClass)}>
                                                                         {displayStatus}
                                                                     </span>
                                                                 )
                                                             })()}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{item.age || "-"}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">{getCategoryName((item.team ? teams.find(t => t.id === item.team)?.category_1 : null) ?? item.category_1)}</TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1">
-                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{item.age || "-"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">{getCategoryName(getParticipantCategoryIndex(item))}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1">
+                                                            {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-[10px] py-1 uppercase">{item.role || "user"}</TableCell>
+                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
 
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <TableCell className="text-[10px] py-1 flex gap-2">
+                                                        <TableCell className="text-xs py-1 flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const project = projects.find(p => p.teamId === item.id)
+                                                                    setSelectedProject(project || { teamId: item.id, teamName: item.name, status: "none" })
+                                                                    setShowProject(true)
+                                                                }}
+                                                                className={cn(
+                                                                    "text-sm px-2 py-1 rounded transition-colors flex items-center gap-1",
+                                                                    projects.some(p => p.teamId === item.id)
+                                                                        ? "bg-brand-orange/20 text-brand-orange hover:bg-brand-orange/30"
+                                                                        : "bg-gray-700/20 text-gray-400 hover:bg-gray-700/30"
+                                                                )}
+                                                            >
+                                                                Project
+                                                            </button>
                                                             <button
                                                                 onClick={() => { setDeleteTarget({ item, type: "teams" }); setShowDelete(true); }}
                                                                 className="text-sm px-2 py-1 bg-red-700/10 text-red-400 rounded hover:bg-red-700/20 transition-colors flex items-center gap-1"
@@ -582,7 +796,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         </TableCell>
                                                         <TableCell>
                                                             <span data-status={item.status || "pending"} className={cn(
-                                                                "px-2 py-0.5 rounded text-[10px] uppercase",
+                                                                "px-2 py-0.5 rounded text-xs uppercase",
                                                                 item.status === "approved" ? "bg-green-500/20 text-green-400" :
                                                                     item.status === "rejected" ? "bg-red-500/20 text-red-400" :
                                                                         "bg-yellow-500/20 text-yellow-400"
@@ -590,9 +804,9 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                                 {item.status}
                                                             </span>
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(item.category_1)}</TableCell>
-                                                        <TableCell className="text-brand-cyan/60 text-[10px]">
-                                                            {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleDateString() : "-"}
+                                                        <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(getTeamCategoryIndex(item))}</TableCell>
+                                                        <TableCell className="text-brand-cyan/60 text-xs">
+                                                            {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
 
                                                     </>
@@ -629,7 +843,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     </DialogHeader>
                     <div className="py-4 space-y-3">
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
                             <input
                                 type="email"
                                 value={customMailTo}
@@ -639,7 +853,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={customMailSubject}
                                 onChange={(e) => setCustomMailSubject(e.target.value)}
@@ -647,8 +861,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={customMailBody}
                                 onChange={(e) => setCustomMailBody(e.target.value)}
@@ -717,7 +931,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             {editType === "participants" ? (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre" : "Name"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre" : "Name"}</label>
                                         <Input
                                             value={editingItem.name || ""}
                                             onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
@@ -725,7 +939,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Apellido" : "Surname"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Apellido" : "Surname"}</label>
                                         <Input
                                             value={editingItem.surname || ""}
                                             onChange={e => setEditingItem({ ...editingItem, surname: e.target.value })}
@@ -733,7 +947,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">Email</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">Email</label>
                                         <Input
                                             value={editingItem.email || ""}
                                             onChange={e => setEditingItem({ ...editingItem, email: e.target.value })}
@@ -741,7 +955,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Universidad" : "University"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Universidad" : "University"}</label>
                                         <Input
                                             value={editingItem.university || ""}
                                             onChange={e => setEditingItem({ ...editingItem, university: e.target.value })}
@@ -749,7 +963,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Carrera" : "Degree"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Carrera" : "Degree"}</label>
                                         <Input
                                             value={editingItem.career || ""}
                                             onChange={e => setEditingItem({ ...editingItem, career: e.target.value })}
@@ -757,7 +971,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Edad" : "Age"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Edad" : "Age"}</label>
                                         <Input
                                             type="number"
                                             value={editingItem.age || ""}
@@ -766,20 +980,20 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Rol" : "Role"}</label>
                                         <select
-                                            value={editingItem.role || "user"}
+                                            value={editingItem.role === "user" ? "participant" : (editingItem.role || "participant")}
                                             onChange={e => setEditingItem({ ...editingItem, role: e.target.value })}
                                             className="w-full bg-black/40 border border-brand-cyan/20 rounded h-8 text-xs px-2 text-brand-cyan"
                                         >
-                                            <option value="user">User</option>
-                                            <option value="jury">Jury</option>
+                                            <option value="participant">Participant</option>
+                                            <option value="judge">Judge</option>
                                             <option value="mentor">Mentor</option>
                                             <option value="admin">Admin</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
                                         <select
                                             value={editingItem.status || "pending"}
                                             onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
@@ -794,7 +1008,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             ) : (
                                 <>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Nombre del Equipo" : "Team Name"}</label>
                                         <Input
                                             value={editingItem.name || ""}
                                             onChange={e => setEditingItem({ ...editingItem, name: e.target.value })}
@@ -802,7 +1016,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Categoría" : "Category"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Categoría" : "Category"}</label>
                                         <select
                                             value={editingItem.category_1 || "0"}
                                             onChange={e => setEditingItem({ ...editingItem, category_1: parseInt(e.target.value) })}
@@ -816,7 +1030,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Estado" : "Status"}</label>
                                         <select
                                             value={editingItem.status || "pending"}
                                             onChange={e => setEditingItem({ ...editingItem, status: e.target.value })}
@@ -828,7 +1042,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         </select>
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</label>
                                         <Input
                                             value={editingItem.assignedRoom || ""}
                                             onChange={e => setEditingItem({ ...editingItem, assignedRoom: e.target.value })}
@@ -837,7 +1051,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                         />
                                     </div>
                                     <div className="space-y-1 md:col-span-2">
-                                        <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "¿Por qué participas en el hackathon?" : "Why are you participating in the hackathon?"}</label>
+                                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "¿Por qué participas en el hackathon?" : "Why are you participating in the hackathon?"}</label>
                                         <textarea
                                             value={editingItem.tell_why || ""}
                                             onChange={e => setEditingItem({ ...editingItem, tell_why: e.target.value })}
@@ -851,15 +1065,102 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     )}
 
                     <div className="flex justify-between mt-8 pt-4 border-t border-brand-cyan/10">
-                        <PixelButton variant="secondary" onClick={() => setEditingItem(null)} size="sm">
-                            <X size={14} className="mr-2" />
-                            {locale === "es" ? "Cancelar" : "Cancel"}
-                        </PixelButton>
+                        <div className="flex items-center gap-2">
+                            <PixelButton variant="secondary" onClick={() => setEditingItem(null)} size="sm">
+                                <X size={14} className="mr-2" />
+                                {locale === "es" ? "Cancelar" : "Cancel"}
+                            </PixelButton>
+                            {editType === "teams" && (
+                                <PixelButton
+                                    variant="secondary"
+                                    onClick={() => openTeamNotesModal(editingItem)}
+                                    size="sm"
+                                >
+                                    <FileText size={14} className="mr-2" />
+                                    {locale === "es" ? "Notas" : "Notes"}
+                                </PixelButton>
+                            )}
+                        </div>
                         <PixelButton onClick={() => setShowConfirm(true)} size="sm">
                             <Save size={14} className="mr-2" />
                             {locale === "es" ? "Guardar Cambios" : "Save Changes"}
                         </PixelButton>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Team Notes Modal */}
+            <Dialog
+                open={showTeamNotesModal}
+                onOpenChange={(open) => {
+                    setShowTeamNotesModal(open)
+                    if (!open) {
+                        setTeamNotesTarget(null)
+                        setTeamNotesText("")
+                        setTeamNotes([])
+                        setTeamNotesPage(1)
+                        setTeamNotesTotalPages(1)
+                        setTeamNotesTotalItems(0)
+                    }
+                }}
+            >
+                <DialogContent className="bg-brand-navy/95 border border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow">
+                            {locale === "es" ? "Notas del equipo" : "Team notes"}
+                            {teamNotesTarget?.name ? ` · ${teamNotesTarget.name}` : ""}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-3">
+                        <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Agregar nota" : "Add note"}</label>
+                        <MarkdownEditor
+                            value={teamNotesText}
+                            onChange={setTeamNotesText}
+                            placeholder={locale === "es" ? "Escribí una nota para este equipo..." : "Write a note for this team..."}
+                            disabled={teamNotesSaving}
+                            className="min-h-32"
+                        />
+                        <div className="flex justify-end">
+                            <PixelButton onClick={handleAddTeamNote} size="sm" disabled={teamNotesSaving || !teamNotesTarget}>
+                                {teamNotesSaving
+                                    ? (locale === "es" ? "Guardando..." : "Saving...")
+                                    : (locale === "es" ? "Guardar nota" : "Save note")}
+                            </PixelButton>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                        <p className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Historial" : "History"}</p>
+                        {teamNotesLoading ? (
+                            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "Cargando notas..." : "Loading notes..."}</p>
+                        ) : teamNotes.length === 0 ? (
+                            <p className="text-sm text-brand-cyan/70">{locale === "es" ? "No hay notas para este equipo." : "There are no notes for this team."}</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {teamNotes.map((note) => (
+                                    <div key={note.id} className="rounded border border-brand-cyan/20 bg-black/30 p-3">
+                                        <MarkdownRenderer content={note.text} />
+                                        <p className="text-xs text-brand-cyan/60 mt-2">
+                                            {getNoteAuthorLabel(note)} · {formatNoteDate(note.createdAt)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <PaginationControls
+                        page={teamNotesPage}
+                        totalPages={teamNotesTotalPages}
+                        onPageChange={(nextPage) => {
+                            if (!teamNotesTarget || teamNotesLoading) return
+                            void loadTeamNotes(teamNotesTarget.id, nextPage)
+                        }}
+                        totalItems={teamNotesTotalItems}
+                        pageSize={10}
+                        locale={locale}
+                    />
                 </DialogContent>
             </Dialog>
 
@@ -903,7 +1204,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     <div className="py-4 space-y-3">
                         <p className="text-sm text-brand-cyan/80">{moveItem ? `${moveItem.name} ${moveItem.surname}` : ""}</p>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Seleccionar Equipo" : "Select Team"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Seleccionar Equipo" : "Select Team"}</label>
                             <select
                                 value={moveTargetTeam || ""}
                                 onChange={(e) => setMoveTargetTeam(e.target.value || null)}
@@ -944,12 +1245,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                 <p className="text-sm text-brand-cyan/80">
                                     <span className="text-brand-yellow font-semibold">{teamMailTarget.name}</span>
                                     {" — "}{members.length} {locale === "es" ? "integrante(s)" : "member(s)"}
-                                    {members.length > 0 && <span className="block text-[10px] text-brand-cyan/50 mt-1">{members.map((m: any) => m.email).join(", ")}</span>}
+                                    {members.length > 0 && <span className="block text-xs text-brand-cyan/50 mt-1">{members.map((m: any) => m.email).join(", ")}</span>}
                                 </p>
                             )
                         })()}
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={teamMailSubject}
                                 onChange={(e) => setTeamMailSubject(e.target.value)}
@@ -957,8 +1258,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={teamMailBody}
                                 onChange={(e) => setTeamMailBody(e.target.value)}
@@ -1025,7 +1326,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                     <div className="py-4 space-y-3">
                         <p className="text-sm text-brand-cyan/80">{mailTarget ? `${mailTarget.name} ${mailTarget.surname} — ${mailTarget.email}` : ""}</p>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
                                 value={mailSubject}
                                 onChange={(e) => setMailSubject(e.target.value)}
@@ -1033,8 +1334,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
-                            <p className="text-[9px] text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Mensaje" : "Message"}</label>
+                            <p className="text-xs text-brand-cyan/40 mt-1 mb-1">{locale === "es" ? "Se enviará usando el template de notificación HackITBA" : "Will be sent using the HackITBA notification template"}</p>
                             <textarea
                                 value={mailBody}
                                 onChange={(e) => setMailBody(e.target.value)}
@@ -1126,52 +1427,141 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 </DialogContent>
             </Dialog>
 
-            {/* Team Details Dialog */}
+            {/* Team Details Modal */}
             <Dialog open={!!selectedTeam} onOpenChange={(open) => !open && setSelectedTeam(null)}>
-                <DialogContent className="glass-effect border-brand-cyan/30">
+                <DialogContent className="bg-brand-navy/90 border-brand-cyan/20 text-brand-cyan font-pixel backdrop-blur-sm w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col p-0">
+                    <DialogHeader className="p-6 pb-4 flex-shrink-0">
+                        <DialogTitle>{selectedTeam?.name || (locale === "es" ? "Detalles del Equipo" : "Team Details")}</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto px-6 pb-6">
+                        {selectedTeam && (
+                            <div className="space-y-4 text-sm">
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">ID</h3>
+                                    <p className="text-xs text-brand-cyan/70">{selectedTeam.id}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Estado" : "Status"}</h3>
+                                    <p>{selectedTeam.status}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Categoría" : "Category"}</h3>
+                                    <p>{getCategoryName(selectedTeam.category_1)}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-brand-orange">{locale === "es" ? "Miembros" : "Members"}</h3>
+                                    <div className="space-y-2">
+                                        {getTeamMembers(selectedTeam.id).map(member => (
+                                            <div key={member.id} className="flex items-center justify-between p-2 bg-brand-cyan/5 rounded">
+                                                <div>
+                                                    <p className="font-semibold">{member.name} {member.surname}</p>
+                                                    <p className="text-xs text-brand-cyan/60">{member.email}</p>
+                                                </div>
+                                                <span className="text-xs text-brand-cyan/60">{member.role || "user"}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Project Details Dialog */}
+            <Dialog open={showProject} onOpenChange={setShowProject}>
+                <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-2xl max-h-[90vh] overflow-hidden px-4 sm:px-6">
                     <DialogHeader>
-                        <DialogTitle className="font-pixel text-brand-yellow">
-                            {selectedTeam?.name}
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <FileText size={18} />
+                                {selectedProject?.title || (locale === "es" ? "Sin Título" : "No Title")}
+                            </div>
+                            {selectedProject?.status && (
+                                <span className={cn(
+                                    "text-xs px-2 py-0.5 rounded uppercase ml-4",
+                                    selectedProject.status === "submitted" ? "bg-green-500/20 text-green-400" :
+                                        selectedProject.status === "draft" ? "bg-yellow-500/20 text-yellow-400" :
+                                            "bg-gray-500/20 text-gray-400"
+                                )}>
+                                    {selectedProject.status}
+                                </span>
+                            )}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div>
-                            <p className="text-xs text-brand-cyan/60 uppercase mb-2">{locale === "es" ? "Miembros" : "Members"}</p>
-                            <div className="space-y-2">
-                                {getTeamMembers(selectedTeam?.id).map((member) => (
-                                    <div key={member.id} className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                        <p className="text-brand-yellow text-xs">{member.name} {member.surname}</p>
-                                        <p className="text-brand-cyan/60 text-xs">{member.email}</p>
-                                        {member.university && <p className="text-brand-cyan/60 text-[10px] mt-1">{member.university}</p>}
-                                    </div>
-                                ))}
-                                {getTeamMembers(selectedTeam?.id).length === 0 && (
-                                    <p className="text-brand-cyan/60 text-xs">{locale === "es" ? "No hay miembros en este equipo" : "No members in this team"}</p>
+
+                    <div className="max-h-[72vh] overflow-y-auto pr-1">
+                    {selectedProject?.status === "none" ? (
+                        <div className="py-12 text-center space-y-4">
+                            <AlertTriangle size={48} className="mx-auto text-brand-cyan/20" />
+                            <p className="text-brand-cyan/60 font-pixel">
+                                {locale === "es" ? "Este equipo aún no ha creado un borrador." : "This team hasn't created a draft yet."}
+                            </p>
+                        </div>
+                    ) : selectedProject && (
+                        <div className="space-y-6 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Team</p>
+                                    <p className="text-brand-yellow text-sm font-pixel">{selectedProject.teamName}</p>
+                                </div>
+                                <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Category</p>
+                                    <p className="text-brand-cyan text-sm">{getCategoryName(selectedProject.categoryId)}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
+                                <p className="text-xs text-brand-cyan/60 uppercase mb-2">Description</p>
+                                <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap">{selectedProject.description}</p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-4">
+                                {selectedProject.githubRepoUrl && (
+                                    <a href={selectedProject.githubRepoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors text-xs">
+                                        <Github size={14} /> GitHub Repo
+                                    </a>
+                                )}
+                                {selectedProject.demoUrl && (
+                                    <a href={selectedProject.demoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 transition-colors text-xs">
+                                        <ExternalLink size={14} /> Live Demo
+                                    </a>
                                 )}
                             </div>
+
+                            {selectedProject.images && selectedProject.images.length > 0 && (
+                                <div>
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                        <ImageIcon size={14} /> Images
+                                    </p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {selectedProject.images.map((img: string, i: number) => (
+                                            <a key={i} href={img} target="_blank" rel="noreferrer" className="aspect-video relative rounded overflow-hidden border border-brand-cyan/20 group">
+                                                <img src={img} alt={`Project ${i}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedProject.videos && selectedProject.videos.length > 0 && (
+                                <div>
+                                    <p className="text-xs text-brand-cyan/60 uppercase mb-3 flex items-center gap-2">
+                                        <Play size={14} /> Videos
+                                    </p>
+                                    <div className="space-y-2">
+                                        {selectedProject.videos.map((vid: string, i: number) => (
+                                            <video key={i} src={vid} controls className="w-full rounded border border-brand-cyan/20" />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {selectedTeam?.assignedRoom && (
-                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Aula Asignada" : "Assigned Room"}</p>
-                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.assignedRoom}</p>
-                            </div>
-                        )}
-                        {selectedTeam?.tell_why && (
-                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
-                                <p className="text-brand-yellow text-xs">{locale === "es" ? "Motivation" : "Motivation"}</p>
-                                <p className="text-brand-cyan/60 text-xs">{selectedTeam.tell_why}</p>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center">
-                            <button
-                                onClick={() => { setEditingItem({ ...selectedTeam }); setEditType("teams"); setSelectedTeam(null); }}
-                                className="text-xs text-brand-cyan hover:text-brand-yellow flex items-center gap-1 transition-colors"
-                            >
-                                <Edit2 size={12} />
-                                {locale === "es" ? "Editar este equipo" : "Edit this team"}
-                            </button>
-                            <PixelButton onClick={() => setSelectedTeam(null)} size="sm">Close</PixelButton>
-                        </div>
+                    )}
+                    </div>
+
+                    <div className="flex justify-end mt-8 pt-4 border-t border-brand-cyan/10">
+                        <PixelButton onClick={() => setShowProject(false)} size="sm">Close</PixelButton>
                     </div>
                 </DialogContent>
             </Dialog>

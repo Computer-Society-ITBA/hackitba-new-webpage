@@ -139,6 +139,10 @@ export const registerEvent = async (req: Request, res: Response) => {
     logger.info(`RegisterEvent called with userId: ${userId}`);
     logger.info("Request body:", req.body);
 
+    // Get user BEFORE registration to check if this is first-time completion
+    const userBefore = await getUserByIdComplete(userId);
+    const previousOnboardingStep = (userBefore as any)?.onboardingStep || 0;
+
     await eventRegistration(
       userId,
       dni,
@@ -165,16 +169,21 @@ export const registerEvent = async (req: Request, res: Response) => {
       (careerYear as number | null) ?? (career_year as number | null) ?? (grad_year as number | null) ?? null
     );
 
-    // Get user to send welcome email
-    const user = await getUserByIdComplete(userId);
-    if (user) {
-      try {
-        const userData = user as {email: string; name: string; role: string};
-        await sendWelcomeEmail(userData.email, userData.name);
-      } catch (emailError) {
-        logger.error("Error sending welcome email:", emailError);
-        // Don't fail the request if email fails
+    // Send welcome email ONLY on first-time completion (transition from step < 2 to step 2)
+    if (Number(previousOnboardingStep) < 2) {
+      const user = await getUserByIdComplete(userId);
+      if (user) {
+        try {
+          const userData = user as {email: string; name: string; role: string};
+          logger.info(`Sending welcome email to ${userData.email} (first-time completion)`);
+          await sendWelcomeEmail(userData.email, userData.name);
+        } catch (emailError) {
+          logger.error("Error sending welcome email:", emailError);
+          // Don't fail the request if email fails
+        }
       }
+    } else {
+      logger.info(`Welcome email NOT sent - user already completed registration (previous step: ${previousOnboardingStep})`);
     }
 
     logger.info(`Event registration successful for userId: ${userId}`);
@@ -296,6 +305,93 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+export const resetEventSignup = async (req: Request, res: Response) => {
+  try {
+    const {id} = req.params;
+    const requesterId = req.user?.uid;
+
+    if (!id) {
+      return res.status(400).json({error: "ID de usuario no proporcionado"});
+    }
+
+    if (!requesterId) {
+      return res.status(401).json({error: "No autenticado"});
+    }
+
+    const db = getHackitbaDb();
+
+    // Allow self-service reset. Admins can also execute it for any participant.
+    if (requesterId !== id) {
+      const requesterDoc = await db.collection("users").doc(requesterId).get();
+      const requesterRole = requesterDoc.exists ? requesterDoc.data()?.role : null;
+      if (requesterRole !== "admin") {
+        return res.status(403).json({error: "No tienes permiso para realizar esta acción"});
+      }
+    }
+
+    const result = await db.runTransaction(async (tx) => {
+      const userRef = db.collection("users").doc(id);
+      const userDoc = await tx.get(userRef);
+
+      if (!userDoc.exists) {
+        const err: any = new Error("Usuario no encontrado");
+        err.status = 404;
+        throw err;
+      }
+
+      const userData = userDoc.data() || {};
+      const currentTeam = (userData.team as string | null) || null;
+      let teamDeleted = false;
+
+      if (currentTeam) {
+        const teamRef = db.collection("teams").doc(currentTeam);
+        const teamDoc = await tx.get(teamRef);
+
+        if (teamDoc.exists) {
+          const membersQuery = db.collection("users").where("team", "==", currentTeam);
+          const membersSnapshot = await tx.get(membersQuery as any);
+          const memberIds = membersSnapshot.docs.map((d) => d.id);
+
+          // If user is the only member, delete empty team.
+          if (memberIds.length <= 1) {
+            tx.delete(teamRef);
+            teamDeleted = true;
+          } else {
+            // Keep team, but remove member id from participantIds if that array exists.
+            tx.update(teamRef, {
+              participantIds: admin.firestore.FieldValue.arrayRemove(id),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      }
+
+      tx.update(userRef, {
+        onboardingStep: 1,
+        team: null,
+        hasTeam: false,
+        wantsToCreateTeam: false,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return {teamDeleted, previousTeam: currentTeam};
+    });
+
+    return res.status(200).json({
+      message: "Inscripción reiniciada correctamente",
+      onboardingStep: 1,
+      teamDeleted: result.teamDeleted,
+      previousTeam: result.previousTeam,
+    });
+  } catch (error: any) {
+    logger.error("Reset event signup error:", error);
+    if (error?.status) {
+      return res.status(error.status).json({error: error.message});
+    }
+    return res.status(500).json({error: "Error al reiniciar la inscripción"});
+  }
+};
+
 export const requestPasswordReset = async (req: Request, res: Response) => {
   try {
     const {email} = req.body;
@@ -403,8 +499,10 @@ export const approveParticipantAndAssignTeam = async (req: Request, res: Respons
 
     if (status === "rejected") {
       updateData.participationStatus = "rejected";
+      updateData.status = "rejected";
     } else if (status === "accepted") {
       updateData.participationStatus = null;
+      updateData.status = "accepted";
     }
 
     let teamName = "";

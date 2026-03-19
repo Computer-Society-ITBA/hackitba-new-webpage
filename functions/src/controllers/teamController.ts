@@ -11,11 +11,11 @@ import {getHackitbaDb} from "../helpers/getDb";
 interface TeamRequestData {
     name: string;
     tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+    category_1: number | null;
+    category_2: number | null;
+    category_3: number | null;
+    category?: number | null;
   uid?: string;
-  is_created_by_admin?: boolean;
 }
 
 // eslint-disable-next-line camelcase
@@ -23,18 +23,54 @@ interface TeamResponseData {
     id: string;
     name: string;
     tell_why: string;
-    category_1: number;
-    category_2: number;
-    category_3: number;
+  category_1: number | null;
+  category_2: number | null;
+  category_3: number | null;
     status: string;
+}
+
+interface CreateTeamNoteRequest {
+  text: string;
+}
+
+interface UpdateTeamNoteRequest {
+  text: string;
+}
+
+type TeamNoteAuthorRole = "mentor" | "judge" | "admin";
+
+interface TeamNoteAuthor {
+  id: string;
+  name?: string;
+  surname?: string;
+}
+
+interface TeamNoteItemResponse {
+  id: string;
+  text: string;
+  authorId: string;
+  authorRole: TeamNoteAuthorRole;
+  teamId: string;
+  isMentorNote: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+  author: TeamNoteAuthor;
+}
+
+interface TeamNotesListResponse {
+  notes: TeamNoteItemResponse[];
+  count: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 /* eslint-disable-next-line camelcase */
 export const createTeam = async (req: Request, res: Response) => {
   try {
-    const {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin}: TeamRequestData = req.body;
+    const {name, tell_why, category_1, category_2, category_3, category, uid}: TeamRequestData = req.body;
 
-    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, uid, is_created_by_admin});
+    logger.info("Received team registration data", {name, tell_why, category_1, category_2, category_3, category, uid});
 
     // Validaciones
     if (!name || name.trim().length < 3) {
@@ -80,12 +116,15 @@ export const createTeam = async (req: Request, res: Response) => {
       adminId = uid;
     }
 
+    let creatorIsAdmin = false;
+
     // If the requestor is an admin using the dashboard, do not assign admin_id
     try {
       const creatorUid = req.user?.uid;
       if (creatorUid) {
         const creatorData = await teamService.getUserById(creatorUid);
         if (creatorData?.role === "admin") {
+          creatorIsAdmin = true;
           adminId = null;
         }
       }
@@ -96,22 +135,24 @@ export const createTeam = async (req: Request, res: Response) => {
       console.warn("Could not determine creator role:", err);
     }
 
+    const createdByAdmin = creatorIsAdmin;
+
     // Crear equipo
     // eslint-disable-next-line camelcase
     const teamData: teamService.TeamData = {
       label,
       name: name.trim(),
       tell_why: tell_why.trim(),
-      category_1,
-      category_2,
-      category_3,
-      category: null,
+      category_1: category_1 ?? null,
+      category_2: category_2 ?? null,
+      category_3: category_3 ?? null,
+      category: createdByAdmin ? (typeof category === "number" ? category : null) : null,
 
-      is_created_by_admin: is_created_by_admin === true,
+      is_created_by_admin: createdByAdmin,
       is_finalista: false,
       link_deploy: null,
       link_github: null,
-      status: "registered",
+      status: createdByAdmin ? "accepted" : "registered",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
@@ -446,5 +487,309 @@ export const getAdminTeams = async (_req: Request, res: Response) => {
   } catch (error) {
     logger.error("Error getting admin teams:", error);
     return res.status(500).json({error: "Error getting admin teams"});
+  }
+};
+
+/**
+ * Create a note under teams/{teamId}/notes/{noteId}.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const createTeamNote = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const {text} = req.body as CreateTeamNoteRequest;
+    const authorId = req.user?.uid as string | undefined;
+
+    if (!authorId) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    if (!trimmedText) {
+      return res.status(400).json({error: "text is required"});
+    }
+
+    const db = getHackitbaDb();
+    const teamRef = db.collection("teams").doc(label);
+    const teamSnap = await teamRef.get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(authorId).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const rawRole = userSnap.data()?.role;
+    const allowedRoles: TeamNoteAuthorRole[] = ["mentor", "judge", "admin"];
+    if (!allowedRoles.includes(rawRole)) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const authorRole = rawRole as TeamNoteAuthorRole;
+    const noteRef = teamRef.collection("notes").doc();
+
+    await noteRef.set({
+      text: trimmedText,
+      authorId,
+      authorRole,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      teamId: label,
+      isMentorNote: authorRole === "mentor",
+    });
+
+    return res.status(201).json({
+      id: noteRef.id,
+      teamId: label,
+      authorId,
+      authorRole,
+      text: trimmedText,
+    });
+  } catch (error: any) {
+    logger.error("Error creating team note:", error);
+    return res.status(500).json({error: "Error creando nota de equipo"});
+  }
+};
+
+/**
+ * Update a note under teams/{teamId}/notes/{noteId}.
+ * Author can only edit their own notes.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req - Request object
+ * @param {Response} res - Response object
+ * @return {Promise<Response>} Response
+ */
+export const updateTeamNote = async (req: Request, res: Response) => {
+  try {
+    const {label, noteId} = req.params;
+    const {text} = req.body as UpdateTeamNoteRequest;
+    const uid = req.user?.uid as string | undefined;
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const trimmedText = typeof text === "string" ? text.trim() : "";
+    if (!trimmedText) {
+      return res.status(400).json({error: "text is required"});
+    }
+
+    const db = getHackitbaDb();
+    const teamRef = db.collection("teams").doc(label);
+    const teamSnap = await teamRef.get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const rawRole = userSnap.data()?.role;
+    const allowedRoles: TeamNoteAuthorRole[] = ["mentor", "judge", "admin"];
+    if (!allowedRoles.includes(rawRole)) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const noteRef = teamRef.collection("notes").doc(noteId);
+    const noteSnap = await noteRef.get();
+    if (!noteSnap.exists) {
+      return res.status(404).json({error: "Nota no encontrada"});
+    }
+
+    const noteData = noteSnap.data() as {authorId?: string; teamId?: string};
+    if (noteData.teamId && noteData.teamId !== label) {
+      return res.status(400).json({error: "Nota invalida para este equipo"});
+    }
+
+    if (noteData.authorId !== uid) {
+      return res.status(403).json({error: "Solo puedes editar tus propias notas"});
+    }
+
+    await noteRef.update({
+      text: trimmedText,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    return res.status(200).json({
+      id: noteId,
+      teamId: label,
+      text: trimmedText,
+    });
+  } catch (error: any) {
+    logger.error("Error updating team note:", error);
+    return res.status(500).json({error: "Error actualizando nota de equipo"});
+  }
+};
+
+const buildTeamNoteResponse = async (
+  db: FirebaseFirestore.Firestore,
+  label: string,
+  page: number,
+  pageSize: number,
+  uid?: string
+): Promise<TeamNotesListResponse> => {
+  let notesQuery: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db
+    .collection("teams")
+    .doc(label)
+    .collection("notes");
+
+  if (uid) {
+    notesQuery = notesQuery.where("authorId", "==", uid);
+  } else {
+    notesQuery = notesQuery.orderBy("createdAt", "desc");
+  }
+
+  const notesSnap = await notesQuery.get();
+  const notesRaw = notesSnap.docs.map((noteDoc) => ({
+    id: noteDoc.id,
+    ...(noteDoc.data() as {
+      text?: string;
+      authorId?: string;
+      authorRole?: TeamNoteAuthorRole;
+      teamId?: string;
+      isMentorNote?: boolean;
+      createdAt?: FirebaseFirestore.Timestamp;
+      updatedAt?: FirebaseFirestore.Timestamp;
+    }),
+  }));
+
+  const authorIds = Array.from(new Set(notesRaw.map((note) => note.authorId).filter(Boolean))) as string[];
+  const authorMap = new Map<string, TeamNoteAuthor>();
+
+  await Promise.all(
+    authorIds.map(async (authorId) => {
+      const userSnap = await db.collection("users").doc(authorId).get();
+      if (!userSnap.exists) {
+        authorMap.set(authorId, {id: authorId});
+        return;
+      }
+      const userData = userSnap.data() as {name?: string; surname?: string};
+      authorMap.set(authorId, {
+        id: authorId,
+        name: userData.name,
+        surname: userData.surname,
+      });
+    })
+  );
+
+  const sortedNotes = uid ? [...notesRaw].sort((a, b) => {
+    const aTime = a.createdAt ? a.createdAt.toMillis() : 0;
+    const bTime = b.createdAt ? b.createdAt.toMillis() : 0;
+    return bTime - aTime;
+  }) : notesRaw;
+
+  const mappedNotes = sortedNotes.map((note) => ({
+    id: note.id,
+    text: note.text || "",
+    authorId: note.authorId || "",
+    authorRole: (note.authorRole || "mentor") as TeamNoteAuthorRole,
+    teamId: note.teamId || label,
+    isMentorNote: Boolean(note.isMentorNote),
+    createdAt: note.createdAt ? note.createdAt.toDate().toISOString() : null,
+    updatedAt: note.updatedAt ? note.updatedAt.toDate().toISOString() : null,
+    author: authorMap.get(note.authorId || "") || {id: note.authorId || ""},
+  }));
+
+  const total = mappedNotes.length;
+  const safePageSize = Math.max(1, pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const paginatedNotes = mappedNotes.slice((safePage - 1) * safePageSize, safePage * safePageSize);
+
+  return {
+    notes: paginatedNotes,
+    count: total,
+    page: safePage,
+    pageSize: safePageSize,
+    totalPages,
+  };
+};
+
+const parseNotesPagination = (req: Request) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
+  const pageSize = Math.max(1, parseInt(String(req.query.pageSize ?? "10"), 10) || 10);
+  return {page, pageSize};
+};
+
+/**
+ * Get notes created by the authenticated user for a team.
+ * Allowed roles: mentor, judge, admin.
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @return {Promise<Response>} Response
+ */
+export const getMyTeamNotes = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const uid = req.user?.uid as string | undefined;
+    const {page, pageSize} = parseNotesPagination(req);
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const db = getHackitbaDb();
+    const teamSnap = await db.collection("teams").doc(label).get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+    const result = await buildTeamNoteResponse(db, label, page, pageSize, uid);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    logger.error("Error getting my team notes:", error);
+    return res.status(500).json({error: "Error obteniendo notas del equipo"});
+  }
+};
+
+/**
+ * Get all notes for a team.
+ * Participants can only read notes for their own team.
+ * Mentors, judges and admins can read any team notes.
+ * @param {Request} req Request object
+ * @param {Response} res Response object
+ * @return {Promise<Response>} Response
+ */
+export const getTeamNotes = async (req: Request, res: Response) => {
+  try {
+    const {label} = req.params;
+    const uid = req.user?.uid as string | undefined;
+    const {page, pageSize} = parseNotesPagination(req);
+
+    if (!uid) {
+      return res.status(401).json({error: "No autorizado"});
+    }
+
+    const db = getHackitbaDb();
+    const teamSnap = await db.collection("teams").doc(label).get();
+    if (!teamSnap.exists) {
+      return res.status(404).json({error: "Equipo no encontrado"});
+    }
+
+    const userSnap = await db.collection("users").doc(uid).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({error: "Usuario no encontrado"});
+    }
+
+    const userData = userSnap.data() as {role?: string; team?: string | null};
+    const role = userData.role;
+    const canReadAll = role === "mentor" || role === "judge" || role === "admin";
+    const isParticipantInTeam = role === "participant" && userData.team === label;
+
+    if (!canReadAll && !isParticipantInTeam) {
+      return res.status(403).json({error: "Acceso denegado"});
+    }
+
+    const result = await buildTeamNoteResponse(db, label, page, pageSize);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    logger.error("Error getting team notes:", error);
+    return res.status(500).json({error: "Error obteniendo notas del equipo"});
   }
 };
