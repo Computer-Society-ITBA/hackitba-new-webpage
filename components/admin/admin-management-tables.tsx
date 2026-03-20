@@ -62,6 +62,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     // Filters and Sorting
     const [searchTerm, setSearchTerm] = useState("")
     const [categoryFilter, setCategoryFilter] = useState<string>("all")
+    const [statusFilter, setStatusFilter] = useState<string>("all")
     const [sortField, setSortField] = useState<string>("createdAt")
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
@@ -119,6 +120,13 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const [teamNotesPage, setTeamNotesPage] = useState(1)
     const [teamNotesTotalPages, setTeamNotesTotalPages] = useState(1)
     const [teamNotesTotalItems, setTeamNotesTotalItems] = useState(0)
+
+    const isParticipantUser = (user: any) => {
+        const normalizedRole = (user?.role || "participant").toString().toLowerCase()
+        return normalizedRole === "participant" || normalizedRole === "user"
+    }
+
+    const participantUsers = useMemo(() => users.filter(isParticipantUser), [users])
 
     const fetchData = async () => {
         if (!db) return
@@ -262,8 +270,57 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         return null
     }
 
+    const getParticipantStatusKey = (participant: any) => {
+        if (Number(participant?.onboardingStep) === 1) {
+            return "not_registered"
+        }
+
+        const normalizedStatus = String(participant?.status || "pending").toLowerCase()
+        if (normalizedStatus === "approved") return "accepted"
+        return normalizedStatus
+    }
+
+    const getTeamStatusKey = (team: any) => {
+        const normalizedStatus = String(team?.status || "pending").toLowerCase()
+        if (normalizedStatus === "accepted") return "approved"
+        return normalizedStatus
+    }
+
+    const approvedByCategorySummary = useMemo(() => {
+        const counts = new Map<number, number>()
+
+        if (activeTab === "participants") {
+            participantUsers
+                .filter((participant) => getParticipantStatusKey(participant) === "accepted")
+                .forEach((participant) => {
+                    const categoryIndex = Number(getParticipantCategoryIndex(participant))
+                    if (Number.isNaN(categoryIndex) || categoryIndex < 0) return
+                    counts.set(categoryIndex, (counts.get(categoryIndex) || 0) + 1)
+                })
+        } else {
+            teams
+                .filter((team) => getTeamStatusKey(team) === "approved")
+                .forEach((team) => {
+                    const categoryIndex = Number(getTeamCategoryIndex(team))
+                    if (Number.isNaN(categoryIndex) || categoryIndex < 0) return
+                    counts.set(categoryIndex, (counts.get(categoryIndex) || 0) + 1)
+                })
+        }
+
+        return categories
+            .map((category, idx) => ({
+                id: category.id,
+                idx,
+                name: locale === "es"
+                    ? (category.spanishName || category.englishName || `Categoria ${idx + 1}`)
+                    : (category.englishName || category.spanishName || `Category ${idx + 1}`),
+                count: counts.get(idx) || 0,
+            }))
+            .filter((row) => row.count > 0)
+    }, [activeTab, categories, locale, participantUsers, teams])
+
     const filteredAndSortedData = useMemo(() => {
-        let data = activeTab === "participants" ? users.filter(u => u.role !== "admin") : [...teams]
+        let data = activeTab === "participants" ? [...participantUsers] : [...teams]
 
         // Search
         if (searchTerm) {
@@ -287,6 +344,16 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             })
         }
 
+        // Status Filter
+        if (statusFilter !== "all") {
+            data = data.filter((item) => {
+                if (activeTab === "participants") {
+                    return getParticipantStatusKey(item) === statusFilter
+                }
+                return getTeamStatusKey(item) === statusFilter
+            })
+        }
+
         // Sort
         data.sort((a, b) => {
             let valA: any = a[sortField]
@@ -301,8 +368,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 valB = `${b.name || ""} ${b.surname || ""}`.toLowerCase()
             } else if (sortField === "members") {
                 // For team sorting by members count (when data is teams)
-                const membersA = users.filter(u => u.team === a.id).length
-                const membersB = users.filter(u => u.team === b.id).length
+                const membersA = participantUsers.filter(u => u.team === a.id).length
+                const membersB = participantUsers.filter(u => u.team === b.id).length
                 valA = membersA
                 valB = membersB
             } else if (sortField === "status") {
@@ -358,7 +425,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         })
 
         return data
-    }, [activeTab, users, teams, searchTerm, categoryFilter, sortField, sortOrder])
+    }, [activeTab, participantUsers, teams, searchTerm, categoryFilter, statusFilter, sortField, sortOrder])
 
     const pagedData = useMemo(() => {
         const start = (page - 1) * pageSize
@@ -368,7 +435,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
     const totalPages = Math.ceil(filteredAndSortedData.length / pageSize)
 
     const getTeamMembers = (teamId: string) => {
-        return users.filter(user => user.team === teamId)
+        return participantUsers.filter(user => user.team === teamId)
     }
 
     const formatDateTime = (value: Date | string | null | undefined) => {
@@ -563,8 +630,53 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                             </option>
                         ))}
                     </select>
+
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="bg-brand-navy border border-brand-cyan/30 text-brand-cyan text-sm rounded h-9 px-3"
+                    >
+                        <option value="all">{locale === "es" ? "Todos los estados" : "All Statuses"}</option>
+                        {activeTab === "participants" ? (
+                            <>
+                                <option value="accepted">{locale === "es" ? "Aprobado" : "Approved"}</option>
+                                <option value="pending">{locale === "es" ? "Pendiente" : "Pending"}</option>
+                                <option value="rejected">{locale === "es" ? "Rechazado" : "Rejected"}</option>
+                                <option value="not_registered">{locale === "es" ? "No inscrito" : "Not registered"}</option>
+                            </>
+                        ) : (
+                            <>
+                                <option value="approved">{locale === "es" ? "Aprobado" : "Approved"}</option>
+                                <option value="pending">{locale === "es" ? "Pendiente" : "Pending"}</option>
+                                <option value="rejected">{locale === "es" ? "Rechazado" : "Rejected"}</option>
+                            </>
+                        )}
+                    </select>
                 </div>
             </div>
+
+            <GlassCard className="p-3 border-brand-cyan/10">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="text-xs font-pixel text-brand-cyan/80 uppercase">
+                        {activeTab === "participants"
+                            ? (locale === "es" ? "Aprobados por categoria (participantes)" : "Approved by category (participants)")
+                            : (locale === "es" ? "Aprobados por categoria (equipos)" : "Approved by category (teams)")}
+                    </p>
+                    {approvedByCategorySummary.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {approvedByCategorySummary.map((row) => (
+                                <span key={`${activeTab}-${row.idx}`} className="px-2 py-1 rounded border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan text-xs">
+                                    {row.name}: <span className="text-brand-yellow">{row.count}</span>
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="text-xs text-brand-cyan/50">
+                            {locale === "es" ? "Sin aprobados en categorias" : "No approved items by category"}
+                        </span>
+                    )}
+                </div>
+            </GlassCard>
 
             <GlassCard className="overflow-hidden border-brand-cyan/10">
                 {loading ? (
@@ -611,9 +723,6 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                 <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
                                                     {locale === "es" ? "Registro" : "Registered"} {sortField === "createdAt" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
                                                 </TableHead>
-                                                <TableHead onClick={() => handleSort("role")} className="cursor-pointer hover:text-brand-orange h-8 py-1 text-xs">
-                                                    {locale === "es" ? "Rol" : "Role"} {sortField === "role" && (sortOrder === "asc" ? <ChevronUp className="inline w-3 h-3" /> : <ChevronDown className="inline w-3 h-3" />)}
-                                                </TableHead>
                                             </>
                                         ) : (
                                             <>
@@ -645,7 +754,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                 <TableBody>
                                     {pagedData.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={activeTab === "participants" ? 13 : 7} className="text-center py-8 text-brand-cyan/40">
+                                            <TableCell colSpan={activeTab === "participants" ? 12 : 7} className="text-center py-8 text-brand-cyan/40">
                                                 {locale === "es" ? "No se encontraron resultados" : "No results found"}
                                             </TableCell>
                                         </TableRow>
@@ -740,8 +849,6 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         <TableCell className="text-brand-cyan/80 text-xs py-1">
                                                             {formatTimestampDateTime(item.createdAt)}
                                                         </TableCell>
-                                                        <TableCell className="text-brand-cyan/80 text-xs py-1 uppercase">{(item.role === "user" ? "participant" : item.role) || "participant"}</TableCell>
-
                                                     </>
                                                 ) : (
                                                     <>

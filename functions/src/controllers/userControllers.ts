@@ -30,13 +30,68 @@ import {
   verifyPasswordResetToken,
   consumePasswordResetToken,
 } from "../services/passwordResetService";
+import {getAllowedClosedSignupRole, isSignupEnabled} from "../helpers/signupGate";
 
 interface RegisterRequestBody {
   email: string;
   password: string;
-  name: string;
+  name?: string;
   surname?: string;
+  collaboratorRoute?: boolean;
 }
+
+const getCollaboratorNamesFromCollections = async (email: string): Promise<{name: string; surname: string} | null> => {
+  const db = getHackitbaDb();
+
+  const emailCandidates = Array.from(new Set([email, email.toLowerCase(), email.toUpperCase()]));
+  for (const emailCandidate of emailCandidates) {
+    const judgesSnapshot = await db.collection("judges").where("email", "==", emailCandidate).limit(1).get();
+    if (!judgesSnapshot.empty) {
+      const fullName = String(judgesSnapshot.docs[0].data()?.name || "").trim();
+      if (fullName) {
+        const [name, ...rest] = fullName.split(/\s+/);
+        return {name, surname: rest.join(" ")};
+      }
+    }
+
+    const mentorsSnapshot = await db.collection("mentors").where("email", "==", emailCandidate).limit(1).get();
+    if (!mentorsSnapshot.empty) {
+      const fullName = String(mentorsSnapshot.docs[0].data()?.name || "").trim();
+      if (fullName) {
+        const [name, ...rest] = fullName.split(/\s+/);
+        return {name, surname: rest.join(" ")};
+      }
+    }
+  }
+
+  const normalizedTarget = email.trim().toLowerCase();
+
+  const judgesAll = await db.collection("judges").get();
+  for (const judgeDoc of judgesAll.docs) {
+    const rawEmail = String(judgeDoc.data()?.email || "").trim().toLowerCase();
+    if (rawEmail !== normalizedTarget) continue;
+
+    const fullName = String(judgeDoc.data()?.name || "").trim();
+    if (fullName) {
+      const [name, ...rest] = fullName.split(/\s+/);
+      return {name, surname: rest.join(" ")};
+    }
+  }
+
+  const mentorsAll = await db.collection("mentors").get();
+  for (const mentorDoc of mentorsAll.docs) {
+    const rawEmail = String(mentorDoc.data()?.email || "").trim().toLowerCase();
+    if (rawEmail !== normalizedTarget) continue;
+
+    const fullName = String(mentorDoc.data()?.name || "").trim();
+    if (fullName) {
+      const [name, ...rest] = fullName.split(/\s+/);
+      return {name, surname: rest.join(" ")};
+    }
+  }
+
+  return null;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const register = async (
@@ -44,19 +99,52 @@ export const register = async (
   res: Response
 ) => {
   try {
-    const {email, password, name, surname} = req.body;
+    const {email, password, name, surname, collaboratorRoute} = req.body;
+    const normalizedEmail = email?.trim()?.toLowerCase();
 
-    if (!email || !password || !name) {
+    if (!normalizedEmail || !password) {
       return res
         .status(400)
         .json({error: "Faltan campos obligatorios"});
     }
 
+    const signupEnabled = await isSignupEnabled();
+    const allowedRole = await getAllowedClosedSignupRole(normalizedEmail);
+
+    if (!signupEnabled) {
+      if (!allowedRole) {
+        return res.status(403).json({
+          error: "Las inscripciones estan cerradas. Esta ruta solo permite mentores y jurados con email habilitado.",
+        });
+      }
+    }
+
+    if (collaboratorRoute && !allowedRole) {
+      return res.status(403).json({
+        error: "Esta ruta solo permite mentores y jurados con email habilitado.",
+      });
+    }
+
+    let resolvedName = (name || "").trim();
+    let resolvedSurname = (surname || "").trim();
+
+    if (!resolvedName && (allowedRole || collaboratorRoute)) {
+      const namesFromCollection = await getCollaboratorNamesFromCollections(normalizedEmail);
+      if (namesFromCollection) {
+        resolvedName = namesFromCollection.name;
+        resolvedSurname = namesFromCollection.surname;
+      }
+    }
+
+    if (!resolvedName) {
+      return res.status(400).json({error: "Faltan campos obligatorios"});
+    }
+
     const result = await registerUser({
-      email,
+      email: normalizedEmail,
       password,
-      name,
-      surname: surname || "",
+      name: resolvedName,
+      surname: resolvedSurname,
     });
 
     // Generate verification token
@@ -66,14 +154,14 @@ export const register = async (
 
     // Save verification token
     try {
-      await saveVerificationToken(result.uid, email, verificationToken);
+      await saveVerificationToken(result.uid, normalizedEmail, verificationToken);
     } catch (tokenError) {
       logger.error("Error saving verification token:", tokenError);
     }
 
     // Send email verification email
     try {
-      await sendEmailVerificationEmail(email, verificationLink);
+      await sendEmailVerificationEmail(normalizedEmail, verificationLink);
     } catch (emailError) {
       logger.error("Error sending verification email:", emailError);
       // Don't fail the request if email fails

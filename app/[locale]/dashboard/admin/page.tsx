@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where, updateDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient, getAuthClient } from "@/lib/firebase/client-config"
-import { Pencil, Trash2, Plus, Upload, CheckSquare, UserX, Trophy, FolderKanban } from "lucide-react"
+import { Pencil, Trash2, Plus, Upload, CheckSquare, UserX, Trophy, FolderKanban, Copy, ExternalLink, QrCode } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { useRouter } from "next/navigation"
@@ -40,10 +40,20 @@ export default function AdminDashboard() {
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [authReady, setAuthReady] = useState(false)
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
+  const [signupEnabled, setSignupEnabled] = useState(true)
   const [showScoresToTeams, setShowScoresToTeams] = useState(false)
   const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
-  const [completeStats, setCompleteStats] = useState<{ complete: number; withTeam: number; withoutTeam: number } | null>(null)
+  const [completeStats, setCompleteStats] = useState<{
+    completed: { total: number; withTeam: number; withoutTeam: number }
+    approved: { total: number; withTeam: number; withoutTeam: number }
+  } | null>(null)
   const [loadingStats, setLoadingStats] = useState(false)
+  const [statsMode, setStatsMode] = useState<"completed" | "approved">("approved")
+  const [copiedSpecialLink, setCopiedSpecialLink] = useState(false)
+
+  const envSignupRaw = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
+  const hasEnvSignupValue = typeof envSignupRaw !== "undefined" && envSignupRaw !== null && envSignupRaw !== ""
+  const envSignupEnabled = envSignupRaw === "true" || envSignupRaw === "1"
 
   const [showEventForm, setShowEventForm] = useState(false)
   const [showSponsorForm, setShowSponsorForm] = useState(false)
@@ -59,6 +69,39 @@ export default function AdminDashboard() {
     weight: 1,
     order: 0,
   })
+
+  const appBaseUrl = useMemo(() => {
+    if (typeof process.env.NEXT_PUBLIC_APP_URL === "string" && process.env.NEXT_PUBLIC_APP_URL.trim() !== "") {
+      return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")
+    }
+
+    if (typeof window !== "undefined") {
+      return window.location.origin
+    }
+
+    return "https://hackitba.com.ar"
+  }, [])
+
+  const specialSignupPath = `/${locale}/auth/mentor-judge-signup`
+  const specialSignupUrl = `${appBaseUrl}${specialSignupPath}`
+  const specialSignupQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(specialSignupUrl)}`
+
+  const copySpecialSignupUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(specialSignupUrl)
+      setCopiedSpecialLink(true)
+      toast({
+        title: locale === "es" ? "Link copiado" : "Link copied",
+        description: locale === "es" ? "Ruta especial copiada al portapapeles" : "Special route copied to clipboard",
+      })
+      setTimeout(() => setCopiedSpecialLink(false), 1800)
+    } catch (error) {
+      toast({
+        title: locale === "es" ? "No se pudo copiar" : "Could not copy",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
     if (!auth) return
@@ -83,21 +126,47 @@ export default function AdminDashboard() {
     if (!db) return
     setLoadingStats(true)
     try {
-      const completeSnap = await getDocs(
-        query(collection(db, "users"), where("onboardingStep", "==", 2), where("role", "==", "participant"))
-      )
+      const completeSnap = await getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2)))
 
-      const completeParticipants = completeSnap.docs.map((participantDoc) => participantDoc.data())
-      const withTeam = completeParticipants.filter((participant) => participant.hasTeam === true).length
-      const withoutTeam = completeParticipants.filter((participant) => participant.hasTeam !== true).length
+      const completedParticipants = completeSnap.docs
+        .map((participantDoc) => participantDoc.data())
+        .filter((participant) => {
+          const role = String(participant?.role || "participant").toLowerCase()
+          const isParticipant = role === "participant" || role === "user"
+          return isParticipant
+        })
 
-      setCompleteStats({ complete: completeParticipants.length, withTeam, withoutTeam })
+      const approvedParticipants = completedParticipants.filter((participant) => {
+        const status = String(participant?.status || "").toLowerCase()
+        return status === "approved" || status === "accepted"
+      })
+
+      const completedWithTeam = completedParticipants.filter((participant) => participant.hasTeam === true).length
+      const completedWithoutTeam = completedParticipants.filter((participant) => participant.hasTeam !== true).length
+
+      const approvedWithTeam = approvedParticipants.filter((participant) => participant.hasTeam === true).length
+      const approvedWithoutTeam = approvedParticipants.filter((participant) => participant.hasTeam !== true).length
+
+      setCompleteStats({
+        completed: {
+          total: completedParticipants.length,
+          withTeam: completedWithTeam,
+          withoutTeam: completedWithoutTeam,
+        },
+        approved: {
+          total: approvedParticipants.length,
+          withTeam: approvedWithTeam,
+          withoutTeam: approvedWithoutTeam,
+        },
+      })
     } catch (error) {
       console.error("Error loading complete stats:", error)
     } finally {
       setLoadingStats(false)
     }
   }
+
+  const activeStats = completeStats?.[statsMode]
 
   const loadSettings = async () => {
     if (!db) return
@@ -107,10 +176,17 @@ export default function AdminDashboard() {
       if (settingsDoc.exists()) {
         const data = settingsDoc.data()
         setProjectSubmissionsEnabled(data?.projectSubmissionsEnabled !== false)
+        const isSignupEnabled = hasEnvSignupValue ? envSignupEnabled : data?.signupEnabled !== false
+        setSignupEnabled(isSignupEnabled)
+        // Default mode on page load: open signup -> completed, closed signup -> approved.
+        setStatsMode(isSignupEnabled ? "completed" : "approved")
         setShowScoresToTeams(!!data?.showScoresToTeams)
         setJudgingStage(data?.judgingStage || "admin")
       } else {
         setProjectSubmissionsEnabled(true)
+        const isSignupEnabled = hasEnvSignupValue ? envSignupEnabled : true
+        setSignupEnabled(isSignupEnabled)
+        setStatsMode(isSignupEnabled ? "completed" : "approved")
         setShowScoresToTeams(false)
         setJudgingStage("admin")
         await setDoc(
@@ -280,23 +356,45 @@ export default function AdminDashboard() {
           <section>
             <div className="flex items-center gap-3 mb-6 flex-wrap">
               <h3 className="font-pixel text-2xl text-brand-yellow">Participants & Teams</h3>
+              <div className="flex items-center gap-1 p-1 rounded-full border border-brand-cyan/20 bg-brand-navy/30">
+                <button
+                  onClick={() => setStatsMode("completed")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[10px] font-pixel uppercase transition-colors",
+                    statsMode === "completed" ? "bg-brand-cyan text-brand-navy" : "text-brand-cyan/70 hover:text-brand-cyan"
+                  )}
+                >
+                  {locale === "es" ? "Completados" : "Completed"}
+                </button>
+                <button
+                  onClick={() => setStatsMode("approved")}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-[10px] font-pixel uppercase transition-colors",
+                    statsMode === "approved" ? "bg-green-500 text-brand-navy" : "text-green-300/80 hover:text-green-300"
+                  )}
+                >
+                  {locale === "es" ? "Aprobados" : "Approved"}
+                </button>
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="flex items-center gap-1.5 bg-brand-cyan/10 border border-brand-cyan/20 px-3 py-1 rounded-full text-xs font-pixel text-brand-cyan/70">
-                  {locale === "es" ? "Insc. completa" : "Complete"}
+                  {statsMode === "approved"
+                    ? (locale === "es" ? "Aprobados" : "Approved")
+                    : (locale === "es" ? "Insc. completa" : "Complete")}
                   <span className="text-brand-cyan font-bold text-sm">
-                    {loadingStats ? "—" : completeStats?.complete ?? "—"}
+                    {loadingStats ? "—" : activeStats?.total ?? "—"}
                   </span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-xs font-pixel text-green-400/70">
                   {locale === "es" ? "Con equipo" : "With team"}
                   <span className="text-green-400 font-bold text-sm">
-                    {loadingStats ? "—" : completeStats?.withTeam ?? "—"}
+                    {loadingStats ? "—" : activeStats?.withTeam ?? "—"}
                   </span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full text-xs font-pixel text-red-400/70">
                   {locale === "es" ? "Sin equipo" : "Without team"}
                   <span className="text-red-400 font-bold text-sm">
-                    {loadingStats ? "—" : completeStats?.withoutTeam ?? "—"}
+                    {loadingStats ? "—" : activeStats?.withoutTeam ?? "—"}
                   </span>
                 </span>
               </div>
@@ -308,6 +406,51 @@ export default function AdminDashboard() {
             <div className="mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">{locale === "es" ? "Jurados & Mentores" : "Judges & Mentors"}</h3>
             </div>
+
+            <GlassCard className="p-4 mb-6">
+              <div className="flex flex-col lg:flex-row gap-5 items-start">
+                <div className="flex-1 space-y-3 min-w-0">
+                  <p className="font-pixel text-sm text-brand-cyan flex items-center gap-2">
+                    <QrCode className="w-4 h-4" />
+                    {locale === "es" ? "Ruta especial de registro (mentores/jurados)" : "Special signup route (mentors/judges)"}
+                  </p>
+                  <p className="text-xs text-brand-cyan/70">
+                    {locale === "es"
+                      ? "Disponible incluso con inscripciones cerradas. Solo avanza si el email esta cargado en mentores o jurados."
+                      : "Available even when signup is closed. Only proceeds if email exists in mentors or judges."}
+                  </p>
+
+                  <div className="bg-brand-black/40 border border-brand-cyan/20 rounded p-2 break-all text-[11px] text-brand-cyan/90">
+                    {specialSignupUrl}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <PixelButton size="sm" onClick={copySpecialSignupUrl}>
+                      <Copy className="w-3 h-3 mr-2" />
+                      {copiedSpecialLink
+                        ? locale === "es" ? "Copiado" : "Copied"
+                        : locale === "es" ? "Copiar link" : "Copy link"}
+                    </PixelButton>
+
+                    <PixelButton size="sm" variant="outline" onClick={() => window.open(specialSignupPath, "_blank")}>
+                      <ExternalLink className="w-3 h-3 mr-2" />
+                      {locale === "es" ? "Abrir ruta" : "Open route"}
+                    </PixelButton>
+                  </div>
+                </div>
+
+                <div className="w-full lg:w-auto flex justify-center lg:justify-end">
+                  <div className="p-2 bg-white rounded-md border border-brand-cyan/20">
+                    <img
+                      src={specialSignupQrUrl}
+                      alt={locale === "es" ? "QR ruta especial de registro" : "Special signup route QR"}
+                      className="w-40 h-40"
+                    />
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+
             <AdminJudgesMentors locale={locale} translations={t} />
           </section>
 
