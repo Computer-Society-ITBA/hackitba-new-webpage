@@ -10,24 +10,22 @@ import { Users, UserCheck, Clock, Loader2 } from "lucide-react"
 export const dynamic = "force-dynamic"
 
 export default function LiveDisplayPage() {
-  const params = useParams()
-  const locale = (params?.locale as any) || "es"
-
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-brand-navy flex flex-col items-center justify-center p-12 space-y-4">
         <Loader2 className="w-12 h-12 text-brand-cyan animate-spin" />
-        <p className="font-pixel text-brand-cyan animate-pulse">
-          {locale === "es" ? "CARGANDO..." : "LOADING..."}
-        </p>
+        <p className="font-pixel text-brand-cyan animate-pulse">LOADING...</p>
       </div>
     }>
-      <LiveDisplayContent locale={locale} />
+      <LiveDisplayContent />
     </Suspense>
   )
 }
 
-function LiveDisplayContent({ locale }: { locale: string }) {
+function LiveDisplayContent() {
+  const params = useParams()
+  const locale = (params?.locale as string) || "es"
+
   const db = getDbClient()
   const [arrivedUsers, setArrivedUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,13 +55,11 @@ function LiveDisplayContent({ locale }: { locale: string }) {
     return () => unsubscribe()
   }, [db])
 
-  // Split into columns
   const leftCol = arrivedUsers.slice(0, 4)
   const rightCol = arrivedUsers.slice(4, 8)
 
   return (
     <div className="min-h-screen bg-brand-navy flex flex-col p-8 md:p-12 overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between mb-12 border-b-2 border-brand-cyan/20 pb-8">
         <div className="flex items-center gap-8">
           <div className="w-20 h-20 bg-brand-cyan/10 border-2 border-brand-cyan rounded-lg flex items-center justify-center text-brand-cyan shadow-[0_0_15px_rgba(0,255,255,0.3)]">
@@ -82,7 +78,6 @@ function LiveDisplayContent({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-4 text-white">
         <div className="space-y-4">
           {leftCol.map((user, idx) => (
@@ -102,7 +97,6 @@ function LiveDisplayContent({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="mt-8 pt-6 border-t border-brand-cyan/10 flex justify-between items-center text-xs font-pixel text-brand-cyan/40">
         <span>{new Date().toLocaleDateString()}</span>
         <div className="flex gap-4">
