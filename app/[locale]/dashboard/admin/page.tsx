@@ -126,7 +126,20 @@ export default function AdminDashboard() {
     if (!db) return
     setLoadingStats(true)
     try {
-      const completeSnap = await getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2)))
+      const [completeSnap, teamsSnap] = await Promise.all([
+        getDocs(query(collection(db, "users"), where("onboardingStep", "==", 2))),
+        getDocs(collection(db, "teams")),
+      ])
+
+      const approvedTeamIds = new Set(
+        teamsSnap.docs
+          .map((teamDoc) => ({ id: teamDoc.id, ...teamDoc.data() } as any))
+          .filter((team) => {
+            const status = String(team?.status || "").toLowerCase()
+            return status === "approved" || status === "accepted"
+          })
+          .map((team) => team.id)
+      )
 
       const completedParticipants = completeSnap.docs
         .map((participantDoc) => participantDoc.data())
@@ -138,7 +151,9 @@ export default function AdminDashboard() {
 
       const approvedParticipants = completedParticipants.filter((participant) => {
         const status = String(participant?.status || "").toLowerCase()
-        return status === "approved" || status === "accepted"
+        const byUserStatus = status === "approved" || status === "accepted"
+        const byTeamStatus = participant?.team && approvedTeamIds.has(participant.team)
+        return byUserStatus || byTeamStatus
       })
 
       const completedWithTeam = completedParticipants.filter((participant) => participant.hasTeam === true).length

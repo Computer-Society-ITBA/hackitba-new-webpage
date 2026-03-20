@@ -275,6 +275,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             return "not_registered"
         }
 
+        const participantTeam = participant?.team ? teams.find((team) => team.id === participant.team) : null
+        const participantTeamStatus = String(participantTeam?.status || "").toLowerCase()
+        if (participantTeamStatus === "approved" || participantTeamStatus === "accepted") {
+            return "accepted"
+        }
+
         const normalizedStatus = String(participant?.status || "pending").toLowerCase()
         if (normalizedStatus === "approved") return "accepted"
         return normalizedStatus
@@ -373,9 +379,8 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 valA = membersA
                 valB = membersB
             } else if (sortField === "status") {
-                // Treat onboardingStep === 1 as a distinct status ('not_registered')
-                const keyA = Number(a.onboardingStep) === 1 ? "not_registered" : ((a.status || "pending").toString().toLowerCase())
-                const keyB = Number(b.onboardingStep) === 1 ? "not_registered" : ((b.status || "pending").toString().toLowerCase())
+                const keyA = activeTab === "participants" ? getParticipantStatusKey(a) : getTeamStatusKey(a)
+                const keyB = activeTab === "participants" ? getParticipantStatusKey(b) : getTeamStatusKey(b)
 
                 const order = ["accepted", "pending", "not_registered", "rejected"]
                 const idxA = order.indexOf(keyA)
@@ -812,12 +817,24 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                                         </TableCell>
                                                         <TableCell className="py-1">
                                                             {(() => {
-                                                                const isOnboarding1 = Number(item.onboardingStep) === 1
-                                                                const displayStatus = isOnboarding1 ? (locale === "es" ? "No inscrito" : "Not registered") : (item.status || "pending")
-                                                                const statusKey = isOnboarding1 ? "not_registered" : (item.status || "pending")
-                                                                const statusClass = isOnboarding1 ? "bg-gray-500/20 text-gray-300" : (
-                                                                    item.status === "accepted" ? "bg-green-500/20 text-green-400" :
-                                                                        item.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                                                                const statusKey = getParticipantStatusKey(item)
+                                                                const displayStatus = (() => {
+                                                                    switch (statusKey) {
+                                                                        case "accepted":
+                                                                            return locale === "es" ? "Aprobado" : "Approved"
+                                                                        case "pending":
+                                                                            return locale === "es" ? "Pendiente" : "Pending"
+                                                                        case "rejected":
+                                                                            return locale === "es" ? "Rechazado" : "Rejected"
+                                                                        case "not_registered":
+                                                                            return locale === "es" ? "No inscrito" : "Not registered"
+                                                                        default:
+                                                                            return statusKey
+                                                                    }
+                                                                })()
+                                                                const statusClass = statusKey === "not_registered" ? "bg-gray-500/20 text-gray-300" : (
+                                                                    statusKey === "accepted" ? "bg-green-500/20 text-green-400" :
+                                                                        statusKey === "pending" ? "bg-yellow-500/20 text-yellow-400" :
                                                                             "bg-red-500/20 text-red-400"
                                                                 )
 
