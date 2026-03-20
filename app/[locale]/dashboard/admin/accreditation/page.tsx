@@ -52,6 +52,7 @@ function AccreditationContent({ locale }: { locale: Locale }) {
   const [team, setTeam] = useState<any>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchIndex, setSearchIndex] = useState<any[]>([])
   const [showSearch, setShowSearch] = useState(!userIdFromUrl)
   const [nfcSupported, setNfcSupported] = useState(false)
   const [nfcScanning, setNfcScanning] = useState(false)
@@ -67,6 +68,28 @@ function AccreditationContent({ locale }: { locale: Locale }) {
       loadUser(userIdFromUrl)
     }
   }, [userIdFromUrl, db])
+
+  useEffect(() => {
+    if (!db) return
+
+    const preloadUsers = async () => {
+      try {
+        const usersSnap = await getDocs(collection(db, "users"))
+        setSearchIndex(usersSnap.docs.map((d) => ({ id: d.id, ...d.data() })))
+      } catch (error) {
+        console.error("Error preloading users for accreditation search:", error)
+      }
+    }
+
+    preloadUsers()
+  }, [db])
+
+  const normalizeSearchText = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
 
   const loadUser = async (id: string) => {
     if (!db) return
@@ -272,13 +295,16 @@ function AccreditationContent({ locale }: { locale: Locale }) {
     if (!db || !searchTerm.trim()) return
     setSearching(true)
     try {
-      const usersSnap = await getDocs(collection(db, "users"))
-      const term = searchTerm.toLowerCase()
-      const results = usersSnap.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
+      const term = normalizeSearchText(searchTerm)
+      const sourceUsers = searchIndex.length > 0
+        ? searchIndex
+        : (await getDocs(collection(db, "users"))).docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+
+      const results = sourceUsers
         .filter((u: any) => {
-          const fullName = `${u.name || ""} ${u.surname || ""}`.toLowerCase()
-          return fullName.includes(term) || u.email?.toLowerCase().includes(term)
+          const fullName = normalizeSearchText(`${u.name || ""} ${u.surname || ""}`)
+          const email = normalizeSearchText(String(u.email || ""))
+          return fullName.includes(term) || email.includes(term)
         })
         .sort((a: any, b: any) => {
           if (a.arrived && !b.arrived) return 1
@@ -288,6 +314,11 @@ function AccreditationContent({ locale }: { locale: Locale }) {
       setSearchResults(results)
     } catch (error) {
       console.error("Search error:", error)
+      toast({
+        title: locale === "es" ? "Error de busqueda" : "Search error",
+        description: locale === "es" ? "No se pudieron cargar usuarios." : "Could not load users.",
+        variant: "destructive",
+      })
     } finally {
       setSearching(false)
     }
