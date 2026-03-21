@@ -45,7 +45,7 @@ function AccreditationContent({ locale }: { locale: Locale }) {
   const { categories: allCategories } = useCategories(locale)
 
   const userIdFromUrl = searchParams.get("userId")
-
+ 
   const [loading, setLoading] = useState(false)
   const [searching, setSearching] = useState(false)
   const [user, setUser] = useState<any>(null)
