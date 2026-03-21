@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
 import { useCategories } from "@/hooks/use-categories"
 import { Button } from "@/components/ui/button"
+import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function AccreditationPage() {
   const params = useParams()
@@ -352,8 +353,7 @@ function AccreditationContent({ locale }: { locale: Locale }) {
 
   const getCategoryName = (categoryValue: any) => {
     if (categoryValue === null || categoryValue === undefined) return "-"
-    const idx = parseInt(categoryValue)
-    const category = allCategories.find(c => c.id === String(idx))
+    const category = getCategoryByLegacyIndex(allCategories, categoryValue)
     return category ? category.name : "-"
   }
 

@@ -29,6 +29,7 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { toast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { PaginationControls } from "@/components/ui/pagination-controls"
+import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 interface AdminManagementTablesProps {
     locale: Locale
@@ -246,8 +247,7 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
 
     const getCategoryName = (categoryValue: any) => {
         if (categoryValue === null || categoryValue === undefined) return "-"
-        const index = parseInt(categoryValue)
-        const category = categories[index]
+        const category = getCategoryByLegacyIndex(categories, categoryValue)
         if (!category) return "-"
         return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
     }

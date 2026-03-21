@@ -24,6 +24,7 @@ import { useAuth } from "@/lib/firebase/auth-context"
 import { useCategories } from "@/hooks/use-categories"
 import { toast } from "@/hooks/use-toast"
 import { loadSignupEnabled } from "@/lib/auth/signup-access"
+import { getLegacyIndexFromCategoryId } from "@/lib/categories/legacy-category-mapping"
 
 
 function EventSignupContent() {
@@ -606,9 +607,9 @@ function EventSignupContent() {
             // Map category IDs to indices
             let category_1 = 0, category_2 = 1, category_3 = 2
             if (formData.priorities.length >= 3) {
-                category_1 = categories.findIndex(cat => cat.id === formData.priorities[0])
-                category_2 = categories.findIndex(cat => cat.id === formData.priorities[1])
-                category_3 = categories.findIndex(cat => cat.id === formData.priorities[2])
+                category_1 = getLegacyIndexFromCategoryId(categories, formData.priorities[0]) ?? 0
+                category_2 = getLegacyIndexFromCategoryId(categories, formData.priorities[1]) ?? 1
+                category_3 = getLegacyIndexFromCategoryId(categories, formData.priorities[2]) ?? 2
             }
 
             const payload = {
@@ -673,10 +674,9 @@ function EventSignupContent() {
                     throw new Error(translations.auth.createTeam.errors.teamNameExists)
                 }
 
-                const categoryIdToIndex = Object.fromEntries(categories.map((c, i) => [c.id, i]))
-                const category_1 = categoryIdToIndex[formData.priorities[0]] ?? 0
-                const category_2 = categoryIdToIndex[formData.priorities[1]] ?? 1
-                const category_3 = categoryIdToIndex[formData.priorities[2]] ?? 2
+                const category_1 = getLegacyIndexFromCategoryId(categories, formData.priorities[0]) ?? 0
+                const category_2 = getLegacyIndexFromCategoryId(categories, formData.priorities[1]) ?? 1
+                const category_3 = getLegacyIndexFromCategoryId(categories, formData.priorities[2]) ?? 2
 
                 const createTeamPayload = {
                     name: formData.teamName.trim(),

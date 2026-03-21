@@ -20,6 +20,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { cn } from "@/lib/utils"
+import { getCategoryByLegacyIndex, sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 interface TeamMember {
   id: string
@@ -162,9 +163,8 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
     const loadCategories = async () => {
       if (!db) return
       const categoriesSnapshot = await getDocs(collection(db, "categories"))
-      const cats = categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as any[]
-      cats.sort((a, b) => (a.order || 0) - (b.order || 0))
-      setCategories(cats)
+      const cats = categoriesSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as any[]
+      setCategories(sortCategoriesByLegacyIndex(cats))
     }
 
     loadCategories()
@@ -350,7 +350,7 @@ export function TeamSection({ userId, userTeamLabel }: TeamSectionProps) {
 
   const resolveCategoryIdFromIndex = (index: number) => {
     if (index < 0) return ""
-    return categories[index]?.id || ""
+    return getCategoryByLegacyIndex(categories, index)?.id || ""
   }
 
   const teamCategoryId = useMemo(() => {
