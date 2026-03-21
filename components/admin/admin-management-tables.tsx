@@ -34,6 +34,7 @@ import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mappi
 interface AdminManagementTablesProps {
     locale: Locale
     translations: any
+    statsMode?: "completed" | "approved"
 }
 
 type Tab = "participants" | "teams"
@@ -51,7 +52,7 @@ interface AdminTeamNote {
     }
 }
 
-export function AdminManagementTables({ locale, translations }: AdminManagementTablesProps) {
+export function AdminManagementTables({ locale, translations, statsMode = "approved" }: AdminManagementTablesProps) {
     const [activeTab, setActiveTab] = useState<Tab>("participants")
     const [users, setUsers] = useState<any[]>([])
     const [teams, setTeams] = useState<any[]>([])
@@ -292,12 +293,21 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
         return normalizedStatus
     }
 
+    const isRegisteredParticipant = (participant: any) => Number(participant?.onboardingStep) === 2
+
+    const isRegisteredTeam = (team: any) => String(team?.status || "").toLowerCase() === "registered"
+
     const approvedByCategorySummary = useMemo(() => {
         const counts = new Map<number, number>()
 
         if (activeTab === "participants") {
             participantUsers
-                .filter((participant) => getParticipantStatusKey(participant) === "accepted")
+                .filter((participant) => {
+                    if (statsMode === "completed") {
+                        return isRegisteredParticipant(participant)
+                    }
+                    return getParticipantStatusKey(participant) === "accepted"
+                })
                 .forEach((participant) => {
                     const categoryIndex = Number(getParticipantCategoryIndex(participant))
                     if (Number.isNaN(categoryIndex) || categoryIndex < 0) return
@@ -305,7 +315,12 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 })
         } else {
             teams
-                .filter((team) => getTeamStatusKey(team) === "approved")
+                .filter((team) => {
+                    if (statsMode === "completed") {
+                        return isRegisteredTeam(team)
+                    }
+                    return getTeamStatusKey(team) === "approved"
+                })
                 .forEach((team) => {
                     const categoryIndex = Number(getTeamCategoryIndex(team))
                     if (Number.isNaN(categoryIndex) || categoryIndex < 0) return
@@ -323,7 +338,11 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                 count: counts.get(idx) || 0,
             }))
             .filter((row) => row.count > 0)
-    }, [activeTab, categories, locale, participantUsers, teams])
+    }, [activeTab, categories, locale, participantUsers, teams, statsMode])
+
+    const approvedByCategoryTotal = useMemo(() => {
+        return approvedByCategorySummary.reduce((sum, row) => sum + row.count, 0)
+    }, [approvedByCategorySummary])
 
     const filteredAndSortedData = useMemo(() => {
         let data = activeTab === "participants" ? [...participantUsers] : [...teams]
@@ -663,9 +682,13 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
             <GlassCard className="p-3 border-brand-cyan/10">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                     <p className="text-xs font-pixel text-brand-cyan/80 uppercase">
-                        {activeTab === "participants"
-                            ? (locale === "es" ? "Aprobados por categoria (participantes)" : "Approved by category (participants)")
-                            : (locale === "es" ? "Aprobados por categoria (equipos)" : "Approved by category (teams)")}
+                        {statsMode === "completed"
+                            ? (activeTab === "participants"
+                                ? (locale === "es" ? "Registrados por categoria (participantes)" : "Registered by category (participants)")
+                                : (locale === "es" ? "Registrados por categoria (equipos)" : "Registered by category (teams)"))
+                            : (activeTab === "participants"
+                                ? (locale === "es" ? "Aprobados por categoria (participantes)" : "Approved by category (participants)")
+                                : (locale === "es" ? "Aprobados por categoria (equipos)" : "Approved by category (teams)"))}
                     </p>
                     {approvedByCategorySummary.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
@@ -674,11 +697,19 @@ export function AdminManagementTables({ locale, translations }: AdminManagementT
                                     {row.name}: <span className="text-brand-yellow">{row.count}</span>
                                 </span>
                             ))}
+                            <span className="px-2 py-1 rounded border border-brand-orange/40 bg-brand-orange/10 text-brand-orange text-xs">
+                                {locale === "es" ? "Total (suma categorias)" : "Total (category sum)"}: <span className="text-brand-yellow">{approvedByCategoryTotal}</span>
+                            </span>
                         </div>
                     ) : (
-                        <span className="text-xs text-brand-cyan/50">
-                            {locale === "es" ? "Sin aprobados en categorias" : "No approved items by category"}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-brand-cyan/50">
+                                {locale === "es" ? "Sin aprobados en categorias" : "No approved items by category"}
+                            </span>
+                            <span className="px-2 py-1 rounded border border-brand-orange/40 bg-brand-orange/10 text-brand-orange text-xs">
+                                {locale === "es" ? "Total (suma categorias)" : "Total (category sum)"}: <span className="text-brand-yellow">{approvedByCategoryTotal}</span>
+                            </span>
+                        </div>
                     )}
                 </div>
             </GlassCard>

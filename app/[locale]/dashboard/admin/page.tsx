@@ -414,7 +414,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
             </div>
-            <AdminManagementTables locale={locale} translations={t} />
+            <AdminManagementTables locale={locale} translations={t} statsMode={statsMode} />
           </section>
 
           <section>
