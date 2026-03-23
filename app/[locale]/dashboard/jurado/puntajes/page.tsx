@@ -13,6 +13,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function JuradoPuntajesPage() {
     const params = useParams()
@@ -72,8 +73,7 @@ export default function JuradoPuntajesPage() {
 
     const getCategoryName = (categoryId: string) => {
         if (!categoryId) return "-"
-        const index = parseInt(categoryId)
-        const category = categories[index]
+        const category = getCategoryByLegacyIndex(categories, categoryId)
         if (!category) return "-"
         return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
     }

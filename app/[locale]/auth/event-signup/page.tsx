@@ -20,10 +20,11 @@ import { Loading } from "@/components/ui/loading"
 import { getStorageClient, getDbClient } from "@/lib/firebase/client-config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
 import { doc, getDoc } from "firebase/firestore"
-import { set } from "date-fns"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { useCategories } from "@/hooks/use-categories"
 import { toast } from "@/hooks/use-toast"
+import { loadSignupEnabled } from "@/lib/auth/signup-access"
+import { getLegacyIndexFromCategoryId } from "@/lib/categories/legacy-category-mapping"
 
 
 function EventSignupContent() {
@@ -46,6 +47,7 @@ function EventSignupContent() {
     const [photoPreview, setPhotoPreview] = useState<string | null>(null)
     const [photoFile, setPhotoFile] = useState<File | null>(null)
     const [isJudgeOrMentor, setIsJudgeOrMentor] = useState(false)
+    const [roleCheckDone, setRoleCheckDone] = useState(false)
     const [mentorCategories, setMentorCategories] = useState<("entrepreneurship" | "tech" | "oratory")[]>(["tech"])
 
     // Refresh user data when component mounts
@@ -84,7 +86,11 @@ function EventSignupContent() {
     }, [authUser, authLoading, router, locale])
 
     const checkIfJudgeOrMentor = async () => {
-        if (!db || !authUser?.email) return
+        if (!db || !authUser?.email) {
+            setIsJudgeOrMentor(false)
+            setRoleCheckDone(true)
+            return
+        }
 
         try {
             const { getDocs, collection, query, where } = await import("firebase/firestore")
@@ -162,6 +168,8 @@ function EventSignupContent() {
         } catch (err) {
             console.error("Error checking if judge or mentor:", err)
             setIsJudgeOrMentor(false)
+        } finally {
+            setRoleCheckDone(true)
         }
     }
 
@@ -208,6 +216,17 @@ function EventSignupContent() {
     }, [categories])
 
     useEffect(() => {
+        if (authLoading) {
+            return
+        }
+
+        if (!authUser) {
+            setRoleCheckDone(true)
+            return
+        }
+
+        setRoleCheckDone(false)
+
         if (!db) {
             // If there's no Firestore client available (local dev without env or misconfigured),
             // avoid leaving the page stuck in loading. Default to enabled so the UI can be tested.
@@ -217,23 +236,10 @@ function EventSignupContent() {
             return
         }
 
-        const envVal = process.env.NEXT_PUBLIC_SIGNUP_ENABLED
-        if (typeof envVal !== "undefined" && envVal !== null && envVal !== "") {
-            const enabled = envVal === "true" || envVal === "1"
-            setSignupEnabled(enabled)
-            setSignupLoading(false)
-            return
-        }
-
         const loadSettings = async () => {
             try {
-                const settingsDoc = await getDoc(doc(db, "settings", "global"))
-                if (settingsDoc.exists()) {
-                    const data = settingsDoc.data()
-                    setSignupEnabled(data?.signupEnabled !== false)
-                } else {
-                    setSignupEnabled(true)
-                }
+                const enabled = await loadSignupEnabled(db)
+                setSignupEnabled(enabled)
             } catch (err) {
                 console.error("Error loading signup setting:", err)
                 setSignupEnabled(true)
@@ -243,13 +249,24 @@ function EventSignupContent() {
         }
 
         loadSettings()
-    }, [db])
+
+    }, [db, authLoading, authUser])
+
+    const signupBlocked = !signupEnabled && !isJudgeOrMentor
 
     useEffect(() => {
-        if (!signupLoading && !signupEnabled) {
+        if (authLoading || signupLoading || !roleCheckDone) {
+            return
+        }
+
+        if (!authUser) {
+            return
+        }
+
+        if (signupBlocked) {
             router.replace(`/${locale}`)
         }
-    }, [signupEnabled, signupLoading, router, locale])
+    }, [authLoading, authUser, signupLoading, roleCheckDone, signupBlocked, router, locale])
 
     // Redirect to signup if user is not authenticated
     useEffect(() => {
@@ -359,7 +376,7 @@ function EventSignupContent() {
     const handleNext = () => {
         setError("")
 
-        if (!signupEnabled) {
+        if (signupBlocked) {
             setError(translations.auth.eventSignup.errors.signupDisabled)
             return
         }
@@ -452,6 +469,39 @@ function EventSignupContent() {
 
     const handleJudgeMentorSubmit = async () => {
         setError("")
+
+        if (role === "mentor") {
+            if (!db || !authUser?.id) {
+                setError("No database or user email available")
+                return
+            }
+
+            setLoading(true)
+            try {
+                const { updateDoc, doc: firestoreDoc } = await import("firebase/firestore")
+                const userDocRef = firestoreDoc(db, "users", authUser.id)
+                await updateDoc(userDocRef, {
+                    onboardingStep: 2,
+                    role: "mentor",
+                })
+
+                toast({
+                    title: locale === "es" ? "Perfil mentor bloqueado" : "Mentor profile locked",
+                    description: locale === "es"
+                        ? "Tus datos fueron preservados sin cambios"
+                        : "Your profile data was preserved without changes",
+                })
+
+                await refreshUser()
+                router.push(`/${locale}/dashboard`)
+            } catch (err: any) {
+                console.error("Error finalizing mentor onboarding:", err)
+                setError(err.message || "Error updating profile")
+            } finally {
+                setLoading(false)
+            }
+            return
+        }
         
         if (!formData.name) {
             setError("El nombre es requerido")
@@ -530,7 +580,7 @@ function EventSignupContent() {
     }
 
     const handleSubmit = async () => {
-        if (!signupEnabled) {
+        if (signupBlocked) {
             setError(translations.auth.eventSignup.errors.signupDisabled)
             return
         }
@@ -557,9 +607,9 @@ function EventSignupContent() {
             // Map category IDs to indices
             let category_1 = 0, category_2 = 1, category_3 = 2
             if (formData.priorities.length >= 3) {
-                category_1 = categories.findIndex(cat => cat.id === formData.priorities[0])
-                category_2 = categories.findIndex(cat => cat.id === formData.priorities[1])
-                category_3 = categories.findIndex(cat => cat.id === formData.priorities[2])
+                category_1 = getLegacyIndexFromCategoryId(categories, formData.priorities[0]) ?? 0
+                category_2 = getLegacyIndexFromCategoryId(categories, formData.priorities[1]) ?? 1
+                category_3 = getLegacyIndexFromCategoryId(categories, formData.priorities[2]) ?? 2
             }
 
             const payload = {
@@ -624,10 +674,9 @@ function EventSignupContent() {
                     throw new Error(translations.auth.createTeam.errors.teamNameExists)
                 }
 
-                const categoryIdToIndex = Object.fromEntries(categories.map((c, i) => [c.id, i]))
-                const category_1 = categoryIdToIndex[formData.priorities[0]] ?? 0
-                const category_2 = categoryIdToIndex[formData.priorities[1]] ?? 1
-                const category_3 = categoryIdToIndex[formData.priorities[2]] ?? 2
+                const category_1 = getLegacyIndexFromCategoryId(categories, formData.priorities[0]) ?? 0
+                const category_2 = getLegacyIndexFromCategoryId(categories, formData.priorities[1]) ?? 1
+                const category_3 = getLegacyIndexFromCategoryId(categories, formData.priorities[2]) ?? 2
 
                 const createTeamPayload = {
                     name: formData.teamName.trim(),
@@ -680,27 +729,38 @@ function EventSignupContent() {
 
         // Judge/Mentor flow
         if (isJudgeOrMentor) {
+            const mentorReadOnly = role === "mentor"
             return (
                 <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="mb-3">
                         <h2 className="text-brand-orange font-pixel text-lg uppercase leading-none">{role === "judge" ? "Perfil Jurado" : "Perfil Mentor"}</h2>
                     </div>
 
+                    {mentorReadOnly && (
+                        <div className="p-2 rounded bg-brand-cyan/10 border border-brand-cyan/30">
+                            <p className="text-brand-cyan text-xs">
+                                {locale === "es"
+                                    ? "Los datos de mentor son de solo lectura y se toman de la landing."
+                                    : "Mentor data is read-only and loaded from landing data."}
+                            </p>
+                        </div>
+                    )}
+
                     {/* Name */}
                     <div className="space-y-1">
                         <Label htmlFor="name" className="text-brand-cyan font-pixel text-xs">Nombre <span className="text-red-500">*</span></Label>
-                        <Input id="name" value={formData.name} onChange={handleInputChange} placeholder="Nombre completo" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                        <Input id="name" value={formData.name} onChange={handleInputChange} placeholder="Nombre completo" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" disabled={mentorReadOnly} />
                     </div>
 
                     {/* Position & Company */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="professionalRole" className="text-brand-cyan font-pixel text-xs">Posición <span className="text-red-500">*</span></Label>
-                            <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} placeholder="Ej: CTO" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                            <Input id="professionalRole" value={formData.professionalRole} onChange={handleInputChange} placeholder="Ej: CTO" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" disabled={mentorReadOnly} />
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="company" className="text-brand-cyan font-pixel text-xs">Compañía <span className="text-red-500">*</span></Label>
-                            <Input id="company" value={formData.company} onChange={handleInputChange} placeholder="Ej: Google" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" />
+                            <Input id="company" value={formData.company} onChange={handleInputChange} placeholder="Ej: Google" className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan h-8" disabled={mentorReadOnly} />
                         </div>
                     </div>
 
@@ -721,6 +781,7 @@ function EventSignupContent() {
                                                     setMentorCategories(mentorCategories.filter(c => c !== cat))
                                                 }
                                             }}
+                                            disabled={mentorReadOnly}
                                             className="w-4 h-4 accent-brand-yellow"
                                         />
                                         <span>
@@ -738,11 +799,11 @@ function EventSignupContent() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="englishBio" className="text-brand-cyan font-pixel text-xs">Bio (English)</Label>
-                            <textarea id="englishBio" value={formData.englishBio} onChange={(e) => setFormData(prev => ({ ...prev, englishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" />
+                            <textarea id="englishBio" value={formData.englishBio} onChange={(e) => setFormData(prev => ({ ...prev, englishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" disabled={mentorReadOnly} />
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="spanishBio" className="text-brand-cyan font-pixel text-xs">Bio (Español)</Label>
-                            <textarea id="spanishBio" value={formData.spanishBio} onChange={(e) => setFormData(prev => ({ ...prev, spanishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" />
+                            <textarea id="spanishBio" value={formData.spanishBio} onChange={(e) => setFormData(prev => ({ ...prev, spanishBio: e.target.value }))} placeholder="Breve descripción" className="bg-brand-black/40 border-2 border-brand-cyan/20 focus:border-brand-cyan rounded-lg p-2 text-xs text-brand-cyan min-h-20 resize-none" disabled={mentorReadOnly} />
                         </div>
                     </div>
 
@@ -750,22 +811,22 @@ function EventSignupContent() {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="linkedin" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Linkedin className="w-3 h-3" /> LinkedIn</Label>
-                            <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder="https://linkedin.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            <Input id="linkedin" value={formData.linkedin} onChange={handleInputChange} placeholder="https://linkedin.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" disabled={mentorReadOnly} />
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="github" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Github className="w-3 h-3" /> GitHub</Label>
-                            <Input id="github" value={formData.github} onChange={handleInputChange} placeholder="https://github.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            <Input id="github" value={formData.github} onChange={handleInputChange} placeholder="https://github.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" disabled={mentorReadOnly} />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="instagram" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Instagram className="w-3 h-3" /> Instagram</Label>
-                            <Input id="instagram" value={formData.instagram} onChange={handleInputChange} placeholder="https://instagram.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            <Input id="instagram" value={formData.instagram} onChange={handleInputChange} placeholder="https://instagram.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" disabled={mentorReadOnly} />
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="twitter" className="text-brand-cyan font-pixel text-xs flex items-center gap-2"><Twitter className="w-3 h-3" /> Twitter/X</Label>
-                            <Input id="twitter" value={formData.twitter} onChange={handleInputChange} placeholder="https://twitter.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" />
+                            <Input id="twitter" value={formData.twitter} onChange={handleInputChange} placeholder="https://twitter.com/..." className="bg-brand-black/40 border-brand-cyan/20 focus:border-brand-cyan text-xs h-8" disabled={mentorReadOnly} />
                         </div>
                     </div>
 
@@ -778,9 +839,14 @@ function EventSignupContent() {
                             onChange={handleFileChange}
                             className="hidden"
                             accept="image/*"
+                            disabled={mentorReadOnly}
                         />
                         <div
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => {
+                                if (!mentorReadOnly) {
+                                    fileInputRef.current?.click()
+                                }
+                            }}
                             className="border-2 border-dashed border-brand-cyan/20 rounded-lg cursor-pointer hover:border-brand-cyan/40 transition-colors bg-brand-black/20 overflow-hidden relative h-24 md:h-16 w-full flex items-center justify-center p-0"
                         >
                             {photoPreview ? (
@@ -1098,7 +1164,7 @@ function EventSignupContent() {
         }
     }
 
-    if (signupLoading || !signupEnabled) {
+    if (signupLoading || (authUser && !roleCheckDone) || signupBlocked) {
         return <Loading text={translations.auth.eventSignup.loading} />
     }
 
@@ -1137,7 +1203,7 @@ function EventSignupContent() {
                     <div className="flex flex-col">
                         {renderStep()}
 
-                        {!signupLoading && !signupEnabled && (
+                        {!signupLoading && signupBlocked && (
                             <div className="mt-4 px-8 p-2 rounded bg-brand-orange/10 border border-brand-orange/30 animate-in zoom-in-95 duration-200">
                                 <p className="text-xs text-brand-orange font-pixel">
                                     {translations.auth.eventSignup.errors.signupDisabled}
@@ -1164,14 +1230,14 @@ function EventSignupContent() {
                                     arrow="left"
                                     onClick={handleBack}
                                     className="w-[35%] leading-none text-xs flex flex-row justify-between items-center p-4"
-                                    disabled={loading || !signupEnabled}
+                                    disabled={loading || signupBlocked}
                                 >
                                     {translations.auth.eventSignup.buttons.back}
                                 </PixelButton>
                             )}
                             <PixelButton
                                 onClick={handleNext}
-                                disabled={loading || !signupEnabled}
+                                disabled={loading || signupBlocked}
                                 size="sm"
                                 className="w-full text-xs leading-none flex flex-row justify-between items-center"
                             >

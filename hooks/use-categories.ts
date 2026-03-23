@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { collection, getDocs, query } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import type { Locale } from "@/lib/i18n/config"
+import { sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export interface Category {
     id: string
@@ -48,9 +49,9 @@ export function useCategories(locale: Locale): UseCategoriesReturn {
                         englishDescription: d.englishDescription || "",
                         spanishDescription: d.spanishDescription || "",
                     } as Category
-                }).sort((a, b) => Number(a.id) - Number(b.id))
+                })
 
-                setCategories(categoriesData)
+                setCategories(sortCategoriesByLegacyIndex(categoriesData))
             } catch (err: any) {
                 console.error("useCategories Error:", err)
                 setError(err.message ?? "Failed to load categories")

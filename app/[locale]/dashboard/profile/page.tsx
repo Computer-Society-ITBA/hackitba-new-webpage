@@ -54,6 +54,7 @@ export default function ProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [hasRedirected, setHasRedirected] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
+  const isMentorReadOnly = user?.role === "mentor"
 
   // Load signup enabled setting
   useEffect(() => {
@@ -174,7 +175,7 @@ export default function ProfilePage() {
   }
 
   const saveMentorProfile = async () => {
-    if (!db || !user) return
+    if (!db || !user || user.role === "mentor") return
 
     setSavingProfile(true)
     try {
@@ -263,7 +264,7 @@ export default function ProfilePage() {
                         value={mentorForm.name}
                         onChange={(e) => setMentorForm({ ...mentorForm, name: e.target.value })}
                         className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
-                        disabled={!showProfileForm}
+                        disabled={isMentorReadOnly || !showProfileForm}
                       />
                     </div>
                     <div>
@@ -273,7 +274,7 @@ export default function ProfilePage() {
                         onChange={(e) => setMentorForm({ ...mentorForm, position: e.target.value })}
                         className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                         placeholder="Ej: CTO"
-                        disabled={!showProfileForm}
+                        disabled={isMentorReadOnly || !showProfileForm}
                       />
                     </div>
                   </div>
@@ -285,7 +286,7 @@ export default function ProfilePage() {
                       onChange={(e) => setMentorForm({ ...mentorForm, company: e.target.value })}
                       className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                       placeholder="Ej: Google"
-                      disabled={!showProfileForm}
+                      disabled={isMentorReadOnly || !showProfileForm}
                     />
                   </div>
 
@@ -296,7 +297,7 @@ export default function ProfilePage() {
                         value={mentorForm.englishBio}
                         onChange={(e) => setMentorForm({ ...mentorForm, englishBio: e.target.value })}
                         className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan min-h-20"
-                        disabled={!showProfileForm}
+                        disabled={isMentorReadOnly || !showProfileForm}
                       />
                     </div>
                     <div>
@@ -305,7 +306,7 @@ export default function ProfilePage() {
                         value={mentorForm.spanishBio}
                         onChange={(e) => setMentorForm({ ...mentorForm, spanishBio: e.target.value })}
                         className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan min-h-20"
-                        disabled={!showProfileForm}
+                        disabled={isMentorReadOnly || !showProfileForm}
                       />
                     </div>
                   </div>
@@ -333,7 +334,7 @@ export default function ProfilePage() {
                                   })
                                 }
                               }}
-                              disabled={!showProfileForm}
+                              disabled={isMentorReadOnly || !showProfileForm}
                               className="w-4 h-4 accent-brand-yellow"
                             />
                             <span>
@@ -366,7 +367,7 @@ export default function ProfilePage() {
                     }
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://github.com/username"
-                    disabled={!showProfileForm}
+                    disabled={(user?.role === "mentor" ? true : !showProfileForm)}
                   />
                 </div>
                 <div>
@@ -382,7 +383,7 @@ export default function ProfilePage() {
                     }
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://linkedin.com/in/username"
-                    disabled={!showProfileForm}
+                    disabled={(user?.role === "mentor" ? true : !showProfileForm)}
                   />
                 </div>
               </div>
@@ -401,7 +402,7 @@ export default function ProfilePage() {
                     }
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://instagram.com/username"
-                    disabled={!showProfileForm}
+                    disabled={(user?.role === "mentor" ? true : !showProfileForm)}
                   />
                 </div>
                 <div>
@@ -417,10 +418,20 @@ export default function ProfilePage() {
                     }
                     className="mt-2 bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan"
                     placeholder="https://twitter.com/username"
-                    disabled={!showProfileForm}
+                    disabled={(user?.role === "mentor" ? true : !showProfileForm)}
                   />
                 </div>
               </div>
+
+              {isMentorReadOnly && (
+                <div className="p-2 rounded bg-brand-cyan/10 border border-brand-cyan/30">
+                  <p className="text-brand-cyan text-xs">
+                    {locale === "es"
+                      ? "Los datos de mentor son de solo lectura y los administra el equipo de HackITBA."
+                      : "Mentor data is read-only and managed by the HackITBA team."}
+                  </p>
+                </div>
+              )}
 
               {/* Participant-only fields */}
               {user?.role === "participant" && (
@@ -453,13 +464,13 @@ export default function ProfilePage() {
                 </>
               )}
 
-              {!showProfileForm ? (
+              {!showProfileForm && !isMentorReadOnly ? (
                 <div className="flex justify-end pt-4">
                   <PixelButton onClick={() => setShowProfileForm(true)} className="min-w-[140px] px-4">
                     {translations.dashboard.profile.edit}
                   </PixelButton>
                 </div>
-              ) : (
+              ) : !isMentorReadOnly ? (
                 <div className="flex gap-3 justify-end pt-4">
                   <PixelButton
                     onClick={() => {
@@ -519,7 +530,7 @@ export default function ProfilePage() {
                     {savingProfile ? translations.dashboard.profile.saving : translations.dashboard.profile.save}
                   </PixelButton>
                 </div>
-              )}
+              ) : null}
             </div>
           </GlassCard>
         </div>

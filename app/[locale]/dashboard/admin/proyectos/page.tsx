@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
+import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function AdminProyectosPage() {
   const params = useParams()
@@ -247,8 +248,7 @@ export default function AdminProyectosPage() {
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
-    const index = parseInt(categoryId)
-    const category = categories[index]
+    const category = getCategoryByLegacyIndex(categories, categoryId)
     return category ? (locale === "es" ? category.spanishName : category.englishName) : "-"
   }
 

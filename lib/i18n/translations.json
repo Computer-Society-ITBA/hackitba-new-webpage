@@ -737,7 +737,14 @@
         "auditorialLocation": "ITBA — Sede Distrito Rectorado",
         "auditorialAddress": "Iguazú 341, C1437 CABA",
         "competitionLocation": "ITBA Sede Rectorado",
-        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA",
+        "room": "Assigned Room",
+        "roomMap": "Room Map",
+        "floorPlans": "Floor Plans",
+        "groundFloor": "Ground Floor",
+        "firstFloor": "First Floor",
+        "secondFloor": "Second Floor",
+        "viewFloorPlan": "View Floor Plan"
       }
     },
     "credits": {
@@ -1576,7 +1583,14 @@
         "auditorialLocation": "ITBA — Sede Distrito Rectorado",
         "auditorialAddress": "Iguazú 341, C1437 CABA",
         "competitionLocation": "ITBA Sede Rectorado",
-        "competitionAddress": "Uspallata 3150, C1437JCJ CABA"
+        "competitionAddress": "Uspallata 3150, C1437JCJ CABA",
+        "room": "Aula Asignada",
+        "roomMap": "Mapa del aula",
+        "floorPlans": "Planos de planta",
+        "groundFloor": "Planta Baja",
+        "firstFloor": "Primer Piso",
+        "secondFloor": "Segundo Piso",
+        "viewFloorPlan": "Ver mapa de planta"
       }
     },
     "credits": {

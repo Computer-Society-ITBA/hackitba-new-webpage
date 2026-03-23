@@ -2,7 +2,7 @@ import {Request, Response} from "express";
 import * as logger from "firebase-functions/logger";
 import admin from "firebase-admin";
 import * as teamService from "../services/teamService";
-import {sendTeamNotificationEmail} from "../services/emailService";
+import {sendCustomEmail, sendTeamNotificationEmail} from "../services/emailService";
 import {getHackitbaDb} from "../helpers/getDb";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -237,6 +237,51 @@ export const updateTeamStatusAdmin = async (req: Request, res: Response) => {
     if (category !== undefined) updates.category = category;
 
     await teamService.updateTeam(team.ref, updates);
+
+    // Notify team members only for explicit approval/rejection decisions.
+    if (status === "approved" || status === "rejected") {
+      const db = getHackitbaDb();
+      const membersSnap = await db.collection("users")
+        .where("team", "==", team.id)
+        .get();
+
+      const teamName = String(team.data?.name || team.id);
+      const isApproved = status === "approved";
+      const subject = isApproved ? "Tu equipo fue aprobado en HackITBA" : "Actualizacion sobre tu equipo en HackITBA";
+
+      for (const memberDoc of membersSnap.docs) {
+        const member = memberDoc.data() as {email?: string; name?: string; role?: string};
+        if (!member?.email) continue;
+        if (member.role && member.role !== "participant") continue;
+
+        const memberName = String(member.name || "participante");
+        const heading = isApproved ? "Tu equipo fue aprobado" : "Tu equipo no fue aprobado";
+        const bodyText = isApproved ?
+          `Felicitaciones ${memberName}, el equipo <strong>${teamName}</strong> fue aprobado para participar en HackITBA.` :
+          `Hola ${memberName}, te contamos que el equipo <strong>${teamName}</strong> no fue aprobado para esta edicion de HackITBA.`;
+        const footerText = isApproved ?
+          "Podes ingresar al dashboard para ver el estado actualizado y proximos pasos." :
+          "Si tenes dudas, podes contactarnos por nuestros canales oficiales.";
+
+        const html = `
+          <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827;max-width:600px;margin:0 auto;">
+            <h2 style="margin:0 0 16px;">${heading}</h2>
+            <p>${bodyText}</p>
+            <p>${footerText}</p>
+            <p style="margin-top:24px;">
+              <a href="https://hackitba.com.ar/es/dashboard" style="display:inline-block;background:#f97316;color:#ffffff;padding:10px 16px;text-decoration:none;border-radius:6px;">Ir al dashboard</a>
+            </p>
+            <p style="margin-top:24px;font-size:12px;color:#6b7280;">HackITBA - Computer Society ITBA</p>
+          </div>
+        `;
+
+        try {
+          await sendCustomEmail(member.email, subject, html);
+        } catch (emailError) {
+          logger.error("Error sending team status email:", emailError, {teamId: team.id, userId: memberDoc.id, status});
+        }
+      }
+    }
 
     return res.status(200).json({id: team.id, status});
   } catch (error: any) {

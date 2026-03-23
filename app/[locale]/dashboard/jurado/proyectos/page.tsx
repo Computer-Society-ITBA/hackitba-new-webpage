@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/firebase/auth-context"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
+import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function JuradoProyectosPage() {
   const params = useParams()
@@ -205,8 +206,7 @@ export default function JuradoProyectosPage() {
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
-    const index = parseInt(categoryId)
-    const category = categories[index]
+    const category = getCategoryByLegacyIndex(categories, categoryId)
     if (!category) return "-"
     return locale === "es" ? (category.spanishName || category.englishName) : (category.englishName || category.spanishName)
   }

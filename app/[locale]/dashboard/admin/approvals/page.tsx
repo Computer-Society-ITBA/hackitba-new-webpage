@@ -21,6 +21,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import { toast } from "@/hooks/use-toast"
 import type { Locale } from "@/lib/i18n/config"
+import { getCategoryByLegacyIndex, getLegacyIndexFromCategoryId, sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function ApprovalsPage() {
   const params = useParams()
@@ -75,7 +76,7 @@ export default function ApprovalsPage() {
 
   const getCategoryName = (idx: any) => {
     if (idx === null || idx === undefined) return "-"
-    const cat = categories[parseInt(idx)]
+    const cat = getCategoryByLegacyIndex(categories, idx)
     if (!cat) return "-"
     return locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
   }
@@ -195,7 +196,8 @@ export default function ApprovalsPage() {
     if (!db) return
     try {
       const categoriesSnapshot = await getDocs(collection(db, "categories"))
-      setCategories(categoriesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+      const loadedCategories = categoriesSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+      setCategories(sortCategoriesByLegacyIndex(loadedCategories))
     } catch (error) {
       console.error("Error loading categories:", error)
     }
@@ -271,11 +273,11 @@ export default function ApprovalsPage() {
       if (!idToken) return
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
 
-      // Map category ID to its sorted index
+      // Map selected category ID to the fixed legacy index mapping.
       let categoryIndex: number | null = null
       if (categoryId) {
-        const idx = categories.findIndex((c) => c.id === categoryId)
-        if (idx !== -1) categoryIndex = idx
+        const idx = getLegacyIndexFromCategoryId(categories, categoryId)
+        if (idx !== null) categoryIndex = idx
       }
 
       const body: any = { status: "approved" }
@@ -805,7 +807,7 @@ export default function ApprovalsPage() {
                   <div className="flex flex-col sm:flex-row flex-wrap gap-1.5">
                     {[selectedParticipant?.category_1, selectedParticipant?.category_2, selectedParticipant?.category_3].map((idx, i) => {
                       if (idx === null || idx === undefined) return null
-                      const cat = categories[idx]
+                      const cat = getCategoryByLegacyIndex(categories, idx)
                       if (!cat) return null
                       const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
                       const Icon = (LucideIcons as any)[cat.iconName] || LucideIcons.Tag
@@ -940,7 +942,7 @@ export default function ApprovalsPage() {
                   <div className="space-y-1">
                     {[selectedTeam?.category_1, selectedTeam?.category_2, selectedTeam?.category_3].map((idx, i) => {
                       if (idx === null || idx === undefined) return null
-                      const cat = categories[idx]
+                      const cat = getCategoryByLegacyIndex(categories, idx)
                       if (!cat) return null
                       const name = locale === "es" ? (cat.spanishName || cat.englishName) : (cat.englishName || cat.spanishName)
                       const Icon = (LucideIcons as any)[cat.iconName] || LucideIcons.Tag
