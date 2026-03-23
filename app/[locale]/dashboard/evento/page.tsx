@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -9,6 +9,14 @@ import { MapPin, Navigation, ExternalLink, Clock, CalendarDays, Clock3, Ticket }
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/firebase/auth-context"
+import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore"
+import { ref, getDownloadURL } from "firebase/storage"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Image as ImageIcon, Maximize2 } from "lucide-react"
+import { DialogTitle } from "@radix-ui/react-dialog"
 
 // Location metadata
 const LOCATIONS = {
@@ -80,6 +88,102 @@ export default function EventoPage() {
   const [activeDayId, setActiveDayId] = useState("friday")
 
   const activeDay = TIMELINE_DATA.find(d => d.id === activeDayId) || TIMELINE_DATA[0]
+  const { user } = useAuth()
+  const db = getDbClient()
+  const storage = getStorageClient()
+
+  const [assignedRoom, setAssignedRoom] = useState<string | null>(null)
+  const [roomImageUrl, setRoomImageUrl] = useState<string | null>(null)
+  const [floorPlanUrls, setFloorPlanUrls] = useState<{ [key: string]: string }>({})
+  const [loadingMaps, setLoadingMaps] = useState(true)
+  const [selectedFloor, setSelectedFloor] = useState<"PB" | "P1" | "P2">("PB")
+
+  const isMentorOrAdmin = user?.role === "mentor" || user?.role === "admin"
+
+  const fetchFloorPlans = useCallback(async () => {
+    if (!storage) return
+    const floors = ["PB", "P1", "P2"]
+    const urls: { [key: string]: string } = {}
+
+    try {
+      await Promise.all(floors.map(async (floor) => {
+        try {
+          const url = await getDownloadURL(ref(storage, `aulas/${floor}.jpg`))
+          urls[floor] = url
+        } catch (err) {
+          console.warn(`Error fetching floor plan ${floor}:`, err)
+        }
+      }))
+      setFloorPlanUrls(urls)
+    } finally {
+      setLoadingMaps(false)
+    }
+  }, [storage])
+
+  const fetchRoomMap = useCallback(async (room: string) => {
+    if (!storage) return
+    try {
+      const url = await getDownloadURL(ref(storage, `aulas/${room}.jpg`))
+      setRoomImageUrl(url)
+    } catch (err) {
+      console.warn(`Error fetching room map for ${room}:`, err)
+    } finally {
+      setLoadingMaps(false)
+    }
+  }, [storage])
+
+  useEffect(() => {
+    if (!db || !user) return
+
+    const loadMapsData = async () => {
+      setLoadingMaps(true)
+
+      if (isMentorOrAdmin) {
+        await fetchFloorPlans()
+      } else if (user.role === "participant") {
+        let teamId = user.team
+
+        // Fallback: find team by participantIds if user.team is missing
+        if (!teamId) {
+          try {
+            const teamsQuery = query(collection(db, "teams"), where("participantIds", "array-contains", user.id))
+            const snapshot = await getDocs(teamsQuery)
+            if (!snapshot.empty) {
+              teamId = snapshot.docs[0].id
+            }
+          } catch (err) {
+            console.error("Error finding team:", err)
+          }
+        }
+
+        if (teamId) {
+          try {
+            const teamDoc = await getDoc(doc(db, "teams", teamId))
+            if (teamDoc.exists()) {
+              const teamData = teamDoc.data()
+              if (teamData.assignedRoom) {
+                setAssignedRoom(teamData.assignedRoom)
+                await fetchRoomMap(teamData.assignedRoom)
+              } else {
+                setLoadingMaps(false)
+              }
+            } else {
+              setLoadingMaps(false)
+            }
+          } catch (err) {
+            console.error("Error loading team data:", err)
+            setLoadingMaps(false)
+          }
+        } else {
+          setLoadingMaps(false)
+        }
+      } else {
+        setLoadingMaps(false)
+      }
+    }
+
+    loadMapsData()
+  }, [db, user, isMentorOrAdmin, fetchFloorPlans, fetchRoomMap])
 
   // Group events by location for the "bracket" view
   const groupedByLocation = activeDay.events.reduce((acc, event) => {
@@ -197,6 +301,141 @@ export default function EventoPage() {
               <p className="text-brand-cyan text-sm">{ei.format}</p>
             </GlassCard>
           </div>
+
+
+          {/* Room Assignment & Floor Plans Section */}
+          {(assignedRoom || isMentorOrAdmin) && (
+            <div className="space-y-6">
+              {isMentorOrAdmin ? (
+                // Mentor/Admin Floor Plan Selector
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-full bg-brand-cyan/10 flex items-center justify-center">
+                      <ImageIcon className="text-brand-cyan" size={30} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl text-white font-pixel">
+                        {ei.viewFloorPlan}
+                      </h4>
+                      <p className="text-xs text-brand-cyan/40 uppercase tracking-widest font-pixel">
+                        {selectedFloor === "PB" ? ei.groundFloor : selectedFloor === "P1" ? ei.firstFloor : ei.secondFloor}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    {(["PB", "P1", "P2"] as const).map((floor) => (
+                      <button
+                        key={floor}
+                        onClick={() => setSelectedFloor(floor)}
+                        className={cn(
+                          "group relative px-4 md:px-6 py-3 rounded-lg border-2 transition-all duration-300 font-pixel text-xs md:text-sm uppercase tracking-wider flex items-center gap-2",
+                          selectedFloor === floor
+                            ? "border-brand-orange bg-brand-orange/10 text-brand-orange shadow-[0_0_20px_rgba(255,107,0,0.3)]"
+                            : "border-brand-cyan/20 bg-brand-black/40 text-brand-cyan/60 hover:border-brand-cyan/40 hover:text-brand-cyan hover:bg-brand-cyan/5"
+                        )}
+                      >
+                        {floor}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="relative w-full md:w-48 aspect-video rounded-lg overflow-hidden border border-brand-cyan/20 cursor-pointer hover:border-brand-cyan/50 transition-all group">
+                        {loadingMaps ? (
+                          <Skeleton className="w-full h-full bg-brand-cyan/5" />
+                        ) : floorPlanUrls[selectedFloor] ? (
+                          <>
+                            <img
+                              src={floorPlanUrls[selectedFloor]}
+                              alt={selectedFloor}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-brand-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Maximize2 className="text-white w-6 h-6" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-brand-cyan/5 text-brand-cyan/20">
+                            <ImageIcon size={24} />
+                            <p className="text-xs font-pixel mt-1">EMPTY</p>
+                          </div>
+                        )}
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 bg-transparent border-none overflow-hidden sm:rounded-2xl">
+                      <DialogTitle className="sr-only">{selectedFloor}</DialogTitle>
+                      {floorPlanUrls[selectedFloor] && (
+                        <div className="relative w-full h-full flex items-center justify-center p-4">
+                          <img
+                            src={floorPlanUrls[selectedFloor]}
+                            alt={selectedFloor}
+                            className="max-w-full max-h-[85vh] rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10"
+                          />
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              ) : assignedRoom && (
+                // Participant Room Map (Simplified Layout)
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-1">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-full bg-brand-orange/10 flex items-center justify-center shrink-0">
+                      <MapPin className="text-brand-orange" size={30} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-pixel text-brand-cyan/40 uppercase tracking-widest leading-none">
+                        {ei.room}
+                      </p>
+                      <h4 className="text-3xl text-brand-yellow font-pixel leading-none">
+                        {assignedRoom}
+                      </h4>
+                    </div>
+                  </div>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="relative w-full md:w-64 aspect-video rounded-xl overflow-hidden border border-brand-cyan/20 cursor-pointer hover:border-brand-cyan/50 transition-all group shadow-2xl">
+                        {loadingMaps ? (
+                          <Skeleton className="w-full h-full bg-brand-cyan/5" />
+                        ) : roomImageUrl ? (
+                          <>
+                            <img
+                              src={roomImageUrl}
+                              alt={assignedRoom}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-brand-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Maximize2 className="text-white w-8 h-8" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-brand-cyan/5 text-brand-cyan/20">
+                            <ImageIcon size={32} />
+                            <p className="text-xs font-pixel mt-2 uppercase tracking-tighter">No Map</p>
+                          </div>
+                        )}
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-0 bg-transparent border-none overflow-hidden sm:rounded-2xl">
+                      <DialogTitle className="sr-only">{assignedRoom}</DialogTitle>
+                      {roomImageUrl && (
+                        <div className="relative w-full h-full flex items-center justify-center p-4">
+                          <img
+                            src={roomImageUrl}
+                            alt={assignedRoom}
+                            className="max-w-full max-h-[85vh] rounded-2xl shadow-[0_0_80px_rgba(255,107,0,0.2)] border border-white/10"
+                          />
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
+            </div>
+          )}
 
 
           {/* Maps */}
