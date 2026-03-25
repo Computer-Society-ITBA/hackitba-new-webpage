@@ -7,6 +7,8 @@ import { getDbClient } from "@/lib/firebase/client-config"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
 
+type ExportMode = "completed" | "approved"
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UserDoc {
@@ -582,7 +584,7 @@ function buildSponsorsSheet(
 
 // ─── Main export function ─────────────────────────────────────────────────────
 
-async function generateExcel() {
+async function generateExcel(mode: ExportMode = "completed") {
     const ExcelJS = await import("exceljs")
     const wb: Workbook = new ExcelJS.Workbook()
 
@@ -600,7 +602,35 @@ async function generateExcel() {
 
     const allUsers = usersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as UserDoc) }))
     const allTeams = teamsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as TeamDoc) }))
-    const participants = allUsers.filter((u) => u.role === "participant")
+
+    const participantUsers = allUsers.filter((u) => {
+        const role = String(u.role || "participant").toLowerCase()
+        return role === "participant" || role === "user"
+    })
+
+    const approvedTeamIds = new Set(
+        allTeams
+            .filter((team) => {
+                const status = String(team.status || "").toLowerCase()
+                return status === "approved" || status === "accepted"
+            })
+            .map((team) => team.id)
+    )
+
+    const approvedParticipants = participantUsers.filter((participant) => {
+        const status = String(participant.status || "").toLowerCase()
+        const byUserStatus = status === "approved" || status === "accepted"
+        const byTeamStatus = participant.team && approvedTeamIds.has(participant.team)
+        return byUserStatus || byTeamStatus
+    })
+
+    const approvedTeams = allTeams.filter((team) => {
+        const status = String(team.status || "").toLowerCase()
+        return status === "approved" || status === "accepted"
+    })
+
+    const participants = mode === "approved" ? approvedParticipants : participantUsers
+    const teams = mode === "approved" ? approvedTeams : allTeams
     const registeredParticipants = participants.filter((u) => Number(u.onboardingStep) >= 2)
 
     // Sheet tab colours use the accent
@@ -610,8 +640,8 @@ async function generateExcel() {
     const wsSp = wb.addWorksheet("Sponsors", { properties: { tabColor: { argb: `FFFBBF24` } } })
 
     buildParticipantsSheet(wsP, participants)
-    buildTeamsSheet(wsT, allTeams, participants)
-    buildSummarySheet(wsS, participants, allTeams)
+    buildTeamsSheet(wsT, teams, participants)
+    buildSummarySheet(wsS, participants, teams)
     buildSponsorsSheet(wsSp, registeredParticipants)
 
     // Download
@@ -629,7 +659,11 @@ async function generateExcel() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function AdminDataExporter() {
+interface AdminDataExporterProps {
+    statsMode?: ExportMode
+}
+
+export function AdminDataExporter({ statsMode = "completed" }: AdminDataExporterProps) {
     const [status, setStatus] = useState<"idle" | "loading" | "error">("idle")
     const [errorMsg, setErrorMsg] = useState("")
 
@@ -637,7 +671,7 @@ export function AdminDataExporter() {
         setStatus("loading")
         setErrorMsg("")
         try {
-            await generateExcel()
+            await generateExcel(statsMode)
             setStatus("idle")
         } catch (err) {
             console.error("[AdminDataExporter]", err)
