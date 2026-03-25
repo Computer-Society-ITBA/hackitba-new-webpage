@@ -278,6 +278,11 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
 
         const participantTeam = participant?.team ? teams.find((team) => team.id === participant.team) : null
         const participantTeamStatus = String(participantTeam?.status || "").toLowerCase()
+
+        // Team status should take precedence when user-level status is stale.
+        if (participantTeamStatus === "rejected") {
+            return "rejected"
+        }
         if (participantTeamStatus === "approved" || participantTeamStatus === "accepted") {
             return "accepted"
         }
