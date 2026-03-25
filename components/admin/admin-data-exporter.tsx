@@ -6,6 +6,8 @@ import { Download, Loader2 } from "lucide-react"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
+import type { Locale } from "@/lib/i18n/config"
+import { getCategoryByLegacyIndex, sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 type ExportMode = "completed" | "approved"
 
@@ -43,6 +45,7 @@ interface TeamDoc {
     name?: string
     label?: string
     status?: string
+    category?: number | string
     category_1?: number
     category_2?: number
     category_3?: number
@@ -108,16 +111,39 @@ function toLabel(key: string): string {
         .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-const CATEGORY_NAMES: Record<number, string> = {
-    0: "Categoría 0",
-    1: "Categoría 1",
-    2: "Categoría 2",
-    3: "Categoría 3",
-    4: "Categoría 4",
-    5: "Categoría 5",
+const normalizeCategoryIndex = (value: unknown): number | null => {
+    if (value === null || value === undefined || value === "") return null
+    const parsed = Number(value)
+    if (!Number.isFinite(parsed)) return null
+    return parsed
 }
-const catName = (i?: number | null) =>
-    i !== undefined && i !== null ? (CATEGORY_NAMES[i] ?? `Cat ${i}`) : ""
+
+const getDisplayCategoryName = (categories: any[], categoryIndex: unknown, locale: Locale): string => {
+    const index = normalizeCategoryIndex(categoryIndex)
+    if (index === null) return ""
+    const category = getCategoryByLegacyIndex(categories, index)
+    if (!category) return locale === "es" ? `Categoría ${index + 1}` : `Category ${index + 1}`
+    return locale === "es"
+        ? (category.spanishName || category.englishName || category.name || `Categoría ${index + 1}`)
+        : (category.englishName || category.spanishName || category.name || `Category ${index + 1}`)
+}
+
+const getTeamFinalCategoryIndex = (team: TeamDoc): number | null => {
+    const teamStatus = String(team.status || "").toLowerCase()
+    const isAccepted = teamStatus === "accepted" || teamStatus === "approved"
+    const rawCategory = isAccepted ? (team.category ?? team.category_1) : team.category_1
+    return normalizeCategoryIndex(rawCategory)
+}
+
+const getParticipantTeam = (participant: UserDoc & { id: string }, teams: (TeamDoc & { id: string })[]): (TeamDoc & { id: string }) | null => {
+    const refById = [participant.teamId, participant.team].filter(Boolean).map((value) => String(value))
+    const byId = teams.find((team) => refById.includes(String(team.id)))
+    if (byId) return byId
+
+    const refByName = String(participant.team || "")
+    if (!refByName) return null
+    return teams.find((team) => String(team.name || "") === refByName) || null
+}
 
 // ─── ExcelJS style factories ──────────────────────────────────────────────────
 
@@ -240,12 +266,15 @@ function setColumnWidths(ws: Worksheet, headers: string[], extra: Record<string,
 function buildParticipantsSheet(
     ws: Worksheet,
     participants: (UserDoc & { id: string })[],
+    teams: (TeamDoc & { id: string })[],
+    categories: any[],
+    locale: Locale,
 ) {
     const FIELDS = [
         "name", "surname", "email", "role", "career", "university",
         "grad_year", "neighborhood",
         "age", "dni", "food_preference",
-        "category_1", "category_2", "category_3",
+        "category",
         "team", "hasTeam", "onboardingStep",
         "emailVerified", "github", "linkedin", "link_cv",
         "createdAt", "updatedAt",
@@ -255,11 +284,16 @@ function buildParticipantsSheet(
     addHeaders(ws, FIELDS, 3)
     setColumnWidths(ws, FIELDS, {
         name: 20, surname: 20, email: 32, career: 22, university: 28,
-        grad_year: 14, neighborhood: 24,
+        grad_year: 14, neighborhood: 24, category: 26,
         github: 28, linkedin: 28, link_cv: 28, food_preference: 20,
     })
 
     participants.forEach((u, idx) => {
+            const participantTeam = getParticipantTeam(u, teams)
+            const participantCategory = participantTeam
+                ? getTeamFinalCategoryIndex(participantTeam)
+                : normalizeCategoryIndex(u.category_1)
+
             const rowData: Record<string, unknown> = {
             name: u.name ?? "",
             surname: u.surname ?? "",
@@ -272,10 +306,8 @@ function buildParticipantsSheet(
             age: u.age ?? "",
             dni: u.dni ?? "",
             food_preference: u.food_preference ?? "",
-            category_1: catName(u.category_1),
-            category_2: catName(u.category_2),
-            category_3: catName(u.category_3),
-            team: u.team ?? "",
+            category: getDisplayCategoryName(categories, participantCategory, locale),
+            team: participantTeam?.name ?? u.team ?? u.teamId ?? "",
             hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
             onboardingStep: u.onboardingStep ?? "",
             emailVerified: u.emailVerified !== undefined ? String(u.emailVerified) : "",
@@ -307,13 +339,17 @@ function buildParticipantsSheet(
             style: { theme: "TableStyleMedium2", showRowStripes: true },
             columns: FIELDS.map((f) => ({ name: toLabel(f), filterButton: true })),
             rows: participants.map((u) => {
+                const participantTeam = getParticipantTeam(u, teams)
+                const participantCategory = participantTeam
+                    ? getTeamFinalCategoryIndex(participantTeam)
+                    : normalizeCategoryIndex(u.category_1)
                 const rowData: Record<string, unknown> = {
                     name: u.name ?? "", surname: u.surname ?? "", email: u.email ?? "",
                     role: u.role ?? "", career: u.career ?? "", university: u.university ?? "",
                     grad_year: u.grad_year ?? u.career_year ?? u.careerYear ?? "", neighborhood: u.neighborhood ?? "",
                     age: u.age ?? "", dni: u.dni ?? "", food_preference: u.food_preference ?? "",
-                    category_1: catName(u.category_1), category_2: catName(u.category_2), category_3: catName(u.category_3),
-                    team: u.team ?? "", hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
+                    category: getDisplayCategoryName(categories, participantCategory, locale),
+                    team: participantTeam?.name ?? u.team ?? u.teamId ?? "", hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
                     onboardingStep: u.onboardingStep ?? "", emailVerified: u.emailVerified !== undefined ? String(u.emailVerified) : "",
                     github: u.github ?? "", linkedin: u.linkedin ?? "", link_cv: u.link_cv ?? "",
                     createdAt: formatDate(u.createdAt), updatedAt: formatDate(u.updatedAt),
@@ -328,9 +364,11 @@ function buildTeamsSheet(
     ws: Worksheet,
     teams: (TeamDoc & { id: string })[],
     participants: (UserDoc & { id: string })[],
+    categories: any[],
+    locale: Locale,
 ) {
     const FIELDS = [
-        "name", "label", "status", "category_1", "category_2", "category_3",
+        "name", "label", "status", "category",
         "is_created_by_admin", "is_finalista", "tell_why",
         "createdAt", "updatedAt", "members",
     ]
@@ -339,13 +377,15 @@ function buildTeamsSheet(
     addHeaders(ws, FIELDS, 3)
     setColumnWidths(ws, FIELDS, {
         name: 22, label: 22, tell_why: 40, members: 45,
-        category_1: 22, category_2: 22, category_3: 22,
+        category: 26,
     })
 
     teams.forEach((t, idx) => {
+        const teamCategory = getTeamFinalCategoryIndex(t)
         const members = participants
             .filter(
                 (u) =>
+                    (t.id && u.team === t.id) ||
                     (t.name && u.team === t.name) ||
                     (t.id && u.teamId === t.id),
             )
@@ -356,9 +396,7 @@ function buildTeamsSheet(
             name: t.name ?? "",
             label: t.label ?? "",
             status: t.status ?? "",
-            category_1: catName(t.category_1),
-            category_2: catName(t.category_2),
-            category_3: catName(t.category_3),
+            category: getDisplayCategoryName(categories, teamCategory, locale),
             is_created_by_admin: t.is_created_by_admin !== undefined ? String(t.is_created_by_admin) : "",
             is_finalista: t.is_finalista !== undefined ? String(t.is_finalista) : "",
             tell_why: t.tell_why ?? "",
@@ -387,13 +425,14 @@ function buildTeamsSheet(
             style: { theme: "TableStyleMedium2", showRowStripes: true },
             columns: FIELDS.map((f) => ({ name: toLabel(f), filterButton: true })),
             rows: teams.map((t) => {
+                const teamCategory = getTeamFinalCategoryIndex(t)
                 const members = participants
-                    .filter((u) => (t.name && u.team === t.name) || (t.id && u.teamId === t.id))
+                    .filter((u) => (t.id && u.team === t.id) || (t.name && u.team === t.name) || (t.id && u.teamId === t.id))
                     .map((u) => [u.name, u.surname].filter(Boolean).join(" "))
                     .join(", ")
                 const rowData: Record<string, unknown> = {
                     name: t.name ?? "", label: t.label ?? "", status: t.status ?? "",
-                    category_1: catName(t.category_1), category_2: catName(t.category_2), category_3: catName(t.category_3),
+                    category: getDisplayCategoryName(categories, teamCategory, locale),
                     is_created_by_admin: t.is_created_by_admin !== undefined ? String(t.is_created_by_admin) : "",
                     is_finalista: t.is_finalista !== undefined ? String(t.is_finalista) : "",
                     tell_why: t.tell_why ?? "", createdAt: formatDate(t.createdAt), updatedAt: formatDate(t.updatedAt), members,
@@ -408,63 +447,58 @@ function buildSummarySheet(
     ws: Worksheet,
     participants: (UserDoc & { id: string })[],
     teams: (TeamDoc & { id: string })[],
+    categories: any[],
+    locale: Locale,
 ) {
-    // Gather all categories
-    const allCatIdxs = new Set<number>()
-        ;[...participants, ...teams].forEach((d) => {
-            ;[d.category_1, d.category_2, d.category_3].forEach((c) => {
-                if (c !== undefined && c !== null) allCatIdxs.add(c)
-            })
-        })
-    const cats = Array.from(allCatIdxs).sort((a, b) => a - b)
-
-    interface Tally { p1: number; p2: number; p3: number; t1: number; t2: number; t3: number }
-    const tally: Record<number, Tally> = {}
-    cats.forEach((c) => { tally[c] = { p1: 0, p2: 0, p3: 0, t1: 0, t2: 0, t3: 0 } })
-
-    participants.forEach((u) => {
-        if (u.category_1 !== undefined && u.category_1 !== null) tally[u.category_1].p1++
-        if (u.category_2 !== undefined && u.category_2 !== null) tally[u.category_2].p2++
-        if (u.category_3 !== undefined && u.category_3 !== null) tally[u.category_3].p3++
-    })
-    teams.forEach((t) => {
-        if (t.category_1 !== undefined && t.category_1 !== null) tally[t.category_1].t1++
-        if (t.category_2 !== undefined && t.category_2 !== null) tally[t.category_2].t2++
-        if (t.category_3 !== undefined && t.category_3 !== null) tally[t.category_3].t3++
+    const teamFinalCategoryById = new Map<string, number>()
+    teams.forEach((team) => {
+        const finalCategory = getTeamFinalCategoryIndex(team)
+        const categoryIdx = normalizeCategoryIndex(finalCategory)
+        if (categoryIdx !== null && team.id) {
+            teamFinalCategoryById.set(team.id, categoryIdx)
+        }
     })
 
-    const FIELDS = [
-        "category",
-        "participants_1st", "participants_2nd", "participants_3rd",
-        "teams_1st", "teams_2nd", "teams_3rd",
-        "total_1st", "total_2nd", "total_3rd",
-    ]
+    interface Tally { participants: number; teams: number }
+    const tally = new Map<number, Tally>()
+    const addCategory = (idx: number, target: "participants" | "teams") => {
+        const row = tally.get(idx) ?? { participants: 0, teams: 0 }
+        row[target] += 1
+        tally.set(idx, row)
+    }
 
-    addSheetTitle(ws, "Resumen por Categoría", FIELDS.length)
+    participants.forEach((participant) => {
+        const teamId = String(participant.team || participant.teamId || "")
+        const teamCategory = teamId ? teamFinalCategoryById.get(teamId) : undefined
+        const participantCategory = normalizeCategoryIndex(participant.category_1)
+        const finalCategory = teamCategory ?? participantCategory
+        if (finalCategory !== null && finalCategory !== undefined) {
+            addCategory(finalCategory, "participants")
+        }
+    })
 
-    // Section sub-headers
-    const subRow = ws.addRow([
-        "", "← Participantes →", "", "", "← Equipos →", "", "", "← Total →", "", "",
-    ])
-    subRow.height = 16
-        ;[2, 5, 8].forEach((col) => {
-            const cell = subRow.getCell(col)
-            cell.fill = makeFill(COLOR.accentBg)
-            cell.font = { name: FONT_NAME, bold: true, size: 9, color: { argb: `FF${COLOR.accentFg}` }, italic: true }
-            cell.alignment = { horizontal: "center" }
-            ws.mergeCells(3, col, 3, col + 2)
-        })
+    teams.forEach((team) => {
+        if (!team.id) return
+        const finalCategory = teamFinalCategoryById.get(team.id)
+        if (finalCategory !== undefined) {
+            addCategory(finalCategory, "teams")
+        }
+    })
 
-    addHeaders(ws, FIELDS, 4)
+    const sortedCategories = Array.from(tally.keys()).sort((a, b) => a - b)
+    const FIELDS = ["category", "participants_final", "teams_final", "total_final"]
+
+    addSheetTitle(ws, "Resumen Final por Categoría", FIELDS.length)
+    addHeaders(ws, FIELDS, 3)
     setColumnWidths(ws, FIELDS, { category: 26 })
 
-    cats.forEach((c, idx) => {
-        const t = tally[c]
+    sortedCategories.forEach((categoryIdx, idx) => {
+        const rowCounts = tally.get(categoryIdx) || { participants: 0, teams: 0 }
         const row = ws.addRow([
-            catName(c),
-            t.p1, t.p2, t.p3,
-            t.t1, t.t2, t.t3,
-            t.p1 + t.t1, t.p2 + t.t2, t.p3 + t.t3,
+            getDisplayCategoryName(categories, categoryIdx, locale),
+            rowCounts.participants,
+            rowCounts.teams,
+            rowCounts.participants + rowCounts.teams,
         ])
         row.height = 20
 
@@ -473,11 +507,9 @@ function buildSummarySheet(
             if (col === 1) {
                 styleChip(cell, COLOR.chip.cyan)
             } else {
-                // Highlight the highest total in each placement column
                 cell.font = { name: FONT_NAME, size: 10 }
                 cell.alignment = { horizontal: "center", vertical: "middle" }
-                // Bold the total columns (8–10)
-                if (col >= 8) {
+                if (col === 4) {
                     cell.font = { name: FONT_NAME, size: 10, bold: true }
                     cell.fill = makeFill(idx % 2 === 0 ? "EFF6FF" : "DBEAFE")
                 }
@@ -485,21 +517,14 @@ function buildSummarySheet(
         })
     })
 
-    // Totals footer row
-    if (cats.length > 0) {
-        const dataStart = 5
-        const dataEnd = 4 + cats.length
+    if (sortedCategories.length > 0) {
+        const dataStart = 4
+        const dataEnd = 3 + sortedCategories.length
         const totalsRow = ws.addRow([
             "TOTAL",
             `=SUM(B${dataStart}:B${dataEnd})`,
             `=SUM(C${dataStart}:C${dataEnd})`,
             `=SUM(D${dataStart}:D${dataEnd})`,
-            `=SUM(E${dataStart}:E${dataEnd})`,
-            `=SUM(F${dataStart}:F${dataEnd})`,
-            `=SUM(G${dataStart}:G${dataEnd})`,
-            `=SUM(H${dataStart}:H${dataEnd})`,
-            `=SUM(I${dataStart}:I${dataEnd})`,
-            `=SUM(J${dataStart}:J${dataEnd})`,
         ])
         totalsRow.height = 22
         totalsRow.eachCell((cell: any) => {
@@ -510,7 +535,7 @@ function buildSummarySheet(
         })
     }
 
-    ws.views = [{ state: "frozen", ySplit: 4, xSplit: 0 }]
+    ws.views = [{ state: "frozen", ySplit: 3, xSplit: 0 }]
 }
 
 function buildSponsorsSheet(
@@ -584,7 +609,7 @@ function buildSponsorsSheet(
 
 // ─── Main export function ─────────────────────────────────────────────────────
 
-async function generateExcel(mode: ExportMode = "completed") {
+async function generateExcel(mode: ExportMode = "completed", locale: Locale = "es") {
     const ExcelJS = await import("exceljs")
     const wb: Workbook = new ExcelJS.Workbook()
 
@@ -595,13 +620,15 @@ async function generateExcel(mode: ExportMode = "completed") {
     const db = getDbClient()
     if (!db) throw new Error("Firebase DB client unavailable")
 
-    const [usersSnap, teamsSnap] = await Promise.all([
+    const [usersSnap, teamsSnap, categoriesSnap] = await Promise.all([
         getDocs(collection(db, "users")),
         getDocs(collection(db, "teams")),
+        getDocs(collection(db, "categories")),
     ])
 
     const allUsers = usersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as UserDoc) }))
     const allTeams = teamsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as TeamDoc) }))
+    const categories = sortCategoriesByLegacyIndex(categoriesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as any)))
 
     const participantUsers = allUsers.filter((u) => {
         const role = String(u.role || "participant").toLowerCase()
@@ -639,9 +666,9 @@ async function generateExcel(mode: ExportMode = "completed") {
     const wsS = wb.addWorksheet("Categorías", { properties: { tabColor: { argb: `FF10B981` } } })
     const wsSp = wb.addWorksheet("Sponsors", { properties: { tabColor: { argb: `FFFBBF24` } } })
 
-    buildParticipantsSheet(wsP, participants)
-    buildTeamsSheet(wsT, teams, participants)
-    buildSummarySheet(wsS, participants, teams)
+    buildParticipantsSheet(wsP, participants, teams, categories, locale)
+    buildTeamsSheet(wsT, teams, participants, categories, locale)
+    buildSummarySheet(wsS, participants, teams, categories, locale)
     buildSponsorsSheet(wsSp, registeredParticipants)
 
     // Download
@@ -661,9 +688,10 @@ async function generateExcel(mode: ExportMode = "completed") {
 
 interface AdminDataExporterProps {
     statsMode?: ExportMode
+    locale?: Locale
 }
 
-export function AdminDataExporter({ statsMode = "completed" }: AdminDataExporterProps) {
+export function AdminDataExporter({ statsMode = "completed", locale = "es" }: AdminDataExporterProps) {
     const [status, setStatus] = useState<"idle" | "loading" | "error">("idle")
     const [errorMsg, setErrorMsg] = useState("")
 
@@ -671,7 +699,7 @@ export function AdminDataExporter({ statsMode = "completed" }: AdminDataExporter
         setStatus("loading")
         setErrorMsg("")
         try {
-            await generateExcel(statsMode)
+            await generateExcel(statsMode, locale)
             setStatus("idle")
         } catch (err) {
             console.error("[AdminDataExporter]", err)
