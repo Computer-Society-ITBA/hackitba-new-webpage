@@ -347,6 +347,16 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
     const filteredAndSortedData = useMemo(() => {
         let data = activeTab === "participants" ? [...participantUsers] : [...teams]
 
+        // In approved mode, tables should only show approved entities by default.
+        if (statsMode === "approved") {
+            data = data.filter((item) => {
+                if (activeTab === "participants") {
+                    return getParticipantStatusKey(item) === "accepted"
+                }
+                return getTeamStatusKey(item) === "approved"
+            })
+        }
+
         // Search
         if (searchTerm) {
             const lowerSearch = searchTerm.toLowerCase()
@@ -449,7 +459,7 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
         })
 
         return data
-    }, [activeTab, participantUsers, teams, searchTerm, categoryFilter, statusFilter, sortField, sortOrder])
+    }, [activeTab, participantUsers, teams, searchTerm, categoryFilter, statusFilter, sortField, sortOrder, statsMode])
 
     const pagedData = useMemo(() => {
         const start = (page - 1) * pageSize
