@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/firebase/auth-context"
 import { Trophy, FileEdit, CheckCircle2, AlertCircle, Ban } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
+import { RankingsList } from "@/components/dashboard/rankings-list"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
@@ -328,6 +329,9 @@ export default function ParticipanteDashboard() {
               userTeamLabel={resolvedTeamId}
             />
           </section>
+
+          {/* Rankings Section */}
+          <RankingsList locale={locale} />
 
           {/* Winners Section */}
           {showWinners && (

@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast"
 import { AdminDataExporter } from "@/components/admin/admin-data-exporter"
 import { AdminManagementTables } from "@/components/admin/admin-management-tables"
 import { AdminJudgesMentors } from "@/components/admin/admin-judges-mentors"
+import { AdminRankings } from "@/components/admin/admin-rankings"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
 
@@ -366,6 +367,10 @@ export default function AdminDashboard() {
               <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
             </div>
             <AdminDataExporter />
+          </section>
+
+          <section>
+            <AdminRankings locale={locale} />
           </section>
 
           <section>
