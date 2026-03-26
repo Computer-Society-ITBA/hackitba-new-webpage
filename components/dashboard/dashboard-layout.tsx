@@ -360,6 +360,28 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         )}
 
         {user?.role === "admin" && (
+          pathname === `/${locale}/dashboard/admin/accreditation` ? (
+            <span
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Accreditation"
+            >
+              <ShieldCheck size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Accreditation</span>}
+            </span>
+          ) : (
+            <Link
+              href={`/${locale}/dashboard/admin/accreditation`}
+              onClick={() => isMobile && setMobileOpen(false)}
+              className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan hover:bg-brand-cyan/10 transition-colors ${collapsed && !isMobile ? "justify-center" : ""}`}
+              title="Accreditation"
+            >
+              <ShieldCheck size={isMobile ? 18 : 20} className="flex-shrink-0" />
+              {(!collapsed || isMobile) && <span className={`font-pixel ${isMobile ? "text-lg" : "text-sm"}`}>Accreditation</span>}
+            </Link>
+          )
+        )}
+
+        {user?.role === "admin" && (
           pathname === `/${locale}/dashboard/admin/incomplete` ? (
             <span
               className={`flex items-center ${isMobile ? "gap-3 px-3 py-2" : "gap-4 px-4 py-3"} rounded text-brand-cyan/40 cursor-default select-none ${collapsed && !isMobile ? "justify-center" : ""}`}
