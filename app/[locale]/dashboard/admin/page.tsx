@@ -366,7 +366,7 @@ export default function AdminDashboard() {
             <div className="mb-6">
               <h3 className="font-pixel text-2xl text-brand-yellow">Data Export</h3>
             </div>
-            <AdminDataExporter />
+            <AdminDataExporter statsMode={statsMode} locale={locale} />
           </section>
 
           <section>

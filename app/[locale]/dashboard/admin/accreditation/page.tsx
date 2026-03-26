@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Input } from "@/components/ui/input"
 import { collection, getDocs, getDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { CheckCircle2, XCircle, Search, User as UserIcon, MapPin, Users, Briefcase, Award, Loader2, ArrowLeft, ScanLine } from "lucide-react"
+import { CheckCircle2, XCircle, Search, User as UserIcon, MapPin, Users, Briefcase, Award, Loader2, ArrowLeft, ScanLine, Radio } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
@@ -415,9 +415,20 @@ function AccreditationContent({ locale }: { locale: Locale }) {
       ) : showSearch ? (
         /* SEARCH INTERFACE */
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-          <h2 className="font-pixel text-xl text-brand-yellow">
-            {locale === "es" ? "Buscar Participante" : "Search Participant"}
-          </h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-pixel text-xl text-brand-yellow">
+              {locale === "es" ? "Buscar Participante" : "Search Participant"}
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/${locale}/dashboard/admin/live`)}
+              className="border-red-500/60 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            >
+              <Radio size={14} className="mr-2" />
+              Go Live
+            </Button>
+          </div>
           <div className="flex gap-2">
             <Input
               placeholder={locale === "es" ? "Nombre o Email..." : "Name or Email..."}

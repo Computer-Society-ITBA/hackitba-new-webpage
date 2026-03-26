@@ -24,6 +24,8 @@ import type { Locale } from "@/lib/i18n/config"
 import { getCategoryByLegacyIndex, getLegacyIndexFromCategoryId, sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
 export default function ApprovalsPage() {
+  const HIDDEN_PARTICIPANT_STATUSES = new Set(["accepted", "approved", "rejected"])
+
   const params = useParams()
   const locale = (params?.locale as Locale) || "en"
   const translations = getTranslations(locale)
@@ -215,7 +217,7 @@ export default function ApprovalsPage() {
       )
       const users = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
-        .filter((u: any) => u.status !== "accepted")
+        .filter((u: any) => !HIDDEN_PARTICIPANT_STATUSES.has((u.status || "").toLowerCase()))
       setNoTeamUsers(users)
     } catch (error) {
       console.error("Error loading no-team users:", error)

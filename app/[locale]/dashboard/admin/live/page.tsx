@@ -69,7 +69,7 @@ function LiveDisplayContent() {
             <h1 className="font-pixel text-2xl text-brand-yellow shadow-brand-yellow/20 text-shadow-sm">
               {locale === "es" ? "RECIÉN LLEGADOS" : "RECENTLY ARRIVED"}
             </h1>
-            <p className="font-pixel text-brand-cyan/60 text-sm">HACKITBA 2024 · ACCREDITATION LIVE</p>
+            <p className="font-pixel text-brand-cyan/60 text-sm">HACKITBA 2026 · ACCREDITATION LIVE</p>
           </div>
         </div>
         <div className="flex items-center gap-4 bg-brand-navy/60 px-6 py-2 rounded-full border border-brand-cyan/20 shadow-inner">

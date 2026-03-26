@@ -105,6 +105,7 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
     // Custom mail (free recipient)
     const [showCustomMail, setShowCustomMail] = useState(false)
     const [customMailTo, setCustomMailTo] = useState("")
+    const [customMailRecipientMode, setCustomMailRecipientMode] = useState<"single" | "approved_participants">("single")
     const [customMailSubject, setCustomMailSubject] = useState("")
     const [customMailBody, setCustomMailBody] = useState("")
     const [isSendingCustomMail, setIsSendingCustomMail] = useState(false)
@@ -278,6 +279,11 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
 
         const participantTeam = participant?.team ? teams.find((team) => team.id === participant.team) : null
         const participantTeamStatus = String(participantTeam?.status || "").toLowerCase()
+
+        // Team status should take precedence when user-level status is stale.
+        if (participantTeamStatus === "rejected") {
+            return "rejected"
+        }
         if (participantTeamStatus === "approved" || participantTeamStatus === "accepted") {
             return "accepted"
         }
@@ -344,8 +350,29 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
         return approvedByCategorySummary.reduce((sum, row) => sum + row.count, 0)
     }, [approvedByCategorySummary])
 
+    const approvedParticipantRecipients = useMemo(() => {
+        return Array.from(
+            new Set(
+                participantUsers
+                    .filter((participant) => getParticipantStatusKey(participant) === "accepted")
+                    .map((participant) => String(participant?.email || "").trim())
+                    .filter((email) => email.length > 0)
+            )
+        )
+    }, [participantUsers, teams])
+
     const filteredAndSortedData = useMemo(() => {
         let data = activeTab === "participants" ? [...participantUsers] : [...teams]
+
+        // In approved mode, tables should only show approved entities by default.
+        if (statsMode === "approved") {
+            data = data.filter((item) => {
+                if (activeTab === "participants") {
+                    return getParticipantStatusKey(item) === "accepted"
+                }
+                return getTeamStatusKey(item) === "approved"
+            })
+        }
 
         // Search
         if (searchTerm) {
@@ -449,7 +476,7 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
         })
 
         return data
-    }, [activeTab, participantUsers, teams, searchTerm, categoryFilter, statusFilter, sortField, sortOrder])
+    }, [activeTab, participantUsers, teams, searchTerm, categoryFilter, statusFilter, sortField, sortOrder, statsMode])
 
     const pagedData = useMemo(() => {
         const start = (page - 1) * pageSize
@@ -626,7 +653,13 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
 
                 <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
                     <button
-                        onClick={() => { setShowCustomMail(true); setCustomMailTo(""); setCustomMailSubject(""); setCustomMailBody(""); }}
+                        onClick={() => {
+                            setShowCustomMail(true)
+                            setCustomMailTo("")
+                            setCustomMailRecipientMode("single")
+                            setCustomMailSubject("")
+                            setCustomMailBody("")
+                        }}
                         className="flex items-center gap-2 px-3 py-1.5 bg-blue-700/20 text-blue-300 border border-blue-500/30 rounded text-xs hover:bg-blue-700/30 transition-colors font-pixel"
                     >
                         <Mail size={13} />
@@ -998,6 +1031,18 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                     </DialogHeader>
                     <div className="py-4 space-y-3">
                         <div>
+                            <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Tipo de destinatario" : "Recipient type"}</label>
+                            <select
+                                value={customMailRecipientMode}
+                                onChange={(e) => setCustomMailRecipientMode(e.target.value as "single" | "approved_participants")}
+                                className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
+                            >
+                                <option value="single">{locale === "es" ? "Email individual" : "Single email"}</option>
+                                <option value="approved_participants">{locale === "es" ? "Todos los aprobados (participantes)" : "All approved participants"}</option>
+                            </select>
+                        </div>
+                        {customMailRecipientMode === "single" ? (
+                        <div>
                             <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Destinatario (email)" : "Recipient (email)"}</label>
                             <input
                                 type="email"
@@ -1007,6 +1052,15 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                                 className="w-full bg-black/40 border border-brand-cyan/20 rounded h-9 text-xs px-2 text-brand-cyan mt-2"
                             />
                         </div>
+                        ) : (
+                            <div className="rounded border border-brand-cyan/20 bg-black/30 p-2">
+                                <p className="text-xs text-brand-cyan/70">
+                                    {locale === "es"
+                                        ? `Se enviara a ${approvedParticipantRecipients.length} participante(s) aprobado(s).`
+                                        : `Will be sent to ${approvedParticipantRecipients.length} approved participant(s).`}
+                                </p>
+                            </div>
+                        )}
                         <div>
                             <label className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Asunto" : "Subject"}</label>
                             <input
@@ -1032,40 +1086,81 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                             {locale === "es" ? "Cancelar" : "Cancel"}
                         </PixelButton>
                         <PixelButton onClick={async () => {
-                            if (!customMailTo || !customMailSubject) return
+                            const hasSingleRecipient = customMailRecipientMode === "single" && !!customMailTo
+                            const hasApprovedRecipients = customMailRecipientMode === "approved_participants" && approvedParticipantRecipients.length > 0
+                            if (!customMailSubject || (!hasSingleRecipient && !hasApprovedRecipients)) return
                             setIsSendingCustomMail(true)
                             try {
                                 const auth = getAuthClient()
                                 const idToken = await auth?.currentUser?.getIdToken()
                                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/webpage-36e40/us-central1/api"
-                                const res = await fetch(`${apiUrl}/users/send-email`, {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
-                                    body: JSON.stringify({ email: customMailTo, subject: customMailSubject, body: customMailBody, dashboardUrl: `${window.location.origin}/${locale}/dashboard` })
-                                })
-                                const contentType = res.headers.get("content-type") || ""
-                                if (res.ok) {
-                                    toast({ title: locale === "es" ? "Email encolado" : "Email queued" })
+                                const dashboardUrl = `${window.location.origin}/${locale}/dashboard`
+
+                                if (customMailRecipientMode === "approved_participants") {
+                                    const results = await Promise.allSettled(
+                                        approvedParticipantRecipients.map((email) =>
+                                            fetch(`${apiUrl}/users/send-email`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+                                                body: JSON.stringify({ email, subject: customMailSubject, body: customMailBody, dashboardUrl })
+                                            })
+                                        )
+                                    )
+
+                                    const failed = results.filter(result => result.status === "rejected" || (result.status === "fulfilled" && !result.value.ok)).length
+                                    if (failed === 0) {
+                                        toast({ title: locale === "es" ? `${approvedParticipantRecipients.length} emails encolados` : `${approvedParticipantRecipients.length} emails queued` })
+                                    } else {
+                                        toast({
+                                            title: locale === "es"
+                                                ? `${approvedParticipantRecipients.length - failed} enviados, ${failed} fallaron`
+                                                : `${approvedParticipantRecipients.length - failed} sent, ${failed} failed`,
+                                            variant: "destructive"
+                                        })
+                                    }
                                     setShowCustomMail(false)
                                 } else {
-                                    let message = "Error"
-                                    try {
-                                        if (contentType.includes("application/json")) {
-                                            const err = await res.json()
-                                            message = err?.error || err?.message || JSON.stringify(err)
-                                        } else {
-                                            message = await res.text()
-                                        }
-                                    } catch (e) { message = res.statusText }
-                                    toast({ title: "Error", description: message, variant: "destructive" })
+                                    const res = await fetch(`${apiUrl}/users/send-email`, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${idToken}` },
+                                        body: JSON.stringify({ email: customMailTo, subject: customMailSubject, body: customMailBody, dashboardUrl })
+                                    })
+                                    const contentType = res.headers.get("content-type") || ""
+                                    if (res.ok) {
+                                        toast({ title: locale === "es" ? "Email encolado" : "Email queued" })
+                                        setShowCustomMail(false)
+                                    } else {
+                                        let message = "Error"
+                                        try {
+                                            if (contentType.includes("application/json")) {
+                                                const err = await res.json()
+                                                message = err?.error || err?.message || JSON.stringify(err)
+                                            } else {
+                                                message = await res.text()
+                                            }
+                                        } catch (e) { message = res.statusText }
+                                        toast({ title: "Error", description: message, variant: "destructive" })
+                                    }
                                 }
                             } catch (error) {
                                 toast({ title: "Error", description: "Network error", variant: "destructive" })
                             } finally {
                                 setIsSendingCustomMail(false)
                             }
-                        }} size="sm" disabled={isSendingCustomMail || !customMailTo || !customMailSubject}>
-                            {isSendingCustomMail ? (locale === "es" ? "Enviando..." : "Sending...") : (locale === "es" ? "Enviar" : "Send")}
+                        }} size="sm" disabled={
+                            isSendingCustomMail
+                            || !customMailSubject
+                            || (
+                                customMailRecipientMode === "single"
+                                    ? !customMailTo
+                                    : approvedParticipantRecipients.length === 0
+                            )
+                        }>
+                            {isSendingCustomMail
+                                ? (locale === "es" ? "Enviando..." : "Sending...")
+                                : customMailRecipientMode === "approved_participants"
+                                    ? (locale === "es" ? `Enviar a ${approvedParticipantRecipients.length}` : `Send to ${approvedParticipantRecipients.length}`)
+                                    : (locale === "es" ? "Enviar" : "Send")}
                         </PixelButton>
                     </div>
                 </DialogContent>
