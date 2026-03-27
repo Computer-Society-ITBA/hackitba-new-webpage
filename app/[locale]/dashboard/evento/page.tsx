@@ -46,8 +46,8 @@ const TIMELINE_DATA = [
     id: "friday",
     date: { es: "Viernes 27", en: "Friday 27" },
     events: [
-      { time: "16:15", es: "Acreditación", en: "Check-in & Registration", loc: "uspallata" },
-      { time: "17:00", es: "Inicio Acto de Apertura", en: "Opening Ceremony Start", badge: { es: "Apertura", en: "Opening" }, loc: "uspallata" },
+      { time: "17:00", es: "Acreditación", en: "Check-in & Registration", loc: "uspallata" },
+      { time: "17:45", es: "Inicio Acto de Apertura", en: "Opening Ceremony Start", badge: { es: "Apertura", en: "Opening" }, loc: "uspallata" },
       { time: "18:00", es: "Espacio de Charlas", en: "Speaker Sessions", loc: "uspallata" },
       { time: "19:30", es: "Fin Acto de Apertura", en: "Opening Ceremony End", loc: "uspallata" },
       { time: "20:30", timeEnd: "22:00", es: "Cena", en: "Dinner", loc: "sdr" },
