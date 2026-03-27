@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore"
-import { getDbClient, getAuthClient } from "@/lib/firebase/client-config"
+import { getDbClient, getAuthClient, getStorageClient } from "@/lib/firebase/client-config"
+import { ref, listAll, getDownloadURL } from "firebase/storage"
 import { useCategories } from "@/hooks/use-categories"
 import type { Locale } from "@/lib/i18n/config"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -23,7 +24,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail, ExternalLink, Github, Play, Image as ImageIcon, FileText } from "lucide-react"
+import { Search, ChevronUp, ChevronDown, Users, Edit2, AlertTriangle, Save, X, Trash2, Mail, ExternalLink, Github, Play, Image as ImageIcon, FileText, DoorOpen } from "lucide-react"
 import { MarkdownEditor } from "@/components/ui/markdown-editor"
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer"
 import { toast } from "@/hooks/use-toast"
@@ -124,12 +125,50 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
     const [teamNotesTotalPages, setTeamNotesTotalPages] = useState(1)
     const [teamNotesTotalItems, setTeamNotesTotalItems] = useState(0)
 
+    // Room assignment states
+    const [showRoomAssignment, setShowRoomAssignment] = useState(false)
+    const [roomAssignmentTeam, setRoomAssignmentTeam] = useState<any | null>(null)
+    const [availableRooms, setAvailableRooms] = useState<string[]>([])
+    const [selectedRooms, setSelectedRooms] = useState<string[]>([])
+    const [roomFilePaths, setRoomFilePaths] = useState<Record<string, string>>({})
+    const [selectedRoomImageUrl, setSelectedRoomImageUrl] = useState<string | null>(null)
+    const [selectedRoomImageLoading, setSelectedRoomImageLoading] = useState(false)
+    const [loadingRooms, setLoadingRooms] = useState(false)
+    const [savingRooms, setSavingRooms] = useState(false)
+
     const isParticipantUser = (user: any) => {
         const normalizedRole = (user?.role || "participant").toString().toLowerCase()
         return normalizedRole === "participant" || normalizedRole === "user"
     }
 
     const participantUsers = useMemo(() => users.filter(isParticipantUser), [users])
+
+    const roomsAssignedToOtherTeams = useMemo(() => {
+        const currentTeamId = roomAssignmentTeam?.id
+        const usedRooms = new Set<string>()
+
+        teams.forEach((team) => {
+            if (!team || team.id === currentTeamId) return
+
+            const assigned = team.assignedRoom
+            if (Array.isArray(assigned)) {
+                assigned.forEach((room) => {
+                    if (typeof room === "string" && room.trim()) usedRooms.add(room.trim())
+                })
+                return
+            }
+
+            if (typeof assigned === "string" && assigned.trim()) {
+                usedRooms.add(assigned.trim())
+            }
+        })
+
+        return usedRooms
+    }, [teams, roomAssignmentTeam?.id])
+
+    const remainingRoomsCount = useMemo(() => {
+        return availableRooms.filter((room) => !roomsAssignedToOtherTeams.has(room)).length
+    }, [availableRooms, roomsAssignedToOtherTeams])
 
     const fetchData = async () => {
         if (!db) return
@@ -158,6 +197,150 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
     useEffect(() => {
         fetchData()
     }, [db])
+
+    // Load available rooms from storage
+    useEffect(() => {
+        if (!showRoomAssignment) return
+        
+        const loadRooms = async () => {
+            setLoadingRooms(true)
+            try {
+                const storage = getStorageClient()
+                if (!storage) return
+                
+                const aulasRef = ref(storage, "aulas")
+                const result = await listAll(aulasRef)
+                
+                // Extract room names from file paths (remove extensions)
+                const excludedRooms = new Set(["p1", "p2", "pb"])
+                const roomEntries = result.items
+                    .map((item) => ({
+                        room: item.name.replace(/\.[^/.]+$/, ""),
+                        fullPath: item.fullPath,
+                    }))
+                    .filter(({ room }) => !excludedRooms.has(room.trim().toLowerCase()))
+                const roomNames = roomEntries
+                    .map(({ room }) => room)
+                    .sort()
+                const pathsByRoom: Record<string, string> = {}
+                roomEntries.forEach(({ room, fullPath }) => {
+                    if (!pathsByRoom[room]) {
+                        pathsByRoom[room] = fullPath
+                    }
+                })
+                
+                setAvailableRooms(roomNames)
+                setRoomFilePaths(pathsByRoom)
+                
+                // Load existing rooms for the selected team
+                if (roomAssignmentTeam?.assignedRoom) {
+                    if (Array.isArray(roomAssignmentTeam.assignedRoom)) {
+                        setSelectedRooms(roomAssignmentTeam.assignedRoom)
+                    } else {
+                        setSelectedRooms([roomAssignmentTeam.assignedRoom])
+                    }
+                } else {
+                    setSelectedRooms([])
+                }
+            } catch (error) {
+                console.error("Error loading rooms:", error)
+                toast({ title: locale === "es" ? "Error cargando aulas" : "Error loading rooms", variant: "destructive" })
+            } finally {
+                setLoadingRooms(false)
+            }
+        }
+        
+        loadRooms()
+    }, [showRoomAssignment, roomAssignmentTeam, locale])
+
+    useEffect(() => {
+        const selectedRoom = selectedRooms[0]
+        if (!showRoomAssignment || !selectedRoom) {
+            setSelectedRoomImageUrl(null)
+            setSelectedRoomImageLoading(false)
+            return
+        }
+
+        const filePath = roomFilePaths[selectedRoom]
+        if (!filePath) {
+            setSelectedRoomImageUrl(null)
+            setSelectedRoomImageLoading(false)
+            return
+        }
+
+        const loadSelectedRoomImage = async () => {
+            setSelectedRoomImageLoading(true)
+            try {
+                const storage = getStorageClient()
+                if (!storage) {
+                    setSelectedRoomImageUrl(null)
+                    return
+                }
+                const url = await getDownloadURL(ref(storage, filePath))
+                setSelectedRoomImageUrl(url)
+            } catch (error) {
+                console.error("Error loading selected room image:", error)
+                setSelectedRoomImageUrl(null)
+            } finally {
+                setSelectedRoomImageLoading(false)
+            }
+        }
+
+        loadSelectedRoomImage()
+    }, [selectedRooms, roomFilePaths, showRoomAssignment])
+
+    const handleRoomSelect = (room: string) => {
+        if (roomsAssignedToOtherTeams.has(room)) {
+            toast({
+                title: locale === "es" ? "Aula ya asignada" : "Room already assigned",
+                variant: "destructive"
+            })
+            return
+        }
+
+        if (selectedRooms.includes(room)) {
+            // Remove selected room
+            setSelectedRooms(selectedRooms.filter(r => r !== room))
+        } else {
+            // Single-room mode: selecting a room replaces the previous one.
+            setSelectedRooms([room])
+        }
+    }
+
+    const handleSaveRooms = async () => {
+        if (!db || !roomAssignmentTeam || selectedRooms.length === 0) return
+        
+        setSavingRooms(true)
+        try {
+            // Save as array for consistency
+            await updateDoc(doc(db, "teams", roomAssignmentTeam.id), {
+                assignedRoom: selectedRooms.length === 1 ? selectedRooms[0] : selectedRooms
+            })
+            
+            // Update local state
+            setTeams(teams.map(t => 
+                t.id === roomAssignmentTeam.id 
+                    ? { ...t, assignedRoom: selectedRooms.length === 1 ? selectedRooms[0] : selectedRooms }
+                    : t
+            ))
+            
+            setShowRoomAssignment(false)
+            setRoomAssignmentTeam(null)
+            setSelectedRooms([])
+            
+            toast({ 
+                title: locale === "es" ? "Aulas asignadas correctamente" : "Rooms assigned successfully"
+            })
+        } catch (error) {
+            console.error("Error saving rooms:", error)
+            toast({ 
+                title: locale === "es" ? "Error al asignar aulas" : "Error assigning rooms",
+                variant: "destructive"
+            })
+        } finally {
+            setSavingRooms(false)
+        }
+    }
 
     const handleUpdate = async () => {
         if (!db || !editingItem || !editType) return
@@ -963,6 +1146,13 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                                                                 <Mail size={12} />
                                                                 {locale === "es" ? "Mail equipo" : "Team mail"}
                                                             </button>
+                                                            <button
+                                                                onClick={() => { setRoomAssignmentTeam(item); setShowRoomAssignment(true); }}
+                                                                className="text-sm px-2 py-1 bg-purple-700/10 text-purple-400 rounded hover:bg-purple-700/20 transition-colors flex items-center gap-1"
+                                                            >
+                                                                <DoorOpen size={12} />
+                                                                {locale === "es" ? "Aula" : "Room"}
+                                                            </button>
                                                         </TableCell>
                                                         <TableCell className="py-1 text-xs">
                                                             <button
@@ -995,6 +1185,12 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                                                         <TableCell className="text-brand-cyan/80 text-xs">{getCategoryName(getTeamCategoryIndex(item))}</TableCell>
                                                         <TableCell className="text-brand-cyan/60 text-xs">
                                                             {formatTimestampDateTime(item.createdAt)}
+                                                        </TableCell>
+                                                        <TableCell className="text-brand-cyan/60 text-xs">
+                                                            {Array.isArray(item.assignedRoom) 
+                                                                ? item.assignedRoom.join(", ")
+                                                                : (item.assignedRoom || "-")
+                                                            }
                                                         </TableCell>
 
                                                     </>
@@ -1813,6 +2009,158 @@ export function AdminManagementTables({ locale, translations, statsMode = "appro
                     <div className="flex justify-end mt-8 pt-4 border-t border-brand-cyan/10">
                         <PixelButton onClick={() => setShowProject(false)} size="sm">Close</PixelButton>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Room Assignment Modal */}
+            <Dialog open={showRoomAssignment} onOpenChange={(open) => { 
+                if (!open) {
+                    setShowRoomAssignment(false)
+                    setRoomAssignmentTeam(null)
+                    setSelectedRooms([])
+                    setAvailableRooms([])
+                    setRoomFilePaths({})
+                    setSelectedRoomImageUrl(null)
+                    setSelectedRoomImageLoading(false)
+                }
+            }}>
+                <DialogContent className="bg-brand-navy border-brand-cyan/30 max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-pixel text-brand-yellow flex items-center gap-2">
+                            <DoorOpen size={18} />
+                            {locale === "es" ? "Asignar Aula" : "Assign Room"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {roomAssignmentTeam && (
+                        <div className="space-y-4 py-4">
+                            <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                                <p className="text-xs text-brand-cyan/60 uppercase">{locale === "es" ? "Equipo" : "Team"}</p>
+                                <p className="text-brand-yellow font-pixel">{roomAssignmentTeam.name}</p>
+                            </div>
+
+                            {loadingRooms ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <p className="text-brand-cyan/60 text-sm animate-pulse">{locale === "es" ? "Cargando aulas..." : "Loading rooms..."}</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <div className="mb-3 flex items-center justify-between gap-2">
+                                            <label className="text-xs text-brand-cyan/60 uppercase font-pixel">
+                                                {locale === "es" ? "Aulas disponibles" : "Available rooms"}
+                                            </label>
+                                            <span className="text-[10px] px-2 py-1 rounded border border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan font-pixel uppercase">
+                                                {locale === "es" ? "Restantes" : "Remaining"}: {remainingRoomsCount}
+                                            </span>
+                                        </div>
+
+                                        {availableRooms.length === 0 ? (
+                                            <p className="text-xs text-brand-cyan/40 text-center py-4">
+                                                {locale === "es" ? "No hay aulas disponibles" : "No rooms available"}
+                                            </p>
+                                        ) : (
+                                            <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+                                                {availableRooms.map((room) => (
+                                                    (() => {
+                                                        const isBlocked = roomsAssignedToOtherTeams.has(room)
+                                                        return (
+                                                    <button
+                                                        key={room}
+                                                        onClick={() => handleRoomSelect(room)}
+                                                        disabled={isBlocked}
+                                                        className={cn(
+                                                            "p-2 rounded text-xs font-pixel transition-colors border",
+                                                            selectedRooms.includes(room)
+                                                                ? "bg-brand-cyan/30 border-brand-cyan/60 text-brand-cyan"
+                                                                : isBlocked
+                                                                    ? "bg-red-900/20 border-red-500/30 text-red-300/70 cursor-not-allowed"
+                                                                    : "bg-brand-navy/60 border-brand-cyan/10 text-brand-cyan/60 hover:border-brand-cyan/30 hover:bg-brand-navy/80"
+                                                        )}
+                                                    >
+                                                        {room} {isBlocked ? (locale === "es" ? "(ocupada)" : "(assigned)") : ""}
+                                                    </button>
+                                                        )
+                                                    })()
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {selectedRooms.length > 0 && (
+                                        <div className="p-3 rounded bg-brand-cyan/10 border border-brand-cyan/30">
+                                            <p className="text-xs text-brand-cyan/60 uppercase font-pixel mb-2">
+                                                {locale === "es" ? "Aula seleccionada" : "Selected room"} ({selectedRooms.length}/1)
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedRooms.map((room, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex items-center gap-2 px-2 py-1 rounded bg-brand-yellow/20 border border-brand-yellow/50 text-brand-yellow text-xs"
+                                                    >
+                                                        {room}
+                                                        <button
+                                                            onClick={() => handleRoomSelect(room)}
+                                                            className="ml-1 hover:text-red-400 transition-colors"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="mt-3 rounded border border-brand-cyan/20 bg-brand-navy/60 p-2">
+                                                {selectedRoomImageLoading ? (
+                                                    <p className="text-xs text-brand-cyan/60 animate-pulse">
+                                                        {locale === "es" ? "Cargando imagen..." : "Loading image..."}
+                                                    </p>
+                                                ) : selectedRoomImageUrl ? (
+                                                    <img
+                                                        src={selectedRoomImageUrl}
+                                                        alt={`${locale === "es" ? "Aula" : "Room"} ${selectedRooms[0]}`}
+                                                        className="w-full max-h-44 object-contain rounded"
+                                                    />
+                                                ) : (
+                                                    <p className="text-xs text-brand-cyan/50">
+                                                        {locale === "es" ? "Sin imagen disponible para esta aula" : "No image available for this room"}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2 pt-4 border-t border-brand-cyan/10">
+                                        <button
+                                            onClick={() => {
+                                                setShowRoomAssignment(false)
+                                                setRoomAssignmentTeam(null)
+                                                setSelectedRooms([])
+                                            }}
+                                            className="flex-1 px-3 py-2 rounded text-xs font-pixel bg-brand-navy/60 border border-brand-cyan/20 text-brand-cyan hover:bg-brand-navy/80 transition-colors"
+                                        >
+                                            {locale === "es" ? "Cancelar" : "Cancel"}
+                                        </button>
+                                        <button
+                                            onClick={handleSaveRooms}
+                                            disabled={savingRooms || selectedRooms.length === 0}
+                                            className="flex-1 px-3 py-2 rounded text-xs font-pixel bg-brand-cyan/20 border border-brand-cyan/50 text-brand-cyan hover:bg-brand-cyan/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            {savingRooms ? (
+                                                <>
+                                                    <span className="inline-block w-3 h-3 border-2 border-brand-cyan border-t-transparent rounded-full animate-spin"></span>
+                                                    {locale === "es" ? "Guardando..." : "Saving..."}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Save size={14} />
+                                                    {locale === "es" ? "Guardar" : "Save"}
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
