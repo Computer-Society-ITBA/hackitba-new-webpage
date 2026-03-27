@@ -47,6 +47,7 @@ export default function AdminDashboard() {
   const [completeStats, setCompleteStats] = useState<{
     completed: { total: number; withTeam: number; withoutTeam: number }
     approved: { total: number; withTeam: number; withoutTeam: number }
+    arrivedParticipants: number
   } | null>(null)
   const [loadingStats, setLoadingStats] = useState(false)
   const [statsMode, setStatsMode] = useState<"completed" | "approved">("approved")
@@ -132,6 +133,8 @@ export default function AdminDashboard() {
         getDocs(collection(db, "teams")),
       ])
 
+      const arrivedSnap = await getDocs(query(collection(db, "users"), where("arrived", "==", true)))
+
       const approvedTeamIds = new Set(
         teamsSnap.docs
           .map((teamDoc) => ({ id: teamDoc.id, ...teamDoc.data() } as any))
@@ -157,6 +160,13 @@ export default function AdminDashboard() {
         return byUserStatus || byTeamStatus
       })
 
+      const arrivedParticipants = arrivedSnap.docs
+        .map((participantDoc) => participantDoc.data())
+        .filter((participant) => {
+          const role = String(participant?.role || "participant").toLowerCase()
+          return role === "participant" || role === "user"
+        }).length
+
       const completedWithTeam = completedParticipants.filter((participant) => participant.hasTeam === true).length
       const completedWithoutTeam = completedParticipants.filter((participant) => participant.hasTeam !== true).length
 
@@ -174,6 +184,7 @@ export default function AdminDashboard() {
           withTeam: approvedWithTeam,
           withoutTeam: approvedWithoutTeam,
         },
+        arrivedParticipants,
       })
     } catch (error) {
       console.error("Error loading complete stats:", error)
@@ -415,6 +426,12 @@ export default function AdminDashboard() {
                   {locale === "es" ? "Sin equipo" : "Without team"}
                   <span className="text-red-400 font-bold text-sm">
                     {loadingStats ? "—" : activeStats?.withoutTeam ?? "—"}
+                  </span>
+                </span>
+                <span className="flex items-center gap-1.5 bg-brand-yellow/10 border border-brand-yellow/30 px-3 py-1 rounded-full text-xs font-pixel text-brand-yellow/80">
+                  {locale === "es" ? "Presentes (arrived)" : "Present (arrived)"}
+                  <span className="text-brand-yellow font-bold text-sm">
+                    {loadingStats ? "—" : completeStats?.arrivedParticipants ?? "—"}
                   </span>
                 </span>
               </div>
