@@ -295,7 +295,7 @@ function AccreditationContent({ locale }: { locale: Locale }) {
   }
 
   const handleNfcWrite = async () => {
-    if (!nfcSupported || nfcWriting || !user) return
+    if (!db || !nfcSupported || nfcWriting || !user) return
 
     try {
       if (typeof window === "undefined") return
@@ -314,11 +314,17 @@ function AccreditationContent({ locale }: { locale: Locale }) {
         ],
       })
 
+      // Mark as arrived immediately
+      await updateDoc(doc(db, "users", user.id), {
+        arrived: true,
+        arrivedAt: serverTimestamp()
+      })
+
       toast({
-        title: locale === "es" ? "Tag grabada" : "Tag written",
+        title: locale === "es" ? "Acreditación Exitosa" : "Accreditation Successful",
         description: locale === "es"
-          ? `NFC asociada a ${user.name || "usuario"}.`
-          : `NFC linked to ${user.name || "user"}.`,
+          ? `NFC asociada y ${user.name} acreditado.`
+          : `NFC linked and ${user.name} accredited.`,
       })
 
       // One-by-one workflow: after writing, go back to search for the next person.
