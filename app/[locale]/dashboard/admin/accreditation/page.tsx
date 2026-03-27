@@ -54,10 +54,32 @@ function AccreditationContent({ locale }: { locale: Locale }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searchIndex, setSearchIndex] = useState<any[]>([])
+  const [approvedTeamIds, setApprovedTeamIds] = useState<Set<string>>(new Set())
   const [showSearch, setShowSearch] = useState(!userIdFromUrl)
   const [nfcSupported, setNfcSupported] = useState(false)
   const [nfcScanning, setNfcScanning] = useState(false)
   const [nfcWriting, setNfcWriting] = useState(false)
+
+  const normalizeStatus = (value: unknown) => String(value || "").toLowerCase()
+  const isApprovedStatus = (value: unknown) => {
+    const normalized = normalizeStatus(value)
+    return normalized === "approved" || normalized === "accepted"
+  }
+
+  const isParticipantRole = (value: unknown) => {
+    const role = String(value || "participant").toLowerCase()
+    return role === "participant" || role === "user"
+  }
+
+  const isUserApprovedForAccreditation = (userData: any, teamData?: any, teamIdSet: Set<string> = approvedTeamIds) => {
+    if (!isParticipantRole(userData?.role)) return false
+
+    const approvedByUserStatus = isApprovedStatus(userData?.status)
+    const approvedByTeamStatus = Boolean(teamData?.id && isApprovedStatus(teamData?.status))
+    const approvedByPreloadedTeam = Boolean(userData?.team && teamIdSet.has(userData.team))
+
+    return approvedByUserStatus || approvedByTeamStatus || approvedByPreloadedTeam
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -75,7 +97,19 @@ function AccreditationContent({ locale }: { locale: Locale }) {
 
     const preloadUsers = async () => {
       try {
-        const usersSnap = await getDocs(collection(db, "users"))
+        const [usersSnap, teamsSnap] = await Promise.all([
+          getDocs(collection(db, "users")),
+          getDocs(collection(db, "teams")),
+        ])
+
+        const nextApprovedTeamIds = new Set(
+          teamsSnap.docs
+            .map((teamDoc) => ({ id: teamDoc.id, ...teamDoc.data() } as any))
+            .filter((team) => isApprovedStatus(team?.status))
+            .map((team) => team.id)
+        )
+
+        setApprovedTeamIds(nextApprovedTeamIds)
         setSearchIndex(usersSnap.docs.map((d) => ({ id: d.id, ...d.data() })))
       } catch (error) {
         console.error("Error preloading users for accreditation search:", error)
@@ -99,20 +133,33 @@ function AccreditationContent({ locale }: { locale: Locale }) {
       const userDoc = await getDoc(doc(db, "users", id))
       if (userDoc.exists()) {
         const userData = { id: userDoc.id, ...userDoc.data() } as any
-        setUser(userData)
-        setShowSearch(false)
 
         // Load team info if exists
+        let nextTeam: any = null
         if (userData.team) {
           const teamDoc = await getDoc(doc(db, "teams", userData.team))
           if (teamDoc.exists()) {
-            setTeam({ id: teamDoc.id, ...teamDoc.data() })
-          } else {
-            setTeam(null)
+            nextTeam = { id: teamDoc.id, ...teamDoc.data() }
           }
-        } else {
-          setTeam(null)
         }
+
+        if (!isUserApprovedForAccreditation(userData, nextTeam)) {
+          toast({
+            title: locale === "es" ? "Participante no aprobado" : "Participant not approved",
+            description: locale === "es"
+              ? "Solo se pueden acreditar participantes aprobados."
+              : "Only approved participants can be accredited.",
+            variant: "destructive",
+          })
+          setUser(null)
+          setTeam(null)
+          setShowSearch(true)
+          return
+        }
+
+        setUser(userData)
+        setTeam(nextTeam)
+        setShowSearch(false)
       } else {
         toast({
           title: locale === "es" ? "Usuario no encontrado" : "User not found",
@@ -297,12 +344,26 @@ function AccreditationContent({ locale }: { locale: Locale }) {
     setSearching(true)
     try {
       const term = normalizeSearchText(searchTerm)
+      let effectiveApprovedTeamIds = approvedTeamIds
+
+      if (effectiveApprovedTeamIds.size === 0) {
+        const teamsSnap = await getDocs(collection(db, "teams"))
+        effectiveApprovedTeamIds = new Set(
+          teamsSnap.docs
+            .map((teamDoc) => ({ id: teamDoc.id, ...teamDoc.data() } as any))
+            .filter((team) => isApprovedStatus(team?.status))
+            .map((team) => team.id)
+        )
+      }
+
       const sourceUsers = searchIndex.length > 0
         ? searchIndex
         : (await getDocs(collection(db, "users"))).docs.map((doc) => ({ id: doc.id, ...doc.data() }))
 
       const results = sourceUsers
         .filter((u: any) => {
+          if (!isUserApprovedForAccreditation(u, undefined, effectiveApprovedTeamIds)) return false
+
           const fullName = normalizeSearchText(`${u.name || ""} ${u.surname || ""}`)
           const email = normalizeSearchText(String(u.email || ""))
           return fullName.includes(term) || email.includes(term)
