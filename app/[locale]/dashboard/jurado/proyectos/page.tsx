@@ -113,7 +113,7 @@ export default function JuradoProyectosPage() {
       const scoresWithWeights: Record<string, number> = {}
       let totalWeightedScore = 0
 
-      scoringCriteria.forEach(c => {
+      scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").forEach(c => {
         const score = reviewScores[c.id] || 0
         const weight = c.weight || 1
         const maxScore = c.maxScore || 10
@@ -150,7 +150,7 @@ export default function JuradoProyectosPage() {
       if (judgeReviews.length > 0) {
         avgTotal = judgeReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / judgeReviews.length
 
-        scoringCriteria.forEach(c => {
+        scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").forEach(c => {
           const sum = judgeReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / judgeReviews.length
 
@@ -169,6 +169,7 @@ export default function JuradoProyectosPage() {
         status: "reviewed",
         disqualified: anyDisqualified,
         totalScore: avgTotal,
+        scores: avgScores,
         reviewCount: judgeReviews.length
       })
 
@@ -336,7 +337,7 @@ export default function JuradoProyectosPage() {
                   <div className="mt-8 pt-6 border-t border-brand-cyan/20">
                     <h3 className="font-pixel text-lg text-brand-yellow mb-4">Project Review</h3>
                     <div className="space-y-4">
-                      {scoringCriteria.map(criteria => (
+                      {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(criteria => (
                         <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
                           <Label className="items-start col-span-3 text-sm text-brand-cyan flex flex-col">
                             <span>{criteria.name}</span>

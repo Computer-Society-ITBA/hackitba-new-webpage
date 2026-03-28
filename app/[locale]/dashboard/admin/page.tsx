@@ -70,6 +70,7 @@ export default function AdminDashboard() {
     maxScore: 10,
     weight: 1,
     order: 0,
+    targetRole: "judge" as "admin" | "judge",
   })
 
   const appBaseUrl = useMemo(() => {
@@ -310,7 +311,7 @@ export default function AdminDashboard() {
       createdAt: new Date(),
     })
     setShowScoringForm(false)
-    setScoringForm({ name: "", description: "", maxScore: 10, weight: 1, order: 0 })
+    setScoringForm({ name: "", description: "", maxScore: 10, weight: 1, order: 0, targetRole: "judge" })
     loadData()
   }
 
@@ -553,6 +554,18 @@ export default function AdminDashboard() {
                     />
                   </div>
 
+                  <div>
+                    <Label className="text-brand-cyan">Target Role</Label>
+                    <select
+                      value={scoringForm.targetRole}
+                      onChange={(e) => setScoringForm({ ...scoringForm, targetRole: e.target.value as "admin" | "judge" })}
+                      className="w-full bg-brand-navy/50 border border-brand-cyan/30 text-brand-cyan rounded-md h-10 px-3 outline-none focus:border-brand-cyan transition-colors"
+                    >
+                      <option value="judge">Judge (Final Phase)</option>
+                      <option value="admin">Admin (Screening Phase)</option>
+                    </select>
+                  </div>
+
                   <PixelButton onClick={createScoring}>Create Criteria</PixelButton>
                 </div>
               </GlassCard>
@@ -569,6 +582,12 @@ export default function AdminDashboard() {
                         <p className="text-brand-orange text-[10px]">Scale: 1-10</p>
                         <p className="text-brand-orange text-[10px]">Weight: {criteria.weight || 1}</p>
                         <p className="text-brand-orange text-[10px]">Points: {10 * (criteria.weight || 1)}</p>
+                        <p className={cn(
+                          "text-[10px] uppercase font-bold px-1.5 py-0.5 rounded",
+                          criteria.targetRole === "admin" ? "bg-brand-cyan/10 text-brand-cyan" : "bg-brand-orange/10 text-brand-orange"
+                        )}>
+                          {criteria.targetRole || "judge"}
+                        </p>
                       </div>
                     </div>
                     <button
