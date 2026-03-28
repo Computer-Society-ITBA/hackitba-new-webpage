@@ -132,7 +132,7 @@ export default function JuradoPuntajesPage() {
                                                         <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
                                                         <TableHead className="text-brand-cyan">{locale === "es" ? "Proyecto" : "Project"}</TableHead>
                                                         <TableHead className="text-brand-cyan">{locale === "es" ? "Equipo" : "Team"}</TableHead>
-                                                        {scoringCriteria.map(c => (
+                                                        {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
                                                             <TableHead key={c.id} className="text-brand-cyan text-[10px]">
                                                                 {c.name}
                                                             </TableHead>
@@ -152,7 +152,7 @@ export default function JuradoPuntajesPage() {
                                                                     {p.title || "Untitled"}
                                                                 </TableCell>
                                                                 <TableCell className="text-brand-cyan/80">{p.teamName}</TableCell>
-                                                                {scoringCriteria.map(c => (
+                                                                {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
                                                                     <TableCell key={c.id} className="text-brand-cyan/80">
                                                                         {(p.scores && p.scores[c.id]) !== undefined ? Math.round(p.scores[c.id]) : "-"}
                                                                     </TableCell>

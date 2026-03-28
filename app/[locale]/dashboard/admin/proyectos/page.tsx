@@ -103,7 +103,7 @@ export default function AdminProyectosPage() {
       const scoresWithWeights: Record<string, number> = {}
       let totalWeightedScore = 0
 
-      scoringCriteria.forEach(c => {
+      scoringCriteria.filter(c => (c.targetRole || "judge") === reviewerRole).forEach(c => {
         const score = reviewScores[c.id] || 0
         const weight = c.weight || 1
         const maxScore = c.maxScore || 10
@@ -149,7 +149,7 @@ export default function AdminProyectosPage() {
       if (relevantReviews.length > 0) {
         avgTotal = relevantReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / relevantReviews.length
 
-        scoringCriteria.forEach(c => {
+        scoringCriteria.filter(c => (c.targetRole || "judge") === (isFinalist ? "judge" : "admin")).forEach(c => {
           const sum = relevantReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / relevantReviews.length
 
@@ -168,6 +168,7 @@ export default function AdminProyectosPage() {
         status: newStatus,
         disqualified: anyDisqualified,
         totalScore: avgTotal,
+        scores: avgScores,
         reviewCount: relevantReviews.length
       })
 
@@ -199,7 +200,7 @@ export default function AdminProyectosPage() {
 
       if (judgeReviews.length > 0) {
         avgTotal = judgeReviews.reduce((sum, r: any) => sum + (r.totalScore || 0), 0) / judgeReviews.length
-        scoringCriteria.forEach(c => {
+        scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").forEach(c => {
           const sum = judgeReviews.reduce((s, r: any) => s + (r.calculatedScores?.[c.id] || 0), 0)
           avgScores[c.id] = sum / judgeReviews.length
 
@@ -215,6 +216,7 @@ export default function AdminProyectosPage() {
         disqualified: anyDisqualified,
         status: "reviewed",
         totalScore: avgTotal,
+        scores: avgScores,
         reviewCount: judgeReviews.length
       })
 
@@ -361,7 +363,7 @@ export default function AdminProyectosPage() {
                               <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
                               <TableHead className="text-brand-cyan">Project</TableHead>
                               <TableHead className="text-brand-cyan">Team</TableHead>
-                              {scoringCriteria.map(c => (
+                              {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
                                 <TableHead key={c.id} className="text-brand-cyan text-[10px]">
                                   {c.name}
                                 </TableHead>
@@ -379,7 +381,7 @@ export default function AdminProyectosPage() {
                                   <span className="hover:underline cursor-pointer">{p.title || "Untitled"}</span>
                                 </TableCell>
                                 <TableCell className="text-brand-cyan/80">{p.teamName}</TableCell>
-                                {scoringCriteria.map(c => (
+                                {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
                                   <TableCell key={c.id} className="text-brand-cyan/80">
                                     {(p.scores && p.scores[c.id]) !== undefined ? Math.round(p.scores[c.id]) : "-"}
                                   </TableCell>
@@ -467,7 +469,7 @@ export default function AdminProyectosPage() {
                         {selectedProject.isFinalist ? "Final Judging Review" : "Screening Review"}
                       </h3>
                       <div className="space-y-4">
-                        {scoringCriteria.map(criteria => (
+                        {scoringCriteria.filter(c => (c.targetRole || "judge") === (selectedProject.isFinalist ? "judge" : "admin")).map(criteria => (
                           <div key={criteria.id} className="grid grid-cols-4 items-center gap-4">
                             <Label className="col-span-3 text-sm text-brand-cyan flex flex-col">
                               <span>{criteria.name}</span>
