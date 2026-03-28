@@ -2,7 +2,8 @@ import {logger} from "firebase-functions";
 import {getColabRole} from "./getColabRole";
 import {getHackitbaDb} from "./getDb";
 
-const ENV_KEYS = ["SIGNUP_ENABLED", "NEXT_PUBLIC_SIGNUP_ENABLED"] as const;
+// Use only backend runtime env here to avoid accidental coupling with frontend flags.
+const ENV_KEYS = ["SIGNUP_ENABLED"] as const;
 
 const parseEnvBoolean = (value: string): boolean | null => {
   if (value === "1" || value.toLowerCase() === "true") {
