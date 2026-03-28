@@ -9,8 +9,6 @@ import { Zap, ChevronRight, RotateCcw, Trophy, Medal, Star, ArrowRight } from "l
 import { NeonGlow } from "@/components/effects/neon-glow"
 import { CodeBackground } from "@/components/effects/code-background"
 import { cn } from "@/lib/utils"
-// @ts-ignore
-import Confetti from "confetti-react"
 import { PixelButton } from "../ui/pixel-button"
 import Link from "next/link"
 import { getTranslations } from "@/lib/i18n/get-translations"
@@ -312,7 +310,6 @@ export function WinnersReveal() {
     const [winners, setWinners] = useState<any[]>([])
     const [cats, setCats] = useState<any[]>([])
     const [viewport, setViewport] = useState({ w: 0, h: 0 })
-    const [showConfetti, setShowConfetti] = useState(false)
     const timeouts = useRef<any[]>([])
 
     useEffect(() => {
@@ -375,9 +372,6 @@ export function WinnersReveal() {
         // Timer for reveal (once travel ends)
         const t = setTimeout(() => {
             setRevealed(prev => ({ ...prev, [p]: true }))
-            if (p === 1) {
-                setTimeout(() => setShowConfetti(true), 600)
-            }
             setTimeout(() => setLocked(false), 5000)
         }, 1600)
 
@@ -387,7 +381,7 @@ export function WinnersReveal() {
 
     const next = () => {
         if (locked) return
-        if (stage === 5) { setStage(0); setRevealed({ 1: false, 2: false, 3: false }); setShowConfetti(false); return }
+        if (stage === 5) { setStage(0); setRevealed({ 1: false, 2: false, 3: false }); return }
 
         setIsTravelling(true)
         setTimeout(() => setIsTravelling(false), 1200) // Swoosh duration
@@ -426,20 +420,6 @@ export function WinnersReveal() {
                 @keyframes podiumFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
                 @keyframes ambientGlow { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.8; stroke-width: 6; } }
             `}</style>
-
-            {showConfetti && (
-                <div className="absolute inset-0 z-[400] pointer-events-none">
-                    <Confetti
-                        width={viewport.w}
-                        height={viewport.h}
-                        recycle={false}
-                        numberOfPieces={300}
-                        colors={[COLORS.yellow, COLORS.orange, COLORS.cyan, "#ffffff"]}
-                        gravity={0.15}
-                        initialVelocityY={15}
-                    />
-                </div>
-            )}
 
             {/* ── Background Scanline ── */}
             <div className="absolute inset-0 pointer-events-none z-10 opacity-5 overflow-hidden">

@@ -1,8 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useRef } from "react"
-// @ts-ignore
-import Confetti from "confetti-react"
+import React, { useEffect, useState } from "react"
 import { NeonGlow } from "@/components/effects/neon-glow"
 
 interface CountdownProps {
@@ -33,27 +31,8 @@ export function Countdown({ translations }: CountdownProps) {
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft())
     const [isClient, setIsClient] = useState(false)
 
-    const wrapperRef = useRef<HTMLDivElement>(null)
-    const [confettiSource, setConfettiSource] = useState({
-        x: 100,
-        y: -40,
-        w: 200,
-        h: 0,
-    })
-    const [height, setHeight] = useState(0)
-
     useEffect(() => {
         setIsClient(true)
-        if (typeof window !== "undefined") {
-            setHeight(window.innerHeight)
-        }
-
-        if (wrapperRef.current) {
-            const rect = wrapperRef.current.getBoundingClientRect()
-            const x = rect.left + window.scrollX + rect.width / 2
-            const y = rect.top + window.scrollY + rect.height
-            setConfettiSource({ x, y, w: 0, h: 0 })
-        }
     }, [])
 
     useEffect(() => {
@@ -78,19 +57,7 @@ export function Countdown({ translations }: CountdownProps) {
                 <h3 className="text-brand-yellow font-pixel text-2xl">{translations.countdown.ended}</h3>
             )}
 
-            <div ref={wrapperRef} className="flex justify-center gap-4 sm:gap-8 md:gap-12 px-4 transition-transform">
-                {!timeLeft && (
-                    <Confetti
-                        height={height}
-                        recycle={false}
-                        confettiSource={confettiSource}
-                        colors={["#afeff3", "#ef802f", "#fad399"]}
-                        initialVelocityY={3}
-                        initialVelocityX={4}
-                        gravity={0.02}
-                    />
-                )}
-
+            <div className="flex justify-center gap-4 sm:gap-8 md:gap-12 px-4 transition-transform">
                 <div className="text-center">
                     <p className="font-pixel text-4xl sm:text-5xl md:text-6xl text-brand-yellow transition-all duration-300">
                         <NeonGlow flickering color="orange">
