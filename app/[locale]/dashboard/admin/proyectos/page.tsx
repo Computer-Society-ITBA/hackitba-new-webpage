@@ -587,15 +587,15 @@ export default function AdminProyectosPage() {
           </Tabs>
 
           <Dialog open={showDetails} onOpenChange={setShowDetails}>
-            <DialogContent className="glass-effect border-brand-cyan/30 max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
               <DialogHeader>
-                <DialogTitle className="font-pixel text-brand-yellow flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <DialogTitle className="font-pixel text-brand-yellow flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-start gap-2">
                     <FileText size={18} />
-                    <p className="text-regular font-pixel ">{selectedProject?.title}</p>
+                    <p className="text-regular font-pixel break-all leading-snug">{selectedProject?.title}</p>
                   </div>
                   <span className={cn(
-                    "text-sm px-2 py-0.5 rounded uppercase",
+                    "text-sm px-2 py-0.5 rounded uppercase self-start shrink-0",
                     selectedProject?.status === "submitted" ? "bg-green-500/20 text-green-400" :
                       selectedProject?.status === "reviewed" ? "bg-blue-500/20 text-blue-400" :
                         selectedProject?.status === "disqualified" ? "bg-red-500/20 text-red-500" :
@@ -608,16 +608,16 @@ export default function AdminProyectosPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
                       <p className="text-xs text-brand-cyan/60 uppercase mb-1">Team</p>
-                      <p className="text-brand-yellow text-sm font-pixel">{selectedProject.teamName}</p>
+                      <p className="text-brand-yellow text-sm font-pixel break-all">{selectedProject.teamName}</p>
                     </div>
                     <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
                       <p className="text-xs text-brand-cyan/60 uppercase mb-1">Category</p>
-                      <p className="text-brand-cyan text-sm">{getCategoryName(selectedProject.categoryId)}</p>
+                      <p className="text-brand-cyan text-sm break-words">{getCategoryName(selectedProject.categoryId)}</p>
                     </div>
                   </div>
                   <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
                     <p className="text-xs text-brand-cyan/60 uppercase mb-2">Description</p>
-                    <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap">{selectedProject.description}</p>
+                    <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap break-all">{selectedProject.description}</p>
                   </div>
 
                   <div className="p-4 rounded bg-brand-navy/40 border border-brand-cyan/20 space-y-3">
