@@ -100,6 +100,9 @@ export default function AdminProyectosPage() {
     if (!db || !selectedProject || !user) return
     setSubmittingReview(true)
     try {
+      const isFinalist = selectedProject.isFinalist
+      const reviewerRole = isFinalist ? "judge" : "admin"
+
       const scoresWithWeights: Record<string, number> = {}
       let totalWeightedScore = 0
 
@@ -112,9 +115,6 @@ export default function AdminProyectosPage() {
         scoresWithWeights[c.id] = weighted
         totalWeightedScore += weighted
       })
-
-      const isFinalist = selectedProject.isFinalist
-      const reviewerRole = isFinalist ? "judge" : "admin"
 
       const reviewData = {
         projectId: selectedProject.id,
@@ -184,12 +184,13 @@ export default function AdminProyectosPage() {
     }
   }
 
-  const markAsFinalist = async () => {
-    if (!db || !selectedProject) return
+  const markAsFinalist = async (projectArg?: any) => {
+    const targetProject = projectArg || selectedProject
+    if (!db || !targetProject) return
     try {
       // When marking as finalist, the score pool switches to judges.
       // We should recalculate immediate average from judge reviews (if any exist)
-      const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", selectedProject.id)))
+      const reviewsSnap = await getDocs(query(collection(db, "projectReviews"), where("projectId", "==", targetProject.id)))
       const allReviews = reviewsSnap.docs.map(d => d.data())
 
       const judgeReviews = allReviews.filter(r => r.reviewerRole === "judge" && !r.disqualified)
@@ -211,7 +212,7 @@ export default function AdminProyectosPage() {
 
       const anyDisqualified = judgeReviews.some(r => r.disqualified)
 
-      await updateDoc(doc(db, "projects", selectedProject.id), {
+      await updateDoc(doc(db, "projects", targetProject.id), {
         isFinalist: true,
         disqualified: anyDisqualified,
         status: "reviewed",
@@ -220,9 +221,14 @@ export default function AdminProyectosPage() {
         reviewCount: judgeReviews.length
       })
 
-      setProjects(prev => prev.map(p => p.id === selectedProject.id ? { ...p, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
-      setSelectedProject((prev: any) => ({ ...prev, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length }))
-      setShowDetails(false)
+      setProjects(prev => prev.map(p => p.id === targetProject.id ? { ...p, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length } : p))
+      setSelectedProject((prev: any) => {
+        if (!prev || prev.id !== targetProject.id) return prev
+        return { ...prev, isFinalist: true, disqualified: anyDisqualified, status: "reviewed", totalScore: avgTotal, reviewCount: judgeReviews.length }
+      })
+      if (!projectArg) {
+        setShowDetails(false)
+      }
       toast({ title: locale === "es" ? "Marcado como finalista" : "Marked as finalist" })
     } catch (error) {
       console.error("Error marking finalist:", error)
@@ -371,6 +377,7 @@ export default function AdminProyectosPage() {
                               <TableHead className="text-brand-orange text-right">Points</TableHead>
                               <TableHead className="text-brand-cyan/60 text-right text-xs">Reviews</TableHead>
                               <TableHead className="text-brand-yellow text-right">Finalist</TableHead>
+                              <TableHead className="text-brand-cyan/60 text-right text-xs">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -394,6 +401,18 @@ export default function AdminProyectosPage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                   {p.isFinalist ? <Trophy size={14} className="ml-auto text-brand-yellow" /> : "-"}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {!p.isFinalist && (
+                                    <Button
+                                      size="sm"
+                                      className="bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
+                                      onClick={() => markAsFinalist(p)}
+                                    >
+                                      <Trophy className="mr-2 w-4 h-4" />
+                                      Mark as Finalist
+                                    </Button>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -508,16 +527,6 @@ export default function AdminProyectosPage() {
                             <CheckCircle className="mr-2 w-4 h-4" />
                             {selectedProject.isFinalist ? "Submit Vote" : "Submit Review"}
                           </Button>
-                          {!selectedProject.isFinalist && (
-                            <Button
-                              className="flex-1 bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
-                              onClick={() => markAsFinalist()}
-                              disabled={submittingReview}
-                            >
-                              <Trophy className="mr-2 w-4 h-4" />
-                              Mark as Finalist
-                            </Button>
-                          )}
                           <Button
                             className="flex-1 bg-red-500/20 text-red-500 hover:bg-red-500/40 border-red-500/50"
                             onClick={() => setConfirmAction("disqualify")}
