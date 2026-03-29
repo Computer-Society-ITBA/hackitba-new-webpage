@@ -572,8 +572,8 @@ export default function ParticipanteProyectoPage() {
                           <AlertDialogDescription className="text-brand-cyan/80 text-sm leading-relaxed">{t.dashboard.participant.project.confirmSubmitDescription}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-6 flex gap-3">
-                          <AlertDialogCancel asChild><PixelButton variant="outline" size="sm" className="w-full">{t.dashboard.participant.project.cancel}</PixelButton></AlertDialogCancel>
-                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitProject} size="sm" className="w-full">{t.dashboard.participant.project.submitConfirmation}</PixelButton></AlertDialogAction>
+                          <AlertDialogCancel asChild><PixelButton variant="outline" size="sm" className="w-full sm:w-auto">{t.dashboard.participant.project.cancel}</PixelButton></AlertDialogCancel>
+                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitProject} size="sm" className="w-full sm:w-auto">{t.dashboard.participant.project.submitConfirmation}</PixelButton></AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
