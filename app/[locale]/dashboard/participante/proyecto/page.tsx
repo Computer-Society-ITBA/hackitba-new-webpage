@@ -62,13 +62,18 @@ export default function ParticipanteProyectoPage() {
     videos: [] as string[],
     status: "draft" as "draft" | "submitted" | "reviewed" | "disqualified"
   })
+  const [stageLocks, setStageLocks] = useState({ stage1: false, stage2: false })
 
   const projectFormRef = useRef(projectForm)
   useEffect(() => {
     projectFormRef.current = projectForm
   }, [projectForm])
 
-  const canEdit = projectSubmissionsEnabled && projectForm.status !== "reviewed" && projectForm.status !== "disqualified"
+  const reviewLocked = projectForm.status === "reviewed" || projectForm.status === "disqualified"
+  const stage1Incomplete = !!project?.stage1Incomplete
+  const canEditStage1 = projectSubmissionsEnabled && !reviewLocked && !stageLocks.stage1
+  const canEditStage2 = projectSubmissionsEnabled && !reviewLocked && !stageLocks.stage2 && !stage1Incomplete
+  const canEditAnyStage = canEditStage1 || canEditStage2
 
   // Load signup enabled setting
   useEffect(() => {
@@ -132,6 +137,7 @@ export default function ParticipanteProyectoPage() {
     if (projectDoc.exists()) {
       const data = projectDoc.data()
       setProject({ id: projectDoc.id, ...data })
+      setStageLocks({ stage1: !!data.stage1Locked, stage2: !!data.stage2Locked })
       setProjectForm({
         title: data.title || "",
         description: data.description || "",
@@ -148,6 +154,7 @@ export default function ParticipanteProyectoPage() {
         const pDoc = qSnap.docs[0]
         const data = pDoc.data()
         setProject({ id: pDoc.id, ...data })
+        setStageLocks({ stage1: !!data.stage1Locked, stage2: !!data.stage2Locked })
         setProjectForm({
           title: data.title || "",
           description: data.description || "",
@@ -198,9 +205,12 @@ export default function ParticipanteProyectoPage() {
     return () => unsub()
   }, [db, team?.id])
 
-  const saveProject = useCallback(async (statusOverride?: "draft" | "submitted") => {
+  const saveProject = useCallback(async (
+    statusOverride?: "draft" | "submitted",
+    extraFields?: Record<string, any>
+  ) => {
     const isSubmitting = statusOverride === "submitted"
-    if (!db || !team?.id || (!canEdit && !isSubmitting) || loadingProject) return false
+    if (!db || !team?.id || (!canEditAnyStage && !isSubmitting) || loadingProject) return false
 
     setIsSaving(true)
     try {
@@ -228,10 +238,19 @@ export default function ParticipanteProyectoPage() {
         payload.createdAt = serverTimestamp()
       }
 
+      if (extraFields) {
+        Object.assign(payload, extraFields)
+      }
+
       await setDoc(doc(db, "projects", team.id), payload, { merge: true })
 
-      if (statusOverride || project?.status !== status) {
-        setProject((prev: any) => ({ ...prev, ...payload, status }))
+      setProject((prev: any) => ({ ...prev, ...payload, status }))
+
+      if (typeof payload.stage1Locked === "boolean" || typeof payload.stage2Locked === "boolean") {
+        setStageLocks((prev) => ({
+          stage1: typeof payload.stage1Locked === "boolean" ? payload.stage1Locked : prev.stage1,
+          stage2: typeof payload.stage2Locked === "boolean" ? payload.stage2Locked : prev.stage2,
+        }))
       }
 
       setProjectForm(prev => {
@@ -247,15 +266,15 @@ export default function ParticipanteProyectoPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [db, team, projectSubmissionsEnabled, project?.createdAt, canEdit, loadingProject])
+  }, [db, team, projectSubmissionsEnabled, project?.createdAt, canEditAnyStage, loadingProject])
 
   useEffect(() => {
-    if (!canEdit || !team?.id || loadingProject) return
+    if (!canEditAnyStage || !team?.id || loadingProject) return
     const timer = setTimeout(() => {
       if (projectForm.status === "draft") saveProject()
     }, 3000)
     return () => clearTimeout(timer)
-  }, [projectForm.title, projectForm.description, projectForm.githubRepoUrl, projectForm.demoUrl, projectForm.images, projectForm.videos, projectSubmissionsEnabled, team?.id, saveProject, loadingProject])
+  }, [projectForm.title, projectForm.description, projectForm.githubRepoUrl, projectForm.demoUrl, projectForm.images, projectForm.videos, projectSubmissionsEnabled, team?.id, saveProject, loadingProject, canEditAnyStage])
 
   const handleFileUpload = async (file: File): Promise<string> => {
     if (!storage || !team?.id) throw new Error("Upload failed")
@@ -269,7 +288,9 @@ export default function ParticipanteProyectoPage() {
     }
   }
 
-  const submitProject = async () => {
+  const submitStageOne = async () => {
+    if (!canEditStage1) return
+
     const requiredMissing = !projectForm.title.trim() || !projectForm.description.trim() || !projectForm.githubRepoUrl.trim()
     if (requiredMissing) {
       toast({
@@ -279,11 +300,62 @@ export default function ParticipanteProyectoPage() {
       })
       return
     }
-    const success = await saveProject("submitted")
+    const success = await saveProject("draft", {
+      stage1Locked: true,
+      stage1LockedAt: serverTimestamp(),
+    })
     if (success) {
       toast({
-        title: locale === "es" ? "¡Proyecto enviado!" : "Project submitted!",
-        description: locale === "es" ? "El jurado ya puede ver tu trabajo." : "Judges can now see your work.",
+        title: locale === "es" ? "Etapa 1 bloqueada" : "Stage 1 locked",
+        description: locale === "es" ? "Los datos de la Etapa 1 quedaron enviados y bloqueados." : "Stage 1 details were submitted and locked.",
+      })
+    } else {
+      toast({
+        title: locale === "es" ? "Error al enviar" : "Submission failed",
+        description: locale === "es" ? "No se pudo actualizar el estado. Intentá de nuevo." : "Could not update project status. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const submitStageTwo = async () => {
+    if (stage1Incomplete) {
+      toast({
+        title: locale === "es" ? "Etapa 2 bloqueada" : "Stage 2 blocked",
+        description: locale === "es" ? "La Etapa 1 fue marcada como incompleta por admin." : "Stage 1 was marked incomplete by admin.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!stageLocks.stage1) {
+      toast({
+        title: locale === "es" ? "Primero envia Etapa 1" : "Submit Stage 1 first",
+        description: locale === "es" ? "Debes bloquear la Etapa 1 antes de enviar la Etapa 2." : "You must lock Stage 1 before submitting Stage 2.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!canEditStage2) return
+
+    if (projectForm.videos.length === 0) {
+      toast({
+        title: locale === "es" ? "Falta el video" : "Video is required",
+        description: locale === "es" ? "Subi un video para completar la Etapa 2." : "Upload a video to complete Stage 2.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const success = await saveProject("submitted", {
+      stage2Locked: true,
+      stage2LockedAt: serverTimestamp(),
+    })
+    if (success) {
+      toast({
+        title: locale === "es" ? "¡Etapa 2 enviada!" : "Stage 2 submitted!",
+        description: locale === "es" ? "El video del proyecto fue enviado correctamente." : "Project video was submitted successfully.",
       })
     } else {
       toast({
@@ -438,6 +510,15 @@ export default function ParticipanteProyectoPage() {
 
           <GlassCard className="p-6">
             <div className="space-y-6">
+              <p className="text-xs text-brand-cyan/60 font-pixel uppercase tracking-wider border-b border-brand-cyan/10 pb-4">
+                {locale === "es" ? "Etapa 1: Datos del Proyecto" : "Stage 1: Project Details"}
+              </p>
+              {stageLocks.stage1 && (
+                <p className="text-xs text-brand-yellow font-pixel uppercase tracking-wider">
+                  {locale === "es" ? "Etapa 1 bloqueada" : "Stage 1 locked"}
+                </p>
+              )}
+
               <div>
                 <Label className="text-brand-cyan text-sm block mb-2">
                   {t.dashboard.participant.project.title} <span className="text-red-500 font-bold">*</span>
@@ -447,7 +528,7 @@ export default function ParticipanteProyectoPage() {
                   onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
                   className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan text-sm"
                   required
-                  disabled={!canEdit}
+                  disabled={!canEditStage1}
                 />
               </div>
 
@@ -460,7 +541,7 @@ export default function ParticipanteProyectoPage() {
                   onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
                   className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan text-sm min-h-[120px] leading-relaxed"
                   required
-                  disabled={!canEdit}
+                  disabled={!canEditStage1}
                 />
               </div>
 
@@ -475,7 +556,7 @@ export default function ParticipanteProyectoPage() {
                     className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan text-sm"
                     placeholder={t.dashboard.participant.project.repoPlaceholder}
                     required
-                    disabled={!canEdit}
+                    disabled={!canEditStage1}
                   />
                 </div>
                 <div>
@@ -485,61 +566,32 @@ export default function ParticipanteProyectoPage() {
                     onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
                     className="bg-brand-navy/50 border-brand-cyan/30 text-brand-cyan text-sm"
                     placeholder={t.dashboard.participant.project.demoPlaceholder}
-                    disabled={!canEdit}
+                    disabled={!canEditStage1}
                   />
                 </div>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <Label className="text-brand-cyan text-sm block">{t.dashboard.participant.project.uploadImages}</Label>
-                  <div className="flex flex-wrap gap-3">
-                    {projectForm.images.map((url, index) => (
-                      <div key={index} className="relative w-24 h-24">
-                        <img src={url} alt="" className="w-full h-full object-cover rounded-lg border border-brand-cyan/20" />
-                        {canEdit && (
-                          <button onClick={() => setProjectForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"><X size={12} /></button>
-                        )}
-                      </div>
-                    ))}
-                    {canEdit && (
-                      <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer">
-                        <Upload size={20} className="text-brand-cyan/40" />
-                        <span className="text-xs uppercase font-pixel text-brand-cyan/40 mt-1">Add Img</span>
-                        <Input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
-                          const files = Array.from(e.target.files || [])
-                          for (const file of files) {
-                            try {
-                              const url = await handleFileUpload(file)
-                              setProjectForm(prev => ({ ...prev, images: [...prev.images, url] }))
-                            } catch (error) {
-                              toast({ title: "Upload failed", variant: "destructive" })
-                            }
-                          }
-                        }} />
-                      </label>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-brand-cyan text-sm block">{t.dashboard.participant.project.uploadVideo}</Label>
-                  {projectForm.videos.length > 0 ? (
-                    <div className="relative group rounded-lg overflow-hidden border border-brand-cyan/20">
-                      <video src={projectForm.videos[0]} controls className="w-full max-h-32 bg-black" />
-                      {canEdit && (
-                        <button onClick={() => setProjectForm(prev => ({ ...prev, videos: [] }))} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+              <div className="space-y-3">
+                <Label className="text-brand-cyan text-sm block">{t.dashboard.participant.project.uploadImages}</Label>
+                <div className="flex flex-wrap gap-3">
+                  {projectForm.images.map((url, index) => (
+                    <div key={index} className="relative w-24 h-24">
+                      <img src={url} alt="" className="w-full h-full object-cover rounded-lg border border-brand-cyan/20" />
+                      {canEditStage1 && (
+                        <button onClick={() => setProjectForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"><X size={12} /></button>
                       )}
                     </div>
-                  ) : canEdit && (
-                    <label className="w-full h-24 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer">
+                  ))}
+                  {canEditStage1 && (
+                    <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer">
                       <Upload size={20} className="text-brand-cyan/40" />
-                      <span className="text-xs text-brand-cyan/40 mt-1 uppercase font-pixel">Upload Video</span>
-                      <Input type="file" accept="video/*" className="hidden" onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
+                      <span className="text-xs uppercase font-pixel text-brand-cyan/40 mt-1">Add Img</span>
+                      <Input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
+                        const files = Array.from(e.target.files || [])
+                        for (const file of files) {
                           try {
                             const url = await handleFileUpload(file)
-                            setProjectForm(prev => ({ ...prev, videos: [url] }))
+                            setProjectForm(prev => ({ ...prev, images: [...prev.images, url] }))
                           } catch (error) {
                             toast({ title: "Upload failed", variant: "destructive" })
                           }
@@ -555,7 +607,7 @@ export default function ParticipanteProyectoPage() {
               <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-brand-cyan/10">
                 {projectSubmissionsEnabled && (
                   <>
-                    {canEdit && (
+                    {canEditStage1 && (
                       <PixelButton onClick={() => saveProject()} variant="outline" size="sm" disabled={isAutoSaving || uploading}>
                         <Save size={18} className="mr-2" />
                         {isAutoSaving ? "Saving..." : "Save Draft"}
@@ -564,18 +616,103 @@ export default function ParticipanteProyectoPage() {
 
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <PixelButton variant="primary" size="sm" disabled={uploading || projectSubmissionsLoading || !canEdit} className="ml-auto">
-                          {projectForm.status === "submitted" ? t.dashboard.participant.project.update : t.dashboard.participant.project.submit}
+                        <PixelButton variant="primary" size="sm" disabled={uploading || projectSubmissionsLoading || !canEditStage1} className="ml-auto">
+                          {locale === "es" ? "Enviar Etapa 1" : "Submit Stage 1"}
                         </PixelButton>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="font-pixel text-brand-yellow text-xl">{t.dashboard.participant.project.confirmSubmitTitle}</AlertDialogTitle>
-                          <AlertDialogDescription className="text-brand-cyan/80 text-sm leading-relaxed">{t.dashboard.participant.project.confirmSubmitDescription}</AlertDialogDescription>
+                          <AlertDialogTitle className="font-pixel text-brand-yellow text-xl">{locale === "es" ? "Enviar Etapa 1" : "Submit Stage 1"}</AlertDialogTitle>
+                          <AlertDialogDescription className="text-brand-cyan/80 text-sm leading-relaxed">
+                            {locale === "es"
+                              ? "Se enviaran titulo, descripcion, repositorio, demo e imagenes."
+                              : "Title, description, repository, demo and images will be submitted."}
+                          </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-6 flex gap-3">
                           <AlertDialogCancel asChild><PixelButton variant="outline" size="sm" className="w-full sm:w-auto">{t.dashboard.participant.project.cancel}</PixelButton></AlertDialogCancel>
-                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitProject} size="sm" className="w-full sm:w-auto">{t.dashboard.participant.project.submitConfirmation}</PixelButton></AlertDialogAction>
+                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitStageOne} size="sm" className="w-full sm:w-auto">{locale === "es" ? "Confirmar Etapa 1" : "Confirm Stage 1"}</PixelButton></AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <div className="space-y-6">
+              <p className="text-xs text-brand-cyan/60 font-pixel uppercase tracking-wider border-b border-brand-cyan/10 pb-4">
+                {locale === "es" ? "Etapa 2: Video del Proyecto" : "Stage 2: Project Video"}
+              </p>
+              {stage1Incomplete && (
+                <p className="text-xs text-red-400 font-pixel uppercase tracking-wider">
+                  {locale === "es" ? "Etapa 1 incompleta: carga de video bloqueada" : "Stage 1 incomplete: video upload blocked"}
+                </p>
+              )}
+              {stageLocks.stage2 && (
+                <p className="text-xs text-brand-yellow font-pixel uppercase tracking-wider">
+                  {locale === "es" ? "Etapa 2 bloqueada" : "Stage 2 locked"}
+                </p>
+              )}
+
+              <div className="space-y-3">
+                <Label className="text-brand-cyan text-sm block">{t.dashboard.participant.project.uploadVideo}</Label>
+                {projectForm.videos.length > 0 ? (
+                  <div className="relative group rounded-lg overflow-hidden border border-brand-cyan/20">
+                    <video src={projectForm.videos[0]} controls className="w-full max-h-64 bg-black" />
+                    {canEditStage2 && (
+                      <button onClick={() => setProjectForm(prev => ({ ...prev, videos: [] }))} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                    )}
+                  </div>
+                ) : canEditStage2 && (
+                  <label className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer">
+                    <Upload size={20} className="text-brand-cyan/40" />
+                    <span className="text-xs text-brand-cyan/40 mt-1 uppercase font-pixel">Upload Video</span>
+                    <Input type="file" accept="video/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        try {
+                          const url = await handleFileUpload(file)
+                          setProjectForm(prev => ({ ...prev, videos: [url] }))
+                        } catch (error) {
+                          toast({ title: "Upload failed", variant: "destructive" })
+                        }
+                      }
+                    }} />
+                  </label>
+                )}
+              </div>
+
+              {!projectSubmissionsEnabled && <p className="text-brand-orange text-sm font-pixel text-center py-2">{t.dashboard.participant.project.submissionsDisabled}</p>}
+
+              <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-brand-cyan/10">
+                {projectSubmissionsEnabled && (
+                  <>
+                    {canEditStage2 && (
+                      <PixelButton onClick={() => saveProject()} variant="outline" size="sm" disabled={isAutoSaving || uploading}>
+                        <Save size={18} className="mr-2" />
+                        {isAutoSaving ? "Saving..." : "Save Draft"}
+                      </PixelButton>
+                    )}
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <PixelButton variant="primary" size="sm" disabled={uploading || projectSubmissionsLoading || !canEditStage2 || !stageLocks.stage1} className="ml-auto">
+                          {locale === "es" ? "Enviar Etapa 2" : "Submit Stage 2"}
+                        </PixelButton>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-brand-navy border-brand-cyan/30 text-brand-cyan">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="font-pixel text-brand-yellow text-xl">{locale === "es" ? "Enviar Etapa 2" : "Submit Stage 2"}</AlertDialogTitle>
+                          <AlertDialogDescription className="text-brand-cyan/80 text-sm leading-relaxed">
+                            {locale === "es" ? "Se enviara el video del proyecto." : "Project video will be submitted."}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-6 flex gap-3">
+                          <AlertDialogCancel asChild><PixelButton variant="outline" size="sm" className="w-full sm:w-auto">{t.dashboard.participant.project.cancel}</PixelButton></AlertDialogCancel>
+                          <AlertDialogAction asChild><PixelButton variant="primary" onClick={submitStageTwo} size="sm" className="w-full sm:w-auto">{locale === "es" ? "Confirmar Etapa 2" : "Confirm Stage 2"}</PixelButton></AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

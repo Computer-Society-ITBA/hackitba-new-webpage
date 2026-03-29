@@ -47,6 +47,8 @@ export default function AdminProyectosPage() {
   const [confirmAction, setConfirmAction] = useState<"review" | "disqualify" | "mark_finalist" | null>(null)
   const [judgingStage, setJudgingStage] = useState<"admin" | "judge">("admin")
   const [myReviews, setMyReviews] = useState<Set<string>>(new Set())
+  const [updatingStages, setUpdatingStages] = useState(false)
+  const [updatingAllStages, setUpdatingAllStages] = useState(false)
 
   useEffect(() => {
     if (!db) return
@@ -235,6 +237,138 @@ export default function AdminProyectosPage() {
     }
   }
 
+  const updateProjectLocalState = (projectId: string, patch: Record<string, any>) => {
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...patch } : p))
+    setSelectedProject((prev: any) => {
+      if (!prev || prev.id !== projectId) return prev
+      return { ...prev, ...patch }
+    })
+  }
+
+  const setStageLock = async (stage: 1 | 2, locked: boolean, projectArg?: any) => {
+    const targetProject = projectArg || selectedProject
+    if (!db || !targetProject) return
+
+    setUpdatingStages(true)
+    try {
+      const lockField = stage === 1 ? "stage1Locked" : "stage2Locked"
+      const lockDateField = stage === 1 ? "stage1LockedAt" : "stage2LockedAt"
+      const patch: Record<string, any> = {
+        [lockField]: locked,
+      }
+
+      if (locked) {
+        patch[lockDateField] = new Date().toISOString()
+      }
+
+      // If stage 1 is unlocked, also clear admin incomplete marker.
+      if (stage === 1 && !locked) {
+        patch.stage1Incomplete = false
+      }
+
+      await updateDoc(doc(db, "projects", targetProject.id), patch)
+      updateProjectLocalState(targetProject.id, patch)
+
+      toast({
+        title: stage === 1
+          ? (locked ? (locale === "es" ? "Etapa 1 bloqueada" : "Stage 1 locked") : (locale === "es" ? "Etapa 1 desbloqueada" : "Stage 1 unlocked"))
+          : (locked ? (locale === "es" ? "Etapa 2 bloqueada" : "Stage 2 locked") : (locale === "es" ? "Etapa 2 desbloqueada" : "Stage 2 unlocked")),
+      })
+    } catch (error) {
+      console.error("Error updating stage lock:", error)
+      toast({ title: locale === "es" ? "Error al actualizar etapa" : "Error updating stage", variant: "destructive" })
+    } finally {
+      setUpdatingStages(false)
+    }
+  }
+
+  const markStage1Incomplete = async (projectArg?: any) => {
+    const targetProject = projectArg || selectedProject
+    if (!db || !targetProject) return
+
+    setUpdatingStages(true)
+    try {
+      const patch = {
+        stage1Locked: true,
+        stage1LockedAt: new Date().toISOString(),
+        stage1Incomplete: true,
+        stage2Locked: true,
+        stage2LockedAt: new Date().toISOString(),
+        totalScore: 0,
+        scores: {},
+        reviewCount: 0,
+        status: "reviewed",
+      }
+
+      await updateDoc(doc(db, "projects", targetProject.id), patch)
+      updateProjectLocalState(targetProject.id, patch)
+
+      toast({
+        title: locale === "es" ? "Etapa 1 incompleta" : "Stage 1 incomplete",
+        description: locale === "es"
+          ? "Se asigno puntaje 0 y se bloqueo la carga de video."
+          : "Score set to 0 and video upload was blocked.",
+      })
+    } catch (error) {
+      console.error("Error marking stage 1 incomplete:", error)
+      toast({ title: locale === "es" ? "Error al marcar etapa" : "Error updating stage", variant: "destructive" })
+    } finally {
+      setUpdatingStages(false)
+    }
+  }
+
+  const setGlobalStageMode = async (mode: "open" | "only_video" | "close") => {
+    if (!db) return
+    setUpdatingAllStages(true)
+    try {
+      const projectsSnap = await getDocs(query(collection(db, "projects")))
+      const nowIso = new Date().toISOString()
+
+      const patchByMode: Record<string, any> = {
+        open: {
+          stage1Locked: false,
+          stage1LockedAt: null,
+          stage2Locked: false,
+          stage2LockedAt: null,
+        },
+        only_video: {
+          stage1Locked: true,
+          stage1LockedAt: nowIso,
+          stage2Locked: false,
+          stage2LockedAt: null,
+        },
+        close: {
+          stage1Locked: true,
+          stage1LockedAt: nowIso,
+          stage2Locked: true,
+          stage2LockedAt: nowIso,
+        },
+      }
+
+      const patch = patchByMode[mode]
+
+      for (const pDoc of projectsSnap.docs) {
+        await updateDoc(doc(db, "projects", pDoc.id), patch)
+      }
+
+      setProjects(prev => prev.map((p: any) => ({ ...p, ...patch })))
+      setSelectedProject((prev: any) => (prev ? { ...prev, ...patch } : prev))
+
+      const titleByMode = {
+        open: locale === "es" ? "Modo abierto aplicado" : "Open mode applied",
+        only_video: locale === "es" ? "Modo solo video aplicado" : "Only video mode applied",
+        close: locale === "es" ? "Modo cerrado aplicado" : "Close mode applied",
+      }
+
+      toast({ title: titleByMode[mode] })
+    } catch (error) {
+      console.error("Error updating global stage mode:", error)
+      toast({ title: locale === "es" ? "Error al actualizar modo global" : "Error updating global mode", variant: "destructive" })
+    } finally {
+      setUpdatingAllStages(false)
+    }
+  }
+
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
       // Judges only evaluate finalists and never disqualified ones
@@ -287,6 +421,32 @@ export default function AdminProyectosPage() {
                 <TabsTrigger value="projects" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Projects</TabsTrigger>
                 <TabsTrigger value="leaderboard" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Leaderboard</TabsTrigger>
               </TabsList>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/40 border-brand-cyan/50"
+                  onClick={() => setGlobalStageMode("open")}
+                  disabled={updatingAllStages}
+                >
+                  {locale === "es" ? "Open (ambas etapas)" : "Open (both stages)"}
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
+                  onClick={() => setGlobalStageMode("only_video")}
+                  disabled={updatingAllStages}
+                >
+                  {locale === "es" ? "Only Video (S1 cerrado, S2 abierto)" : "Only Video (S1 closed, S2 open)"}
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-red-500/20 text-red-300 hover:bg-red-500/40 border-red-500/50"
+                  onClick={() => setGlobalStageMode("close")}
+                  disabled={updatingAllStages}
+                >
+                  {locale === "es" ? "Close (ambas etapas)" : "Close (both stages)"}
+                </Button>
+              </div>
             </div>
 
             <TabsContent value="projects" className="space-y-6">
@@ -458,6 +618,48 @@ export default function AdminProyectosPage() {
                   <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
                     <p className="text-xs text-brand-cyan/60 uppercase mb-2">Description</p>
                     <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap">{selectedProject.description}</p>
+                  </div>
+
+                  <div className="p-4 rounded bg-brand-navy/40 border border-brand-cyan/20 space-y-3">
+                    <p className="text-xs text-brand-cyan/60 uppercase">Stage Controls</p>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <span className={cn("px-2 py-1 rounded border font-pixel", selectedProject.stage1Locked ? "border-brand-yellow/40 text-brand-yellow" : "border-brand-cyan/20 text-brand-cyan/70")}>
+                        {selectedProject.stage1Locked ? "STAGE 1: LOCKED" : "STAGE 1: OPEN"}
+                      </span>
+                      <span className={cn("px-2 py-1 rounded border font-pixel", selectedProject.stage2Locked ? "border-brand-yellow/40 text-brand-yellow" : "border-brand-cyan/20 text-brand-cyan/70")}>
+                        {selectedProject.stage2Locked ? "STAGE 2: LOCKED" : "STAGE 2: OPEN"}
+                      </span>
+                      {selectedProject.stage1Incomplete && (
+                        <span className="px-2 py-1 rounded border border-red-500/40 text-red-400 font-pixel">STAGE 1 INCOMPLETE (0)</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Button
+                        className="bg-red-500/20 text-red-300 hover:bg-red-500/40 border-red-500/50"
+                        onClick={() => markStage1Incomplete()}
+                        disabled={updatingStages}
+                      >
+                        {locale === "es" ? "Etapa 1 incompleta (0)" : "Stage 1 incomplete (0)"}
+                      </Button>
+                      <Button
+                        className="bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/40 border-brand-cyan/50"
+                        onClick={() => setStageLock(1, !selectedProject.stage1Locked)}
+                        disabled={updatingStages}
+                      >
+                        {selectedProject.stage1Locked
+                          ? (locale === "es" ? "Desbloquear Etapa 1" : "Unlock Stage 1")
+                          : (locale === "es" ? "Bloquear Etapa 1" : "Lock Stage 1")}
+                      </Button>
+                      <Button
+                        className="bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/40 border-brand-cyan/50"
+                        onClick={() => setStageLock(2, !selectedProject.stage2Locked)}
+                        disabled={updatingStages}
+                      >
+                        {selectedProject.stage2Locked
+                          ? (locale === "es" ? "Desbloquear Etapa 2" : "Unlock Stage 2")
+                          : (locale === "es" ? "Bloquear Etapa 2" : "Lock Stage 2")}
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-4">
                     {selectedProject.githubRepoUrl && <a href={selectedProject.githubRepoUrl.startsWith('http') ? selectedProject.githubRepoUrl : `https://${selectedProject.githubRepoUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 text-xs"><Github size={14} /> GitHub</a>}
