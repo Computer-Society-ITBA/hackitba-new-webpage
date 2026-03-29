@@ -555,10 +555,12 @@ export default function ParticipanteProyectoPage() {
               <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-brand-cyan/10">
                 {projectSubmissionsEnabled && (
                   <>
-                    <PixelButton onClick={() => saveProject()} variant="outline" size="sm" disabled={isAutoSaving || uploading}>
-                      <Save size={18} className="mr-2" />
-                      {isAutoSaving ? "Saving..." : "Save Draft"}
-                    </PixelButton>
+                    {canEdit && (
+                      <PixelButton onClick={() => saveProject()} variant="outline" size="sm" disabled={isAutoSaving || uploading}>
+                        <Save size={18} className="mr-2" />
+                        {isAutoSaving ? "Saving..." : "Save Draft"}
+                      </PixelButton>
+                    )}
 
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
