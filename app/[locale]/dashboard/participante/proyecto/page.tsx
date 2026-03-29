@@ -24,7 +24,7 @@ import { collection, getDocs, query, where, updateDoc, doc, getDoc, setDoc, dele
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban, Trophy, Clock } from "lucide-react"
+import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban, Trophy, Clock, Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
@@ -51,6 +51,7 @@ export default function ParticipanteProyectoPage() {
   const [signupEnabled, setSignupEnabled] = useState(true)
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
   const [reviews, setReviews] = useState<any[]>([])
+  const [imageUploadProgress, setImageUploadProgress] = useState({ total: 0, done: 0 })
   const router = useRouter()
 
   const [projectForm, setProjectForm] = useState({
@@ -300,14 +301,11 @@ export default function ParticipanteProyectoPage() {
       })
       return
     }
-    const success = await saveProject("draft", {
-      stage1Locked: true,
-      stage1LockedAt: serverTimestamp(),
-    })
+    const success = await saveProject("draft")
     if (success) {
       toast({
-        title: locale === "es" ? "Etapa 1 bloqueada" : "Stage 1 locked",
-        description: locale === "es" ? "Los datos de la Etapa 1 quedaron enviados y bloqueados." : "Stage 1 details were submitted and locked.",
+        title: locale === "es" ? "Etapa 1 enviada" : "Stage 1 submitted",
+        description: locale === "es" ? "Los datos de la Etapa 1 se guardaron correctamente." : "Stage 1 details were saved successfully.",
       })
     } else {
       toast({
@@ -328,10 +326,11 @@ export default function ParticipanteProyectoPage() {
       return
     }
 
-    if (!stageLocks.stage1) {
+    const requiredMissing = !projectForm.title.trim() || !projectForm.description.trim() || !projectForm.githubRepoUrl.trim()
+    if (requiredMissing) {
       toast({
-        title: locale === "es" ? "Primero envia Etapa 1" : "Submit Stage 1 first",
-        description: locale === "es" ? "Debes bloquear la Etapa 1 antes de enviar la Etapa 2." : "You must lock Stage 1 before submitting Stage 2.",
+        title: locale === "es" ? "Completa Etapa 1" : "Complete Stage 1",
+        description: locale === "es" ? "Faltan campos obligatorios de la Etapa 1." : "Required Stage 1 fields are missing.",
         variant: "destructive",
       })
       return
@@ -348,10 +347,7 @@ export default function ParticipanteProyectoPage() {
       return
     }
 
-    const success = await saveProject("submitted", {
-      stage2Locked: true,
-      stage2LockedAt: serverTimestamp(),
-    })
+    const success = await saveProject("submitted")
     if (success) {
       toast({
         title: locale === "es" ? "¡Etapa 2 enviada!" : "Stage 2 submitted!",
@@ -573,6 +569,19 @@ export default function ParticipanteProyectoPage() {
 
               <div className="space-y-3">
                 <Label className="text-brand-cyan text-sm block">{t.dashboard.participant.project.uploadImages}</Label>
+                {imageUploadProgress.total > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-brand-cyan/70 font-pixel uppercase tracking-wider">
+                    <Loader2
+                      className={cn(
+                        "w-3.5 h-3.5",
+                        imageUploadProgress.done < imageUploadProgress.total ? "animate-spin" : ""
+                      )}
+                    />
+                    <span>
+                      {locale === "es" ? "Subiendo imagenes" : "Uploading images"} {imageUploadProgress.done}/{imageUploadProgress.total}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-3">
                   {projectForm.images.map((url, index) => (
                     <div key={index} className="relative w-24 h-24">
@@ -583,19 +592,34 @@ export default function ParticipanteProyectoPage() {
                     </div>
                   ))}
                   {canEditStage1 && (
-                    <label className="w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer">
+                    <label className={cn(
+                      "w-24 h-24 flex flex-col items-center justify-center border-2 border-dashed border-brand-cyan/20 rounded-lg hover:border-brand-cyan/40 hover:bg-brand-cyan/5 transition-all cursor-pointer",
+                      imageUploadProgress.total > 0 && imageUploadProgress.done < imageUploadProgress.total
+                        ? "opacity-60 pointer-events-none"
+                        : ""
+                    )}>
                       <Upload size={20} className="text-brand-cyan/40" />
                       <span className="text-xs uppercase font-pixel text-brand-cyan/40 mt-1">Add Img</span>
                       <Input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
                         const files = Array.from(e.target.files || [])
+                        if (files.length === 0) return
+                        setImageUploadProgress({ total: files.length, done: 0 })
                         for (const file of files) {
                           try {
                             const url = await handleFileUpload(file)
                             setProjectForm(prev => ({ ...prev, images: [...prev.images, url] }))
                           } catch (error) {
                             toast({ title: "Upload failed", variant: "destructive" })
+                          } finally {
+                            setImageUploadProgress(prev => ({
+                              total: prev.total,
+                              done: Math.min(prev.done + 1, prev.total),
+                            }))
                           }
                         }
+                        setTimeout(() => {
+                          setImageUploadProgress({ total: 0, done: 0 })
+                        }, 900)
                       }} />
                     </label>
                   )}
@@ -699,7 +723,7 @@ export default function ParticipanteProyectoPage() {
 
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <PixelButton variant="primary" size="sm" disabled={uploading || projectSubmissionsLoading || !canEditStage2 || !stageLocks.stage1} className="ml-auto">
+                        <PixelButton variant="primary" size="sm" disabled={uploading || projectSubmissionsLoading || !canEditStage2} className="ml-auto">
                           {locale === "es" ? "Enviar Etapa 2" : "Submit Stage 2"}
                         </PixelButton>
                       </AlertDialogTrigger>
