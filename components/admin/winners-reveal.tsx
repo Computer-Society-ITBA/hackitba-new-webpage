@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useAuth } from "@/lib/firebase/auth-context"
 import { useParams } from "next/navigation"
 import { collection, getDocs, query, orderBy } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
@@ -292,6 +293,7 @@ function PodiumCard({ winner, category, isChampion = false, t }: any) {
 // ─── Main Logic ───────────────────────────────────────────────────────────────
 
 export function WinnersReveal() {
+    const { user } = useAuth()
     const params = useParams()
     const locale = params.locale as Locale
     const t = getTranslations(locale)
@@ -483,7 +485,7 @@ export function WinnersReveal() {
 
                     {/* Header - More compact */}
                     <div className="flex flex-col items-center relative z-10 text-center mb-6 md:mb-10 animate-in slide-in-from-top-8 duration-700 w-full">
-                        <Link href={`/${locale}/dashboard`}>
+                        <Link href={user ? `/${locale}/dashboard` : `/${locale}`}>
                             <div className="w-[50vw] max-w-[600px] mb-4 cursor-pointer hover:opacity-80 transition-opacity">
                                 <img src="/images/hackitba-alt-logo.png" alt="HackITBA" />
                             </div>

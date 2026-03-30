@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { ProtectedRoute } from "@/components/auth/protected-route"
 import { useRouter, useParams } from "next/navigation"
 import { WinnersReveal } from "@/components/admin/winners-reveal"
 import { doc, getDoc } from "firebase/firestore"
@@ -43,28 +42,29 @@ export default function WinnersPage() {
     }, [])
 
     useEffect(() => {
-        if (!authLoading && !settingsLoading && user && showWinners !== null) {
+        if (!authLoading && !settingsLoading && showWinners !== null) {
             // Admins always have access
-            if (user.role === "admin") return
+            if (user?.role === "admin") return
 
-            // Participants only if flag is enabled
-            if (user.role === "participant" && showWinners) return
-
-            // Otherwise redirect
-            router.replace(`/${locale}/dashboard`)
+            // If showWinners is disabled, redirect
+            if (!showWinners) {
+                // If logged in, go to dashboard, otherwise home
+                router.replace(user ? `/${locale}/dashboard` : `/${locale}`)
+            }
         }
     }, [user, authLoading, settingsLoading, showWinners, router, locale])
 
     if (authLoading || settingsLoading) return <Loading text={t.loading.synchronizing} />
 
+    // If winners are not to be shown and user is not admin, we return null while redirecting
+    if (!showWinners && user?.role !== "admin") return null
+
     return (
-        <ProtectedRoute allowedRoles={["admin", "participant"]}>
-            <main
-                className="relative min-h-screen w-full overflow-hidden"
-                style={{ background: "#020617" }}
-            >
-                <WinnersReveal />
-            </main>
-        </ProtectedRoute>
+        <main
+            className="relative min-h-screen w-full overflow-hidden"
+            style={{ background: "#020617" }}
+        >
+            <WinnersReveal />
+        </main>
     )
 }

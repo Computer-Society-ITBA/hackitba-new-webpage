@@ -45,7 +45,8 @@
       "title": "HACKITBA",
       "subtitle": "By Computer Society ITBA",
       "signupOpen": "Registrations are open!",
-      "signupClosed": "Registrations are closed."
+      "signupClosed": "Registrations are closed.",
+      "seeWinners": "Check out the 2026 winning teams"
     },
     "stats": {
       "categories": "Categories",
@@ -891,7 +892,8 @@
       "title": "HACKITBA",
       "subtitle": "By Computer Society ITBA",
       "signupOpen": "¡Las inscripciones están abiertas!",
-      "signupClosed": "Las inscripciones están cerradas."
+      "signupClosed": "Las inscripciones están cerradas.",
+      "seeWinners": "Mirá los equipos ganadores de 2026"
     },
     "stats": {
       "categories": "Categorías",
