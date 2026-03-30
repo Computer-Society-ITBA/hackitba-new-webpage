@@ -42,7 +42,7 @@ export default async function Page({ params }: PageProps) {
         <Judges locale={locale} translations={translations} />
         <Mentors locale={locale} translations={translations} />
         <WhatWeProvide translations={translations} />
-        <Countdown translations={translations} />
+        {/* <Countdown translations={translations} /> */}
         <FAQs translations={translations} />
         <SponsorsCarousel translations={translations} />
       </main>
