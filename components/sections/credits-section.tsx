@@ -10,9 +10,18 @@ interface CreditsSectionProps {
 
 export function CreditsSection({ translations, locale }: CreditsSectionProps) {
   const teamMembers = [
-    "Nahuel Ignacio Prado",
-    "Clara Rodriguez Acevedo",
-    "Mateo Buela Daddiego",
+    {
+      name: "Nahuel Ignacio Prado",
+      linkedin: "https://www.linkedin.com/in/niprado/",
+    },
+    {
+      name: "Clara Rodriguez Acevedo",
+      linkedin: "https://www.linkedin.com/in/clara-rodriguez-acevedo",
+    },
+    {
+      name: "Mateo Buela Daddiego",
+      linkedin: "https://www.linkedin.com/in/mateo-buela-daddiego",
+    },
   ]
 
   return (
@@ -36,9 +45,16 @@ export function CreditsSection({ translations, locale }: CreditsSectionProps) {
             <div className="space-y-2">
               {teamMembers.length > 0 ? (
                 <div className="text-center space-y-3">
-                  {teamMembers.map((name, index) => (
-                    <p key={index} className="font-pixel text-sm">
-                      {name}
+                  {teamMembers.map((member) => (
+                    <p key={member.linkedin} className="font-pixel text-sm">
+                      <a
+                        href={member.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors hover:text-brand-cyan"
+                      >
+                        {member.name}
+                      </a>
                     </p>
                   ))}
                 </div>
