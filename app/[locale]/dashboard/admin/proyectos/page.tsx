@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
-import Link from "next/link"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc, where, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy, Plus } from "lucide-react"
+import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
@@ -50,6 +49,8 @@ export default function AdminProyectosPage() {
   const [myReviews, setMyReviews] = useState<Set<string>>(new Set())
   const [updatingStages, setUpdatingStages] = useState(false)
   const [updatingAllStages, setUpdatingAllStages] = useState(false)
+  const [leaderboardView, setLeaderboardView] = useState<"category" | "global">("category")
+  const [activeTab, setActiveTab] = useState<"projects" | "leaderboard">("projects")
 
   useEffect(() => {
     if (!db) return
@@ -427,17 +428,71 @@ export default function AdminProyectosPage() {
       .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
   }, [projects])
 
+  const globalRankedData = useMemo(() => {
+    const reviewed = projects.filter(p => !p.disqualified && p.status === "reviewed")
+
+    const finalists = reviewed
+      .filter(p => p.isFinalist)
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+
+    const rest = reviewed
+      .filter(p => !p.isFinalist)
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+
+    return { finalists, rest }
+  }, [projects])
+
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <DashboardLayout title={t.dashboard.sidebar.projects}>
         <div className="space-y-6">
-          <Tabs defaultValue="projects" className="w-full">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
-              <TabsList className="bg-brand-navy/60 border border-brand-cyan/20">
-                <TabsTrigger value="projects" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Projects</TabsTrigger>
-                <TabsTrigger value="leaderboard" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Leaderboard</TabsTrigger>
-              </TabsList>
-              <div className="flex flex-wrap gap-2">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "projects" | "leaderboard")} className="w-full">
+            <div className="flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center mb-6">
+              <div className="flex flex-col gap-3 items-start xl:items-center">
+                <TabsList className="bg-brand-navy/60 border border-brand-cyan/20">
+                  <TabsTrigger value="projects" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Projects</TabsTrigger>
+                  <TabsTrigger value="leaderboard" className="font-pixel text-xs data-[state=active]:bg-brand-cyan/20 data-[state=active]:text-brand-cyan text-brand-cyan/60">Leaderboard</TabsTrigger>
+                </TabsList>
+
+                {activeTab === "leaderboard" && (
+                  <div className="relative inline-grid grid-cols-2 rounded-full border border-brand-cyan/30 bg-brand-navy/60 p-1 shrink-0 overflow-hidden">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "pointer-events-none absolute left-1 top-1 h-8 w-[calc(50%-4px)] rounded-full bg-brand-cyan/20 ring-1 ring-brand-cyan/35 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-in-out",
+                        leaderboardView === "global" && "translate-x-full"
+                      )}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className={cn(
+                        "relative z-10 h-8 rounded-full px-4 text-xs font-pixel whitespace-nowrap motion-safe:transition-colors motion-safe:duration-200",
+                        leaderboardView === "category"
+                          ? "text-brand-cyan"
+                          : "text-brand-cyan/60 hover:text-brand-cyan"
+                      )}
+                      onClick={() => setLeaderboardView("category")}
+                    >
+                      {locale === "es" ? "Por Categoría" : "By Category"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className={cn(
+                        "relative z-10 h-8 rounded-full px-4 text-xs font-pixel whitespace-nowrap motion-safe:transition-colors motion-safe:duration-200",
+                        leaderboardView === "global"
+                          ? "text-brand-cyan"
+                          : "text-brand-cyan/60 hover:text-brand-cyan"
+                      )}
+                      onClick={() => setLeaderboardView("global")}
+                    >
+                      {locale === "es" ? "Global" : "Global"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 w-full xl:w-auto">
                 <Button
                   size="sm"
                   className="bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/40 border-brand-cyan/50"
@@ -530,123 +585,159 @@ export default function AdminProyectosPage() {
             </TabsContent>
 
             <TabsContent value="leaderboard" className="space-y-8">
-              {Object.keys(groupedRankings).length === 0 ? (
-                <GlassCard className="p-12 text-xs text-center text-brand-cyan/40 font-pixel">No reviewed projects yet.</GlassCard>
-              ) : (
-                Object.keys(groupedRankings).map(catId => {
-                  const ranked = groupedRankings[catId]
-                  return (
-                    <GlassCard key={catId} className="p-4 sm:p-6 flex flex-col gap-4">
-                      <h3 className="font-pixel text-lg text-brand-yellow">Category: {getCategoryName(catId)}</h3>
-                      <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20">
-                        <Table className="min-w-max">
-                          <TableHeader>
-                            <TableRow className="border-brand-cyan/20 hover:bg-transparent">
-                              <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
-                              <TableHead className="text-brand-cyan">Project</TableHead>
-                              <TableHead className="text-brand-cyan">Team</TableHead>
-                              {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
-                                <TableHead key={c.id} className="text-brand-cyan text-[10px]">
-                                  {c.name}
-                                </TableHead>
-                              ))}
-                              <TableHead className="text-brand-orange text-right">Points</TableHead>
-                              <TableHead className="text-brand-cyan/60 text-right text-xs">Reviews</TableHead>
-                              <TableHead className="text-brand-yellow text-right">Finalist</TableHead>
-                              <TableHead className="text-brand-cyan/60 text-right text-xs">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {ranked.map((p, index) => (
-                              <TableRow key={p.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
-                                <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
-                                <TableCell className="font-medium text-brand-cyan" onClick={() => { setSelectedProject(p); setShowDetails(true); }}>
-                                  <span className="hover:underline cursor-pointer">{p.title || "Untitled"}</span>
-                                </TableCell>
-                                <TableCell className="text-brand-cyan/80">{p.teamName}</TableCell>
-                                {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
-                                  <TableCell key={c.id} className="text-brand-cyan/80">
-                                    {(p.scores && p.scores[c.id]) !== undefined ? Math.round(p.scores[c.id]) : "-"}
-                                  </TableCell>
-                                ))}
-                                <TableCell className="text-right font-bold text-brand-orange">
-                                  {Math.round(p.totalScore || 0)}
-                                </TableCell>
-                                <TableCell className="text-right text-xs text-brand-cyan/40 italic">
-                                  {p.reviewCount || 0}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {p.isFinalist ? <Trophy size={14} className="ml-auto text-brand-yellow" /> : "-"}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {!p.isFinalist && (
-                                    <Button
-                                      size="sm"
-                                      className="bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
-                                      onClick={() => markAsFinalist(p)}
-                                    >
-                                      <Trophy className="mr-2 w-4 h-4" />
-                                      Mark as Finalist
-                                    </Button>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </GlassCard>
-                  )
-                })
-              )}
-
-              <GlassCard className="p-4 sm:p-6 flex flex-col gap-4">
-                <h3 className="font-pixel text-lg text-brand-yellow">
-                  {locale === "es" ? "Finalistas Globales" : "Global Finalists"}
-                </h3>
-                {finalistsLeaderboard.length === 0 ? (
-                  <div className="text-xs text-center text-brand-cyan/40 font-pixel py-8">
-                    {locale === "es" ? "No hay finalistas revisados aún." : "No reviewed finalists yet."}
-                  </div>
+              {leaderboardView === "category" ? (
+                Object.keys(groupedRankings).length === 0 ? (
+                  <GlassCard className="p-12 text-xs text-center text-brand-cyan/40 font-pixel">No reviewed projects yet.</GlassCard>
                 ) : (
-                  <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20">
-                    <Table className="min-w-max">
-                      <TableHeader>
-                        <TableRow className="border-brand-cyan/20 hover:bg-transparent">
-                          <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
-                          <TableHead className="text-brand-cyan">{locale === "es" ? "Proyecto" : "Project"}</TableHead>
-                          <TableHead className="text-brand-cyan">{locale === "es" ? "Equipo" : "Team"}</TableHead>
-                          <TableHead className="text-brand-cyan">{locale === "es" ? "Categoría" : "Category"}</TableHead>
-                          <TableHead className="text-brand-orange text-right">{locale === "es" ? "Puntos" : "Points"}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {finalistsLeaderboard.map((p, index) => (
-                          <TableRow key={p.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
-                            <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
-                            <TableCell className="text-brand-cyan">{p.title || "Untitled"}</TableCell>
-                            <TableCell className="text-brand-cyan/80">{p.teamName || "-"}</TableCell>
-                            <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
-                            <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  Object.keys(groupedRankings).map(catId => {
+                    const ranked = groupedRankings[catId]
+                    return (
+                      <GlassCard key={catId} className="p-4 sm:p-6 flex flex-col gap-4">
+                        <h3 className="font-pixel text-lg text-brand-yellow">Category: {getCategoryName(catId)}</h3>
+                        <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20">
+                          <Table className="min-w-max">
+                            <TableHeader>
+                              <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                                <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
+                                <TableHead className="text-brand-cyan">Project</TableHead>
+                                <TableHead className="text-brand-cyan">Team</TableHead>
+                                {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
+                                  <TableHead key={c.id} className="text-brand-cyan text-[10px]">
+                                    {c.name}
+                                  </TableHead>
+                                ))}
+                                <TableHead className="text-brand-orange text-right">Points</TableHead>
+                                <TableHead className="text-brand-cyan/60 text-right text-xs">Reviews</TableHead>
+                                <TableHead className="text-brand-yellow text-right">Finalist</TableHead>
+                                <TableHead className="text-brand-cyan/60 text-right text-xs">Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {ranked.map((p, index) => (
+                                <TableRow key={p.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
+                                  <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
+                                  <TableCell className="font-medium text-brand-cyan" onClick={() => { setSelectedProject(p); setShowDetails(true); }}>
+                                    <span className="hover:underline cursor-pointer">{p.title || "Untitled"}</span>
+                                  </TableCell>
+                                  <TableCell className="text-brand-cyan/80">{p.teamName}</TableCell>
+                                  {scoringCriteria.filter(c => (c.targetRole || "judge") === "judge").map(c => (
+                                    <TableCell key={c.id} className="text-brand-cyan/80">
+                                      {(p.scores && p.scores[c.id]) !== undefined ? Math.round(p.scores[c.id]) : "-"}
+                                    </TableCell>
+                                  ))}
+                                  <TableCell className="text-right font-bold text-brand-orange">
+                                    {Math.round(p.totalScore || 0)}
+                                  </TableCell>
+                                  <TableCell className="text-right text-xs text-brand-cyan/40 italic">
+                                    {p.reviewCount || 0}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {p.isFinalist ? <Trophy size={14} className="ml-auto text-brand-yellow" /> : "-"}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {!p.isFinalist && (
+                                      <Button
+                                        size="sm"
+                                        className="bg-brand-yellow/20 text-brand-yellow hover:bg-brand-yellow/40 border-brand-yellow/50"
+                                        onClick={() => markAsFinalist(p)}
+                                      >
+                                        <Trophy className="mr-2 w-4 h-4" />
+                                        Mark as Finalist
+                                      </Button>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </GlassCard>
+                    )
+                  })
+                )
+              ) : (
+                <GlassCard className="p-4 sm:p-6 flex flex-col gap-4">
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-pixel text-lg text-brand-yellow">
+                      {locale === "es" ? "Global Leaderboard" : "Global Leaderboard"}
+                    </h3>
+                    <p className="text-xs text-brand-cyan/50 font-pixel">
+                      {locale === "es"
+                        ? "Finalistas primero, luego el resto de equipos por puntaje."
+                        : "Finalists first, then all remaining teams by score."}
+                    </p>
                   </div>
-                )}
-              </GlassCard>
 
-              <div className="flex justify-end -mt-4">
-                <Link href={`/${locale}/dashboard/admin/proyectos/global-leaderboard`} aria-label={locale === "es" ? "Abrir global leaderboard" : "Open global leaderboard"}>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 rounded-full border-brand-cyan/10 bg-brand-navy/70 text-brand-cyan/25 opacity-40 hover:opacity-70 hover:text-brand-cyan/60 hover:bg-brand-navy"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-              </div>
+                  {globalRankedData.finalists.length + globalRankedData.rest.length === 0 ? (
+                    <div className="text-xs text-center text-brand-cyan/40 font-pixel py-8">
+                      {locale === "es" ? "No hay proyectos revisados aún." : "No reviewed projects yet."}
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20">
+                      <Table className="w-full min-w-[700px] table-fixed">
+                        <TableHeader>
+                          <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                            <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
+                            <TableHead className="text-brand-cyan w-[34%]">Project</TableHead>
+                            <TableHead className="text-brand-cyan w-[30%]">Team</TableHead>
+                            <TableHead className="text-brand-cyan w-[18%]">Category</TableHead>
+                            <TableHead className="text-brand-orange text-right w-[88px]">Score</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {globalRankedData.finalists.map((p, index) => (
+                            <TableRow key={`f-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
+                              <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
+                              <TableCell className="font-medium text-brand-cyan">
+                                <span
+                                  className="block truncate w-full hover:underline cursor-pointer"
+                                  title={p.title || "Untitled"}
+                                  onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                                >
+                                  {p.title || "Untitled"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-brand-cyan/80">{p.teamName || "-"}</TableCell>
+                              <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
+                              <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
+                            </TableRow>
+                          ))}
+
+                          {globalRankedData.finalists.length > 0 && globalRankedData.rest.length > 0 && (
+                            <TableRow className="border-brand-cyan/20 bg-brand-navy/40 hover:bg-brand-navy/40">
+                              <TableCell colSpan={5} className="py-2">
+                                <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-brand-cyan/50 font-pixel">
+                                  <span className="h-px flex-1 bg-brand-cyan/20" />
+                                  <span>{locale === "es" ? "Resto de equipos" : "Remaining teams"}</span>
+                                  <span className="h-px flex-1 bg-brand-cyan/20" />
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+
+                          {globalRankedData.rest.map((p, index) => (
+                            <TableRow key={`r-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
+                              <TableCell className="text-brand-cyan/60 text-center font-bold">{globalRankedData.finalists.length + index + 1}</TableCell>
+                              <TableCell className="font-medium text-brand-cyan">
+                                <span
+                                  className="block truncate w-full hover:underline cursor-pointer"
+                                  title={p.title || "Untitled"}
+                                  onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                                >
+                                  {p.title || "Untitled"}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-brand-cyan/80">{p.teamName || "-"}</TableCell>
+                              <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
+                              <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </GlassCard>
+              )}
             </TabsContent>
           </Tabs>
 
