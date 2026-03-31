@@ -80,37 +80,41 @@ export default function GlobalLeaderboardPage() {
               </div>
             ) : (
               <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20 w-full max-w-full">
-                <Table className="w-full min-w-[700px]">
+                <Table className="w-full min-w-[700px] table-fixed">
                   <TableHeader>
                     <TableRow className="border-brand-cyan/20 hover:bg-transparent">
                       <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
-                      <TableHead className="text-brand-cyan">Project</TableHead>
-                      <TableHead className="text-brand-cyan">Team</TableHead>
-                      <TableHead className="text-brand-cyan">Category</TableHead>
-                      <TableHead className="text-brand-orange text-right">Score</TableHead>
+                      <TableHead className="text-brand-cyan w-[34%]">Project</TableHead>
+                      <TableHead className="text-brand-cyan w-[30%]">Team</TableHead>
+                      <TableHead className="text-brand-cyan w-[18%]">Category</TableHead>
+                      <TableHead className="text-brand-orange text-right w-[88px]">Score</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {rankedData.finalists.map((p, index) => (
                       <TableRow key={`f-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
                         <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
-                        <TableCell className="font-medium text-brand-cyan max-w-0">
+                        <TableCell className="font-medium text-brand-cyan">
                           <span
-                            className="block truncate max-w-[140px] sm:max-w-[260px] md:max-w-[360px]"
+                            className="block truncate w-full"
                             title={p.title || "Untitled"}
                           >
                             {p.title || "Untitled"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-brand-cyan/80 max-w-0">
+                        <TableCell className="text-brand-cyan/80">
                           <span
-                            className="block truncate max-w-[120px] sm:max-w-[220px] md:max-w-[300px]"
+                            className="block truncate w-full"
                             title={p.teamName || "-"}
                           >
                             {p.teamName || "-"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
+                        <TableCell className="text-brand-cyan/80">
+                          <span className="block truncate w-full" title={getCategoryName(p.categoryId)}>
+                            {getCategoryName(p.categoryId)}
+                          </span>
+                        </TableCell>
                         <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
                       </TableRow>
                     ))}
@@ -130,23 +134,27 @@ export default function GlobalLeaderboardPage() {
                     {rankedData.rest.map((p, index) => (
                       <TableRow key={`r-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
                         <TableCell className="text-brand-cyan/60 text-center font-bold">{rankedData.finalists.length + index + 1}</TableCell>
-                        <TableCell className="font-medium text-brand-cyan max-w-0">
+                        <TableCell className="font-medium text-brand-cyan">
                           <span
-                            className="block truncate max-w-[140px] sm:max-w-[260px] md:max-w-[360px]"
+                            className="block truncate w-full"
                             title={p.title || "Untitled"}
                           >
                             {p.title || "Untitled"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-brand-cyan/80 max-w-0">
+                        <TableCell className="text-brand-cyan/80">
                           <span
-                            className="block truncate max-w-[120px] sm:max-w-[220px] md:max-w-[300px]"
+                            className="block truncate w-full"
                             title={p.teamName || "-"}
                           >
                             {p.teamName || "-"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
+                        <TableCell className="text-brand-cyan/80">
+                          <span className="block truncate w-full" title={getCategoryName(p.categoryId)}>
+                            {getCategoryName(p.categoryId)}
+                          </span>
+                        </TableCell>
                         <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
                       </TableRow>
                     ))}
