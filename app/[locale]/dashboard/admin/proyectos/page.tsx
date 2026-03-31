@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
+import Link from "next/link"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PixelButton } from "@/components/ui/pixel-button"
 import { collection, getDocs, query, orderBy, doc, updateDoc, addDoc, getDoc, where, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
-import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy } from "lucide-react"
+import { Search, FileText, Image as ImageIcon, Play, Github, ExternalLink, Filter, CheckCircle, Ban, Trophy, Plus } from "lucide-react"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
@@ -406,9 +407,24 @@ export default function AdminProyectosPage() {
       groups[cat].push(p)
     })
     Object.keys(groups).forEach(key => {
-      groups[key].sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+      const finalists = groups[key]
+        .filter(project => project.isFinalist)
+        .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+
+      const nonFinalists = groups[key]
+        .filter(project => !project.isFinalist)
+        .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+
+      // Keep finalists fixed at the top 3 of each category.
+      groups[key] = [...finalists.slice(0, 3), ...nonFinalists]
     })
     return groups
+  }, [projects])
+
+  const finalistsLeaderboard = useMemo(() => {
+    return projects
+      .filter(p => p.isFinalist && !p.disqualified && p.status === "reviewed")
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
   }, [projects])
 
   return (
@@ -583,6 +599,54 @@ export default function AdminProyectosPage() {
                   )
                 })
               )}
+
+              <GlassCard className="p-4 sm:p-6 flex flex-col gap-4">
+                <h3 className="font-pixel text-lg text-brand-yellow">
+                  {locale === "es" ? "Finalistas Globales" : "Global Finalists"}
+                </h3>
+                {finalistsLeaderboard.length === 0 ? (
+                  <div className="text-xs text-center text-brand-cyan/40 font-pixel py-8">
+                    {locale === "es" ? "No hay finalistas revisados aún." : "No reviewed finalists yet."}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20">
+                    <Table className="min-w-max">
+                      <TableHeader>
+                        <TableRow className="border-brand-cyan/20 hover:bg-transparent">
+                          <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
+                          <TableHead className="text-brand-cyan">{locale === "es" ? "Proyecto" : "Project"}</TableHead>
+                          <TableHead className="text-brand-cyan">{locale === "es" ? "Equipo" : "Team"}</TableHead>
+                          <TableHead className="text-brand-cyan">{locale === "es" ? "Categoría" : "Category"}</TableHead>
+                          <TableHead className="text-brand-orange text-right">{locale === "es" ? "Puntos" : "Points"}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {finalistsLeaderboard.map((p, index) => (
+                          <TableRow key={p.id} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
+                            <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
+                            <TableCell className="text-brand-cyan">{p.title || "Untitled"}</TableCell>
+                            <TableCell className="text-brand-cyan/80">{p.teamName || "-"}</TableCell>
+                            <TableCell className="text-brand-cyan/80">{getCategoryName(p.categoryId)}</TableCell>
+                            <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </GlassCard>
+
+              <div className="flex justify-end -mt-4">
+                <Link href={`/${locale}/dashboard/admin/proyectos/global-leaderboard`} aria-label={locale === "es" ? "Abrir global leaderboard" : "Open global leaderboard"}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-full border-brand-cyan/10 bg-brand-navy/70 text-brand-cyan/25 opacity-40 hover:opacity-70 hover:text-brand-cyan/60 hover:bg-brand-navy"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              </div>
             </TabsContent>
           </Tabs>
 
