@@ -2,16 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
-import { collection, onSnapshot } from "firebase/firestore"
+import { collection, onSnapshot, doc, getDoc, getDocs, query, where } from "firebase/firestore"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
 import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
+import { cn } from "@/lib/utils"
+import { FileText, Image as ImageIcon, Play, Github, ExternalLink } from "lucide-react"
 
 export default function GlobalLeaderboardPage() {
   const params = useParams()
@@ -22,6 +25,12 @@ export default function GlobalLeaderboardPage() {
 
   const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedProject, setSelectedProject] = useState<any | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
+  const [selectedTeam, setSelectedTeam] = useState<any | null>(null)
+  const [teamParticipants, setTeamParticipants] = useState<any[]>([])
+  const [loadingTeamParticipants, setLoadingTeamParticipants] = useState(false)
+  const [showTeamDetails, setShowTeamDetails] = useState(false)
 
   useEffect(() => {
     if (!db) return
@@ -55,6 +64,63 @@ export default function GlobalLeaderboardPage() {
   }, [projects])
 
   const totalRows = rankedData.finalists.length + rankedData.rest.length
+
+  const openTeamDetails = async (project: any) => {
+    if (!db) return
+
+    const teamId = project.teamId || project.team || null
+    setSelectedTeam({ id: teamId, name: project.teamName || "-" })
+    setTeamParticipants([])
+    setShowTeamDetails(true)
+
+    if (!teamId) return
+
+    setLoadingTeamParticipants(true)
+    try {
+      const teamDoc = await getDoc(doc(db, "teams", teamId))
+      const teamData = teamDoc.exists() ? { id: teamDoc.id, ...teamDoc.data() } : { id: teamId, name: project.teamName || "-" }
+      setSelectedTeam(teamData)
+
+      const participantMap = new Map<string, any>()
+
+      const byTeamIdSnap = await getDocs(query(collection(db, "users"), where("teamId", "==", teamId)))
+      byTeamIdSnap.docs.forEach(participantDoc => {
+        participantMap.set(participantDoc.id, { id: participantDoc.id, ...participantDoc.data() })
+      })
+
+      const byTeamFieldSnap = await getDocs(query(collection(db, "users"), where("team", "==", teamId)))
+      byTeamFieldSnap.docs.forEach(participantDoc => {
+        participantMap.set(participantDoc.id, { id: participantDoc.id, ...participantDoc.data() })
+      })
+
+      const participantIds: string[] = Array.isArray((teamData as any).participantIds)
+        ? (teamData as any).participantIds
+        : []
+
+      if (participantIds.length > 0) {
+        await Promise.all(participantIds.map(async participantId => {
+          if (participantMap.has(participantId)) return
+          const participantDoc = await getDoc(doc(db, "users", participantId))
+          if (participantDoc.exists()) {
+            participantMap.set(participantDoc.id, { id: participantDoc.id, ...participantDoc.data() })
+          }
+        }))
+      }
+
+      const participants = Array.from(participantMap.values())
+      participants.sort((a, b) => {
+        const aName = `${a?.name || ""} ${a?.surname || ""}`.trim().toLowerCase()
+        const bName = `${b?.name || ""} ${b?.surname || ""}`.trim().toLowerCase()
+        return aName.localeCompare(bName)
+      })
+      setTeamParticipants(participants)
+    } catch (error) {
+      console.error("Error loading team participants:", error)
+      setTeamParticipants([])
+    } finally {
+      setLoadingTeamParticipants(false)
+    }
+  }
 
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
@@ -96,16 +162,18 @@ export default function GlobalLeaderboardPage() {
                         <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
                         <TableCell className="font-medium text-brand-cyan">
                           <span
-                            className="block truncate w-full"
+                            className="block truncate w-full hover:underline cursor-pointer"
                             title={p.title || "Untitled"}
+                            onClick={() => { setSelectedProject(p); setShowDetails(true) }}
                           >
                             {p.title || "Untitled"}
                           </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
                           <span
-                            className="block truncate w-full"
+                            className="block truncate w-full hover:underline cursor-pointer"
                             title={p.teamName || "-"}
+                            onClick={() => openTeamDetails(p)}
                           >
                             {p.teamName || "-"}
                           </span>
@@ -136,16 +204,18 @@ export default function GlobalLeaderboardPage() {
                         <TableCell className="text-brand-cyan/60 text-center font-bold">{rankedData.finalists.length + index + 1}</TableCell>
                         <TableCell className="font-medium text-brand-cyan">
                           <span
-                            className="block truncate w-full"
+                            className="block truncate w-full hover:underline cursor-pointer"
                             title={p.title || "Untitled"}
+                            onClick={() => { setSelectedProject(p); setShowDetails(true) }}
                           >
                             {p.title || "Untitled"}
                           </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
                           <span
-                            className="block truncate w-full"
+                            className="block truncate w-full hover:underline cursor-pointer"
                             title={p.teamName || "-"}
+                            onClick={() => openTeamDetails(p)}
                           >
                             {p.teamName || "-"}
                           </span>
@@ -164,6 +234,126 @@ export default function GlobalLeaderboardPage() {
             )}
           </GlassCard>
         </div>
+
+        <Dialog open={showDetails} onOpenChange={setShowDetails}>
+          <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+            <DialogHeader>
+              <DialogTitle className="font-pixel text-brand-yellow flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-start gap-2">
+                  <FileText size={18} />
+                  <p className="text-regular font-pixel break-all leading-snug">{selectedProject?.title}</p>
+                </div>
+                <span className={cn(
+                  "text-sm px-2 py-0.5 rounded uppercase self-start shrink-0",
+                  selectedProject?.status === "submitted" ? "bg-green-500/20 text-green-400" :
+                    selectedProject?.status === "reviewed" ? "bg-blue-500/20 text-blue-400" :
+                      selectedProject?.status === "disqualified" ? "bg-red-500/20 text-red-500" :
+                        "bg-yellow-500/20 text-yellow-400"
+                )}>{selectedProject?.status}</span>
+              </DialogTitle>
+            </DialogHeader>
+            {selectedProject && (
+              <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Team</p>
+                    <p className="text-brand-yellow text-sm font-pixel break-all">{selectedProject.teamName}</p>
+                  </div>
+                  <div className="p-3 rounded bg-brand-navy/60 border border-brand-cyan/10">
+                    <p className="text-xs text-brand-cyan/60 uppercase mb-1">Category</p>
+                    <p className="text-brand-cyan text-sm break-words">{getCategoryName(selectedProject.categoryId)}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded bg-black/40 border border-brand-cyan/10">
+                  <p className="text-xs text-brand-cyan/60 uppercase mb-2">Description</p>
+                  <p className="text-brand-cyan/80 text-sm whitespace-pre-wrap break-all">{selectedProject.description || "-"}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  {selectedProject.githubRepoUrl && (
+                    <a
+                      href={selectedProject.githubRepoUrl.startsWith("http") ? selectedProject.githubRepoUrl : `https://${selectedProject.githubRepoUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 text-xs"
+                    >
+                      <Github size={14} /> GitHub
+                    </a>
+                  )}
+                  {selectedProject.demoUrl && (
+                    <a
+                      href={selectedProject.demoUrl.startsWith("http") ? selectedProject.demoUrl : `https://${selectedProject.demoUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 text-xs"
+                    >
+                      <ExternalLink size={14} /> Demo
+                    </a>
+                  )}
+                </div>
+
+                {selectedProject.images?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-brand-cyan/60 uppercase mb-3 flex items-center gap-2"><ImageIcon size={14} /> Images</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {selectedProject.images.map((img: string, i: number) => (
+                        <a key={i} href={img} target="_blank" rel="noreferrer" className="aspect-video relative rounded overflow-hidden border border-brand-cyan/20">
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedProject.videos?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2"><Play size={14} /> Videos</p>
+                    {selectedProject.videos.map((vid: string, i: number) => (
+                      <video key={i} src={vid} controls className="w-full rounded border border-brand-cyan/20 mb-2" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showTeamDetails} onOpenChange={setShowTeamDetails}>
+          <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-pixel text-brand-yellow">
+                {locale === "es" ? "Equipo" : "Team"}: {selectedTeam?.name || "-"}
+              </DialogTitle>
+            </DialogHeader>
+
+            {loadingTeamParticipants ? (
+              <div className="p-6 text-center text-xs font-pixel text-brand-cyan animate-pulse">
+                {locale === "es" ? "CARGANDO PARTICIPANTES..." : "LOADING PARTICIPANTS..."}
+              </div>
+            ) : teamParticipants.length === 0 ? (
+              <div className="p-4 text-center text-xs text-brand-cyan/50 font-pixel">
+                {locale === "es" ? "No se encontraron participantes para este equipo." : "No participants were found for this team."}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {teamParticipants.map((participant, index) => (
+                  <div key={participant.id} className="p-3 rounded bg-brand-navy/50 border border-brand-cyan/15 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-brand-cyan text-sm font-pixel truncate">
+                        {index + 1}. {[participant.name, participant.surname].filter(Boolean).join(" ") || participant.email || participant.id}
+                      </p>
+                      {participant.email && <p className="text-xs text-brand-cyan/50 truncate">{participant.email}</p>}
+                    </div>
+                    <span className="text-[10px] uppercase px-2 py-0.5 rounded border border-brand-cyan/20 text-brand-cyan/60 shrink-0">
+                      {participant.role || "participant"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </DashboardLayout>
     </ProtectedRoute>
   )
