@@ -24,7 +24,7 @@ import { collection, getDocs, query, where, updateDoc, doc, getDoc, setDoc, dele
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { getDbClient, getStorageClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban, Trophy, Clock, Loader2 } from "lucide-react"
+import { Upload, X, CheckCircle2, AlertCircle, Save, MessageSquare, Ban, Trophy, Clock, Loader2, Crown, Sparkles } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { getTranslations } from "@/lib/i18n/get-translations"
 import type { Locale } from "@/lib/i18n/config"
@@ -397,29 +397,78 @@ export default function ParticipanteProyectoPage() {
 
   const activeReviewerRole = project?.isFinalist ? "judge" : "admin"
   const phaseReviews = reviews.filter((r) => r.reviewerRole === activeReviewerRole && !r.disqualified)
+  const isWinner = Boolean(project?.isWinner || project?.winner)
+  const showHighlightBanner = isWinner || project?.isFinalist
 
   return (
     <ProtectedRoute allowedRoles={["participant"]}>
       <DashboardLayout title={t.dashboard.sidebar.myProject}>
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-pixel uppercase tracking-widest self-start",
-              project?.disqualified ? "bg-red-500/10 border-red-500/30 text-red-500" :
-                projectForm.status === "reviewed" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
-                  projectForm.status === "submitted" ? "bg-green-500/10 border-green-500/30 text-green-400" :
-                    "bg-yellow-500/10 border-yellow-500/30 text-yellow-500"
-            )}>
-              {project?.disqualified ? <Ban size={14} /> :
-                projectForm.status === "reviewed" ? <Trophy size={14} /> :
-                  projectForm.status === "submitted" ? <CheckCircle2 size={14} /> :
-                    <Clock size={14} />}
+            {showHighlightBanner ? (
+              <div className={cn(
+                "relative overflow-hidden rounded-2xl border px-5 py-4 w-full md:w-auto self-start shadow-[0_0_30px_rgba(110,182,249,0.12)]",
+                isWinner
+                  ? "border-brand-yellow/40 bg-gradient-to-r from-brand-yellow/15 via-brand-orange/10 to-brand-cyan/10"
+                  : "border-brand-cyan/35 bg-gradient-to-r from-brand-cyan/15 via-brand-blue/10 to-brand-navy/90"
+              )}>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_45%)]" />
+                <div className="relative flex items-center gap-4">
+                  <div className={cn(
+                    "flex h-12 w-12 items-center justify-center rounded-full border",
+                    isWinner ? "border-brand-yellow/50 bg-brand-yellow/10 text-brand-yellow" : "border-brand-cyan/40 bg-brand-cyan/10 text-brand-cyan"
+                  )}>
+                    {isWinner ? <Crown size={22} /> : <Sparkles size={22} />}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className={cn(
+                      "text-[10px] font-pixel uppercase tracking-[0.35em]",
+                      isWinner ? "text-brand-yellow" : "text-brand-cyan"
+                    )}>
+                      {isWinner
+                        ? (locale === "es" ? "Proyecto ganador" : "Winning project")
+                        : (locale === "es" ? "Proyecto finalista" : "Finalist project")}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn(
+                        "font-pixel text-xl tracking-wide",
+                        isWinner ? "text-brand-yellow" : "text-brand-cyan"
+                      )}>
+                        {isWinner
+                          ? (locale === "es" ? "WINNER" : "WINNER")
+                          : (locale === "es" ? "FINALIST" : "FINALIST")}
+                      </span>
+                      <span className={cn(
+                        "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
+                        isWinner ? "border-brand-yellow/30 text-brand-yellow/90 bg-brand-yellow/10" : "border-brand-cyan/25 text-brand-cyan/80 bg-brand-cyan/10"
+                      )}>
+                        {project?.isFinalist
+                          ? (locale === "es" ? "Fase final" : "Final phase")
+                          : (locale === "es" ? "Ganador" : "Winner")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-pixel uppercase tracking-widest self-start",
+                project?.disqualified ? "bg-red-500/10 border-red-500/30 text-red-500" :
+                  projectForm.status === "reviewed" ? "bg-blue-500/10 border-blue-500/30 text-blue-400" :
+                    projectForm.status === "submitted" ? "bg-green-500/10 border-green-500/30 text-green-400" :
+                      "bg-yellow-500/10 border-yellow-500/30 text-yellow-500"
+              )}>
+                {project?.disqualified ? <Ban size={14} /> :
+                  projectForm.status === "reviewed" ? <Trophy size={14} /> :
+                    projectForm.status === "submitted" ? <CheckCircle2 size={14} /> :
+                      <Clock size={14} />}
 
-              {project?.disqualified ? (locale === "es" ? "Descalificado" : "Disqualified") :
-                projectForm.status === "reviewed" ? (locale === "es" ? "Evaluado" : "Evaluated") :
-                  projectForm.status === "submitted" ? t.dashboard.participant.project.submitted :
-                    t.dashboard.participant.project.draft}
-            </div>
+                {project?.disqualified ? (locale === "es" ? "Descalificado" : "Disqualified") :
+                  projectForm.status === "reviewed" ? (locale === "es" ? "Evaluado" : "Evaluated") :
+                    projectForm.status === "submitted" ? t.dashboard.participant.project.submitted :
+                      t.dashboard.participant.project.draft}
+              </div>
+            )}
             {lastSaved && projectForm.status === "draft" && (
               <span className="text-xs font-pixel text-brand-cyan/40 uppercase tracking-wider flex items-center gap-2">
                 <Save size={14} />

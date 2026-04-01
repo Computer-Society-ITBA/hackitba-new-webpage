@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import { collection, getDocs, query, where, doc, getDoc, onSnapshot } from "firebase/firestore"
 import { getDbClient } from "@/lib/firebase/client-config"
 import { useAuth } from "@/lib/firebase/auth-context"
-import { Trophy, FileEdit, CheckCircle2, AlertCircle, Ban } from "lucide-react"
+import { Trophy, FileEdit, CheckCircle2, AlertCircle, Ban, Crown, Sparkles } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { TeamSection } from "@/components/dashboard/team-section"
 import { RankingsList } from "@/components/dashboard/rankings-list"
@@ -33,6 +33,7 @@ export default function ParticipanteDashboard() {
   const [projectSubmissionsEnabled, setProjectSubmissionsEnabled] = useState(true)
   const [projectSubmissionsLoading, setProjectSubmissionsLoading] = useState(true)
   const [showScoresToTeams, setShowScoresToTeams] = useState(false)
+  const [projectHighlights, setProjectHighlights] = useState<{ isFinalist: boolean; isWinner: boolean }>({ isFinalist: false, isWinner: false })
   const [resolvedTeamId, setResolvedTeamId] = useState<string | null>(null)
   const [hasRedirected, setHasRedirected] = useState(false)
   const [signupEnabled, setSignupEnabled] = useState(true)
@@ -115,6 +116,10 @@ export default function ParticipanteDashboard() {
         const data = snap.data()
         setProjectStatus(data.disqualified ? "disqualified" : (data.status || "submitted"))
         setIsDisqualified(!!data.disqualified)
+        setProjectHighlights({
+          isFinalist: !!data.isFinalist,
+          isWinner: Boolean(data.isWinner || data.winner),
+        })
       } else {
         // Fallback 1: Try querying by teamId field (in case ID doesn't match)
         try {
@@ -124,6 +129,10 @@ export default function ParticipanteDashboard() {
             const data = qSnap.docs[0].data()
             setProjectStatus(data.disqualified ? "disqualified" : (data.status || "submitted"))
             setIsDisqualified(!!data.disqualified)
+            setProjectHighlights({
+              isFinalist: !!data.isFinalist,
+              isWinner: Boolean(data.isWinner || data.winner),
+            })
             return
           }
         } catch (err) {
@@ -137,12 +146,18 @@ export default function ParticipanteDashboard() {
           if (teamData?.project) {
             setProjectStatus("submitted")
             setIsDisqualified(!!teamData.project.disqualified)
+            setProjectHighlights({
+              isFinalist: !!teamData.project.isFinalist,
+              isWinner: Boolean(teamData.project.isWinner || teamData.project.winner),
+            })
           } else {
             setProjectStatus("none")
+            setProjectHighlights({ isFinalist: false, isWinner: false })
           }
         } catch (err) {
           console.error("Error checking legacy project:", err)
           setProjectStatus("none")
+          setProjectHighlights({ isFinalist: false, isWinner: false })
         }
       }
     }, (error) => {
@@ -251,50 +266,107 @@ export default function ParticipanteDashboard() {
               </h3>
               <GlassCard className="p-0 overflow-hidden border-brand-cyan/10">
                 <div className="flex flex-col md:flex-row items-stretch">
-                  <div className={cn(
-                    "w-full md:w-32 flex items-center justify-center p-6 border-b md:border-b-0 md:border-r transition-colors shrink-0",
-                    projectStatus === "reviewed" ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
-                      projectStatus === "disqualified" ? "bg-red-500/10 border-red-500/20 text-red-500" :
-                        projectStatus === "submitted" ? "bg-green-500/10 border-green-500/20 text-green-400" :
-                          projectStatus === "draft" ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500" :
-                            "bg-gray-500/10 border-gray-500/20 text-brand-cyan/40"
-                  )}>
-                    {projectStatus === "reviewed" ? <Trophy size={32} /> :
-                      projectStatus === "disqualified" ? <Ban size={32} /> :
-                        projectStatus === "submitted" ? <CheckCircle2 size={32} /> :
-                          projectStatus === "draft" ? <LucideIcons.Clock size={32} /> :
-                            <FileEdit size={32} />}
-                  </div>
-                  
-                  <div className="flex-1 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="text-center md:text-left space-y-2">
-                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                        <h4 className="text-xl font-bold text-brand-yellow leading-none">
-                          {projectStatus === "reviewed" ? (locale === "es" ? "Evaluado" : "Evaluated") :
-                            projectStatus === "disqualified" ? (locale === "es" ? "Descalificado" : "Disqualified") :
-                              projectStatus === "submitted" ? t.dashboard.participant.project.submitted :
-                                projectStatus === "draft" ? t.dashboard.participant.project.draft :
-                                  (locale === "es" ? "Pendiente" : "Pending")}
-                        </h4>
-                        {isDisqualified && (
-                          <span className="px-2 py-0.5 rounded bg-red-500/20 border border-red-500/40 text-xs font-pixel tracking-widest uppercase">
-                            Disqualified
-                          </span>
-                        )}
+                  {projectHighlights.isWinner || projectHighlights.isFinalist ? (
+                    <div className={cn(
+                      "relative overflow-hidden flex-1 p-6 md:p-7 flex flex-col md:flex-row items-center justify-between gap-6 border border-transparent",
+                      projectHighlights.isWinner
+                        ? "bg-gradient-to-r from-brand-yellow/15 via-brand-orange/10 to-brand-cyan/10"
+                        : "bg-gradient-to-r from-brand-cyan/15 via-brand-blue/10 to-brand-navy/90"
+                    )}>
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.10),transparent_40%)] pointer-events-none" />
+                      <div className={cn(
+                        "w-full md:w-36 flex items-center justify-center p-6 rounded-2xl border shrink-0",
+                        projectHighlights.isWinner
+                          ? "bg-brand-yellow/10 border-brand-yellow/30 text-brand-yellow"
+                          : "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
+                      )}>
+                        {projectHighlights.isWinner ? <Crown size={36} /> : <Sparkles size={36} />}
                       </div>
-                      <p className="text-sm text-brand-cyan/60 leading-relaxed max-w-sm">
-                        {projectStatus === "none" ?
-                          (locale === "es" ? "Subí tu proyecto para que el jurado pueda evaluarlo." : "Upload your project so judges can evaluate it.") :
-                          (locale === "es" ? "Revisá los detalles en la pestaña de proyecto." : "Check details in the project tab.")}
-                      </p>
+
+                      <div className="flex-1 text-center md:text-left space-y-2 relative">
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                          <h4 className={cn(
+                            "text-2xl font-bold leading-none",
+                            projectHighlights.isWinner ? "text-brand-yellow" : "text-brand-cyan"
+                          )}>
+                            {projectHighlights.isWinner
+                              ? (locale === "es" ? "Ganador" : "Winner")
+                              : (locale === "es" ? "Finalista" : "Finalist")}
+                          </h4>
+                          <span className={cn(
+                            "px-2 py-0.5 rounded border text-xs font-pixel tracking-widest uppercase",
+                            projectHighlights.isWinner
+                              ? "bg-brand-yellow/20 border-brand-yellow/40 text-brand-yellow"
+                              : "bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan"
+                          )}>
+                            {projectHighlights.isWinner
+                              ? (locale === "es" ? "Reconocimiento final" : "Final recognition")
+                              : (locale === "es" ? "Pasa a la fase final" : "Advances to final phase")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-brand-cyan/70 leading-relaxed max-w-xl">
+                          {projectHighlights.isWinner
+                            ? (locale === "es"
+                              ? "Tu proyecto fue distinguido como ganador. Podés revisar abajo los comentarios y puntajes finales."
+                              : "Your project was selected as a winner. You can review the final comments and scores below.")
+                            : (locale === "es"
+                              ? "Tu proyecto quedó como finalista. Los jurados revisarán la evaluación final en la pestaña de proyecto."
+                              : "Your project qualified as a finalist. Judges will handle the final evaluation in the project tab.")}
+                        </p>
+                      </div>
+
+                      <PixelButton onClick={() => router.push(`/${locale}/dashboard/participante/proyecto`)} className="w-full md:w-auto relative z-10">
+                        {locale === "es" ? "VER DETALLES" : "VIEW DETAILS"}
+                      </PixelButton>
                     </div>
-                    
-                    <PixelButton onClick={() => router.push(`/${locale}/dashboard/participante/proyecto`)} className="w-full md:w-auto">
-                      {projectStatus === "none" ? t.dashboard.participant.project.submit :
-                        (!projectSubmissionsEnabled || projectStatus === "reviewed" || projectStatus === "disqualified") ? (locale === "es" ? "VER DETALLES" : "VIEW DETAILS") :
-                          t.dashboard.participant.project.edit}
-                    </PixelButton>
-                  </div>
+                  ) : (
+                    <>
+                      <div className={cn(
+                        "w-full md:w-32 flex items-center justify-center p-6 border-b md:border-b-0 md:border-r transition-colors shrink-0",
+                        projectStatus === "reviewed" ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
+                          projectStatus === "disqualified" ? "bg-red-500/10 border-red-500/20 text-red-500" :
+                            projectStatus === "submitted" ? "bg-green-500/10 border-green-500/20 text-green-400" :
+                              projectStatus === "draft" ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500" :
+                                "bg-gray-500/10 border-gray-500/20 text-brand-cyan/40"
+                      )}>
+                        {projectStatus === "reviewed" ? <Trophy size={32} /> :
+                          projectStatus === "disqualified" ? <Ban size={32} /> :
+                            projectStatus === "submitted" ? <CheckCircle2 size={32} /> :
+                              projectStatus === "draft" ? <LucideIcons.Clock size={32} /> :
+                                <FileEdit size={32} />}
+                      </div>
+
+                      <div className="flex-1 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="text-center md:text-left space-y-2">
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                            <h4 className="text-xl font-bold text-brand-yellow leading-none">
+                              {projectStatus === "reviewed" ? (locale === "es" ? "Evaluado" : "Evaluated") :
+                                projectStatus === "disqualified" ? (locale === "es" ? "Descalificado" : "Disqualified") :
+                                  projectStatus === "submitted" ? t.dashboard.participant.project.submitted :
+                                    projectStatus === "draft" ? t.dashboard.participant.project.draft :
+                                      (locale === "es" ? "Pendiente" : "Pending")}
+                            </h4>
+                            {isDisqualified && (
+                              <span className="px-2 py-0.5 rounded bg-red-500/20 border border-red-500/40 text-xs font-pixel tracking-widest uppercase">
+                                Disqualified
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-brand-cyan/60 leading-relaxed max-w-sm">
+                            {projectStatus === "none" ?
+                              (locale === "es" ? "Subí tu proyecto para que el jurado pueda evaluarlo." : "Upload your project so judges can evaluate it.") :
+                              (locale === "es" ? "Revisá los detalles en la pestaña de proyecto." : "Check details in the project tab.")}
+                          </p>
+                        </div>
+
+                        <PixelButton onClick={() => router.push(`/${locale}/dashboard/participante/proyecto`)} className="w-full md:w-auto">
+                          {projectStatus === "none" ? t.dashboard.participant.project.submit :
+                            (!projectSubmissionsEnabled || projectStatus === "reviewed" || projectStatus === "disqualified") ? (locale === "es" ? "VER DETALLES" : "VIEW DETAILS") :
+                              t.dashboard.participant.project.edit}
+                        </PixelButton>
+                      </div>
+                    </>
+                  )}
                 </div>
               </GlassCard>
             </section>
