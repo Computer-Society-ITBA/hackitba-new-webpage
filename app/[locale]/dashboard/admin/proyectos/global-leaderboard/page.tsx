@@ -14,7 +14,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
 import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 import { cn } from "@/lib/utils"
-import { FileText, Image as ImageIcon, Play, Github, ExternalLink } from "lucide-react"
+import { FileText, Image as ImageIcon, Play, Github, ExternalLink, Linkedin, Brain, Landmark, Megaphone } from "lucide-react"
 
 export default function GlobalLeaderboardPage() {
   const params = useParams()
@@ -47,6 +47,35 @@ export default function GlobalLeaderboardPage() {
     if (!categoryId) return "-"
     const category = getCategoryByLegacyIndex(categories, categoryId)
     return category ? (locale === "es" ? category.spanishName : category.englishName) : "-"
+  }
+
+  const getCategoryDisplay = (categoryId: string) => {
+    const fullName = getCategoryName(categoryId)
+    const normalized = fullName.trim().toLowerCase()
+
+    if (normalized.includes("ai") || normalized.includes("artificial") || normalized.includes("inteligencia")) {
+      return { fullName, shortName: "AI", icon: Brain }
+    }
+    if (normalized.includes("fin")) {
+      return { fullName, shortName: "FinTech", icon: Landmark }
+    }
+    if (normalized.includes("market")) {
+      return { fullName, shortName: "Marketing", icon: Megaphone }
+    }
+
+    return { fullName, shortName: fullName, icon: FileText }
+  }
+
+  const abbreviateProjectName = (title: string, minChars: number = 8) => {
+    if (!title) return "Untitled"
+    if (title.length <= minChars * 1.2) return title
+    return title.substring(0, minChars) + "..."
+  }
+
+  const abbreviateTeamName = (name: string, minChars: number = 8) => {
+    if (!name) return "-"
+    if (name.length <= minChars * 1.2) return name
+    return name.substring(0, minChars) + "..."
   }
 
   const rankedData = useMemo(() => {
@@ -131,11 +160,6 @@ export default function GlobalLeaderboardPage() {
               <h3 className="font-pixel text-lg text-brand-yellow">
                 {locale === "es" ? "Global Leaderboard" : "Global Leaderboard"}
               </h3>
-              <p className="text-xs text-brand-cyan/50 font-pixel">
-                {locale === "es"
-                  ? "Finalistas primero, luego el resto de equipos por puntaje."
-                  : "Finalists first, then all remaining teams by score."}
-              </p>
             </div>
 
             {loading ? (
@@ -146,32 +170,49 @@ export default function GlobalLeaderboardPage() {
               </div>
             ) : (
               <div className="rounded-md border border-brand-cyan/20 overflow-x-auto bg-black/20 w-full max-w-full">
-                <Table className="w-full min-w-[700px] table-fixed">
+                <Table className="w-full min-w-0 md:min-w-[700px] table-auto text-xs md:text-sm [&_th]:px-1 [&_td]:px-1 md:[&_th]:px-2 md:[&_td]:px-2">
                   <TableHeader>
                     <TableRow className="border-brand-cyan/20 hover:bg-transparent">
-                      <TableHead className="text-brand-cyan w-12 text-center">#</TableHead>
-                      <TableHead className="text-brand-cyan w-[34%]">Project</TableHead>
-                      <TableHead className="text-brand-cyan w-[30%]">Team</TableHead>
-                      <TableHead className="text-brand-cyan w-[18%]">Category</TableHead>
-                      <TableHead className="text-brand-orange text-right w-[88px]">Score</TableHead>
+                      <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap px-1.5 text-center">#</TableHead>
+                      <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[34%]">Project</TableHead>
+                      <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[30%]">Team</TableHead>
+                      <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[18%]">Category</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {rankedData.finalists.map((p, index) => (
                       <TableRow key={`f-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
-                        <TableCell className="text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
+                        <TableCell className="w-[1%] whitespace-nowrap px-1.5 text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
                         <TableCell className="font-medium text-brand-cyan">
-                          <span
-                            className="block truncate w-full hover:underline cursor-pointer"
-                            title={p.title || "Untitled"}
-                            onClick={() => { setSelectedProject(p); setShowDetails(true) }}
-                          >
-                            {p.title || "Untitled"}
-                          </span>
+                            {/* Mobile: abbreviated */}
+                            <span
+                              className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                              title={p.title || "Untitled"}
+                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                            >
+                              {abbreviateProjectName(p.title)}
+                            </span>
+                            {/* Desktop: full name */}
+                            <span
+                              className="hidden md:block truncate w-full hover:underline cursor-pointer"
+                              title={p.title || "Untitled"}
+                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                            >
+                              {p.title || "Untitled"}
+                            </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
+                          {/* Mobile: abbreviated */}
                           <span
-                            className="block truncate w-full hover:underline cursor-pointer"
+                            className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                            title={p.teamName || "-"}
+                            onClick={() => openTeamDetails(p)}
+                          >
+                            {abbreviateTeamName(p.teamName)}
+                          </span>
+                          {/* Desktop: full name */}
+                          <span
+                            className="hidden md:block truncate w-full hover:underline cursor-pointer"
                             title={p.teamName || "-"}
                             onClick={() => openTeamDetails(p)}
                           >
@@ -179,20 +220,35 @@ export default function GlobalLeaderboardPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
-                          <span className="block truncate w-full" title={getCategoryName(p.categoryId)}>
-                            {getCategoryName(p.categoryId)}
-                          </span>
+                          {(() => {
+                            const category = getCategoryDisplay(p.categoryId)
+                            const CategoryIcon = category.icon
+
+                            return (
+                              <>
+                                <span className="hidden md:block truncate w-full" title={category.fullName}>
+                                  {category.fullName}
+                                </span>
+                                <span className="md:hidden inline-flex items-center gap-1.5 whitespace-nowrap" title={category.fullName}>
+                                  <CategoryIcon size={12} className="shrink-0" />
+                                  <span>{category.shortName}</span>
+                                </span>
+                              </>
+                            )
+                          })()}
                         </TableCell>
-                        <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
                       </TableRow>
                     ))}
 
                     {rankedData.finalists.length > 0 && rankedData.rest.length > 0 && (
                       <TableRow className="border-brand-cyan/20 bg-brand-navy/40 hover:bg-brand-navy/40">
-                        <TableCell colSpan={5} className="py-2">
+                        <TableCell colSpan={4} className="py-2">
                           <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-brand-cyan/50 font-pixel">
                             <span className="h-px flex-1 bg-brand-cyan/20" />
-                            <span>{locale === "es" ? "Resto de equipos" : "Remaining teams"}</span>
+                            <span className="text-center">
+                              <div>{locale === "es" ? "Resto de equipos" : "Remaining teams"}</div>
+                              <div className="text-[8px] text-brand-cyan/30 font-normal">{locale === "es" ? "(votados por staff)" : "(voted by staff)"}</div>
+                            </span>
                             <span className="h-px flex-1 bg-brand-cyan/20" />
                           </div>
                         </TableCell>
@@ -201,19 +257,37 @@ export default function GlobalLeaderboardPage() {
 
                     {rankedData.rest.map((p, index) => (
                       <TableRow key={`r-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
-                        <TableCell className="text-brand-cyan/60 text-center font-bold">{rankedData.finalists.length + index + 1}</TableCell>
+                        <TableCell className="w-[1%] whitespace-nowrap px-1.5 text-brand-cyan/60 text-center font-bold">{rankedData.finalists.length + index + 1}</TableCell>
                         <TableCell className="font-medium text-brand-cyan">
-                          <span
-                            className="block truncate w-full hover:underline cursor-pointer"
-                            title={p.title || "Untitled"}
-                            onClick={() => { setSelectedProject(p); setShowDetails(true) }}
-                          >
-                            {p.title || "Untitled"}
-                          </span>
+                            {/* Mobile: abbreviated */}
+                            <span
+                              className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                              title={p.title || "Untitled"}
+                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                            >
+                              {abbreviateProjectName(p.title)}
+                            </span>
+                            {/* Desktop: full name */}
+                            <span
+                              className="hidden md:block truncate w-full hover:underline cursor-pointer"
+                              title={p.title || "Untitled"}
+                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                            >
+                              {p.title || "Untitled"}
+                            </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
+                          {/* Mobile: abbreviated */}
                           <span
-                            className="block truncate w-full hover:underline cursor-pointer"
+                            className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                            title={p.teamName || "-"}
+                            onClick={() => openTeamDetails(p)}
+                          >
+                            {abbreviateTeamName(p.teamName)}
+                          </span>
+                          {/* Desktop: full name */}
+                          <span
+                            className="hidden md:block truncate w-full hover:underline cursor-pointer"
                             title={p.teamName || "-"}
                             onClick={() => openTeamDetails(p)}
                           >
@@ -221,11 +295,23 @@ export default function GlobalLeaderboardPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-brand-cyan/80">
-                          <span className="block truncate w-full" title={getCategoryName(p.categoryId)}>
-                            {getCategoryName(p.categoryId)}
-                          </span>
+                          {(() => {
+                            const category = getCategoryDisplay(p.categoryId)
+                            const CategoryIcon = category.icon
+
+                            return (
+                              <>
+                                <span className="hidden md:block truncate w-full" title={category.fullName}>
+                                  {category.fullName}
+                                </span>
+                                <span className="md:hidden inline-flex items-center gap-1.5 whitespace-nowrap" title={category.fullName}>
+                                  <CategoryIcon size={12} className="shrink-0" />
+                                  <span>{category.shortName}</span>
+                                </span>
+                              </>
+                            )
+                          })()}
                         </TableCell>
-                        <TableCell className="text-right font-bold text-brand-orange">{Math.round(p.totalScore || 0)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -320,10 +406,10 @@ export default function GlobalLeaderboardPage() {
         </Dialog>
 
         <Dialog open={showTeamDetails} onOpenChange={setShowTeamDetails}>
-          <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogContent className="glass-effect border-brand-cyan/30 w-[95vw] max-w-xl max-h-[85vh] overflow-y-auto overflow-x-hidden pt-10">
             <DialogHeader>
               <DialogTitle className="font-pixel text-brand-yellow">
-                {locale === "es" ? "Equipo" : "Team"}: {selectedTeam?.name || "-"}
+                {selectedTeam?.name || "-"}
               </DialogTitle>
             </DialogHeader>
 
@@ -337,17 +423,44 @@ export default function GlobalLeaderboardPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {teamParticipants.map((participant, index) => (
+                {teamParticipants.map((participant) => (
                   <div key={participant.id} className="p-3 rounded bg-brand-navy/50 border border-brand-cyan/15 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-brand-cyan text-sm font-pixel truncate">
-                        {index + 1}. {[participant.name, participant.surname].filter(Boolean).join(" ") || participant.email || participant.id}
+                      <p className="text-brand-cyan text-xs font-pixel md:truncate">
+                        {[participant.name, participant.surname].filter(Boolean).join(" ") || (locale === "es" ? "Sin nombre" : "Unnamed participant")}
                       </p>
-                      {participant.email && <p className="text-xs text-brand-cyan/50 truncate">{participant.email}</p>}
+                      {(participant.career || participant.university) && (
+                        <>
+                          {/* Desktop: side by side con separador */}
+                          <p className="text-[11px] text-brand-cyan/60 mt-0.5 hidden md:block truncate">
+                            {[participant.career, participant.university].filter(Boolean).join(" • ")}
+                          </p>
+                          {/* Mobile: stack vertical */}
+                          <div className="text-[11px] text-brand-cyan/60 mt-0.5 space-y-0.5 md:hidden">
+                            {participant.career && <p className="break-words">{participant.career}</p>}
+                            {participant.university && <p className="break-words">{participant.university}</p>}
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <span className="text-[10px] uppercase px-2 py-0.5 rounded border border-brand-cyan/20 text-brand-cyan/60 shrink-0">
-                      {participant.role || "participant"}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {participant.linkedin && (
+                        <a
+                          href={participant.linkedin.startsWith("http") ? participant.linkedin : `https://${participant.linkedin}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={locale === "es" ? "Abrir LinkedIn" : "Open LinkedIn"}
+                          className="p-1.5 rounded border border-brand-cyan/20 text-brand-cyan/70 hover:text-brand-cyan hover:border-brand-cyan/40 transition-colors"
+                        >
+                          <Linkedin size={14} />
+                        </a>
+                      )}
+                      {participant.role && String(participant.role).toLowerCase() !== "participant" && (
+                        <span className="text-[10px] uppercase px-2 py-0.5 rounded border border-brand-cyan/20 text-brand-cyan/60">
+                          {participant.role}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
