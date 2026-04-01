@@ -377,6 +377,17 @@ export default function GlobalLeaderboardPage() {
                       <ExternalLink size={14} /> Demo
                     </a>
                   )}
+                  {selectedProject.videos?.map((vid: string, i: number) => (
+                    <a
+                      key={i}
+                      href={vid.startsWith("http") ? vid : `https://${vid}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 rounded bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan/20 text-xs"
+                    >
+                      <Play size={14} /> {selectedProject.videos.length > 1 ? `Video ${i + 1}` : "Video"}
+                    </a>
+                  ))}
                 </div>
 
                 {selectedProject.images?.length > 0 && (
@@ -392,14 +403,6 @@ export default function GlobalLeaderboardPage() {
                   </div>
                 )}
 
-                {selectedProject.videos?.length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-brand-cyan/60 uppercase mb-3 flex items-center gap-2"><Play size={14} /> Videos</p>
-                    {selectedProject.videos.map((vid: string, i: number) => (
-                      <video key={i} src={vid} controls className="w-full rounded border border-brand-cyan/20 mb-2" />
-                    ))}
-                  </div>
-                )}
               </div>
             )}
           </DialogContent>
