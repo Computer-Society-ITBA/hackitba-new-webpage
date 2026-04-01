@@ -395,6 +395,9 @@ export default function ParticipanteProyectoPage() {
     )
   }
 
+  const activeReviewerRole = project?.isFinalist ? "judge" : "admin"
+  const phaseReviews = reviews.filter((r) => r.reviewerRole === activeReviewerRole && !r.disqualified)
+
   return (
     <ProtectedRoute allowedRoles={["participant"]}>
       <DashboardLayout title={t.dashboard.sidebar.myProject}>
@@ -425,13 +428,10 @@ export default function ParticipanteProyectoPage() {
             )}
           </div>
 
-          {showScoresToTeams && reviews.length > 0 && (
+          {showScoresToTeams && phaseReviews.length > 0 && (
             <div className="space-y-6">
               {scoringCriteria.length > 0 && (() => {
-                const relevantPhaseReviews = reviews.filter(r =>
-                  (project?.isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin") && !r.disqualified
-                )
-                if (relevantPhaseReviews.length === 0) return null
+                if (phaseReviews.length === 0) return null
 
                 return (
                   <GlassCard className="border-brand-yellow/20 bg-brand-yellow/5">
@@ -443,13 +443,15 @@ export default function ParticipanteProyectoPage() {
                       </div>
 
                       <div className="grid grid-cols-1 gap-2">
-                        {scoringCriteria.map((c) => {
-                          const avgRaw = relevantPhaseReviews.reduce((sum, r) => sum + (r.rawScores?.[c.id] || 0), 0) / relevantPhaseReviews.length
+                        {scoringCriteria.filter(c => (c.targetRole || "judge") === (project?.isFinalist ? "judge" : "admin")).map((c) => {
+                          const avgRaw = phaseReviews.reduce((sum, r) => sum + (r.rawScores?.[c.id] || 0), 0) / phaseReviews.length
+                          const rubricWeight = Number(c.weight) > 0 ? Number(c.weight) : 1
+                          const weightedScore = (avgRaw / 10) * rubricWeight
                           return (
                             <div key={c.id} className="flex flex-col gap-1 bg-black/20 p-3 rounded border border-white/5">
                               <div className="flex justify-between items-center">
                                 <span className="text-xs font-bold text-brand-cyan">{c.name}</span>
-                                <span className="text-sm font-bold text-brand-yellow">{Math.round(avgRaw * 10) / 10} / 10</span>
+                                <span className="text-sm font-bold text-brand-yellow">{Math.round(weightedScore * 10) / 10} / {rubricWeight}</span>
                               </div>
                               <div className="w-full h-1 bg-white/5 rounded-full mt-1 overflow-hidden">
                                 <div
@@ -464,10 +466,10 @@ export default function ParticipanteProyectoPage() {
                         <div className="mt-4 pt-4 border-t border-brand-yellow/20 flex justify-between items-center">
                           <div className="flex flex-col">
                             <span className="text-xs font-pixel text-brand-yellow uppercase">{locale === "es" ? "Puntaje Final" : "Final Score"}</span>
-                            <span className="text-xs text-brand-cyan/40">Calculated from {relevantPhaseReviews.length} reviews</span>
+                            <span className="text-xs text-brand-cyan/40">Calculated from {phaseReviews.length} reviews</span>
                           </div>
                           <div className="text-3xl font-bold text-brand-yellow font-pixel">
-                            {Math.round(relevantPhaseReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / relevantPhaseReviews.length)}
+                            {Math.round(phaseReviews.reduce((sum, r) => sum + (r.totalScore || 0), 0) / phaseReviews.length)}
                           </div>
                         </div>
                       </div>
@@ -477,8 +479,7 @@ export default function ParticipanteProyectoPage() {
               })()}
 
               {(() => {
-                const phaseComments = reviews
-                  .filter(r => (project?.isFinalist ? r.reviewerRole === "judge" : r.reviewerRole === "admin"))
+                const phaseComments = phaseReviews
                   .map(r => r.comment)
                   .filter(c => c && c.trim())
                 if (phaseComments.length === 0) return null
