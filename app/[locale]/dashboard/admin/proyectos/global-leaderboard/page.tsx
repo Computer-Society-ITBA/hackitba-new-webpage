@@ -14,7 +14,7 @@ import type { Locale } from "@/lib/i18n/config"
 import { useCategories } from "@/hooks/use-categories"
 import { getCategoryByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 import { cn } from "@/lib/utils"
-import { FileText, Image as ImageIcon, Play, Github, ExternalLink, Linkedin, Brain, Landmark, Megaphone } from "lucide-react"
+import { FileText, Image as ImageIcon, Play, Github, ExternalLink, Linkedin, Brain, Landmark, Megaphone, Eye } from "lucide-react"
 
 export default function GlobalLeaderboardPage() {
   const params = useParams()
@@ -93,6 +93,11 @@ export default function GlobalLeaderboardPage() {
   }, [projects])
 
   const totalRows = rankedData.finalists.length + rankedData.rest.length
+
+  const openProjectDetails = (project: any) => {
+    setSelectedProject(project)
+    setShowDetails(true)
+  }
 
   const openTeamDetails = async (project: any) => {
     if (!db) return
@@ -174,6 +179,7 @@ export default function GlobalLeaderboardPage() {
                   <TableHeader>
                     <TableRow className="border-brand-cyan/20 hover:bg-transparent">
                       <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap px-1.5 text-center">#</TableHead>
+                      <TableHead className="hidden md:table-cell text-brand-cyan w-[1%] whitespace-nowrap text-center">Detail</TableHead>
                       <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[34%]">Project</TableHead>
                       <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[30%]">Team</TableHead>
                       <TableHead className="text-brand-cyan w-[1%] whitespace-nowrap md:w-[18%]">Category</TableHead>
@@ -183,20 +189,30 @@ export default function GlobalLeaderboardPage() {
                     {rankedData.finalists.map((p, index) => (
                       <TableRow key={`f-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
                         <TableCell className="w-[1%] whitespace-nowrap px-1.5 text-brand-cyan/60 text-center font-bold">{index + 1}</TableCell>
+                        <TableCell className="hidden md:table-cell text-center">
+                          <button
+                            type="button"
+                            onClick={() => openProjectDetails(p)}
+                            className="inline-flex items-center gap-1 rounded border border-brand-cyan/40 bg-brand-cyan/10 px-2 py-1 text-[11px] text-brand-cyan transition-colors hover:bg-brand-cyan/20"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                        </TableCell>
                         <TableCell className="font-medium text-brand-cyan">
                             {/* Mobile: abbreviated */}
                             <span
-                              className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                              className="block max-w-[9ch] truncate cursor-pointer hover:underline md:hidden"
                               title={p.title || "Untitled"}
-                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                              onClick={() => openProjectDetails(p)}
                             >
                               {abbreviateProjectName(p.title)}
                             </span>
                             {/* Desktop: full name */}
                             <span
-                              className="hidden md:block truncate w-full hover:underline cursor-pointer"
+                              className="hidden md:block truncate w-full cursor-pointer hover:underline"
                               title={p.title || "Untitled"}
-                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                              onClick={() => openProjectDetails(p)}
                             >
                               {p.title || "Untitled"}
                             </span>
@@ -242,7 +258,7 @@ export default function GlobalLeaderboardPage() {
 
                     {rankedData.finalists.length > 0 && rankedData.rest.length > 0 && (
                       <TableRow className="border-brand-cyan/20 bg-brand-navy/40 hover:bg-brand-navy/40">
-                        <TableCell colSpan={4} className="py-2">
+                        <TableCell colSpan={5} className="py-2">
                           <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-brand-cyan/50 font-pixel">
                             <span className="h-px flex-1 bg-brand-cyan/20" />
                             <span className="text-center">
@@ -258,20 +274,30 @@ export default function GlobalLeaderboardPage() {
                     {rankedData.rest.map((p, index) => (
                       <TableRow key={`r-${p.id}`} className="border-brand-cyan/10 hover:bg-brand-cyan/5 transition-colors">
                         <TableCell className="w-[1%] whitespace-nowrap px-1.5 text-brand-cyan/60 text-center font-bold">{rankedData.finalists.length + index + 1}</TableCell>
+                        <TableCell className="hidden md:table-cell text-center">
+                          <button
+                            type="button"
+                            onClick={() => openProjectDetails(p)}
+                            className="inline-flex items-center gap-1 rounded border border-brand-cyan/40 bg-brand-cyan/10 px-2 py-1 text-[11px] text-brand-cyan transition-colors hover:bg-brand-cyan/20"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                        </TableCell>
                         <TableCell className="font-medium text-brand-cyan">
                             {/* Mobile: abbreviated */}
                             <span
-                              className="block max-w-[9ch] truncate hover:underline cursor-pointer md:hidden"
+                              className="block max-w-[9ch] truncate cursor-pointer hover:underline md:hidden"
                               title={p.title || "Untitled"}
-                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                              onClick={() => openProjectDetails(p)}
                             >
                               {abbreviateProjectName(p.title)}
                             </span>
                             {/* Desktop: full name */}
                             <span
-                              className="hidden md:block truncate w-full hover:underline cursor-pointer"
+                              className="hidden md:block truncate w-full cursor-pointer hover:underline"
                               title={p.title || "Untitled"}
-                              onClick={() => { setSelectedProject(p); setShowDetails(true) }}
+                              onClick={() => openProjectDetails(p)}
                             >
                               {p.title || "Untitled"}
                             </span>
