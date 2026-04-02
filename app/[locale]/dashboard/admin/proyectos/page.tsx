@@ -32,6 +32,11 @@ export default function AdminProyectosPage() {
   const db = getDbClient()
   const { categories } = useCategories(locale)
 
+  const normalizeProjectStatus = (status?: string) => {
+    if (status === "submited") return "submitted"
+    return status || "draft"
+  }
+
   const { user } = useAuth()
   const [projects, setProjects] = useState<any[]>([])
   const [scoringCriteria, setScoringCriteria] = useState<any[]>([])
@@ -58,7 +63,10 @@ export default function AdminProyectosPage() {
       try {
         const projectsQuery = query(collection(db, "projects"), orderBy("updatedAt", "desc"))
         const projectsSnapshot = await getDocs(projectsQuery)
-        setProjects(projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+        setProjects(projectsSnapshot.docs.map(doc => {
+          const data = doc.data()
+          return { id: doc.id, ...data, status: normalizeProjectStatus(data.status) }
+        }))
 
         const criteriaQuery = query(collection(db, "scoringCriteria"))
         const criteriaSnapshot = await getDocs(criteriaQuery)
@@ -373,22 +381,13 @@ export default function AdminProyectosPage() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      // Judges only evaluate finalists and never disqualified ones
-      // This filter is for the admin view, but if the judging stage is "judge", admins might want to see projects as judges would.
-      // For now, let's apply this filter only if the judgingStage is 'judge' AND the project is not a finalist or is disqualified.
-      // If judgingStage is 'admin', all projects are visible based on other filters.
-      if (judgingStage === "judge" && (!p.isFinalist || p.disqualified)) return false
-
       const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.teamName?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === "all" || p.status === statusFilter
 
-      // If judgingStage is 'judge', also filter out projects already reviewed by the current user
-      if (judgingStage === "judge" && myReviews.has(p.id)) return false
-
       return matchesSearch && matchesStatus
     })
-  }, [projects, searchTerm, statusFilter, judgingStage, myReviews])
+  }, [projects, searchTerm, statusFilter])
 
   const getCategoryName = (categoryId: string) => {
     if (!categoryId) return "-"
