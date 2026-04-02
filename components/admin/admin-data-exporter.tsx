@@ -9,7 +9,7 @@ import { PixelButton } from "@/components/ui/pixel-button"
 import type { Locale } from "@/lib/i18n/config"
 import { getCategoryByLegacyIndex, sortCategoriesByLegacyIndex } from "@/lib/categories/legacy-category-mapping"
 
-type ExportMode = "completed" | "approved"
+type ExportMode = "completed" | "approved" | "accredited"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +38,8 @@ interface UserDoc {
     teamId?: string
     university?: string
     updatedAt?: { toDate?: () => Date } | Date | string
+    arrived?: boolean
+    arrivedAt?: { toDate?: () => Date } | Date | string
 }
 
 interface TeamDoc {
@@ -607,6 +609,107 @@ function buildSponsorsSheet(
     }
 }
 
+function buildAccreditedParticipantsSheet(
+    ws: Worksheet,
+    participants: (UserDoc & { id: string })[],
+    teams: (TeamDoc & { id: string })[],
+    categories: any[],
+    locale: Locale,
+) {
+    const FIELDS = [
+        "name", "surname", "email", "dni",
+        "university", "career",
+        "team", "category",
+        "hasTeam", "onboardingStep",
+        "arrived", "arrivedAt",
+        "createdAt", "updatedAt",
+    ]
+
+    addSheetTitle(ws, "Participantes Acreditados", FIELDS.length)
+    addHeaders(ws, FIELDS, 3)
+    setColumnWidths(ws, FIELDS, {
+        name: 20,
+        surname: 20,
+        email: 32,
+        dni: 16,
+        university: 28,
+        career: 22,
+        team: 24,
+        category: 26,
+        arrivedAt: 20,
+        createdAt: 20,
+        updatedAt: 20,
+    })
+
+    participants.forEach((u, idx) => {
+        const participantTeam = getParticipantTeam(u, teams)
+        const participantCategory = participantTeam
+            ? getTeamFinalCategoryIndex(participantTeam)
+            : normalizeCategoryIndex(u.category_1)
+
+        const rowData: Record<string, unknown> = {
+            name: u.name ?? "",
+            surname: u.surname ?? "",
+            email: u.email ?? "",
+            dni: u.dni ?? "",
+            university: u.university ?? "",
+            career: u.career ?? "",
+            team: participantTeam?.name ?? u.team ?? u.teamId ?? "",
+            category: getDisplayCategoryName(categories, participantCategory, locale),
+            hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
+            onboardingStep: u.onboardingStep ?? "",
+            arrived: u.arrived !== undefined ? String(u.arrived) : "",
+            arrivedAt: formatDate(u.arrivedAt),
+            createdAt: formatDate(u.createdAt),
+            updatedAt: formatDate(u.updatedAt),
+        }
+
+        const row = ws.addRow(FIELDS.map((f) => rowData[f]))
+        row.height = 20
+
+        FIELDS.forEach((field, colIdx) => {
+            const cell = row.getCell(colIdx + 1)
+            styleBodyCell(cell, idx)
+            const chip = resolveChip(toLabel(field), rowData[field])
+            if (chip && rowData[field] !== "") styleChip(cell, chip)
+        })
+    })
+
+    if (participants.length > 0) {
+        ws.addTable({
+            name: "TableAccreditedParticipants",
+            ref: `A3`,
+            headerRow: true,
+            totalsRow: false,
+            style: { theme: "TableStyleMedium2", showRowStripes: true },
+            columns: FIELDS.map((f) => ({ name: toLabel(f), filterButton: true })),
+            rows: participants.map((u) => {
+                const participantTeam = getParticipantTeam(u, teams)
+                const participantCategory = participantTeam
+                    ? getTeamFinalCategoryIndex(participantTeam)
+                    : normalizeCategoryIndex(u.category_1)
+                const rowData: Record<string, unknown> = {
+                    name: u.name ?? "",
+                    surname: u.surname ?? "",
+                    email: u.email ?? "",
+                    dni: u.dni ?? "",
+                    university: u.university ?? "",
+                    career: u.career ?? "",
+                    team: participantTeam?.name ?? u.team ?? u.teamId ?? "",
+                    category: getDisplayCategoryName(categories, participantCategory, locale),
+                    hasTeam: u.hasTeam !== undefined ? String(u.hasTeam) : "",
+                    onboardingStep: u.onboardingStep ?? "",
+                    arrived: u.arrived !== undefined ? String(u.arrived) : "",
+                    arrivedAt: formatDate(u.arrivedAt),
+                    createdAt: formatDate(u.createdAt),
+                    updatedAt: formatDate(u.updatedAt),
+                }
+                return FIELDS.map((f) => rowData[f])
+            }),
+        })
+    }
+}
+
 // ─── Main export function ─────────────────────────────────────────────────────
 
 async function generateExcel(mode: ExportMode = "completed", locale: Locale = "es") {
@@ -635,6 +738,8 @@ async function generateExcel(mode: ExportMode = "completed", locale: Locale = "e
         return role === "participant" || role === "user"
     })
 
+    const accreditedParticipants = participantUsers.filter((participant) => participant.arrived === true)
+
     const approvedTeamIds = new Set(
         allTeams
             .filter((team) => {
@@ -659,6 +764,23 @@ async function generateExcel(mode: ExportMode = "completed", locale: Locale = "e
     const participants = mode === "approved" ? approvedParticipants : participantUsers
     const teams = mode === "approved" ? approvedTeams : allTeams
     const registeredParticipants = participants.filter((u) => Number(u.onboardingStep) >= 2)
+
+    if (mode === "accredited") {
+        const wsA = wb.addWorksheet("Acreditados", { properties: { tabColor: { argb: `FF10B981` } } })
+        buildAccreditedParticipantsSheet(wsA, accreditedParticipants, allTeams, categories, locale)
+
+        const buffer = await wb.xlsx.writeBuffer()
+        const blob = new Blob([buffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `hackitba-acreditados-${new Date().toISOString().slice(0, 10)}.xlsx`
+        link.click()
+        URL.revokeObjectURL(url)
+        return
+    }
 
     // Sheet tab colours use the accent
     const wsP = wb.addWorksheet("Participantes", { properties: { tabColor: { argb: `FF0EA5E9` } } })
@@ -694,17 +816,21 @@ interface AdminDataExporterProps {
 export function AdminDataExporter({ statsMode = "completed", locale = "es" }: AdminDataExporterProps) {
     const [status, setStatus] = useState<"idle" | "loading" | "error">("idle")
     const [errorMsg, setErrorMsg] = useState("")
+    const [activeMode, setActiveMode] = useState<ExportMode | null>(null)
 
-    const handleExport = async () => {
+    const handleExport = async (mode: ExportMode) => {
+        setActiveMode(mode)
         setStatus("loading")
         setErrorMsg("")
         try {
-            await generateExcel(statsMode, locale)
+            await generateExcel(mode, locale)
             setStatus("idle")
         } catch (err) {
             console.error("[AdminDataExporter]", err)
             setErrorMsg(err instanceof Error ? err.message : "Unknown error")
             setStatus("error")
+        } finally {
+            setActiveMode(null)
         }
     }
 
@@ -719,23 +845,44 @@ export function AdminDataExporter({ statsMode = "completed", locale = "es" }: Ad
                 </p>
             </div>
 
-            <PixelButton
-                onClick={handleExport}
-                disabled={status === "loading"}
-                className="group flex items-center gap-2 w-fit hover:neon-glow-cyan transition-all"
-            >
-                {status === "loading" ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Generando...</span>
-                    </>
-                ) : (
-                    <>
-                        <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                        <span>Descargar Excel</span>
-                    </>
-                )}
-            </PixelButton>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <PixelButton
+                    onClick={() => handleExport(statsMode)}
+                    disabled={status === "loading"}
+                    className="group flex items-center gap-2 w-fit hover:neon-glow-cyan transition-all"
+                >
+                    {status === "loading" && activeMode === statsMode ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Generando...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                            <span>Descargar Excel</span>
+                        </>
+                    )}
+                </PixelButton>
+
+                <PixelButton
+                    onClick={() => handleExport("accredited")}
+                    disabled={status === "loading"}
+                    className="group flex items-center gap-2 w-fit hover:neon-glow-cyan transition-all"
+                    variant="outline"
+                >
+                    {status === "loading" && activeMode === "accredited" ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>{locale === "es" ? "Generando acreditados..." : "Generating accredited..."}</span>
+                        </>
+                    ) : (
+                        <>
+                            <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                            <span>{locale === "es" ? "Descargar acreditados" : "Download accredited"}</span>
+                        </>
+                    )}
+                </PixelButton>
+            </div>
 
             {status === "error" && (
                 <p className="text-xs text-red-400 font-montserrat">⚠ {errorMsg}</p>
